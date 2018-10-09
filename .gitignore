@@ -5,6 +5,8 @@ __pycache__
 *.py[cod]
 *$py.class
 
+*.egg-info
+
 # Test files
 .pytest_cache
 .tox

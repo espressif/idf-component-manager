@@ -9,6 +9,7 @@ gitpython = "*"
 
 [dev-packages]
 pytest = "*"
+tox = "<=3.0.0"
 
 [requires]
 python_version = "3.7"
