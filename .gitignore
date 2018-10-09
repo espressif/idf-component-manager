@@ -1,1 +1,13 @@
 .vscode
+
+# Byte-compiled / optimized / DLL files
+__pycache__
+*.py[cod]
+*$py.class
+
+# Test files
+.pytest_cache
+.tox
+
+# Remove Pipfile.lock to run tests under different python versions
+Pipfile.lock

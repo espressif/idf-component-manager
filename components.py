@@ -3,30 +3,31 @@
 from __future__ import print_function
 
 import argparse
-
-debug = False
+import sys
 
 COMMANDS = {
-    'install': "Install components described in components.yaml and updates components-lock.yaml if necessary",
+    'install': "Install components described in components.yaml " +
+    "and updates components-lock.yaml if necessary",
     'add': "Add new component to components.yaml, then install",
     'update': "Update components",
-    'eject': "Move component to unmanaged components directory and add components dependencies to project's components.yaml"
+    'eject': "Move component to unmanaged components directory " +
+    "and add components dependencies to project's components.yaml"
 }
 
 
-def main():
-    global debug
-
+def parse_args(args):
     parser = argparse.ArgumentParser(
-        description='components.py - ESP-IDF Component management command line utility', prog='components')
+        description="components.py - ESP-IDF Component management command line tool", prog='components')
+    parser.add_argument('command', help="Command to run", nargs='?', choices=COMMANDS.keys())
+    parser.add_argument('components', help="List of components", nargs='*')
 
-    parser.add_argument('--debug', help='Display debugging output', action='store_true')
+    return parser.parse_args(args)
 
-    parser.add_argument('command', help="Command to run", nargs='?',
-                        choices=COMMANDS.keys())
 
-    args = parser.parse_args()
-    debug = args.debug
+def main():
+    args = parse_args(sys.argv[1:])
+
+    print(args)
 
 
 if __name__ == "__main__":
