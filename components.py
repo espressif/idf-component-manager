@@ -3,32 +3,91 @@
 from __future__ import print_function
 
 import argparse
+import os
 import sys
 
+from component_manager.core import ComponentManager
+
+
+class ArgumentError(RuntimeError):
+    pass
+
+
 COMMANDS = {
-    'install': "Install components described in components.yaml " +
-    "and updates components-lock.yaml if necessary",
-    'add': "Add new component to components.yaml, then install",
-    'update': "Update components",
-    'eject': "Move component to unmanaged components directory " +
-    "and add components dependencies to project's components.yaml"
+    'add': {
+        'exec_without_components': False,
+        'help': "Installs the component from repository and updates manifest.yaml"
+    },
+    'eject': {
+        'exec_without_components': False,
+        'help': "Move component to unmanaged components directory and " +
+        "add components dependencies to project's manifest.yaml"
+    },
+    'install': {
+        'exec_without_components': True,
+        'help': "Install all the dependencies listed within manifest.yaml in the local managed_components directory."
+    },
+    'update': {
+        'exec_without_components': True,
+        'help': "Update components"
+    }
 }
 
 
-def parse_args(args):
+def commands_help():
+    help_descriptions = map(lambda key: "%s: %s" % (key, COMMANDS[key]['help']), COMMANDS)
+    return "\n".join(help_descriptions)
+
+
+def build_parser():
     parser = argparse.ArgumentParser(
-        description="components.py - ESP-IDF Component management command line tool", prog='components')
-    parser.add_argument('command', help="Command to run", nargs='?', choices=COMMANDS.keys())
+        description="components.py - ESP-IDF Component management command line tool",
+        prog='components',
+        formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument(
+        '-p',
+        '--path',
+        help="Path to directory that contains manifest.yaml or path to manifest itself",
+        default=os.getcwd())
+    parser.add_argument('command', help="Command to run\n" + commands_help(), nargs='?', choices=COMMANDS.keys())
     parser.add_argument('components', help="List of components", nargs='*')
 
-    return parser.parse_args(args)
+    return parser
+
+
+def parse_args(argv):
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    command = args.command
+    components = args.components
+
+    if not command:
+        parser.print_help()
+    elif command in ['add', 'eject'] and not components:
+        raise ArgumentError("Command '%s' requires list of components to be provided" % command)
+    elif command == 'install' and components:
+        raise ArgumentError("Command '%s' only installs components that are already in components.yaml. " % command +
+                            "If you want to add components, please run `components.py add %s`" % ' '.join(components))
+    else:
+        exec_command(command, components, args.path)
+
+
+def exec_command(command, components, path):
+    manager = ComponentManager(path)
+    handler = getattr(manager, command)
+    if components:
+        handler(components)
+    elif command in map(lambda cmd: cmd['exec_without_components'], COMMANDS.values()):
+        handler()
 
 
 def main():
-    args = parse_args(sys.argv[1:])
-
-    print(args)
+    parse_args(sys.argv[1:])
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except ArgumentError as e:
+        print(e)
+        sys.exit(2)
