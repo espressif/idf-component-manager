@@ -1,0 +1,18 @@
+image: python
+
+before_script:
+  - pip install tox==3.0.0
+
+cache:
+  paths:
+   - .tox
+
+stages:
+- test
+
+tests:
+  stage: test
+  tags:
+    - build
+  script:
+   - tox
