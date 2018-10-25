@@ -13,5 +13,5 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://gitlab.espressif.cn:6688/sergei.silnov/component-manager",
     packages=setuptools.find_packages(),
-    install_requires=['requests', 'future']
+    install_requires=["requests", "future"],
 )

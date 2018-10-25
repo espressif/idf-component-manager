@@ -12,6 +12,14 @@ pyyaml = "*"
 [dev-packages]
 pytest = "*"
 tox = "<=3.0.0"
+bandit = "*"
+"flake8-quotes" = "*"
+pytest-cov = "*"
+"flake8" = "*"
+black = "*"
 
 [requires]
 python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true

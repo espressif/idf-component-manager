@@ -14,43 +14,49 @@ class ArgumentError(RuntimeError):
 
 
 COMMANDS = {
-    'add': {
-        'exec_without_components': False,
-        'help': "Installs the component from repository and updates manifest.yaml"
+    "add": {
+        "exec_without_components": False,
+        "help": "Installs the component from repository and updates manifest.yaml",
     },
-    'eject': {
-        'exec_without_components': False,
-        'help': "Move component to unmanaged components directory and " +
-        "add components dependencies to project's manifest.yaml"
+    "eject": {
+        "exec_without_components": False,
+        "help": "Move component to unmanaged components directory and "
+        + "add components dependencies to project's manifest.yaml",
     },
-    'install': {
-        'exec_without_components': True,
-        'help': "Install all the dependencies listed within manifest.yaml in the local managed_components directory."
+    "install": {
+        "exec_without_components": True,
+        "help": "Install all the dependencies listed within manifest.yaml in the local managed_components directory.",
     },
-    'update': {
-        'exec_without_components': True,
-        'help': "Update components"
-    }
+    "update": {"exec_without_components": True, "help": "Update components"},
 }
 
 
 def commands_help():
-    help_descriptions = map(lambda key: "%s: %s" % (key, COMMANDS[key]['help']), COMMANDS)
+    help_descriptions = map(
+        lambda key: "%s: %s" % (key, COMMANDS[key]["help"]), COMMANDS
+    )
     return "\n".join(help_descriptions)
 
 
 def build_parser():
     parser = argparse.ArgumentParser(
         description="components.py - ESP-IDF Component management command line tool",
-        prog='components',
-        formatter_class=argparse.RawTextHelpFormatter)
+        prog="components",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
     parser.add_argument(
-        '-p',
-        '--path',
+        "-p",
+        "--path",
         help="Path to directory that contains manifest.yaml or path to manifest itself",
-        default=os.getcwd())
-    parser.add_argument('command', help="Command to run\n" + commands_help(), nargs='?', choices=COMMANDS.keys())
-    parser.add_argument('components', help="List of components", nargs='*')
+        default=os.getcwd(),
+    )
+    parser.add_argument(
+        "command",
+        help="Command to run\n" + commands_help(),
+        nargs="?",
+        choices=COMMANDS.keys(),
+    )
+    parser.add_argument("components", help="List of components", nargs="*")
 
     return parser
 
@@ -63,11 +69,17 @@ def parse_args(argv):
 
     if not command:
         parser.print_help()
-    elif command in ['add', 'eject'] and not components:
-        raise ArgumentError("Command '%s' requires list of components to be provided" % command)
-    elif command == 'install' and components:
-        raise ArgumentError("Command '%s' only installs components that are already in components.yaml. " % command +
-                            "If you want to add components, please run `components.py add %s`" % ' '.join(components))
+    elif command in ["add", "eject"] and not components:
+        raise ArgumentError(
+            "Command '%s' requires list of components to be provided" % command
+        )
+    elif command == "install" and components:
+        raise ArgumentError(
+            "Command '%s' only installs components that are already in components.yaml. "
+            % command
+            + "If you want to add components, please run `components.py add %s`"
+            % " ".join(components)
+        )
     else:
         exec_command(command, components, args.path)
 
@@ -77,7 +89,7 @@ def exec_command(command, components, path):
     handler = getattr(manager, command)
     if components:
         handler(components)
-    elif command in map(lambda cmd: cmd['exec_without_components'], COMMANDS.values()):
+    elif command in map(lambda cmd: cmd["exec_without_components"], COMMANDS.values()):
         handler()
 
 
