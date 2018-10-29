@@ -89,8 +89,17 @@ def exec_command(command, components, path):
     handler = getattr(manager, command)
     if components:
         handler(components)
-    elif command in map(lambda cmd: cmd["exec_without_components"], COMMANDS.values()):
+    elif (
+        command
+        in {
+            cmd: features
+            for cmd, features in COMMANDS.items()
+            if features["exec_without_components"]
+        }.keys()
+    ):
         handler()
+    else:
+        print("Do nothing, unknown command")
 
 
 def main():
