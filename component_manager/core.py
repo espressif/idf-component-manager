@@ -3,7 +3,7 @@ from __future__ import print_function
 
 import os
 
-from .manifest import ManifestParser
+from .manifest import ManifestParser  # noqa: F401
 
 
 class ComponentManager(object):
@@ -20,11 +20,11 @@ class ComponentManager(object):
         print("Adding %s to manifest" % ", ".join(components))
 
     def install(self):
+        ManifestParser(self.manifest_path).prepare()
         print("Installing components from manifest")
-        entries = ManifestParser(self.path)
 
     def update(self, components=[]):
         print("Updating %s" % ", ".join(components))
 
     def eject(self, components):
-        print("Updating %s" % ", ".join(components))
+        print("Ejecting %s" % ", ".join(components))
