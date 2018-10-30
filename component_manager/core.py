@@ -3,7 +3,7 @@ from __future__ import print_function
 
 import os
 
-from .manifest import ManifestParser  # noqa: F401
+from .manifest import ManifestParser
 
 
 class ComponentManager(object):
