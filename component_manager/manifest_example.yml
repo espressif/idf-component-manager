@@ -1,0 +1,14 @@
+## Espressif Component Manager Manifest File
+## Required IDF version
+idf-version: "^4.0"
+## Version of your project. Should conform Semantic Versioning 2.0 rules https://semver.org/
+version: "1.0.0" 
+## List of platforms
+platforms: [esp32]
+components:
+  ## Put list of dependencies here
+  ## in short
+  # component: "~1.0.0"
+  ## or long form:
+  # component:
+  #   version: "~1.0.0" 

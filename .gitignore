@@ -13,3 +13,10 @@ __pycache__
 
 # Remove Pipfile.lock to run tests under different python versions
 Pipfile.lock
+
+# Manifest and components
+manifest.yaml
+components.lock
+managed_components
+components
+build

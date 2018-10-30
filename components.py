@@ -75,7 +75,7 @@ def parse_args(argv):
         )
     elif command == "install" and components:
         raise ArgumentError(
-            "Command '%s' only installs components that are already in components.yaml. "
+            "Command '%s' only installs components that are already in manifest. "
             % command
             + "If you want to add components, please run `components.py add %s`"
             % " ".join(components)
