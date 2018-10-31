@@ -3,7 +3,8 @@ import os
 import sys
 from shutil import copyfile
 
-import yaml
+from strictyaml import YAMLError
+from strictyaml import load as load_yaml
 
 
 class ManifestValidator(object):
@@ -92,10 +93,10 @@ class ManifestParser(object):
         return self._manifest
 
     def parse(self):
-        with open(self._path, "r") as stream:
+        with open(self._path, "r") as f:
             try:
-                return yaml.load(stream)
-            except yaml.YAMLError as e:
+                return load_yaml(f.read())
+            except YAMLError as e:
                 print(
                     "Error: Cannot parse manifest file. Please check that\n\t%s\nis valid YAML file\n"
                     % self._path
