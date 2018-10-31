@@ -1,4 +1,16 @@
+.pip_configure: &pip_configure |
+  # Since the PIP servers stopped supporting of TLS < 1.2, we cannot use socks proxy to conneсt them
+  # In common case we can use 'unset ALL_PROXY' if we don't want to play with NO_PROXY
+  env | grep -i proxy
+  NO_PROXY=".cn,${NO_PROXY}"
+  export NO_PROXY
+  env | grep -i proxy
+  mkdir -p ~/.pip
+  echo "[global]" > ~/.pip/pip.conf
+  echo "index-url = https://pypi.mirrors.ustc.edu.cn/simple" >> ~/.pip/pip.conf
+
 before_script:
+  - *pip_configure
   - pip install tox==3.0.0 
   
 cache:
