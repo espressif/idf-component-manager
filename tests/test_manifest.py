@@ -74,7 +74,7 @@ class TestManifestValidator(object):
         errors = validator.validate()
 
         assert len(errors) == 2
-        assert errors[0] == "Unknown root directive: unknown"
+        assert errors[0].startswith("Unknown root directive:")
 
     def test_validate_version_list(self):
         validator = ManifestValidator(self.VALID_MANIFEST)
