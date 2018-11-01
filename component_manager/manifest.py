@@ -85,8 +85,28 @@ class ManifestValidator(object):
 
         return self
 
+    def validate_platforms(self):
+        platforms = self.manifest.get("platforms", [])
+
+        if isinstance(platforms, str):
+            platforms = [platforms]
+
+        if not isinstance(platforms, list):
+            self.add_error("Unknown format for list of supported platforms")
+            return self
+
+        unknown_platforms = []
+        for platform in platforms:
+            if platform not in self.KNOWN_PLATFORMS:
+                unknown_platforms.append(platform)
+
+        if unknown_platforms:
+            self.add_error("Unknown platforms: %s" % ", ".join(unknown_platforms))
+
+        return self
+
     def validate(self):
-        self.validate_root_keys().validate_component_versions()
+        self.validate_root_keys().validate_component_versions().validate_platforms()
         return self._errors
 
 

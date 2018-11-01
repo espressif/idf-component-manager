@@ -107,6 +107,7 @@ class TestManifestValidator(object):
 
         errors = validator.validate()
 
+        assert len(errors) == 1
         assert errors[0].startswith("List of components should be a dictionary")
 
     def test_validate_component_versions_unknown_key(self):
@@ -118,6 +119,7 @@ class TestManifestValidator(object):
 
         errors = validator.validate()
 
+        assert len(errors) == 1
         assert errors[0] == 'Unknown attributes for component "test-component": persion'
 
     def test_validate_component_versions_invalid_spec_subkey(self):
@@ -127,6 +129,7 @@ class TestManifestValidator(object):
 
         errors = validator.validate()
 
+        assert len(errors) == 1
         assert errors[0].startswith(
             'Version specifications for "test-component" are invalid.'
         )
@@ -138,9 +141,20 @@ class TestManifestValidator(object):
 
         errors = validator.validate()
 
+        assert len(errors) == 1
         assert errors[0].startswith(
             'Version specifications for "test-component" are invalid.'
         )
+
+    def test_validate_platforms_unknown(self):
+        manifest = deepcopy(self.VALID_MANIFEST)
+        manifest["platforms"] = ["esp123", "esp32", "asdf"]
+        validator = ManifestValidator(manifest)
+
+        errors = validator.validate()
+
+        assert len(errors) == 1
+        assert errors[0].startswith("Unknown platforms: esp123, asdf")
 
     def test_validate_version_list(self):
         validator = ManifestValidator(self.VALID_MANIFEST)
