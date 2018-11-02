@@ -1,5 +1,6 @@
 """Classes to work with manifest file"""
 import os
+import re
 import sys
 from shutil import copyfile
 
@@ -22,6 +23,8 @@ class ManifestValidator(object):
     KNOWN_COMPONENT_KEYS = ("version",)
 
     KNOWN_PLATFORMS = ("esp32",)
+
+    SLUG_RE = re.compile(r"^[-a-zA-Z0-9_]+\Z")
 
     def __init__(self, parsed_manifest):
         self.manifest = parsed_manifest
@@ -66,6 +69,12 @@ class ManifestValidator(object):
             return self
 
         for component, details in components.items():
+            if not self.SLUG_RE.match(component):
+                self.add_error(
+                    'Component\'s name is not valid "%s", should contain only letters, numbers _ and -.'
+                    % component
+                )
+
             if isinstance(details, dict):
                 unknown = self._validate_keys(details, self.KNOWN_COMPONENT_KEYS)
                 if unknown:

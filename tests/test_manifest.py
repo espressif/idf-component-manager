@@ -100,7 +100,7 @@ class TestManifestValidator(object):
 
         assert not errors
 
-    def test_validate_component_versions_is_array(self):
+    def test_validate_component_versions_not_a_dict(self):
         manifest = deepcopy(self.VALID_MANIFEST)
         manifest["components"] = ["one_component", "another-one"]
         validator = ManifestValidator(manifest)
@@ -121,6 +121,16 @@ class TestManifestValidator(object):
 
         assert len(errors) == 1
         assert errors[0] == 'Unknown attributes for component "test-component": persion'
+
+    def test_validate_component_versions_invalid_name(self):
+        manifest = deepcopy(self.VALID_MANIFEST)
+        manifest["components"] = {"asdf!fdsa": {"version": "^1.2.3"}}
+        validator = ManifestValidator(manifest)
+
+        errors = validator.validate()
+
+        assert len(errors) == 1
+        assert errors[0].startswith('Component\'s name is not valid "asdf!fdsa",')
 
     def test_validate_component_versions_invalid_spec_subkey(self):
         manifest = deepcopy(self.VALID_MANIFEST)
@@ -155,6 +165,18 @@ class TestManifestValidator(object):
 
         assert len(errors) == 1
         assert errors[0].startswith("Unknown platforms: esp123, asdf")
+
+    def test_slug_re(self):
+        valid_names = ("asdf-fadsf", "_", "-", "_good", "123", "asdf-_-fdsa-")
+        invalid_names = ("!", "asdf$f", "daf411~", "adf\nadsf")
+
+        slug_re = ManifestValidator.SLUG_RE
+
+        for name in valid_names:
+            assert slug_re.match(name)
+
+        for name in invalid_names:
+            assert not slug_re.match(name)
 
     def test_validate_version_list(self):
         validator = ManifestValidator(self.VALID_MANIFEST)
