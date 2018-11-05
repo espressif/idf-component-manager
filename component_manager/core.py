@@ -3,7 +3,7 @@ from __future__ import print_function
 
 import os
 
-from .manifest import ManifestParser
+from .manifest import ManifestPipeline
 
 
 class ComponentManager(object):
@@ -18,13 +18,18 @@ class ComponentManager(object):
 
     def add(self, components):
         print("Adding %s to manifest" % ", ".join(components))
+        print("Not implemented yet")
 
     def install(self):
-        ManifestParser(self.manifest_path).prepare()
+        ManifestPipeline(self.manifest_path).prepare()
         print("Installing components from manifest")
 
-    def update(self, components=[]):
+    def update(self, components=None):
+        if components is None:
+            components = []
         print("Updating %s" % ", ".join(components))
+        print("Not implemented yet")
 
     def eject(self, components):
         print("Ejecting %s" % ", ".join(components))
+        print("Not implemented yet")

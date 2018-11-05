@@ -6,12 +6,12 @@ from copy import deepcopy
 
 import pytest
 
-from component_manager.manifest import ManifestParser, ManifestValidator
+from component_manager.manifest import ManifestPipeline, ManifestValidator
 
 
-class TestManifestParser(object):
+class TestManifestPipeline(object):
     def test_check_filename(self, capsys):
-        parser = ManifestParser("some/path/manifest.yaml")
+        parser = ManifestPipeline("some/path/manifest.yaml")
 
         parser.check_filename()
 
@@ -21,7 +21,7 @@ class TestManifestParser(object):
     def test_init_manifest(self):
         tempdir = tempfile.mkdtemp()
         manifest_path = os.path.join(tempdir, "manifest.yml")
-        parser = ManifestParser(manifest_path)
+        parser = ManifestPipeline(manifest_path)
 
         parser.init_manifest()
 
@@ -34,10 +34,10 @@ class TestManifestParser(object):
         manifest_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "manifests", "invalid_yaml.yml"
         )
-        parser = ManifestParser(manifest_path)
+        parser = ManifestPipeline(manifest_path)
 
         with pytest.raises(SystemExit) as e:
-            parser.manifest
+            parser.manifest_tree
 
         captured = capsys.readouterr()
         assert e.type == SystemExit
@@ -48,9 +48,30 @@ class TestManifestParser(object):
         manifest_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "manifests", "manifest.yml"
         )
-        parser = ManifestParser(manifest_path)
+        parser = ManifestPipeline(manifest_path)
 
-        assert len(parser.manifest.keys()) == 5
+        assert len(parser.manifest_tree.keys()) == 5
+
+    def test_build(self):
+        manifest_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "manifests", "manifest.yml"
+        )
+        parser = ManifestPipeline(manifest_path).prepare()
+
+        parser.build()
+        manifest = parser.manifest
+
+        assert len(manifest.components) == 3
+
+    def test_prepare(self):
+        manifest_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "manifests", "manifest.yml"
+        )
+        parser = ManifestPipeline(manifest_path)
+
+        parser.prepare()
+
+        assert parser.is_valid
 
 
 class TestManifestValidator(object):
@@ -77,7 +98,7 @@ class TestManifestValidator(object):
         manifest["test"] = "test"
         validator = ManifestValidator(manifest)
 
-        errors = validator.validate()
+        errors = validator.validate_normalize()
 
         assert len(errors) == 1
         assert errors[0].startswith("Unknown keys: unknown, test")
@@ -87,16 +108,29 @@ class TestManifestValidator(object):
         manifest.pop("components")
         validator = ManifestValidator(manifest)
 
-        errors = validator.validate()
+        errors = validator.validate_normalize()
 
         assert not errors
+
+    def test_validate_component_version_normalization(self):
+        manifest = deepcopy(self.VALID_MANIFEST)
+        manifest["components"] = {"test": "1.2.3", "pest": {"version": "3.2.1"}}
+        validator = ManifestValidator(manifest)
+
+        errors = validator.validate_normalize()
+
+        assert not errors
+        assert validator.manifest_tree["components"] == {
+            "test": {"version": "1.2.3"},
+            "pest": {"version": "3.2.1"},
+        }
 
     def test_validate_component_versions_are_empty(self):
         manifest = deepcopy(self.VALID_MANIFEST)
         manifest["components"] = {}
         validator = ManifestValidator(manifest)
 
-        errors = validator.validate()
+        errors = validator.validate_normalize()
 
         assert not errors
 
@@ -105,7 +139,7 @@ class TestManifestValidator(object):
         manifest["components"] = ["one_component", "another-one"]
         validator = ManifestValidator(manifest)
 
-        errors = validator.validate()
+        errors = validator.validate_normalize()
 
         assert len(errors) == 1
         assert errors[0].startswith("List of components should be a dictionary")
@@ -117,7 +151,7 @@ class TestManifestValidator(object):
         }
         validator = ManifestValidator(manifest)
 
-        errors = validator.validate()
+        errors = validator.validate_normalize()
 
         assert len(errors) == 1
         assert errors[0] == 'Unknown attributes for component "test-component": persion'
@@ -127,7 +161,7 @@ class TestManifestValidator(object):
         manifest["components"] = {"asdf!fdsa": {"version": "^1.2.3"}}
         validator = ManifestValidator(manifest)
 
-        errors = validator.validate()
+        errors = validator.validate_normalize()
 
         assert len(errors) == 1
         assert errors[0].startswith('Component\'s name is not valid "asdf!fdsa",')
@@ -137,7 +171,7 @@ class TestManifestValidator(object):
         manifest["components"] = {"test-component": {"version": "^1.2a.3"}}
         validator = ManifestValidator(manifest)
 
-        errors = validator.validate()
+        errors = validator.validate_normalize()
 
         assert len(errors) == 1
         assert errors[0].startswith(
@@ -149,7 +183,7 @@ class TestManifestValidator(object):
         manifest["components"] = {"test-component": "~=1a.2.3"}
         validator = ManifestValidator(manifest)
 
-        errors = validator.validate()
+        errors = validator.validate_normalize()
 
         assert len(errors) == 1
         assert errors[0].startswith(
@@ -161,7 +195,7 @@ class TestManifestValidator(object):
         manifest["platforms"] = ["esp123", "esp32", "asdf"]
         validator = ManifestValidator(manifest)
 
-        errors = validator.validate()
+        errors = validator.validate_normalize()
 
         assert len(errors) == 1
         assert errors[0].startswith("Unknown platforms: esp123, asdf")
@@ -181,6 +215,6 @@ class TestManifestValidator(object):
     def test_validate_version_list(self):
         validator = ManifestValidator(self.VALID_MANIFEST)
 
-        errors = validator.validate()
+        errors = validator.validate_normalize()
 
         assert not errors

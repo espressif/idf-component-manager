@@ -4,9 +4,40 @@ import re
 import sys
 from shutil import copyfile
 
-from semantic_version import Spec
+from semantic_version import Spec, Version
 from strictyaml import YAMLError
 from strictyaml import load as load_yaml
+
+from .component_sources import SourceBuilder
+
+
+class Manifest(object):
+    def __init__(
+        self,
+        name=None,
+        version=None,
+        idf_version=None,
+        maintainer=None,
+        components=None,
+        sources=None,
+    ):
+        self.name = name
+        self.version = version
+        self.idf_version = idf_version
+        self.maintainer = maintainer
+        if components is None:
+            components = []
+        self.components = components
+        if sources is None:
+            sources = set()
+        self.sources = sources
+
+
+class Component(object):
+    def __init__(self, name, source, version_spec="*"):
+        self.version_spec = version_spec
+        self.source = source
+        self.name = name
 
 
 class ManifestValidator(object):
@@ -27,7 +58,7 @@ class ManifestValidator(object):
     SLUG_RE = re.compile(r"^[-a-zA-Z0-9_]+\Z")
 
     def __init__(self, parsed_manifest):
-        self.manifest = parsed_manifest
+        self.manifest_tree = parsed_manifest
         self._errors = []
 
     @staticmethod
@@ -48,17 +79,20 @@ class ManifestValidator(object):
         self._errors.append(message)
 
     def validate_root_keys(self):
-        unknown = self._validate_keys(self.manifest, self.KNOWN_ROOT_KEYS)
+        unknown = self._validate_keys(self.manifest_tree, self.KNOWN_ROOT_KEYS)
         if unknown:
             self.add_error("Unknown keys: %s" % ", ".join(unknown))
 
         return self
 
-    def validate_component_versions(self):
-        if "components" not in self.manifest.keys() or not self.manifest["components"]:
+    def validate_normalize_components(self):
+        if (
+            "components" not in self.manifest_tree.keys()
+            or not self.manifest_tree["components"]
+        ):
             return self
 
-        components = self.manifest["components"]
+        components = self.manifest_tree["components"]
 
         # List of components should be a dictionary.
         if not isinstance(components, dict):
@@ -75,6 +109,9 @@ class ManifestValidator(object):
                     % component
                 )
 
+            if isinstance(details, str):
+                components[component] = details = {"version": details}
+
             if isinstance(details, dict):
                 unknown = self._validate_keys(details, self.KNOWN_COMPONENT_KEYS)
                 if unknown:
@@ -83,8 +120,6 @@ class ManifestValidator(object):
                         % (component, ", ".join(unknown))
                     )
                 self._validate_version_spec(component, details.get("version", ""))
-            elif isinstance(component, str):
-                self._validate_version_spec(component, details)
             else:
                 self.add_error(
                     '"%s" version have unknown format. Should be either version string or dictionary with details'
@@ -95,7 +130,7 @@ class ManifestValidator(object):
         return self
 
     def validate_platforms(self):
-        platforms = self.manifest.get("platforms", [])
+        platforms = self.manifest_tree.get("platforms", [])
 
         if isinstance(platforms, str):
             platforms = [platforms]
@@ -114,17 +149,18 @@ class ManifestValidator(object):
 
         return self
 
-    def validate(self):
-        self.validate_root_keys().validate_component_versions().validate_platforms()
+    def validate_normalize(self):
+        self.validate_root_keys().validate_normalize_components().validate_platforms()
         return self._errors
 
 
-class ManifestParser(object):
+class ManifestPipeline(object):
     """Parser for manifest file"""
 
     def __init__(self, path):
         # Path of manifest file
         self._path = path
+        self._manifest_tree = None
         self._manifest = None
         self._is_valid = None
         self._validation_errors = []
@@ -152,8 +188,8 @@ class ManifestParser(object):
         return self
 
     def validate(self):
-        validator = ManifestValidator(self.manifest)
-        self._validation_errors = validator.validate()
+        validator = ManifestValidator(self.manifest_tree)
+        self._validation_errors = validator.validate_normalize()
         self._is_valid = not self._validation_errors
         return self
 
@@ -173,14 +209,14 @@ class ManifestParser(object):
         return self._path
 
     @property
-    def manifest(self):
-        self._manifest = self._manifest or self.parse()
-        return self._manifest
+    def manifest_tree(self):
+        self._manifest_tree = self._manifest_tree or self.parse_manifest_file()
+        return self._manifest_tree
 
-    def parse(self):
+    def parse_manifest_file(self):
         with open(self._path, "r") as f:
             try:
-                return load_yaml(f.read())
+                return load_yaml(f.read()).data
             except YAMLError as e:
                 print(
                     "Error: Cannot parse manifest file. Please check that\n\t%s\nis valid YAML file\n"
@@ -188,6 +224,27 @@ class ManifestParser(object):
                 )
                 print(e)
                 sys.exit(1)
+
+    def build(self):
+        tree = self.manifest_tree
+
+        self.manifest = Manifest(
+            name=tree.get("name", None), maintainer=tree.get("maintainer", None)
+        )
+
+        version = tree.get("version", None)
+        if version:
+            self.manifest.version = Version(version)
+
+        self.manifest.idf_version = Spec(tree.get("idf_version", None) or "*")
+
+        for name, details in tree.get("components", {}).items():
+            source = SourceBuilder(name, details).build()
+            self.manifest.sources.add(source)
+            component = Component(name, source, version_spec=details["version"])
+            self.manifest.components.append(component)
+
+        return self
 
     def prepare(self):
         self.check_filename().init_manifest().validate()
