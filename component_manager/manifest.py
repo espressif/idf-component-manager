@@ -44,7 +44,7 @@ class ManifestValidator(object):
     """Validator for manifest object, checks for structure, known fields and valid values"""
 
     KNOWN_ROOT_KEYS = (
-        "idf-version",
+        "idf_version",
         "maintainer",
         "components",
         "platforms",
@@ -82,6 +82,20 @@ class ManifestValidator(object):
         unknown = self._validate_keys(self.manifest_tree, self.KNOWN_ROOT_KEYS)
         if unknown:
             self.add_error("Unknown keys: %s" % ", ".join(unknown))
+
+        return self
+
+    def validate_root_values(self):
+        version = self.manifest_tree.get("version", None)
+        try:
+            if version:
+                Version.parse(version)
+        except ValueError:
+            self.add_error("Project version should be valid semantic version")
+
+        self._validate_version_spec(
+            "idf_version", self.manifest_tree.get("idf_version", None)
+        )
 
         return self
 
@@ -150,7 +164,7 @@ class ManifestValidator(object):
         return self
 
     def validate_normalize(self):
-        self.validate_root_keys().validate_normalize_components().validate_platforms()
+        self.validate_root_keys().validate_root_values().validate_normalize_components().validate_platforms()
         return self._errors
 
 
