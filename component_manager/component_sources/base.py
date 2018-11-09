@@ -6,7 +6,7 @@ from .errors import SourceError
 class BaseSource:
     __metaclass__ = ABCMeta
 
-    def __init__(self, source_details):
+    def __init__(self, source_details=None):
         unknown_keys = []
         for key in source_details.keys():
             if key not in self.known_keys():
@@ -17,7 +17,7 @@ class BaseSource:
                 "Unknown keys in component description %s" % ", ".join(unknown_keys)
             )
 
-        self._source_details = source_details
+        self._source_details = source_details if source_details else {}
 
     def _hash_values(self):
         return tuple(self.source_details.get(key, None) for key in self.hash_keys())
@@ -52,6 +52,9 @@ class BaseSource:
     @abstractmethod
     def name(self):
         return "Base"
+
+    def versions(self, name, details):
+        return
 
     @abstractmethod
     def fetch(self, name, details, components_directory):

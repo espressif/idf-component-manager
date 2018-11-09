@@ -1,4 +1,5 @@
 .vscode
+.idea
 
 # Byte-compiled / optimized / DLL files
 __pycache__
@@ -21,3 +22,6 @@ components.lock
 managed_components
 components
 build
+
+#Configs
+.env

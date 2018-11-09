@@ -6,6 +6,9 @@ from .errors import SourceError
 
 
 class LocalSource(BaseSource):
+    def name(self):
+        return "Local"
+
     @staticmethod
     def known_keys():
         return ["version", "path"]

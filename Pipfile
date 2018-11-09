@@ -10,6 +10,7 @@ requests = "*"
 future = "*"
 strictyaml = "*"
 semantic-version = "*"
+vcrpy = "*"
 
 [dev-packages]
 pytest = "*"
