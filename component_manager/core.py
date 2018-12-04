@@ -3,7 +3,7 @@ from __future__ import print_function
 
 import os
 
-from .manifest import ManifestPipeline
+from .manifest_pipeline import ManifestPipeline
 
 
 class ComponentManager(object):

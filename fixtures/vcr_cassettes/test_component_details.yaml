@@ -9,13 +9,13 @@ interactions:
     method: GET
     uri: http://localhost:8000/api/components/test/
   response:
-    body: {string: '{"id":"5df18705-97b2-450a-a5c5-d604a0d03e09","name":"Test","created_at":"2018-10-18T14:52:38.809911Z","versions":[{"version":"2.0.1","url":"http://ya.ru"},{"version":"3.2.1-beta","url":"http://ya.ru"},{"version":"3.2.2","url":"http://ya.ru"},{"version":"3.2.0","url":"http://ya.ru"},{"version":"0.0.1","url":"http://ya.ru"}]}'}
+    body: {string: '{"url":"http://ya.ru","maintainers":["",""],"targets":[],"dependencies":[],"idf_version":"*","name":"Test","version":"3.2.2","created_at":"2018-10-19T17:17:49.752421Z"}'}
     headers:
       Allow: ['GET, HEAD, OPTIONS']
-      Content-Length: ['325']
+      Content-Length: ['168']
       Content-Type: [application/json]
-      Date: ['Fri, 09 Nov 2018 17:45:44 GMT']
-      Server: [WSGIServer/0.2 CPython/3.7.0]
+      Date: ['Tue, 04 Dec 2018 17:33:23 GMT']
+      Server: [WSGIServer/0.2 CPython/3.7.1]
       X-Frame-Options: [SAMEORIGIN]
     status: {code: 200, message: OK}
 version: 1

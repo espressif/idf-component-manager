@@ -1,6 +1,8 @@
 """Classes to work with Espressif Service Controller"""
 import requests
-from semantic_version import Version
+from semantic_version import Spec, Version
+
+from .manifest import Manifest
 
 
 class ComponentVersion(object):
@@ -29,18 +31,23 @@ class APIClient(object):
         parts.append("")
         return "/".join(parts)
 
-    def component_details(self, component_name):
-        endpoint = self.join_url(self.base_url, "components", component_name)
+    def versions(self, component_name, spec):
+        """List of versions for given component with required spec"""
+
+        endpoint = self.join_url(
+            self.base_url, "components", component_name, "versions"
+        )
 
         try:
-            r = requests.get(endpoint)
+            r = requests.get(endpoint, params={"versions": spec})
             response = r.json()
 
+            # TODO: cleanup interface use same classes as in manifest.py
             return Component(
-                name=response["name"],
+                name=component_name,
                 versions=map(
                     lambda v: ComponentVersion(version=v["version"], url=v["url"]),
-                    response["versions"],
+                    response,
                 ),
             )
 
@@ -50,4 +57,30 @@ class APIClient(object):
             print(e)
 
         except KeyError:
-            print("Cannot parse component server response")
+            print("Unexpected component server response")
+
+    def component(self, component_name, version=None):
+        """Manifest for given version of component"""
+
+        endpoint = self.join_url(self.base_url, "components", component_name)
+
+        try:
+            r = requests.get(endpoint)
+            response = r.json()
+
+            return Manifest(
+                name=response["name"],
+                version=Version(response["version"]),
+                idf_version=Spec(response["idf_version"]),
+                maintainers=response["maintainers"],
+                # TODO: add dependencies
+                dependencies=None,
+            )
+
+        except requests.exceptions.RequestException as e:
+            # TODO: better display for HTTP/Connection errors
+            # TODO: Retry couple times on timeout
+            print(e)
+
+        except KeyError:
+            print("Unexpected component server response")

@@ -6,7 +6,7 @@ from copy import deepcopy
 
 import pytest
 
-from component_manager.manifest import ManifestPipeline, ManifestValidator
+from component_manager import ManifestPipeline, ManifestValidator
 
 
 class TestManifestPipeline(object):
@@ -61,7 +61,7 @@ class TestManifestPipeline(object):
         parser.build()
         manifest = parser.manifest
 
-        assert len(manifest.components) == 3
+        assert len(manifest.dependencies) == 3
 
     def test_prepare(self):
         manifest_path = os.path.join(
@@ -79,9 +79,9 @@ class TestManifestValidator(object):
         {
             "idf_version": "~4.4.4",
             "version": "2.3.1",
-            "platforms": ["esp32"],
-            "maintainer": "Test Tester <test@example.com>",
-            "components": {
+            "targets": ["esp32"],
+            "maintainers": ["Test Tester <test@example.com>"],
+            "dependencies": {
                 "test": {"version": ">=8.2.0,<9.0.0"},
                 "test-1": "^1.2.7",
                 "test-8": {"version": ""},
@@ -117,7 +117,7 @@ class TestManifestValidator(object):
 
     def test_validate_component_versions_not_in_manifest(self):
         manifest = deepcopy(self.VALID_MANIFEST)
-        manifest.pop("components")
+        manifest.pop("dependencies")
         validator = ManifestValidator(manifest)
 
         errors = validator.validate_normalize()
@@ -126,20 +126,20 @@ class TestManifestValidator(object):
 
     def test_validate_component_version_normalization(self):
         manifest = deepcopy(self.VALID_MANIFEST)
-        manifest["components"] = {"test": "1.2.3", "pest": {"version": "3.2.1"}}
+        manifest["dependencies"] = {"test": "1.2.3", "pest": {"version": "3.2.1"}}
         validator = ManifestValidator(manifest)
 
         errors = validator.validate_normalize()
 
         assert not errors
-        assert validator.manifest_tree["components"] == {
+        assert validator.manifest_tree["dependencies"] == {
             "test": {"version": "1.2.3"},
             "pest": {"version": "3.2.1"},
         }
 
     def test_validate_component_versions_are_empty(self):
         manifest = deepcopy(self.VALID_MANIFEST)
-        manifest["components"] = {}
+        manifest["dependencies"] = {}
         validator = ManifestValidator(manifest)
 
         errors = validator.validate_normalize()
@@ -148,17 +148,17 @@ class TestManifestValidator(object):
 
     def test_validate_component_versions_not_a_dict(self):
         manifest = deepcopy(self.VALID_MANIFEST)
-        manifest["components"] = ["one_component", "another-one"]
+        manifest["dependencies"] = ["one_component", "another-one"]
         validator = ManifestValidator(manifest)
 
         errors = validator.validate_normalize()
 
         assert len(errors) == 1
-        assert errors[0].startswith("List of components should be a dictionary")
+        assert errors[0].startswith("List of dependencies should be a dictionary")
 
     def test_validate_component_versions_unknown_key(self):
         manifest = deepcopy(self.VALID_MANIFEST)
-        manifest["components"] = {
+        manifest["dependencies"] = {
             "test-component": {"version": "^1.2.3", "persion": "asdf"}
         }
         validator = ManifestValidator(manifest)
@@ -170,7 +170,7 @@ class TestManifestValidator(object):
 
     def test_validate_component_versions_invalid_name(self):
         manifest = deepcopy(self.VALID_MANIFEST)
-        manifest["components"] = {"asdf!fdsa": {"version": "^1.2.3"}}
+        manifest["dependencies"] = {"asdf!fdsa": {"version": "^1.2.3"}}
         validator = ManifestValidator(manifest)
 
         errors = validator.validate_normalize()
@@ -180,7 +180,7 @@ class TestManifestValidator(object):
 
     def test_validate_component_versions_invalid_spec_subkey(self):
         manifest = deepcopy(self.VALID_MANIFEST)
-        manifest["components"] = {"test-component": {"version": "^1.2a.3"}}
+        manifest["dependencies"] = {"test-component": {"version": "^1.2a.3"}}
         validator = ManifestValidator(manifest)
 
         errors = validator.validate_normalize()
@@ -192,7 +192,7 @@ class TestManifestValidator(object):
 
     def test_validate_component_versions_invalid_spec(self):
         manifest = deepcopy(self.VALID_MANIFEST)
-        manifest["components"] = {"test-component": "~=1a.2.3"}
+        manifest["dependencies"] = {"test-component": "~=1a.2.3"}
         validator = ManifestValidator(manifest)
 
         errors = validator.validate_normalize()
@@ -202,15 +202,15 @@ class TestManifestValidator(object):
             'Version specifications for "test-component" are invalid.'
         )
 
-    def test_validate_platforms_unknown(self):
+    def test_validate_targets_unknown(self):
         manifest = deepcopy(self.VALID_MANIFEST)
-        manifest["platforms"] = ["esp123", "esp32", "asdf"]
+        manifest["targets"] = ["esp123", "esp32", "asdf"]
         validator = ManifestValidator(manifest)
 
         errors = validator.validate_normalize()
 
         assert len(errors) == 1
-        assert errors[0].startswith("Unknown platforms: esp123, asdf")
+        assert errors[0].startswith("Unknown targets: esp123, asdf")
 
     def test_slug_re(self):
         valid_names = ("asdf-fadsf", "_", "-", "_good", "123", "asdf-_-fdsa-")

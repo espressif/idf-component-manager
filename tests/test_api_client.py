@@ -24,12 +24,21 @@ class TestAPIClient(object):
         for test in tests:
             assert APIClient.join_url(*test["in"]) == test["out"]
 
-    @vcr.use_cassette("fixtures/vcr_cassettes/test_component_details.yaml")
-    def test_component_details(self):
+    @vcr.use_cassette("fixtures/vcr_cassettes/test_component_versions.yaml")
+    def test_version(self):
         base_url = "http://localhost:8000/api/"
         client = APIClient(base_url=base_url)
 
-        component = client.component_details("test")
+        component = client.versions("test", ">=1.0.0")
 
         assert component.name == "test"
-        assert len(list(component.versions)) == 5
+        assert len(list(component.versions)) == 4
+
+    @vcr.use_cassette("fixtures/vcr_cassettes/test_component_details.yaml")
+    def test_component(self):
+        base_url = "http://localhost:8000/api/"
+        client = APIClient(base_url=base_url)
+
+        manifest = client.component("test")
+
+        assert manifest.name == "test"

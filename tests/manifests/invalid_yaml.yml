@@ -1,3 +1,4 @@
 idf_version: "~4.0.2"
 version "2.3.1" 
-platforms: [esp32]
+targets: 
+  - esp32

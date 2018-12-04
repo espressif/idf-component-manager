@@ -30,9 +30,10 @@ class ServiceSource(BaseSource):
         # This should be run last
         return True
 
-    def versions(self, name, details):
-        return []
+    def versions(self, name, spec):
+        return self.api_client.version_details(name, spec)
 
-    def fetch(self, name, details, components_directory):
-        component = self.api_client().component_details("test")
+    def fetch(self, name, version, components_directory):
+        self.api_client.version_details(name, version)
+
         # TODO: add tests and full implementation

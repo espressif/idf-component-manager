@@ -1,0 +1,21 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.20.1]
+    method: GET
+    uri: http://localhost:8000/api/components/test/versions/?versions=%3E%3D1.0.0
+  response:
+    body: {string: '[{"version":"2.0.1","idf_version":"*","url":"http://ya.ru","created_at":"2018-10-18T14:52:38.828557Z","dependencies":[{"spec":">0.5","component":"dependent"}],"targets":[]},{"version":"3.2.1-beta","idf_version":"*","url":"http://ya.ru","created_at":"2018-10-19T13:00:51.523159Z","dependencies":[],"targets":[]},{"version":"3.2.2","idf_version":"*","url":"http://ya.ru","created_at":"2018-10-19T17:17:49.752421Z","dependencies":[],"targets":[]},{"version":"3.2.0","idf_version":"*","url":"http://ya.ru","created_at":"2018-10-19T17:17:49.752953Z","dependencies":[],"targets":[]}]'}
+    headers:
+      Allow: ['GET, HEAD, OPTIONS']
+      Content-Length: ['577']
+      Content-Type: [application/json]
+      Date: ['Tue, 04 Dec 2018 17:33:23 GMT']
+      Server: [WSGIServer/0.2 CPython/3.7.1]
+      X-Frame-Options: [SAMEORIGIN]
+    status: {code: 200, message: OK}
+version: 1

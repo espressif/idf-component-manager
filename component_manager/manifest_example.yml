@@ -3,9 +3,10 @@
 idf_version: "^4.0"
 ## Version of your project. Should conform Semantic Versioning 2.0 rules https://semver.org/
 version: "1.0.0" 
-## List of platforms
-platforms: [esp32]
-components:
+## List of targets
+targets: 
+  - esp32
+dependencies:
   ## Put list of dependencies here
   ## in short
   # component: "~1.0.0"
