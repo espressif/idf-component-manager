@@ -10,7 +10,8 @@
   echo "index-url = https://pypi.mirrors.ustc.edu.cn/simple" >> ~/.pip/pip.conf
 
 before_script:
-  - *pip_configure
+  # Disable configuration with chinese mirrors, because Brno runner is used
+  # - *pip_configure
   - pip install tox==3.0.0 
   
 cache:
