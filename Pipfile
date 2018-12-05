@@ -10,7 +10,6 @@ requests = "*"
 future = "*"
 strictyaml = "*"
 semantic-version = "*"
-vcrpy = "*"
 
 [dev-packages]
 pytest = "*"
@@ -21,6 +20,8 @@ pytest-cov = "*"
 "flake8" = "*"
 black = "*"
 pylint = "*"
+vcrpy = "*"
+
 
 [requires]
 python_version = "3.7"
