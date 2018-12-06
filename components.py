@@ -16,18 +16,22 @@ class ArgumentError(RuntimeError):
 COMMANDS = {
     "add": {
         "exec_without_components": False,
-        "help": "Installs the component from repository and updates manifest.yaml",
+        "help": "Installs the component from repository and updates manifest.yml",
     },
     "eject": {
         "exec_without_components": False,
         "help": "Move component to unmanaged components directory and "
-        + "add components dependencies to project's manifest.yaml",
+        + "add components dependencies to project's manifest.yml",
     },
     "install": {
         "exec_without_components": True,
-        "help": "Install all the dependencies listed within manifest.yaml in the local managed_components directory.",
+        "help": "Install all the dependencies listed within manifest.yml in the local managed_components directory.",
     },
     "update": {"exec_without_components": True, "help": "Update components"},
+    "prebuild": {
+        "exec_without_components": True,
+        "help": "Intended to be run as a first step of build process. It install ",
+    },
 }
 
 
@@ -50,12 +54,60 @@ def build_parser():
         help="Path to directory that contains manifest.yaml or path to manifest itself",
         default=os.getcwd(),
     )
+
+    parser.add_argument("--idf_path", help="Path to IDF", default=os.getenv("IDF_PATH"))
+
+    parser.add_argument(
+        "--build_components", help="Override list of components to be built", default=[]
+    )
+
+    parser.add_argument(
+        "--common_components",
+        help="Override list of components used in every project",
+        default=[],
+    )
+
+    parser.add_argument(
+        "--exclude_components",
+        help="List of components that should be excluded from build",
+        default=[],
+    )
+
+    parser.add_argument(
+        "--component_directories",
+        help="List of directories to search for components not managed by this tool",
+        default=[],
+    )
+
+    # Tests
+    parser.add_argument("--test_all", help="Test all components", default=False)
+
+    parser.add_argument(
+        "--test_components", help="List of components to be tested", default=[]
+    )
+
+    parser.add_argument(
+        "--test_exclude_components",
+        help="List of components that should be excluded from test build",
+        default=[],
+    )
+
+    parser.add_argument("-D", "--debug", help="Run in debug mode", default=False)
+    parser.add_argument("-t", "--target", help="Target platform", default=False)
+
+    parser.add_argument(
+        "--cmake_dependencies_file",
+        help="Output path for CMake output (used by prebuild command)",
+        default=[],
+    )
+
     parser.add_argument(
         "command",
         help="Command to run\n" + commands_help(),
         nargs="?",
         choices=COMMANDS.keys(),
     )
+
     parser.add_argument("components", help="List of components", nargs="*")
 
     return parser
