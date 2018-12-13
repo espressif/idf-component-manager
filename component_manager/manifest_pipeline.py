@@ -34,12 +34,12 @@ class ManifestPipeline(object):
 
     def init_manifest(self):
         """Lazily create manifest file if it doesn't exist"""
-        example_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "manifest_example.yml"
-        )
-
         if not os.path.exists(self._path):
-            print("Warning: manifest file wasn't found. Initialize empty manifest")
+            example_path = os.path.join(
+                os.path.dirname(os.path.realpath(__file__)), "manifest_example.yml"
+            )
+
+            print("Info: manifest file wasn't found. Creating project's manifest")
             copyfile(example_path, self._path)
 
         return self

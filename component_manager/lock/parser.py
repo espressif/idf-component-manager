@@ -1,36 +1,62 @@
 import os
 import sys
 
-from strictyaml import EmptyDict, Map, MapPattern, Seq, Str, YAMLError
+from strictyaml import (
+    Any,
+    EmptyDict,
+    Map,
+    MapPattern,
+    Optional,
+    Str,
+    YAMLError,
+    as_document,
+)
 from strictyaml import load as load_yaml
 
 
 class LockParser:
+    COMPONENTS_SCHEMA = EmptyDict() | MapPattern(
+        Str(),
+        Map({"version": Str(), "hash": Str(), "source": MapPattern(Str(), Str())}),
+    )
     LOCK_SCHEMA = Map(
         {
             "component_manager_version": Str(),
             "idf_version": Str(),
             "manifest_hash": Str(),
-            "components": EmptyDict()
-            | MapPattern(
-                Str(),
-                Map(
-                    {
-                        "version": Str(),
-                        "hash": Str(),
-                        "source": MapPattern(Str(), Str()),
-                    }
-                ),
-            ),
+            "components": COMPONENTS_SCHEMA,
         }
     )
 
     def __init__(self, path):
         self._path = path
 
+    def dump(self, solution):
+        """Writes updated lockfile to disk"""
+
+        comment = (
+            "# This file is generated automatically by IDF component management tool.\n",
+            "# Please do edit it manually. Run `idf.py component install` to update this lock file.\n",
+        )
+
+        new_file = not os.path.exists(self._path)
+
+        with open(self._path, "w") as f:
+            if new_file:
+                f.writelines(comment)
+            f.write(solution.as_yaml())
+
     def load(self):
         if not os.path.exists(self._path):
-            return {}
+            return as_document(
+                {
+                    "component_manager_version": "",
+                    "idf_version": "",
+                    "manifest_hash": "",
+                    "components": {},
+                },
+                schema=self.LOCK_SCHEMA,
+            )
 
         with open(self._path, "r") as f:
             try:
