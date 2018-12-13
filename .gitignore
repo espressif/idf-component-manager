@@ -25,3 +25,6 @@ build
 
 #Configs
 .env
+
+# Class diagram
+diagram.mdj

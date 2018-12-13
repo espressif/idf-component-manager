@@ -128,7 +128,6 @@ components:
   esp32: "^1.2.7" # Shorthand, if version is the only parameter 
   aws-iot: 
     version: "~1.2.7"
-    repository: corporate
   component-some: 
     version: "~1.2.2" 
 ```
@@ -143,16 +142,15 @@ components:
 ### Example for components.lock
 ```yaml
 # This file is generated automatically. Please never edit it manually. Run "idf.py component install" to update lock file.
-component-manager-version: 1.0.3
-idf-version: 3.0.2
-repositories:
-  default: # Allows to set alternative URL for 
-    url: "http://some-mirror-in.cn" # Should unsecure http mirrors be allowed?
-components-hash: "f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b"
+component_manager_version: 1.0.3
+idf_version: 3.0.2
+manifest_hash:   "f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b"
 components:
   aws-iot: 
     version: 1.2.7
     hash: "f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b"
+    source:
+      url: https://repo.example.com/aws-iot/1.2.7.tgz
 ```
 
 ### Possible future features

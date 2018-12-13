@@ -12,7 +12,9 @@ class ServiceSource(BaseSource):
         base_url = source_details.get("service_url", None) or os.getenv(
             "DEFAULT_COMPONENT_SERVICE_URL", "https://components.espressif.com/api/"
         )
-        self.api_client = APIClient(base_url=base_url)
+        self.api_client = source_details.get("api_client", None) or APIClient(
+            base_url=base_url
+        )
 
     def name(self):
         return "Service"
