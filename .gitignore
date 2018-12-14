@@ -26,5 +26,7 @@ build
 #Configs
 .env
 
-# Class diagram
+# Development experiments
+experiments.ipynb
 diagram.mdj
+.ipynb_checkpoints
