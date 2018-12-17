@@ -20,7 +20,7 @@ class TestLockParser(object):
 
         assert lock["component_manager_version"] == "1.0.3"
         assert (
-            lock["components"]["aws-iot"]["source"]["url"]
+            lock["components"]["test_cmp"]["source"]["url"]
             == "https://repo.example.com/aws-iot/1.2.7.tgz"
         )
 
@@ -40,8 +40,9 @@ class TestLockParser(object):
         assert e.value.code == 1
         assert captured.out.startswith("Error")
 
-    def test_lock_dump(self, tmpdir):
-        lock_path = os.path.join(tmpdir, "components.lock")
+    # @pytest.fixture(scope="session")
+    def test_lock_dump(self, tmp_path):
+        lock_path = os.path.join(str(tmp_path), "components.lock")
         parser = LockParser(lock_path)
         valid_lock_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "manifests", "components.lock"
@@ -54,19 +55,19 @@ class TestLockParser(object):
         ] = "f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b"
 
         components = OrderedDict(
-            {
-                "aws-iot": OrderedDict(
-                    {
-                        "version": "1.2.7",
-                        "hash": "f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b",
-                        "source": {"url": "https://repo.example.com/aws-iot/1.2.7.tgz"},
-                    }
-                )
-            }
+            test_cmp=OrderedDict(
+                version="1.2.7",
+                hash="f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b",
+                source={"url": "https://repo.example.com/aws-iot/1.2.7.tgz"},
+            )
         )
 
         solution["components"] = components
 
         parser.dump(solution)
+
+        with open(lock_path, "r") as f1:
+            with open(valid_lock_path, "r") as f2:
+                assert f1.readlines() == f2.readlines()
 
         assert filecmp.cmp(lock_path, valid_lock_path, shallow=False)

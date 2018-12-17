@@ -1,16 +1,8 @@
 import os
 import sys
+from collections import OrderedDict
 
-from strictyaml import (
-    Any,
-    EmptyDict,
-    Map,
-    MapPattern,
-    Optional,
-    Str,
-    YAMLError,
-    as_document,
-)
+from strictyaml import EmptyDict, Map, MapPattern, Str, YAMLError, as_document
 from strictyaml import load as load_yaml
 
 
@@ -49,12 +41,14 @@ class LockParser:
     def load(self):
         if not os.path.exists(self._path):
             return as_document(
-                {
-                    "component_manager_version": "",
-                    "idf_version": "",
-                    "manifest_hash": "",
-                    "components": {},
-                },
+                OrderedDict(
+                    [
+                        ("component_manager_version", ""),
+                        ("idf_version", ""),
+                        ("manifest_hash", ""),
+                        ("components", OrderedDict()),
+                    ]
+                ),
                 schema=self.LOCK_SCHEMA,
             )
 
