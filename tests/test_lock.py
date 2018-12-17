@@ -1,7 +1,5 @@
 import filecmp
 import os
-import shutil
-import tempfile
 from collections import OrderedDict
 
 import pytest
@@ -55,11 +53,31 @@ class TestLockParser(object):
         ] = "f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b"
 
         components = OrderedDict(
-            test_cmp=OrderedDict(
-                version="1.2.7",
-                hash="f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b",
-                source={"url": "https://repo.example.com/aws-iot/1.2.7.tgz"},
-            )
+            [
+                (
+                    "test_cmp",
+                    OrderedDict(
+                        [
+                            ("version", "1.2.7"),
+                            (
+                                "hash",
+                                "f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b",
+                            ),
+                            (
+                                "source",
+                                OrderedDict(
+                                    [
+                                        (
+                                            "url",
+                                            "https://repo.example.com/aws-iot/1.2.7.tgz",
+                                        )
+                                    ]
+                                ),
+                            ),
+                        ]
+                    ),
+                )
+            ]
         )
 
         solution["components"] = components
