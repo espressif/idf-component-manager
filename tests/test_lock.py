@@ -66,8 +66,4 @@ class TestLockParser(object):
 
         parser.dump(solution)
 
-        with open(lock_path, "r") as f1:
-            with open(valid_lock_path, "r") as f2:
-                assert f1.readlines() == f2.readlines()
-
         assert filecmp.cmp(lock_path, valid_lock_path, shallow=False)

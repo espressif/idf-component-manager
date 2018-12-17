@@ -18,7 +18,7 @@ Pipfile.lock
 # Manifest and components
 /manifest*.yaml
 /manifest*.yml
-components.lock
+/components.lock
 managed_components
 components
 build
