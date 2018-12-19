@@ -9,7 +9,14 @@ from strictyaml import load as load_yaml
 class LockParser:
     COMPONENTS_SCHEMA = EmptyDict() | MapPattern(
         Str(),
-        Map({"version": Str(), "hash": Str(), "source": MapPattern(Str(), Str())}),
+        Map(
+            {
+                "version": Str(),
+                "hash": Str(),
+                "source_type": Str(),
+                "source": MapPattern(Str(), Str()),
+            }
+        ),
     )
     LOCK_SCHEMA = Map(
         {
