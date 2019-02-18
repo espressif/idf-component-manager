@@ -64,8 +64,8 @@ class ManifestValidator(object):
 
     def validate_normalize_dependencies(self):
         if (
-            "dependencies" not in self.manifest_tree.keys()
-            or not self.manifest_tree["dependencies"]
+                "dependencies" not in self.manifest_tree.keys()
+                or not self.manifest_tree["dependencies"]
         ):
             return self
 

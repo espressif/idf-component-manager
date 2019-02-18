@@ -19,6 +19,8 @@ Pipfile.lock
 /manifest*.yaml
 /manifest*.yml
 /components.lock
+/idf_project*.yaml
+/idf_component*.yaml
 managed_components
 components
 build

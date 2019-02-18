@@ -11,7 +11,7 @@ from component_manager import ManifestPipeline, ManifestValidator
 
 class TestManifestPipeline(object):
     def test_check_filename(self, capsys):
-        parser = ManifestPipeline("some/path/manifest.yaml")
+        parser = ManifestPipeline("some/path/idf_project.yaml")
 
         parser.check_filename()
 
@@ -20,7 +20,7 @@ class TestManifestPipeline(object):
 
     def test_init_manifest(self):
         tempdir = tempfile.mkdtemp()
-        manifest_path = os.path.join(tempdir, "manifest.yml")
+        manifest_path = os.path.join(tempdir, "idf_project.yml")
         parser = ManifestPipeline(manifest_path)
 
         parser.init_manifest()
@@ -46,7 +46,7 @@ class TestManifestPipeline(object):
 
     def test_parse_valid_yaml(self, capsys):
         manifest_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "manifests", "manifest.yml"
+            os.path.dirname(os.path.realpath(__file__)), "manifests", "idf_project.yml"
         )
         parser = ManifestPipeline(manifest_path)
 
@@ -54,7 +54,7 @@ class TestManifestPipeline(object):
 
     def test_build(self):
         manifest_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "manifests", "manifest.yml"
+            os.path.dirname(os.path.realpath(__file__)), "manifests", "idf_project.yml"
         )
         parser = ManifestPipeline(manifest_path).prepare()
 
@@ -65,7 +65,7 @@ class TestManifestPipeline(object):
 
     def test_prepare(self):
         manifest_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "manifests", "manifest.yml"
+            os.path.dirname(os.path.realpath(__file__)), "manifests", "idf_project.yml"
         )
         parser = ManifestPipeline(manifest_path)
 

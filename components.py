@@ -16,16 +16,16 @@ class ArgumentError(RuntimeError):
 COMMANDS = {
     "add": {
         "exec_without_components": False,
-        "help": "Installs the component from repository and updates manifest.yml",
+        "help": "Installs the component from repository and updates manifest",
     },
     "eject": {
         "exec_without_components": False,
         "help": "Move component to unmanaged components directory and "
-        + "add components dependencies to project's manifest.yml",
+                + "add components dependencies to project's manifest",
     },
     "install": {
         "exec_without_components": True,
-        "help": "Install all the dependencies listed within manifest.yml in the local managed_components directory.",
+        "help": "Install all the dependencies listed within manifest in the local managed_components directory.",
     },
     "update": {"exec_without_components": True, "help": "Update components"},
     "prebuild": {
@@ -142,12 +142,12 @@ def exec_command(command, components, path):
     if components:
         handler(components)
     elif (
-        command
-        in {
-            cmd: features
-            for cmd, features in COMMANDS.items()
-            if features["exec_without_components"]
-        }.keys()
+            command
+            in {
+                cmd: features
+                for cmd, features in COMMANDS.items()
+                if features["exec_without_components"]
+            }.keys()
     ):
         handler()
     else:

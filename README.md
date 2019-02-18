@@ -11,23 +11,41 @@ This repo is only intended to be used for initial development, then it should be
 * IDF developers want to minimise the amount of external functionality in "core" IDF (for compile time, ease of maintenance, etc)
 * Espressif wants to provide code for support of third party hardware, cloud services, software libraries, etc. without bundling this into IDF.
 
+# IDF Component Management
 
-## Terminology
+Component manager checks and installs your project's dependencies, provides information about dependencies to CMake based build system, makes distributable packages and uploads them to components registry service.
 
-* "component" is an IDF component, ie a 
-  * bundle of code
+Component service is hosted at https://components.espressif.com and provides JSON API as well as WEB UI and provides version management, dependency information and documentation for all components
+
+## General requirements
+
+Client-side part of component manager is a python CLI application, that works with both python 2 and 3 on all major platforms (Windows, Linux, macOS). It  check/install dependencies for IDF projects and provides dependency infromation for IDF's CMake build system.
+
+## Terminology and file structure
+
+### Component
+ "component" is an library that can be used with your project that consists from:
+  * bundle of code (described in `CMakeLists.txt`)
+  * `tests` directory (optional)
+  * `examples` directory (optional)
+  * `docs` directory (optional)
   * `CMakeLists.txt`
   * `KConfig` (optional)
-  * `manifest.yml` - list of dependencies
-* "package" is something installed by the package manager, which provides a component but has at least some additional package metadata, etc.
+  * `LICENSE` (optional, but highly recommended)
+  * `idf_component.yml` - list of dependencies and component's description(optional, but highly recommended and required for components )
+
+*NB*: Word "package" in this document is the synonym for "component"
   
-* "project" is an IDF project, ie application code which compiles to a .bin app to flash to an ESP32.
-  * `[project]/components` - is a directory that stores components managed by user itself. These components have higher priority over
-  * `[project]/managed_components` - is a directory that stores components managed by component manager.
-  * `manifest.yml` - contains list of all dependencies
-  * `components.lock` - yaml-formatted document that contains flat list of exact versions for whole tree of dependencies (with dependencies of dependencies).
-* "components repository" is a service with web interface and HTTP API that manages collection of packages that a user can search, add, remove 
-* "component manager" is a python script that manages components.yaml/components-lock.yaml files
+### Project 
+
+"project" is an IDF project, ie application code which compiles to a .bin app to flash to a chip (esp32, for example).
+
+* `tests` directory (optional)
+* `docs` directory (optional)
+* `components` - is a directory that stores components managed by user itself. These components have higher priority over managed components
+* `managed_components` - is a directory that stores components managed by component manager. This should be ingored by git.
+* `idf_project.yml` - contains list of project dependencies
+* `idf_project.lock` - yaml-formatted document that contains flat list of exact versions for whole tree of dependencies 
 
 ## Component manager requirements
 ### Requirements

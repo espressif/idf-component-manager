@@ -8,9 +8,9 @@ from .manifest_pipeline import ManifestPipeline
 
 class ComponentManager(object):
     def __init__(self, path):
-        # Set path of manifest file
+        # Set path of manifest file for the project
         self.manifest_path = (
-            os.path.join(path, "manifest.yml") if os.path.isdir(path) else path
+            os.path.join(path, "idf_project.yml") if os.path.isdir(path) else path
         )
 
         # Working directory

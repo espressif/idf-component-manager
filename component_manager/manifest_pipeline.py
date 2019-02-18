@@ -26,9 +26,9 @@ class ManifestPipeline(object):
         """Check manifest's filename"""
         filename = os.path.basename(self._path)
 
-        if filename != "manifest.yml":
+        if filename != "idf_project.yml":
             print(
-                "Warning: it's recommended to store your component's list in \"manifest.yml\" at project's root"
+                "Warning: it's recommended to store your component's list in \"idf_project.yml\" at project's root"
             )
         return self
 
