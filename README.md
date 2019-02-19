@@ -58,7 +58,7 @@ Client-side part of component manager is a python CLI application, that works wi
 ### CLI Commands
 * `add [package_name ...]` -  adds packages to components file, then sync all packages listed in components list and updates lock file if necessary.
 * `install` - installs packages from current manifest
-* `sync` - downloads packages listed in current `components.lock` file
+* `sync` - downloads packages listed in current `dependencies.lock` file
 * `update [package_name ...]` - updates given packages with respect to version ranges from component file. If package name are not provided updates all components from dependencies file.
 * `prebuild` - this command is only intended to be used by cmake as a first step of build process
 * `package` - Creates a tarball of current. All code from `components` folder will be added to the archive (To be used with components)
@@ -156,7 +156,7 @@ dependencies:
 * Should store hash of components manifest to check if it's necessary to update
 * Should store hash sum for directory, to check if actual component on disk is the same that required
 
-### Example for components.lock
+### Example for dependencies.lock
 ```yaml
 # This file is generated automatically. Please never edit it manually. Run "idf.py component install" to update lock file.
 component_manager_version: 1.0.3

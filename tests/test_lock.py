@@ -10,7 +10,9 @@ from component_manager.lock import LockParser
 class TestLockParser(object):
     def test_load_valid_lock(self):
         lock_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "manifests", "components.lock"
+            os.path.dirname(os.path.realpath(__file__)),
+            "manifests",
+            "dependencies.lock",
         )
         parser = LockParser(lock_path)
 
@@ -26,7 +28,7 @@ class TestLockParser(object):
         lock_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)),
             "manifests",
-            "invalid_components.lock",
+            "invalid_dependencies.lock",
         )
         parser = LockParser(lock_path)
 
@@ -40,10 +42,12 @@ class TestLockParser(object):
 
     # @pytest.fixture(scope="session")
     def test_lock_dump(self, tmp_path):
-        lock_path = os.path.join(str(tmp_path), "components.lock")
+        lock_path = os.path.join(str(tmp_path), "dependencies.lock")
         parser = LockParser(lock_path)
         valid_lock_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "manifests", "components.lock"
+            os.path.dirname(os.path.realpath(__file__)),
+            "manifests",
+            "dependencies.lock",
         )
         solution = parser.load()
         solution["component_manager_version"] = "1.0.3"
