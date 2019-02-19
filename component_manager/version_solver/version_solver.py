@@ -3,7 +3,7 @@ from .solver_result import SolvedComponent, SolverResult
 
 class VersionSolver(object):
     """
-    The version solver that finds a set of package versions 
+    The version solver that finds a set of package versions
     that satisfy the root package's dependencies.
     """
 

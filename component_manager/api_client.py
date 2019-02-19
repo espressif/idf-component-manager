@@ -1,6 +1,6 @@
 """Classes to work with Espressif Service Controller"""
 import requests
-from semantic_version import Spec, Version
+from semantic_version import Version
 
 from .manifest import Manifest
 

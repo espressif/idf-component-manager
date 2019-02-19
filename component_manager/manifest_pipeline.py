@@ -2,7 +2,7 @@ import os
 import sys
 from shutil import copyfile
 
-from semantic_version import Spec, Version
+from semantic_version import Version
 from strictyaml import YAMLError
 from strictyaml import load as load_yaml
 

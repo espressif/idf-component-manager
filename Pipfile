@@ -18,13 +18,11 @@ bandit = "*"
 "flake8-quotes" = "*"
 pytest-cov = "*"
 "flake8" = "*"
-black = "*"
 pylint = "*"
 vcrpy = "*"
-
 
 [requires]
 python_version = "3.7"
 
 [pipenv]
-allow_prereleases = true
+allow_prereleases = false
