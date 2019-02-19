@@ -18,7 +18,7 @@ class TestLockParser(object):
 
         assert lock["component_manager_version"] == "1.0.3"
         assert (
-            lock["components"]["test_cmp"]["source"]["url"]
+            lock["dependencies"]["test_cmp"]["source"]["url"]
             == "https://repo.example.com/aws-iot/1.2.7.tgz"
         )
 
@@ -47,13 +47,13 @@ class TestLockParser(object):
         )
         solution = parser.load()
         solution["component_manager_version"] = "1.0.3"
-        solution["idf_version"] = "3.0.2"
         solution[
             "manifest_hash"
         ] = "f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b"
 
-        components = OrderedDict(
+        dependencies = OrderedDict(
             [
+                ("idf", OrderedDict([("version", "4.4.4"), ("source_type", "idf")])),
                 (
                     "test_cmp",
                     OrderedDict(
@@ -77,12 +77,11 @@ class TestLockParser(object):
                             ),
                         ]
                     ),
-                )
+                ),
             ]
         )
 
-        solution["components"] = components
-
+        solution["dependencies"] = dependencies
         parser.dump(solution)
 
         assert filecmp.cmp(lock_path, valid_lock_path, shallow=False)

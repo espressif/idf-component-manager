@@ -2,28 +2,31 @@ import os
 import sys
 from collections import OrderedDict
 
-from strictyaml import EmptyDict, Map, MapPattern, Str, YAMLError, as_document
+from strictyaml import (EmptyDict, Map, MapPattern, Regex, Str, YAMLError,
+                        as_document)
 from strictyaml import load as load_yaml
 
 
 class LockParser:
     COMPONENTS_SCHEMA = EmptyDict() | MapPattern(
         Str(),
-        Map(
-            {
-                "version": Str(),
-                "hash": Str(),
-                "source_type": Str(),
-                "source": MapPattern(Str(), Str()),
-            }
+        (
+            Map(
+                {
+                    "version": Str(),
+                    "hash": Str(),
+                    "source_type": Str(),
+                    "source": (MapPattern(Str(), Str())),
+                }
+            )
+            | Map({"version": Str(), "source_type": Regex("idf")})
         ),
     )
     LOCK_SCHEMA = Map(
         {
             "component_manager_version": Str(),
-            "idf_version": Str(),
             "manifest_hash": Str(),
-            "components": COMPONENTS_SCHEMA,
+            "dependencies": COMPONENTS_SCHEMA,
         }
     )
 
@@ -51,9 +54,8 @@ class LockParser:
                 OrderedDict(
                     [
                         ("component_manager_version", ""),
-                        ("idf_version", ""),
                         ("manifest_hash", ""),
-                        ("components", OrderedDict()),
+                        ("dependencies", OrderedDict()),
                     ]
                 ),
                 schema=self.LOCK_SCHEMA,

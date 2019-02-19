@@ -1,4 +1,4 @@
-idf_version: "~4.0.2"
+dependencies: "~4.0.2"
 version "2.3.1" 
 targets: 
   - esp32

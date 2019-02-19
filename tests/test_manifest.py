@@ -50,7 +50,7 @@ class TestManifestPipeline(object):
         )
         parser = ManifestPipeline(manifest_path)
 
-        assert len(parser.manifest_tree.keys()) == 5
+        assert len(parser.manifest_tree.keys()) == 4
 
     def test_build(self):
         manifest_path = os.path.join(
@@ -61,7 +61,7 @@ class TestManifestPipeline(object):
         parser.build()
         manifest = parser.manifest
 
-        assert len(manifest.dependencies) == 3
+        assert len(manifest.dependencies) == 4
 
     def test_prepare(self):
         manifest_path = os.path.join(
@@ -77,11 +77,11 @@ class TestManifestPipeline(object):
 class TestManifestValidator(object):
     VALID_MANIFEST = OrderedDict(
         {
-            "idf_version": "~4.4.4",
             "version": "2.3.1",
             "targets": ["esp32"],
             "maintainers": ["Test Tester <test@example.com>"],
             "dependencies": {
+                "idf": "~4.4.4",
                 "test": {"version": ">=8.2.0,<9.0.0"},
                 "test-1": "^1.2.7",
                 "test-8": {"version": ""},
@@ -106,14 +106,12 @@ class TestManifestValidator(object):
     def test_validate_unknown_root_values(self):
         manifest = deepcopy(self.VALID_MANIFEST)
         manifest["version"] = "1!.3.3"
-        manifest["idf_version"] = ">12...32"
         validator = ManifestValidator(manifest)
 
         errors = validator.validate_normalize()
 
-        assert len(errors) == 2
+        assert len(errors) == 1
         assert errors[0].startswith("Project version should be valid")
-        assert errors[1].startswith('Version specifications for "idf_version"')
 
     def test_validate_component_versions_not_in_manifest(self):
         manifest = deepcopy(self.VALID_MANIFEST)

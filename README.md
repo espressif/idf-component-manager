@@ -135,12 +135,11 @@ In progress:
 ### Example (
 
 ```yaml
-idf_version: "~4.0.2"
 version: "2.3.1" # While it may be optional for projects it should be required for components
 targets: [esp32]
 description: "" # Required for components
-
-components:
+dependencies:
+  idf: 3.1.2
   freertos: 
     version: ">=8.2.0 <9.0.0"
   esp32: "^1.2.7" # Shorthand, if version is the only parameter 
@@ -161,9 +160,10 @@ components:
 ```yaml
 # This file is generated automatically. Please never edit it manually. Run "idf.py component install" to update lock file.
 component_manager_version: 1.0.3
-idf_version: 3.0.2
+
 manifest_hash:   "f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b"
-components:
+dependencies:
+  idf: 3.0.2
   aws-iot: 
     version: 1.2.7
     hash: "f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b"
@@ -191,7 +191,7 @@ repositories: # Describes all package repositories. Support for grouped reposito
   one_more: 
     url: "https://example.repo" 
     api_token: {{ONE_MORE_API_TOKEN}} # Or environment variable
-components: 
+dependencies: 
   component-1: 
     version: "~1.2.7"
     repository: corporate

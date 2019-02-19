@@ -71,7 +71,6 @@ class APIClient(object):
             return Manifest(
                 name=response["name"],
                 version=Version(response["version"]),
-                idf_version=Spec(response["idf_version"]),
                 maintainers=response["maintainers"],
                 # TODO: add dependencies
                 dependencies=None,

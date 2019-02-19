@@ -93,8 +93,6 @@ class ManifestPipeline(object):
         if version:
             self.manifest.version = Version(version)
 
-        self.manifest.idf_version = Spec(tree.get("idf_version", None) or "*")
-
         for name, details in tree.get("dependencies", {}).items():
             source = SourceBuilder(name, details).build()
             component = Component(name, source, version_spec=details["version"])

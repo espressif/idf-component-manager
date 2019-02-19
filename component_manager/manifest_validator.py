@@ -7,7 +7,6 @@ class ManifestValidator(object):
     """Validator for manifest object, checks for structure, known fields and valid values"""
 
     KNOWN_ROOT_KEYS = (
-        "idf_version",
         "maintainers",
         "dependencies",
         "targets",
@@ -55,10 +54,6 @@ class ManifestValidator(object):
                 Version.parse(version)
         except ValueError:
             self.add_error("Project version should be valid semantic version")
-
-        self._validate_version_spec(
-            "idf_version", self.manifest_tree.get("idf_version", None)
-        )
 
         return self
 
