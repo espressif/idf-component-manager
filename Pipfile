@@ -20,6 +20,7 @@ pytest-cov = "*"
 "flake8" = "*"
 pylint = "*"
 vcrpy = "*"
+rope = "*"
 
 [requires]
 python_version = "3.7"

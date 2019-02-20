@@ -29,6 +29,8 @@ build
 .env
 
 # Development experiments
-experiments.ipynb
-diagram.mdj
+notebooks
 .ipynb_checkpoints
+diagram.mdj
+
+

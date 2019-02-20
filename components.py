@@ -30,7 +30,7 @@ COMMANDS = {
     "update": {"exec_without_components": True, "help": "Update components"},
     "prebuild": {
         "exec_without_components": True,
-        "help": "Intended to be run as a first step of build process. It install ",
+        "help": "Intended to be run as a first step of build process. It checks installed components and generates CMake lists of dependencies.",
     },
 }
 
