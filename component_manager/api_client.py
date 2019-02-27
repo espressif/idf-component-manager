@@ -1,4 +1,4 @@
-"""Classes to work with Espressif Service Controller"""
+"""Classes to work with Espressif Component Web Service"""
 import requests
 from semantic_version import Version
 

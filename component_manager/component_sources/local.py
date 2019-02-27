@@ -1,5 +1,4 @@
 import os
-import shutil
 
 from .base import BaseSource
 from .errors import SourceError
@@ -14,19 +13,20 @@ class LocalSource(BaseSource):
         return ["version", "path"]
 
     @staticmethod
-    def hash_keys():
-        return ["path"]
-
-    @staticmethod
     def is_me(name, details):
         return bool(details.get("path", None))
 
-    # TODO: add tests
-    def fetch(self, name, details, components_directory):
-        if not os.path.isdir(self.source_details["path"]):
+    def hash_key(self):
+        self.source_details.get("path")
+
+    def unique_path(self, name, details):
+        return ""
+
+    def fetch(self, name, details):
+        path = self.source_details.get("path", "")
+        if not os.path.isdir(path):
             raise SourceError(
-                "Invalid source. It's only possible to copy component from directory"
+                "Invalid source. It's only possible to use component from directory"
             )
 
-        destination = os.path.join(components_directory, name)
-        shutil.copytree(details["path"], destination)
+        return path

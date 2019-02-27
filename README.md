@@ -184,7 +184,7 @@ dependencies:
 ```yaml
 repositories: # Describes all package repositories. Support for grouped repositories will be added with next release
   default: # Allows to override url for default package source
-    url: "http://some-mirror-in.cn" # Should unsecure http mirrors be allowed?
+    url: "http://some-mirror-in.cn" # Should insecure http mirrors be allowed?
   corporate: 
     url: "https://some.company.repo" 
     api_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c # Values may be stored directly in the file (JWT are well suited for this use)

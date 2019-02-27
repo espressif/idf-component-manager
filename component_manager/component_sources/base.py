@@ -6,7 +6,7 @@ from .errors import SourceError
 class BaseSource:
     __metaclass__ = ABCMeta
 
-    def __init__(self, source_details=None):
+    def __init__(self, source_details=None, download_path=None):
         unknown_keys = []
         for key in source_details.keys():
             if key not in self.known_keys():
@@ -14,13 +14,15 @@ class BaseSource:
 
         if unknown_keys:
             raise SourceError(
-                "Unknown keys in component description %s" % ", ".join(unknown_keys)
+                "Unknown keys in dependency details: %s" % ", ".join(unknown_keys)
             )
 
         self._source_details = source_details if source_details else {}
+        self._hash_key = None
+        self.download_path = download_path
 
     def _hash_values(self):
-        return tuple(self.source_details.get(key, None) for key in self.hash_keys())
+        return (self.name(), self.hash_key())
 
     def __eq__(self, other):
         return (
@@ -28,40 +30,45 @@ class BaseSource:
         )
 
     def __hash__(self):
-        return hash((self.name(), self._hash_values()))
+        return hash((self.name(), self.hash_key()))
 
     @property
     def source_details(self):
         return self._source_details
 
     @staticmethod
-    @abstractmethod
     def is_me(name, details):
         return False
+
+    @staticmethod
+    def known_keys():
+        """List of known details key"""
+        return ["version"]
 
     @classmethod
     def build_if_me(cls, name, details):
         """Returns source if details are matched, otherwise returns None"""
         return cls(details) if cls.is_me(name, details) else None
 
-    @staticmethod
-    @abstractmethod
-    def hash_keys():
-        return []
-
-    @abstractmethod
     def name(self):
         return "Base"
 
-    def versions(self, name, details):
-        return
+    @property
+    def hash_key(self):
+        return "Base"
 
     @abstractmethod
-    def fetch(self, name, details, components_directory):
-        """Fetch required component version from the source"""
+    def unique_path(self, name, details):
+        """Unique identifier"""
         pass
 
-    @staticmethod
-    def known_keys():
-        """List of known details key  """
-        return ["version"]
+    @abstractmethod
+    def versions(self, name, details):
+        """List of versions for given spec"""
+        pass
+
+    @abstractmethod
+    def fetch(self, name, details):
+        """Fetch required component version from the source
+        returns absolute path to archive or directory with component """
+        pass

@@ -1,14 +1,10 @@
+"""Classes to work with component sources"""
+
 from .errors import SourceError
 from .local import LocalSource
-from .service import ServiceSource
+from .web_service import WebServiceSource
 
-KNOWN_SOURCES = [LocalSource, ServiceSource]
-
-
-class Source(object):
-    def __init__(self, source_name, details):
-        self._source_name = source_name
-        self._details = details
+KNOWN_SOURCES = [LocalSource, WebServiceSource]
 
 
 class SourceBuilder(object):

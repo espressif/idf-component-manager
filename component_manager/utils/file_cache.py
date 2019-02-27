@@ -27,10 +27,21 @@ import sys
 class FileCache(object):
     """Common functions to work with components cache"""
 
+    _path = None
+
+    @classmethod
+    def path(cls):
+        if not cls._path:
+            cls._path = cls.cache_path()
+
+            if not os.path.exists(cls._path):
+                os.makedirs(cls._path)
+
+        return cls._path
+
     @classmethod
     def cache_path(cls):
         """Path of cache directory"""
-
         system_cache_path = SystemCachePath()
 
         if sys.platform.startswith("win"):
@@ -46,15 +57,10 @@ class FileCache(object):
 
             return os.path.join(cache_directory, "Espressif", "ComponentManager")
 
-    @classmethod
-    def init_cache(cls):
-        cache_path = cls.cache_path()
-        if not os.path.exists(cache_path):
-            os.makedirs(cache_path)
-
 
 class SystemCachePath(object):
     """Methods to fetch user specific cache path for every platform"""
+
     PY3 = sys.version_info[0] == 3
 
     def _get_win_folder_from_registry(self):
