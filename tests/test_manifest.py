@@ -20,15 +20,17 @@ class TestManifestPipeline(object):
 
     def test_init_manifest(self):
         tempdir = tempfile.mkdtemp()
-        manifest_path = os.path.join(tempdir, "idf_project.yml")
-        parser = ManifestPipeline(manifest_path)
+        try:
+            manifest_path = os.path.join(tempdir, "idf_project.yml")
+            parser = ManifestPipeline(manifest_path)
 
-        parser.init_manifest()
+            parser.init_manifest()
 
-        with open(manifest_path, "r") as f:
-            assert f.readline().startswith("## Espressif")
+            with open(manifest_path, "r") as f:
+                assert f.readline().startswith("## Espressif")
 
-        shutil.rmtree(tempdir)
+        finally:
+            shutil.rmtree(tempdir)
 
     def test_parse_invalid_yaml(self, capsys):
         manifest_path = os.path.join(
