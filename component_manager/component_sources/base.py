@@ -7,6 +7,7 @@ class BaseSource:
     __metaclass__ = ABCMeta
 
     def __init__(self, source_details=None, download_path=None):
+        source_details = source_details or {}
         unknown_keys = []
         for key in source_details.keys():
             if key not in self.known_keys():

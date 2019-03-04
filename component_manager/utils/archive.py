@@ -23,7 +23,7 @@ def get_format_from_path(path):
     elif path.endswith(".tar"):
         return ("tar", "tar", unpack_tar)
     else:
-        return None
+        raise ArchiveError("Unknown archive extension for path: %s" % path)
 
 
 def is_known_format(fmt):

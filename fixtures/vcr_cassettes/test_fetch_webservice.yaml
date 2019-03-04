@@ -1,0 +1,53 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.21.0]
+    method: GET
+    uri: http://127.0.0.1:8000/api/components/cmp/
+  response:
+    body: {string: '{"targets":[],"hash":"","name":"cmp","description":"","version":"0.0.1","url":"http://127.0.0.1:8000/media/components/cmp_0.0.1.tgz","dependencies":[],"maintainers":[],"created_at":"2019-03-01T10:12:43.931832Z"}'}
+    headers:
+      Allow: ['GET, HEAD, OPTIONS']
+      Content-Length: ['211']
+      Content-Type: [application/json]
+      Date: ['Mon, 04 Mar 2019 15:19:22 GMT']
+      Server: [WSGIServer/0.2 CPython/3.7.2]
+      X-Frame-Options: [SAMEORIGIN]
+    status: {code: 200, message: OK}
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: [python-requests/2.21.0]
+    method: GET
+    uri: http://127.0.0.1:8000/media/components/cmp_0.0.1.tgz
+  response:
+    body:
+      string: !!binary |
+        H4sIAJiEWVwAA+2XS2vbQBDHfdanGNSLfeh6pdUDnNS02IYaYjvYaU8FIaRVvUSv6hESQr97R7Zr
+        g6FxDpFN2/mBtKAd7cxq9j+7Yv1O63DOXduGTetsW25a23YHGMIyHcFNU3DgBndd3gG7/dA6nbqs
+        /AJDua9ftkOzKHqhfzePffuXwPqjmX8vb1RZlax6rNrwgd/Dsaw/599wHcy/cIXp2IYlMP/CtjH/
+        vI1gjvnP8x8kmH0vUalK6sQr5I9aFTLsfp0sV9PFHAQzzJ6mlbLqjhaz28V8Mr/zVsvReLpcAesd
+        dXwaj73pfHTzZTzZGOgqDeI6lDoOUcjvuMZk4QVZkmepTKtuT7v07AnWV2F0yAl7SuI393FK/6Zj
+        7Ou/IVzUvyUsi/R/DlI/kQPQgyTXtVCWQaHySmUpPlqpJI8l7JcG1KUMIUvjJ4iyAiqJO4auPcii
+        3Npzxpmhg5bHfoUGSTkADeA9yDIXppb4Kq3wkgWa3uG70NxkAdfNQB/lo994Y+ht2ASSyzSUaaBk
+        OcBBcIniW8MPWI30S3+wfwzU/7ZGt3gOfN35T1iOK1yHN/o3LYvOf2eB9VH6LGjVx8nznzAP9d8w
+        MP+Gy22q/+fg3U7+cF1WocrYeqhpD5kKAZeFt5ZxnOEx7Rlr8Ja8wDIedfXPTQ9ERZbAaHYLu10A
+        NnvAt1TvXWk/Lz0z4jUc6n9TB9at+Dilf1T97/8/C0t/8/+HmwHp/xwca/3q0gERBEEQBEEQBEEQ
+        BEEQBEEQb8Ivp1MioAAoAAA=
+    headers:
+      Content-Encoding: [gzip]
+      Content-Length: ['587']
+      Content-Type: [application/x-tar]
+      Date: ['Mon, 04 Mar 2019 15:19:22 GMT']
+      Last-Modified: ['Sun, 10 Feb 2019 13:45:41 GMT']
+      Server: [WSGIServer/0.2 CPython/3.7.2]
+      X-Frame-Options: [SAMEORIGIN]
+    status: {code: 200, message: OK}
+version: 1

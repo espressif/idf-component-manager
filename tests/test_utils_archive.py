@@ -3,7 +3,10 @@ import shutil
 import tempfile
 from filecmp import dircmp
 
+import pytest
+
 from component_manager.utils.archive import (
+    ArchiveError,
     get_format_from_path,
     is_known_format,
     unpack_archive,
@@ -24,7 +27,8 @@ def archive_path(ext):
 
 class TestUtilsArchive(object):
     def test_get_format_from_path(self):
-        assert get_format_from_path("sdf") is None
+        with pytest.raises(ArchiveError):
+            get_format_from_path("sdf")
         assert get_format_from_path("sdf.tar") == ("tar", "tar", unpack_tar)
         assert get_format_from_path("sdf.tgz") == ("gztar", "tgz", unpack_tar)
         assert get_format_from_path("sdf.tar.gz") == ("gztar", "tgz", unpack_tar)

@@ -72,6 +72,7 @@ class APIClient(object):
                 name=response["name"],
                 version=Version(response["version"]),
                 maintainers=response["maintainers"],
+                url=response["url"],
                 # TODO: add dependencies
                 dependencies=None,
             )

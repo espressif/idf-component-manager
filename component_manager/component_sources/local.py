@@ -23,6 +23,7 @@ class LocalSource(BaseSource):
         return ""
 
     def fetch(self, name, details):
+        """`details` are ignored by this implementation"""
         path = self.source_details.get("path", "")
         if not os.path.isdir(path):
             raise SourceError(
