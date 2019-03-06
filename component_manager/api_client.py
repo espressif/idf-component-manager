@@ -2,19 +2,7 @@
 import requests
 from semantic_version import Version
 
-from .manifest import Manifest
-
-
-class ComponentVersion(object):
-    def __init__(self, version, url):
-        self.version = version if isinstance(version, Version) else Version(version)
-        self.url = url
-
-
-class Component(object):
-    def __init__(self, name, versions):
-        self.versions = versions
-        self.name = name.lower()  # Use only lower-case names internally
+from .manifest import ComponentVersion, ComponentWithVersions, Manifest
 
 
 class APIClient(object):
@@ -42,11 +30,12 @@ class APIClient(object):
             r = requests.get(endpoint, params={"versions": spec})
             response = r.json()
 
-            # TODO: cleanup interface use same classes as in manifest.py
-            return Component(
+            return ComponentWithVersions(
                 name=component_name,
                 versions=map(
-                    lambda v: ComponentVersion(version=v["version"], url=v["url"]),
+                    lambda v: ComponentVersion(
+                        version=v["version"], url_or_path=v["url"]
+                    ),
                     response,
                 ),
             )

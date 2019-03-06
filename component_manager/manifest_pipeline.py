@@ -2,12 +2,9 @@ import os
 import sys
 from shutil import copyfile
 
-from semantic_version import Version
 from strictyaml import YAMLError
 from strictyaml import load as load_yaml
 
-from .component_sources import SourceBuilder
-from .manifest import Component, Manifest
 from .manifest_validator import ManifestValidator
 
 
@@ -81,24 +78,6 @@ class ManifestPipeline(object):
                 )
                 print(e)
                 sys.exit(1)
-
-    def build(self):
-        tree = self.manifest_tree
-
-        self.manifest = Manifest(
-            name=tree.get("name", None), maintainers=tree.get("maintainers", None)
-        )
-
-        version = tree.get("version", None)
-        if version:
-            self.manifest.version = Version(version)
-
-        for name, details in tree.get("dependencies", {}).items():
-            source = SourceBuilder(name, details).build()
-            component = Component(name, source, version_spec=details["version"])
-            self.manifest.dependencies.append(component)
-
-        return self
 
     def prepare(self, init=False):
         self.check_filename()

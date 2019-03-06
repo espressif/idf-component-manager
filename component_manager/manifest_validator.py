@@ -6,12 +6,7 @@ from semantic_version import Spec, Version
 class ManifestValidator(object):
     """Validator for manifest object, checks for structure, known fields and valid values"""
 
-    KNOWN_ROOT_KEYS = (
-        "maintainers",
-        "dependencies",
-        "targets",
-        "version",
-    )
+    KNOWN_ROOT_KEYS = ("maintainers", "dependencies", "targets", "version", "name")
 
     KNOWN_COMPONENT_KEYS = ("version",)
 
@@ -59,8 +54,8 @@ class ManifestValidator(object):
 
     def validate_normalize_dependencies(self):
         if (
-                "dependencies" not in self.manifest_tree.keys()
-                or not self.manifest_tree["dependencies"]
+            "dependencies" not in self.manifest_tree.keys()
+            or not self.manifest_tree["dependencies"]
         ):
             return self
 

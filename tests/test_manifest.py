@@ -6,7 +6,9 @@ from copy import deepcopy
 
 import pytest
 
-from component_manager import ManifestPipeline, ManifestValidator
+from component_manager.manifest_builder import ManifestBuilder
+from component_manager.manifest_pipeline import ManifestPipeline
+from component_manager.manifest_validator import ManifestValidator
 
 
 class TestManifestPipeline(object):
@@ -54,17 +56,6 @@ class TestManifestPipeline(object):
 
         assert len(parser.manifest_tree.keys()) == 4
 
-    def test_build(self):
-        manifest_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), "manifests", "idf_project.yml"
-        )
-        parser = ManifestPipeline(manifest_path).prepare()
-
-        parser.build()
-        manifest = parser.manifest
-
-        assert len(manifest.dependencies) == 4
-
     def test_prepare(self):
         manifest_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "manifests", "idf_project.yml"
@@ -74,6 +65,18 @@ class TestManifestPipeline(object):
         parser.prepare()
 
         assert parser.is_valid
+
+
+class TestManifestBuilder(object):
+    def test_build(self):
+        manifest_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), "manifests", "idf_project.yml"
+        )
+        parser = ManifestPipeline(manifest_path).prepare()
+
+        manifest = ManifestBuilder(parser.manifest_tree).build()
+
+        assert len(manifest.dependencies) == 4
 
 
 class TestManifestValidator(object):

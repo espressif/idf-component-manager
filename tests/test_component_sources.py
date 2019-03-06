@@ -3,6 +3,7 @@ import shutil
 import tempfile
 
 import vcr
+from semantic_version import Version
 
 from component_manager.component_sources import LocalSource, WebServiceSource
 
@@ -59,3 +60,24 @@ class TestComponentLocalSource(object):
         path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "manifests")
         source = LocalSource(download_path="/test/path/", source_details={"path": path})
         assert source.fetch("cmp", {}).endswith("manifests")
+
+    def test_versions_without_manifest(self):
+        source = LocalSource(download_path="/test/path/")
+        versions = source.versions("test", {"path": "/some/path"})
+
+        assert versions.name == "test"
+        assert versions.versions[0].version == Version("0.0.0")
+
+    def test_versions_with_manifest(self):
+        path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            "..",
+            "fixtures",
+            "components",
+            "cmp",
+        )
+        source = LocalSource(download_path="/test/path/")
+        versions = source.versions("test", {"path": path})
+
+        assert versions.name == "test"
+        assert versions.versions[0].version == Version("1.0.0")

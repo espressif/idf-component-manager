@@ -1,5 +1,8 @@
 import os
 
+from component_manager import ComponentVersion, ComponentWithVersions
+from component_manager.manifest_pipeline import ManifestPipeline
+
 from .base import BaseSource
 from .errors import SourceError
 
@@ -21,6 +24,21 @@ class LocalSource(BaseSource):
 
     def unique_path(self, name, details):
         return ""
+
+    def versions(self, name, details):
+        """For local return version from manifest, or 0.0.0 if manifest not found"""
+        manifest_path = os.path.join(details["path"], "idf_component.yml")
+        version_string = "0.0.0"
+        if os.path.isfile(manifest_path):
+            version_string = (
+                ManifestPipeline(manifest_path)
+                .prepare()
+                .manifest_tree.get("version", "0.0.0")
+            )
+
+        return ComponentWithVersions(
+            name=name, versions=[ComponentVersion(version_string)]
+        )
 
     def fetch(self, name, details):
         """`details` are ignored by this implementation"""
