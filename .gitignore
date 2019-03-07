@@ -21,8 +21,8 @@ Pipfile.lock
 /dependencies.lock
 /idf_project*.yaml
 /idf_component*.yaml
-managed_components
-components
+/managed_components
+/components
 build
 
 #Configs
