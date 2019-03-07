@@ -53,7 +53,10 @@ class TestComponentLocalSource(object):
         assert not LocalSource.is_me("test", {"url": "/"})
 
     def test_unique_path(self):
-        source = LocalSource(download_path="/test/path/")
+        source = LocalSource(
+            source_details={"path": os.path.dirname(os.path.realpath(__file__))},
+            download_path="/test/path/",
+        )
         assert source.unique_path("cmp", {}) == ""
 
     def test_fetch(self):
@@ -62,11 +65,20 @@ class TestComponentLocalSource(object):
         assert source.fetch("cmp", {}).endswith("manifests")
 
     def test_versions_without_manifest(self):
-        source = LocalSource(download_path="/test/path/")
-        versions = source.versions("test", {"path": "/some/path"})
 
-        assert versions.name == "test"
-        assert versions.versions[0].version == Version("0.0.0")
+        tempdir = tempfile.mkdtemp()
+
+        try:
+            source = LocalSource(
+                source_details={"path": tempdir}, download_path="/test/path/"
+            )
+            versions = source.versions("test", {})
+
+            assert versions.name == "test"
+            assert versions.versions[0].version == Version("0.0.0")
+
+        finally:
+            shutil.rmtree(tempdir)
 
     def test_versions_with_manifest(self):
         path = os.path.join(
@@ -76,8 +88,8 @@ class TestComponentLocalSource(object):
             "components",
             "cmp",
         )
-        source = LocalSource(download_path="/test/path/")
-        versions = source.versions("test", {"path": path})
+        source = LocalSource(source_details={"path": path}, download_path="/test/path/")
+        versions = source.versions("test", {})
 
         assert versions.name == "test"
         assert versions.versions[0].version == Version("1.0.0")

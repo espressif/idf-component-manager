@@ -8,6 +8,18 @@ from .errors import SourceError
 
 
 class LocalSource(BaseSource):
+    def __init__(self, source_details, download_path=None):
+        super(LocalSource, self).__init__(
+            source_details=source_details, download_path=download_path
+        )
+
+        self._path = source_details.get("path")
+
+        if not os.path.isdir(self._path):
+            raise SourceError(
+                "Invalid source path, should be a directory: %s" % self._path
+            )
+
     def name(self):
         return "Local"
 
@@ -27,7 +39,7 @@ class LocalSource(BaseSource):
 
     def versions(self, name, details):
         """For local return version from manifest, or 0.0.0 if manifest not found"""
-        manifest_path = os.path.join(details["path"], "idf_component.yml")
+        manifest_path = os.path.join(self._path, "idf_component.yml")
         version_string = "0.0.0"
         if os.path.isfile(manifest_path):
             version_string = (
@@ -42,10 +54,4 @@ class LocalSource(BaseSource):
 
     def fetch(self, name, details):
         """`details` are ignored by this implementation"""
-        path = self.source_details.get("path", "")
-        if not os.path.isdir(path):
-            raise SourceError(
-                "Invalid source. It's only possible to use component from directory"
-            )
-
-        return path
+        return self._path
