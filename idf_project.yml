@@ -1,23 +1,21 @@
-idf-version: "~4.0.2"
 version: "2.3.1"
-targets: 
+targets:
   - esp32
 dependencies:
-  test: 
+  idf: ">=4.0.0"
+  test:
     version: ">=8.2.0 <9.0.0"
-  test-1: "^1.2.7"  
-  one_more: 
+  test-1: "^1.2.7"
+  one_more:
     version: "~1.2.7"
   some-package:
-    git: https://github.com/someuser/some-package.git
+    git: "https://github.com/someuser/some-package.git"
     tag: "v0.11.5"
-  subdir-package: 
+  subdir-package:
     git: "https://github.com/someuser/components.git"
-    branch: "develop",
+    branch: "develop"
     path: "subdir-package"
-  commit-package": 
+  commit-package:
     git: "https://github.com/someuser/components.git"
     path: "extra_components/commit-package"
     commit: "122f8c46f810f0ebea7e5d09160b7ffd3d32739b"
-
-  

@@ -8,7 +8,7 @@ from strictyaml import load as load_yaml
 from .manifest_validator import ManifestValidator
 
 
-class ManifestPipeline(object):
+class ManifestParser(object):
     """Parser for manifest file"""
 
     def __init__(self, path):

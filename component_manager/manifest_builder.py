@@ -7,7 +7,7 @@ from .manifest import ComponentRequirement, Manifest
 class ManifestBuilder(object):
     """Builds manifest object from manifest tree"""
 
-    def __init__(self, manifest_tree):
+    def __init__(self, manifest_tree, sources=None):
         self.manifest_tree = manifest_tree
 
     def build(self):

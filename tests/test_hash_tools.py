@@ -1,6 +1,6 @@
 import os
 
-from component_manager.lock import HashTools
+from component_manager.lock.hash_tools import HashTools
 
 
 def fixture_path(id):

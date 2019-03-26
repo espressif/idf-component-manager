@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 import pytest
 
-from component_manager.lock import LockParser
+from component_manager.lock.parser import LockParser
 
 
 class TestLockParser(object):

@@ -7,13 +7,13 @@ from copy import deepcopy
 import pytest
 
 from component_manager.manifest_builder import ManifestBuilder
-from component_manager.manifest_pipeline import ManifestPipeline
+from component_manager.manifest_pipeline import ManifestParser
 from component_manager.manifest_validator import ManifestValidator
 
 
 class TestManifestPipeline(object):
     def test_check_filename(self, capsys):
-        parser = ManifestPipeline("some/path/idf_project.yaml")
+        parser = ManifestParser("some/path/idf_project.yaml")
 
         parser.check_filename()
 
@@ -24,7 +24,7 @@ class TestManifestPipeline(object):
         tempdir = tempfile.mkdtemp()
         try:
             manifest_path = os.path.join(tempdir, "idf_project.yml")
-            parser = ManifestPipeline(manifest_path)
+            parser = ManifestParser(manifest_path)
 
             parser.init_manifest()
 
@@ -38,7 +38,7 @@ class TestManifestPipeline(object):
         manifest_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "manifests", "invalid_yaml.yml"
         )
-        parser = ManifestPipeline(manifest_path)
+        parser = ManifestParser(manifest_path)
 
         with pytest.raises(SystemExit) as e:
             parser.manifest_tree
@@ -52,7 +52,7 @@ class TestManifestPipeline(object):
         manifest_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "manifests", "idf_project.yml"
         )
-        parser = ManifestPipeline(manifest_path)
+        parser = ManifestParser(manifest_path)
 
         assert len(parser.manifest_tree.keys()) == 4
 
@@ -60,7 +60,7 @@ class TestManifestPipeline(object):
         manifest_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "manifests", "idf_project.yml"
         )
-        parser = ManifestPipeline(manifest_path)
+        parser = ManifestParser(manifest_path)
 
         parser.prepare()
 
@@ -72,7 +72,7 @@ class TestManifestBuilder(object):
         manifest_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "manifests", "idf_project.yml"
         )
-        parser = ManifestPipeline(manifest_path).prepare()
+        parser = ManifestParser(manifest_path).prepare()
 
         manifest = ManifestBuilder(parser.manifest_tree).build()
 

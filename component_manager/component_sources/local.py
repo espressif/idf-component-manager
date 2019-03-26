@@ -1,7 +1,7 @@
 import os
 
 from component_manager import ComponentVersion, ComponentWithVersions
-from component_manager.manifest_pipeline import ManifestPipeline
+from component_manager.manifest_pipeline import ManifestParser
 
 from .base import BaseSource
 from .errors import SourceError
@@ -43,7 +43,7 @@ class LocalSource(BaseSource):
         version_string = "0.0.0"
         if os.path.isfile(manifest_path):
             version_string = (
-                ManifestPipeline(manifest_path)
+                ManifestParser(manifest_path)
                 .prepare()
                 .manifest_tree.get("version", "0.0.0")
             )

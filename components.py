@@ -21,7 +21,7 @@ COMMANDS = {
     "eject": {
         "exec_without_components": False,
         "help": "Move component to unmanaged components directory and "
-                + "add components dependencies to project's manifest",
+        + "add components dependencies to project's manifest",
     },
     "install": {
         "exec_without_components": True,
@@ -133,7 +133,7 @@ def parse_args(argv):
             % " ".join(components)
         )
     else:
-        exec_command(command, components, args.path)
+        exec_command(command, components, os.getcwd())
 
 
 def exec_command(command, components, path):
@@ -142,12 +142,12 @@ def exec_command(command, components, path):
     if components:
         handler(components)
     elif (
-            command
-            in {
-                cmd: features
-                for cmd, features in COMMANDS.items()
-                if features["exec_without_components"]
-            }.keys()
+        command
+        in {
+            cmd: features
+            for cmd, features in COMMANDS.items()
+            if features["exec_without_components"]
+        }.keys()
     ):
         handler()
     else:
