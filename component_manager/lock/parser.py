@@ -2,7 +2,7 @@ import os
 import sys
 from collections import OrderedDict
 
-from strictyaml import (Any, EmptyDict, Map, MapPattern, Optional, Regex, Str, YAMLError, as_document)
+from strictyaml import (EmptyDict, Map, MapPattern, Optional, Regex, Str, YAMLError, as_document)
 from strictyaml import load as load_yaml
 
 

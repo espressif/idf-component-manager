@@ -14,7 +14,8 @@ semantic-version = "*"
 [dev-packages]
 pytest = "*"
 tox = "<=3.0.0"
-bandit = "*"
+# Lock bandit to 1.5.1 due to https://github.com/PyCQA/bandit/issues/488
+bandit = "==1.5.1"
 "flake8-quotes" = "*"
 pytest-cov = "*"
 "flake8" = "*"
@@ -28,3 +29,5 @@ python_version = "3.7"
 
 [pipenv]
 allow_prereleases = false
+
+
