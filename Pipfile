@@ -21,6 +21,7 @@ pytest-cov = "*"
 pylint = "*"
 vcrpy = "*"
 rope = "*"
+yapf = "*"
 
 [requires]
 python_version = "3.7"

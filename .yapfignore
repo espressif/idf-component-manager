@@ -1,0 +1,4 @@
+.pytest_cache
+.tox
+.git
+node_modules
