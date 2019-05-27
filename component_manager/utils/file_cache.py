@@ -17,7 +17,6 @@
 # Copyright (c) 2005-2010 ActiveState Software Inc.
 # Copyright (c) 2013 Eddy Petrișor
 # Originally released under MIT license
-
 """Classes to work with file cache"""
 
 import os
@@ -46,9 +45,7 @@ class FileCache(object):
 
         if sys.platform.startswith("win"):
             cache_directory = system_cache_path.cache_path_win()
-            return os.path.join(
-                cache_directory, "Espressif", "ComponentManager", "Cache"
-            )
+            return os.path.join(cache_directory, "Espressif", "ComponentManager", "Cache")
         else:
             if sys.platform == "darwin":
                 cache_directory = system_cache_path.cache_path_macos()

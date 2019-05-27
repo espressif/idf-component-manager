@@ -9,4 +9,5 @@ class SourceCachingProxy(object):
         self.root_path = cache_root_path or FileCache.path()
 
     def fetch(self, name, details, components_directory):
+        # TODO
         pass

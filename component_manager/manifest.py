@@ -3,9 +3,7 @@ from semantic_version import Version
 
 
 class Manifest(object):
-    def __init__(
-        self, name=None, version=None, maintainers=None, dependencies=None, url=None
-    ):
+    def __init__(self, name=None, version=None, maintainers=None, dependencies=None, url=None):
         self.name = str(name).lower()  # Use only lower-case names internally
         self.version = version
         self.maintainers = maintainers

@@ -33,12 +33,8 @@ class HashTools:
         """
         sha = sha256()
 
-        ignored_dirs_re = (
-            r"|".join([fnmatch.translate(x) for x in ignored_dirs]) or r"$."
-        )
-        ignored_files_re = (
-            r"|".join([fnmatch.translate(x) for x in ignored_files]) or r"$."
-        )
+        ignored_dirs_re = (r"|".join([fnmatch.translate(x) for x in ignored_dirs]) or r"$.")
+        ignored_files_re = (r"|".join([fnmatch.translate(x) for x in ignored_files]) or r"$.")
 
         for current_dir, dirs, files in os.walk(root, topdown=True):
             # ignore dirs
@@ -60,8 +56,6 @@ class HashTools:
         return sha.hexdigest()
 
     @classmethod
-    def validate(
-        cls, root, hash, ignored_dirs=IGNORED_DIRS, ignored_files=IGNORED_FILES
-    ):
+    def validate(cls, root, hash, ignored_dirs=IGNORED_DIRS, ignored_files=IGNORED_FILES):
         """Check if directory hash is the same as provided"""
         return cls.hash_dir(root, ignored_dirs, ignored_files) == hash

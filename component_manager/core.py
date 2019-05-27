@@ -15,15 +15,11 @@ class ComponentManager(object):
         self.sources = SourceStorage()
 
         # Set path of manifest file for the project
-        self.manifest_path = manifest_path or (
-            os.path.join(path, "idf_project.yml") if os.path.isdir(path) else path
-        )
+        self.manifest_path = manifest_path or (os.path.join(path, "idf_project.yml") if os.path.isdir(path) else path)
         print("\033[1;35;40m Manifest path", self.manifest_path, "\033[0m")
 
         # Lock path
-        self.lock_path = lock_path or (
-            os.path.join(path, "dependencies.lock") if os.path.isdir(path) else path
-        )
+        self.lock_path = lock_path or (os.path.join(path, "dependencies.lock") if os.path.isdir(path) else path)
         print("\033[1;35;40m Lock path", self.lock_path, "\033[0m")
 
         # Working directory

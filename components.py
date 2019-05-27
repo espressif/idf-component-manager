@@ -20,25 +20,27 @@ COMMANDS = {
     },
     "eject": {
         "exec_without_components": False,
-        "help": "Move component to unmanaged components directory and "
-        + "add components dependencies to project's manifest",
+        "help": "Move component to unmanaged components directory and " + "add components dependencies to project's manifest",
     },
     "install": {
         "exec_without_components": True,
         "help": "Install all the dependencies listed within manifest in the local managed_components directory.",
     },
-    "update": {"exec_without_components": True, "help": "Update components"},
-    "prebuild": {
+    "update": {
         "exec_without_components": True,
-        "help": "Intended to be run as a first step of build process. It checks installed components and generates CMake lists of dependencies.",
+        "help": "Update components"
+    },
+    "prebuild": {
+        "exec_without_components":
+        True,
+        "help":
+        "Intended to be run as a first step of build process. It checks installed components and generates CMake lists of dependencies.",
     },
 }
 
 
 def commands_help():
-    help_descriptions = map(
-        lambda key: "%s: %s" % (key, COMMANDS[key]["help"]), COMMANDS
-    )
+    help_descriptions = map(lambda key: "%s: %s" % (key, COMMANDS[key]["help"]), COMMANDS)
     return "\n".join(help_descriptions)
 
 
@@ -57,9 +59,7 @@ def build_parser():
 
     parser.add_argument("--idf_path", help="Path to IDF", default=os.getenv("IDF_PATH"))
 
-    parser.add_argument(
-        "--build_components", help="Override list of components to be built", default=[]
-    )
+    parser.add_argument("--build_components", help="Override list of components to be built", default=[])
 
     parser.add_argument(
         "--common_components",
@@ -82,9 +82,7 @@ def build_parser():
     # Tests
     parser.add_argument("--test_all", help="Test all components", default=False)
 
-    parser.add_argument(
-        "--test_components", help="List of components to be tested", default=[]
-    )
+    parser.add_argument("--test_components", help="List of components to be tested", default=[])
 
     parser.add_argument(
         "--test_exclude_components",
@@ -122,16 +120,10 @@ def parse_args(argv):
     if not command:
         parser.print_help()
     elif command in ["add", "eject"] and not components:
-        raise ArgumentError(
-            "Command '%s' requires list of components to be provided" % command
-        )
+        raise ArgumentError("Command '%s' requires list of components to be provided" % command)
     elif command == "install" and components:
-        raise ArgumentError(
-            "Command '%s' only installs components that are already in manifest. "
-            % command
-            + "If you want to add components, please run `components.py add %s`"
-            % " ".join(components)
-        )
+        raise ArgumentError("Command '%s' only installs components that are already in manifest. " % command +
+                            "If you want to add components, please run `components.py add %s`" % " ".join(components))
     else:
         exec_command(command, components, os.getcwd())
 
@@ -141,14 +133,7 @@ def exec_command(command, components, path):
     handler = getattr(manager, command)
     if components:
         handler(components)
-    elif (
-        command
-        in {
-            cmd: features
-            for cmd, features in COMMANDS.items()
-            if features["exec_without_components"]
-        }.keys()
-    ):
+    elif (command in {cmd: features for cmd, features in COMMANDS.items() if features["exec_without_components"]}.keys()):
         handler()
     else:
         print("Do nothing, unknown command")

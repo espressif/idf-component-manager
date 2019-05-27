@@ -23,11 +23,7 @@ class VersionSolver(object):
         solved_components = map(
             lambda component: SolvedComponent(
                 name=component.name,
-                version=max(
-                    component.source.versions(
-                        name=component.name, spec=component.version_spec
-                    )
-                ),
+                version=max(component.source.versions(name=component.name, spec=component.version_spec)),
                 source=component.source,
             ),
             self.manifest.dependencies,

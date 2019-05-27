@@ -18,7 +18,10 @@ class TestAPIClient(object):
                 "in": ["https://test.com:4323/api/", "a/a/"],
                 "out": "https://test.com:4323/api/a/a/",
             },
-            {"in": ["", "a/a/"], "out": "/a/a/"},
+            {
+                "in": ["", "a/a/"],
+                "out": "/a/a/"
+            },
         ]
 
         for test in tests:

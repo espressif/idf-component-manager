@@ -22,10 +22,7 @@ class TestComponentWebServiceSource(object):
             source_details={"service_url": "https://example.com/api"},
             download_path="/test/path/",
         )
-        assert (
-            source.unique_path("cmp", {"version": "1.0.0"})
-            == "cmp~1.0.0~%s" % self.EXAMPLE_HASH
-        )
+        assert (source.unique_path("cmp", {"version": "1.0.0"}) == "cmp~1.0.0~%s" % self.EXAMPLE_HASH)
 
     @vcr.use_cassette("fixtures/vcr_cassettes/test_fetch_webservice.yaml")
     def test_fetch(self):
@@ -38,9 +35,7 @@ class TestComponentWebServiceSource(object):
             )
             local_path = source.fetch("cmp", {"version": "0.0.1"})
 
-            assert local_path == os.path.join(
-                tempdir, "cmp~0.0.1~%s.tgz" % self.LOCALHOST_HASH
-            )
+            assert local_path == os.path.join(tempdir, "cmp~0.0.1~%s.tgz" % self.LOCALHOST_HASH)
             assert os.path.isfile(local_path)
 
         finally:
@@ -69,9 +64,7 @@ class TestComponentLocalSource(object):
         tempdir = tempfile.mkdtemp()
 
         try:
-            source = LocalSource(
-                source_details={"path": tempdir}, download_path="/test/path/"
-            )
+            source = LocalSource(source_details={"path": tempdir}, download_path="/test/path/")
             versions = source.versions("test", {})
 
             assert versions.name == "test"

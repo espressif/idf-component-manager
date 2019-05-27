@@ -22,9 +22,7 @@ class APIClient(object):
     def versions(self, component_name, spec):
         """List of versions for given component with required spec"""
 
-        endpoint = self.join_url(
-            self.base_url, "components", component_name, "versions"
-        )
+        endpoint = self.join_url(self.base_url, "components", component_name, "versions")
 
         try:
             r = requests.get(endpoint, params={"versions": spec})
@@ -33,9 +31,7 @@ class APIClient(object):
             return ComponentWithVersions(
                 name=component_name,
                 versions=map(
-                    lambda v: ComponentVersion(
-                        version=v["version"], url_or_path=v["url"]
-                    ),
+                    lambda v: ComponentVersion(version=v["version"], url_or_path=v["url"]),
                     response,
                 ),
             )

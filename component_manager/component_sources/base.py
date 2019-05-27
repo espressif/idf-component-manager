@@ -14,9 +14,7 @@ class BaseSource:
                 unknown_keys.append(key)
 
         if unknown_keys:
-            raise SourceError(
-                "Unknown keys in dependency details: %s" % ", ".join(unknown_keys)
-            )
+            raise SourceError("Unknown keys in dependency details: %s" % ", ".join(unknown_keys))
 
         self._source_details = source_details if source_details else {}
         self._hash_key = None
@@ -26,9 +24,7 @@ class BaseSource:
         return (self.name(), self.hash_key())
 
     def __eq__(self, other):
-        return (
-            self._hash_values() == other._hash_values() and self.name() == other.name()
-        )
+        return (self._hash_values() == other._hash_values() and self.name() == other.name())
 
     def __hash__(self):
         return hash((self.name(), self.hash_key()))

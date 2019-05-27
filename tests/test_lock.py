@@ -19,10 +19,7 @@ class TestLockParser(object):
         lock = parser.load()
 
         assert lock["component_manager_version"] == "1.0.3"
-        assert (
-            lock["dependencies"]["test_cmp"]["source"]["url"]
-            == "https://repo.example.com/aws-iot/1.2.7.tgz"
-        )
+        assert (lock["dependencies"]["test_cmp"]["source"]["url"] == "https://repo.example.com/aws-iot/1.2.7.tgz")
 
     def test_load_invalid_lock(self, capsys):
         lock_path = os.path.join(
@@ -51,39 +48,29 @@ class TestLockParser(object):
         )
         solution = parser.load()
         solution["component_manager_version"] = "1.0.3"
-        solution[
-            "manifest_hash"
-        ] = "f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b"
+        solution["manifest_hash"] = "f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b"
 
-        dependencies = OrderedDict(
-            [
-                ("idf", OrderedDict([("version", "4.4.4"), ("source_type", "idf")])),
-                (
-                    "test_cmp",
-                    OrderedDict(
-                        [
-                            ("version", "1.2.7"),
-                            (
-                                "hash",
-                                "f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b",
-                            ),
-                            ("source_type", "url"),
-                            (
-                                "source",
-                                OrderedDict(
-                                    [
-                                        (
-                                            "url",
-                                            "https://repo.example.com/aws-iot/1.2.7.tgz",
-                                        )
-                                    ]
-                                ),
-                            ),
-                        ]
+        dependencies = OrderedDict([
+            ("idf", OrderedDict([("version", "4.4.4"), ("source_type", "idf")])),
+            (
+                "test_cmp",
+                OrderedDict([
+                    ("version", "1.2.7"),
+                    (
+                        "hash",
+                        "f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b",
                     ),
-                ),
-            ]
-        )
+                    ("source_type", "url"),
+                    (
+                        "source",
+                        OrderedDict([(
+                            "url",
+                            "https://repo.example.com/aws-iot/1.2.7.tgz",
+                        )]),
+                    ),
+                ]),
+            ),
+        ])
 
         solution["dependencies"] = dependencies
         parser.dump(solution)

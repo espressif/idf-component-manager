@@ -24,17 +24,13 @@ class ManifestParser(object):
         filename = os.path.basename(self._path)
 
         if filename != "idf_project.yml":
-            print(
-                "Warning: it's recommended to store your component's list in \"idf_project.yml\" at project's root"
-            )
+            print("Warning: it's recommended to store your component's list in \"idf_project.yml\" at project's root")
         return self
 
     def init_manifest(self):
         """Lazily create manifest file if it doesn't exist"""
         if not os.path.exists(self._path):
-            example_path = os.path.join(
-                os.path.dirname(os.path.realpath(__file__)), "manifest_example.yml"
-            )
+            example_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "manifest_example.yml")
 
             print("Info: manifest file wasn't found. Creating project's manifest")
             copyfile(example_path, self._path)
@@ -72,10 +68,7 @@ class ManifestParser(object):
             try:
                 return load_yaml(f.read()).data
             except YAMLError as e:
-                print(
-                    "Error: Cannot parse manifest file. Please check that\n\t%s\nis valid YAML file\n"
-                    % self._path
-                )
+                print("Error: Cannot parse manifest file. Please check that\n\t%s\nis valid YAML file\n" % self._path)
                 print(e)
                 sys.exit(1)
 
