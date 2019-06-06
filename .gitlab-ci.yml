@@ -55,7 +55,7 @@ test:py37:
    - tox -e py37
 
 lint:
-  image: python:2.7
+  image: python:3.7
   stage: check
   tags:
     - build
@@ -66,7 +66,7 @@ lint:
       - bandit_output.txt
     expire_in: 1 week
   before_script:
-    - pip install bandit flake8
+    - pip install bandit==1.5.1 flake8
   script:
     - bandit -r -f txt -o bandit_output.txt .
     - flake8 --config=.flake8 --output-file=flake8_output.txt --tee 
