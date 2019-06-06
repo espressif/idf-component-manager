@@ -30,14 +30,6 @@ test:py27:
   script:
    - tox -e py27
 
-test:py34:
-  image: python:3.4
-  stage: test
-  tags:
-    - build
-  script:
-   - tox -e py34
-
 test:py35:
   image: python:3.5
   stage: test
