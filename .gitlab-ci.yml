@@ -12,11 +12,11 @@
 before_script:
   # Disable configuration with chinese mirrors, because Brno runner is used
   # - *pip_configure
-  - pip install tox==3.0.0 
-  
+  - pip install tox==3.0.0
+
 cache:
   paths:
-   - .tox
+    - .tox
 
 stages:
   - check
@@ -28,7 +28,7 @@ test:py27:
   tags:
     - build
   script:
-   - tox -e py27
+    - tox -e py27
 
 test:py35:
   image: python:3.5
@@ -36,7 +36,7 @@ test:py35:
   tags:
     - build
   script:
-   - tox -e py35
+    - tox -e py35
 
 test:py36:
   image: python:3.6
@@ -44,7 +44,7 @@ test:py36:
   tags:
     - build
   script:
-   - tox -e py36
+    - tox -e py36
 
 test:py37:
   image: python:3.7
@@ -52,7 +52,7 @@ test:py37:
   tags:
     - build
   script:
-   - tox -e py37
+    - tox -e py37
 
 lint:
   image: python:3.7
@@ -66,8 +66,7 @@ lint:
       - bandit_output.txt
     expire_in: 1 week
   before_script:
-    - pip install bandit==1.5.1 flake8
+    - pip install bandit flake8
   script:
     - bandit -r -f txt -o bandit_output.txt .
-    - flake8 --config=.flake8 --output-file=flake8_output.txt --tee 
-    
+    - flake8 --config=.flake8 --output-file=flake8_output.txt --tee
