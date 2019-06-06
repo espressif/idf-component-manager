@@ -130,7 +130,7 @@ ignore =
     W503,           # line break before binary operator
     W504            # line break after binary operator
 
-max-line-length = 160
+max-line-length = 120
 
 show_source = True
 
