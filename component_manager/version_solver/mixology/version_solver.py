@@ -279,7 +279,7 @@ class VersionSolver:
             # the incompatibility as well, See the `algorithm documentation`_ for
             # details.
             #
-            # .. _algorithm documentation: https://github.com/dart-lang/pub/tree/master/doc/solver.md#conflict-resolution
+            # algorithm documentation: https://github.com/dart-lang/pub/tree/master/doc/solver.md#conflict-resolution
             if difference is not None:
                 new_terms.append(difference.inverse)
 
@@ -360,8 +360,10 @@ class VersionSolver:
             #
             # We'll continue adding its dependencies, then go back to
             # unit propagation which will guide us to choose a better version.
-            conflict = conflict or all(
-                [term.dependency.name == dependency.name or self._solution.satisfies(term) for term in incompatibility.terms])
+            conflict = conflict or all([
+                term.dependency.name == dependency.name or self._solution.satisfies(term)
+                for term in incompatibility.terms
+            ])
 
         if not conflict:
             self._solution.decide(version)

@@ -54,7 +54,8 @@ class _Writer:
                 break
 
         if required_python_version is not None:
-            buffer.append("The current project must support the following Python versions: {}".format(required_python_version))
+            buffer.append(
+                "The current project must support the following Python versions: {}".format(required_python_version))
             buffer.append("")
 
         if isinstance(self._root.cause, ConflictCause):
@@ -94,7 +95,8 @@ class _Writer:
         else:
             self._lines.append((message, None))
 
-    def _visit(self, incompatibility, details_for_incompatibility, conclusion=False):  # type: (Incompatibility, Dict, bool) -> None
+    def _visit(self, incompatibility, details_for_incompatibility,
+               conclusion=False):  # type: (Incompatibility, Dict, bool) -> None
         numbered = conclusion or self._derivations[incompatibility] > 1
         conjunction = "So," if conclusion or incompatibility == self._root else "And"
         incompatibility_string = str(incompatibility)

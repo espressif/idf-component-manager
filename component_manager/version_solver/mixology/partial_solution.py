@@ -102,13 +102,14 @@ class PartialSolution:
         """
         Adds an assignment of package as a derivation.
         """
-        self._assign(Assignment.derivation(
-            dependency,
-            is_positive,
-            cause,
-            self.decision_level,
-            len(self._assignments),
-        ))
+        self._assign(
+            Assignment.derivation(
+                dependency,
+                is_positive,
+                cause,
+                self.decision_level,
+                len(self._assignments),
+            ))
 
     def _assign(self, assignment):  # type: (Assignment) -> None
         """

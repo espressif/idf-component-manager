@@ -19,8 +19,8 @@
 
 from typing import Dict, List
 
-from .incompatibility_cause import (ConflictCause, DependencyCause, IncompatibilityCause, NoVersionsCause, PackageNotFoundCause,
-                                    PlatformCause, PythonCause, RootCause)
+from .incompatibility_cause import (ConflictCause, DependencyCause, IncompatibilityCause, NoVersionsCause,
+                                    PackageNotFoundCause, PlatformCause, PythonCause, RootCause)
 from .term import Term
 
 
@@ -219,7 +219,8 @@ class Incompatibility:
 
         return "\n".join(buffer)
 
-    def _try_requires_both(self, other, details, this_line, other_line):  # type: (Incompatibility, dict, int, int) -> str
+    def _try_requires_both(self, other, details, this_line,
+                           other_line):  # type: (Incompatibility, dict, int, int) -> str
         if len(self._terms) == 1 or len(other.terms) == 1:
             return
 
@@ -257,7 +258,8 @@ class Incompatibility:
 
         return "".join(buffer)
 
-    def _try_requires_through(self, other, details, this_line, other_line):  # type: (Incompatibility, dict, int, int) -> str
+    def _try_requires_through(self, other, details, this_line,
+                              other_line):  # type: (Incompatibility, dict, int, int) -> str
         if len(self._terms) == 1 or len(other.terms) == 1:
             return
 
@@ -270,14 +272,16 @@ class Incompatibility:
         this_positive = self._single_term_where(lambda term: term.is_positive())
         other_positive = self._single_term_where(lambda term: term.is_positive())
 
-        if (this_negative is not None and other_positive is not None and this_negative.dependency.name == other_positive.dependency.name
+        if (this_negative is not None and other_positive is not None
+                and this_negative.dependency.name == other_positive.dependency.name
                 and this_negative.inverse.satisfies(other_positive)):
             prior = self
             prior_negative = this_negative
             prior_line = this_line
             latter = other
             latter_line = other_line
-        elif (other_negative is not None and this_positive is not None and other_negative.dependency.name == this_positive.dependency.name
+        elif (other_negative is not None and this_positive is not None
+              and other_negative.dependency.name == this_positive.dependency.name
               and other_negative.inverse.satisfies(this_positive)):
             prior = other
             prior_negative = other_negative
@@ -319,7 +323,8 @@ class Incompatibility:
 
         return "".join(buffer)
 
-    def _try_requires_forbidden(self, other, details, this_line, other_line):  # type: (Incompatibility, dict, int, int) -> str
+    def _try_requires_forbidden(self, other, details, this_line,
+                                other_line):  # type: (Incompatibility, dict, int, int) -> str
         if len(self._terms) != 1 and len(other.terms) != 1:
             return None
 

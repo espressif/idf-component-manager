@@ -19,8 +19,10 @@ COMMANDS = {
         "help": "Installs the component from repository and updates manifest",
     },
     "eject": {
-        "exec_without_components": False,
-        "help": "Move component to unmanaged components directory and " + "add components dependencies to project's manifest",
+        "exec_without_components":
+        False,
+        "help":
+        "Move component to unmanaged components directory and " + "add components dependencies to project's manifest",
     },
     "install": {
         "exec_without_components": True,
@@ -34,7 +36,8 @@ COMMANDS = {
         "exec_without_components":
         True,
         "help":
-        "Intended to be run as a first step of build process. It checks installed components and generates CMake lists of dependencies.",
+        "Intended to be run as a first step of build process. " +
+        "It checks installed components and generates CMake lists of dependencies.",
     },
 }
 
@@ -133,7 +136,8 @@ def exec_command(command, components, path):
     handler = getattr(manager, command)
     if components:
         handler(components)
-    elif (command in {cmd: features for cmd, features in COMMANDS.items() if features["exec_without_components"]}.keys()):
+    elif (command in {cmd: features
+                      for cmd, features in COMMANDS.items() if features["exec_without_components"]}.keys()):
         handler()
     else:
         print("Do nothing, unknown command")

@@ -27,7 +27,8 @@ class TestHashTools(object):
     def test_hash_dir_ignore(self):
         expected_sha = "2fc3be7897ed4c389941026d8f9e44c67c0b81154827d2578f790739e321670d"
 
-        assert (HashTools.hash_dir(fixture_path(4), ignored_dirs=["ignore.dir"], ignored_files=["*.me"]) == expected_sha)
+        assert (HashTools.hash_dir(fixture_path(4), ignored_dirs=["ignore.dir"],
+                                   ignored_files=["*.me"]) == expected_sha)
 
     def test_hash_not_equal(self):
         expected_sha = "2fc3be7897ed4c389941026d8f9e44c67c0b81154827d2578f790739e321670d"
