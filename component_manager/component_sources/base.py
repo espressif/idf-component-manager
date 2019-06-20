@@ -3,10 +3,10 @@ from abc import ABCMeta, abstractmethod
 from .errors import SourceError
 
 
-class BaseSource:
+class BaseSource(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, source_details=None, download_path=None):
+    def __init__(self, source_details=None, download_path=None):  # type: (dict, str) -> None
         source_details = source_details or {}
         unknown_keys = []
         for key in source_details.keys():
@@ -21,13 +21,13 @@ class BaseSource:
         self.download_path = download_path
 
     def _hash_values(self):
-        return (self.name(), self.hash_key())
+        return (self.name, self.hash_key)
 
     def __eq__(self, other):
-        return (self._hash_values() == other._hash_values() and self.name() == other.name())
+        return (self._hash_values() == other._hash_values() and self.name == other.name)
 
     def __hash__(self):
-        return hash((self.name(), self.hash_key()))
+        return hash(self._hash_values())
 
     @property
     def source_details(self):
@@ -47,6 +47,7 @@ class BaseSource:
         """Returns source if details are matched, otherwise returns None"""
         return cls(details) if cls.is_me(name, details) else None
 
+    @property
     def name(self):
         return "Base"
 

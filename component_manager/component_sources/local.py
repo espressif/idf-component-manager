@@ -16,6 +16,7 @@ class LocalSource(BaseSource):
         if not os.path.isdir(self._path):
             raise SourceError("Invalid source path, should be a directory: %s" % self._path)
 
+    @property
     def name(self):
         return "Local"
 
@@ -27,6 +28,7 @@ class LocalSource(BaseSource):
     def is_me(name, details):
         return bool(details.get("path", None))
 
+    @property
     def hash_key(self):
         self.source_details.get("path")
 
