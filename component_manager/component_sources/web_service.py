@@ -11,9 +11,9 @@ from .base import BaseSource
 from .errors import FetchingError
 
 try:
-    from urllib.parse import urlparse
+    from urllib.parse import urlparse  # type: ignore
 except ImportError:
-    from urlparse import urlparse
+    from urlparse import urlparse  # type: ignore
 
 
 class WebServiceSource(BaseSource):

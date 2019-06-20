@@ -2,15 +2,18 @@
 from __future__ import print_function
 
 import os
+from typing import List, Union
 
 from .cmake_builder import CMakeBuilder
-from .component_sources import SourceStorage
+from .component_sources import BaseSource, SourceStorage
 from .manifest_builder import ManifestBuilder
 from .manifest_pipeline import ManifestParser
 
 
 class ComponentManager(object):
-    def __init__(self, path, lock_path=None, manifest_path=None, sources=None):
+    def __init__(self, path, lock_path=None, manifest_path=None,
+                 sources=None):  # type: (str, Union[None, str], Union[None, str], List[BaseSource]) -> None
+
         # That may take a while to init sources (in case of git), so all of them are stored between launches
         self.sources = SourceStorage()
 

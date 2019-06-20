@@ -10,6 +10,7 @@ requests = "*"
 future = "*"
 strictyaml = "*"
 semantic-version = "*"
+typing = "*"
 
 [dev-packages]
 pytest = "*"
@@ -22,11 +23,10 @@ pylint = "*"
 vcrpy = "*"
 rope = "*"
 yapf = "*"
+mypy = "*"
 
 [requires]
 python_version = "3.7"
 
 [pipenv]
 allow_prereleases = false
-
-
