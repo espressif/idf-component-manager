@@ -26,7 +26,7 @@ test:py27:
   image: python:2.7
   stage: test
   tags:
-    - build
+    - test_python
   script:
     - tox -e py27
 
@@ -34,7 +34,7 @@ test:py35:
   image: python:3.5
   stage: test
   tags:
-    - build
+    - test_python
   script:
     - tox -e py35
 
@@ -42,7 +42,7 @@ test:py36:
   image: python:3.6
   stage: test
   tags:
-    - build
+    - test_python
   script:
     - tox -e py36
 
@@ -50,7 +50,7 @@ test:py37:
   image: python:3.7
   stage: test
   tags:
-    - build
+    - test_python
   script:
     - tox -e py37
 
@@ -58,7 +58,7 @@ lint:
   image: python:3.7
   stage: check
   tags:
-    - build
+    - lint_python
   artifacts:
     when: on_failure
     paths:
