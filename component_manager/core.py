@@ -6,6 +6,7 @@ from typing import List, Union
 
 from .cmake_builder import CMakeBuilder
 from .component_sources import BaseSource, SourceStorage
+from .lock.parser import LockParser
 from .manifest_builder import ManifestBuilder
 from .manifest_pipeline import ManifestParser
 
@@ -34,7 +35,16 @@ class ComponentManager(object):
 
     def install(self):
         parser = ManifestParser(self.manifest_path).prepare()
-        ManifestBuilder(parser.manifest_tree(), self.sources)
+        manifest = ManifestBuilder(parser.manifest_tree, self.sources).build()
+        lock = LockParser(self.lock_path).load()
+        # TODO: Update lock file if necessary
+        if manifest.manifest_hash != lock["manifest_hash"]:
+            print("Updating lock file")
+
+        # Get "Lock" object from
+
+        # Download components
+
         print("Installing components from manifest")
 
     def update(self, components=None):
@@ -48,7 +58,9 @@ class ComponentManager(object):
         print("Not implemented yet")
 
     def prebuild(self):
+        # TODO: read build directory from IDF
         path = os.path.join(self.path, "build")
+
         # check lock file state
         self.install()
 
@@ -56,7 +68,6 @@ class ComponentManager(object):
 
         # TODO: Download all required components
 
-        # lock_parser = LockParser(self.path)
         # TODO: Load flattened dependecy tree
 
         CMakeBuilder(path).build()

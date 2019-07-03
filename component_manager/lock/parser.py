@@ -2,8 +2,10 @@ import os
 import sys
 from collections import OrderedDict
 
-from strictyaml import (EmptyDict, Map, MapPattern, Optional, Regex, Str, YAMLError, as_document)
+from strictyaml import (Any, EmptyDict, Map, MapPattern, Optional, Regex, Str, YAMLError, as_document)
 from strictyaml import load as load_yaml
+
+from component_manager.version_solver.solver_result import SolverResult
 
 
 class LockParser:
@@ -30,7 +32,7 @@ class LockParser:
     def __init__(self, path):
         self._path = path
 
-    def dump(self, solution):
+    def dump(self, solution):  # type: (SolverResult) -> None
         """Writes updated lockfile to disk"""
 
         comment = (
@@ -43,9 +45,9 @@ class LockParser:
         with open(self._path, "w") as f:
             if new_file:
                 f.writelines(comment)
-            f.write(solution.as_yaml())
+            f.write(as_document(solution).as_yaml())
 
-    def load(self):
+    def load(self):  # type: () -> Any
         if not os.path.exists(self._path):
             return as_document(
                 OrderedDict([

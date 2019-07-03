@@ -6,9 +6,9 @@ from semantic_version import Spec, Version
 class ManifestValidator(object):
     """Validator for manifest object, checks for structure, known fields and valid values"""
 
-    KNOWN_ROOT_KEYS = ("maintainers", "dependencies", "targets", "version", "name")
+    KNOWN_ROOT_KEYS = ("maintainers", "dependencies", "targets", "version", "name", "description")
 
-    KNOWN_COMPONENT_KEYS = ("version", )
+    KNOWN_COMPONENT_KEYS = ("version", "path")
 
     KNOWN_PLATFORMS = ("esp32", )
 

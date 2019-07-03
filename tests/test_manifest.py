@@ -65,9 +65,11 @@ class TestManifestBuilder(object):
     def test_build(self):
         manifest_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "manifests", "idf_project.yml")
         parser = ManifestParser(manifest_path).prepare()
+        expected_hash = "976147e494621b80b61f01c08c0fcf6b6f17233b71845d444a489eeabd90d55f"
 
         manifest = ManifestBuilder(parser.manifest_tree).build()
 
+        assert manifest.manifest_hash == expected_hash
         assert len(manifest.dependencies) == 4
 
 

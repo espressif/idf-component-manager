@@ -1,9 +1,20 @@
 """Classes to work with manifest file"""
+from typing import List, Union
+
 from semantic_version import Version
 
 
 class Manifest(object):
-    def __init__(self, name=None, version=None, maintainers=None, dependencies=None, url=None):
+    def __init__(
+            self,
+            name=None,  # type: Union[str, None]
+            version=None,  # type: Union[str, None]
+            maintainers=None,  # type: Union[str, None]
+            dependencies=None,  # type: Union[List[ComponentRequirement], None]
+            url=None,  # type: Union[str, None]
+            manifest_hash=None  # type: Union[str, None]
+    ):
+        # type: (...) -> None
         self.name = str(name).lower()  # Use only lower-case names internally
         self.version = version
         self.maintainers = maintainers
@@ -11,6 +22,7 @@ class Manifest(object):
             dependencies = []
         self.dependencies = dependencies
         self.url = url
+        self.manifest_hash = manifest_hash
 
 
 class ComponentRequirement(object):
