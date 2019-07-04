@@ -1,4 +1,4 @@
-from .__version__ import __version__  # noqa: F401
+from .__version__ import __version__ as version  # noqa: F401
 from .manifest import ComponentRequirement  # noqa: F401
 from .manifest import ComponentVersion  # noqa: F401
 from .manifest import ComponentWithVersions  # noqa: F401

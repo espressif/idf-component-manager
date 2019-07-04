@@ -1,14 +1,14 @@
 # This file is generated automatically by IDF component management tool.
 # Please do edit it manually. Run `idf.py component install` to update this lock file.
 component_manager_version: 1.0.3
-manifest_hash: f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b
 dependencies:
   idf:
-    version: 4.4.4
     source_type: idf
+    version: 4.4.4
   test_cmp:
-    version: 1.2.7
-    hash: f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b
-    source_type: url
+    component_hash: f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b
     source:
       url: https://repo.example.com/aws-iot/1.2.7.tgz
+    source_type: 
+    version: 1.2.7
+manifest_hash: f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b

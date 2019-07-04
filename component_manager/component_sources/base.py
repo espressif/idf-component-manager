@@ -49,10 +49,11 @@ class BaseSource(object):
 
     @property
     def name(self):
-        return "Base"
+        return "base"
 
     @property
     def hash_key(self):
+        """ Hash key is used for comparison sources initialised with different settings """
         return "Base"
 
     @abstractmethod

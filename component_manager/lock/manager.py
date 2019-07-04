@@ -1,38 +1,46 @@
 import os
 import sys
 from collections import OrderedDict
+from typing import Union
 
-from strictyaml import (Any, EmptyDict, Map, MapPattern, Optional, Regex, Str, YAMLError, as_document)
+from strictyaml import (YAML, Any, EmptyDict, Map, MapPattern, Optional, Regex, Str, YAMLError, as_document)
 from strictyaml import load as load_yaml
 
 from component_manager.version_solver.solver_result import SolverResult
 
 
-class LockParser:
+class LockManager:
     COMPONENT_SCHEMA = EmptyDict() | MapPattern(
         Str(),
         Map({
-            "version": Str(),
-            "source_type": Str(),
-            Optional("hash"): Str(),
+            Optional("component_hash"): Str(),
             Optional("source"): (MapPattern(Str(), Str())),
+            "source_type": Str(),
+            "version": Str(),
         }))
 
-    LOCK_SCHEMA = Map({"component_manager_version": Str(), "manifest_hash": Str(), "dependencies": COMPONENT_SCHEMA})
-
-    GENERIC_COMPONENT_SCHEMA = Map({
-        "version": Str(),
-        "hash": Str(),
-        "source_type": Str(),
-        "source": (MapPattern(Str(), Str())),
+    LOCK_SCHEMA = Map({
+        "component_manager_version": Str(),
+        "dependencies": COMPONENT_SCHEMA,
+        "manifest_hash": Str(),
     })
 
-    IDF_COMPONENT_SCHEMA = Map({"version": Str(), "source_type": Regex("idf")})
+    GENERIC_COMPONENT_SCHEMA = Map({
+        "component_hash": Str(),
+        "source": (MapPattern(Str(), Str())),
+        "source_type": Str(),
+        "version": Str(),
+    })
+
+    IDF_COMPONENT_SCHEMA = Map({
+        "source_type": Regex("idf"),
+        "version": Str(),
+    })
 
     def __init__(self, path):
         self._path = path
 
-    def dump(self, solution):  # type: (SolverResult) -> None
+    def dump(self, solution):  # type: (Union[SolverResult,OrderedDict,YAML]) -> None
         """Writes updated lockfile to disk"""
 
         comment = (
@@ -45,15 +53,19 @@ class LockParser:
         with open(self._path, "w") as f:
             if new_file:
                 f.writelines(comment)
-            f.write(as_document(solution).as_yaml())
+
+            solution_dict = solution.as_ordered_dict() if isinstance(
+                solution, SolverResult) else solution  # type: Union[YAML,OrderedDict]
+            solution_yaml = solution_dict if isinstance(solution, YAML) else as_document(solution_dict)  # type: YAML
+            f.write(solution_yaml.as_yaml())
 
     def load(self):  # type: () -> Any
         if not os.path.exists(self._path):
             return as_document(
                 OrderedDict([
                     ("component_manager_version", ""),
-                    ("manifest_hash", ""),
                     ("dependencies", OrderedDict()),
+                    ("manifest_hash", ""),
                 ]),
                 schema=self.LOCK_SCHEMA,
             )

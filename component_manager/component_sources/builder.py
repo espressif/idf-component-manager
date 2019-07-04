@@ -1,10 +1,11 @@
 """Classes to work with component sources"""
 
 from .errors import SourceError
+from .idf import IDFSource
 from .local import LocalSource
 from .web_service import WebServiceSource
 
-KNOWN_SOURCES = [LocalSource, WebServiceSource]
+KNOWN_SOURCES = [IDFSource, LocalSource, WebServiceSource]
 
 
 class SourceBuilder(object):

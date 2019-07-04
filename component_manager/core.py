@@ -6,9 +6,10 @@ from typing import List, Union
 
 from .cmake_builder import CMakeBuilder
 from .component_sources import BaseSource, SourceStorage
-from .lock.parser import LockParser
+from .lock.manager import LockManager
 from .manifest_builder import ManifestBuilder
 from .manifest_pipeline import ManifestParser
+from .version_solver import VersionSolver
 
 
 class ComponentManager(object):
@@ -36,10 +37,12 @@ class ComponentManager(object):
     def install(self):
         parser = ManifestParser(self.manifest_path).prepare()
         manifest = ManifestBuilder(parser.manifest_tree, self.sources).build()
-        lock = LockParser(self.lock_path).load()
+        lock = LockManager(self.lock_path).load()
         # TODO: Update lock file if necessary
         if manifest.manifest_hash != lock["manifest_hash"]:
             print("Updating lock file")
+            solver = VersionSolver(manifest, lock)
+            lock = solver.solve
 
         # Get "Lock" object from
 
