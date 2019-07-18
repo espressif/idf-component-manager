@@ -53,7 +53,7 @@ class BaseSource(object):
 
     @property
     def hash_key(self):
-        """ Hash key is used for comparison sources initialised with different settings """
+        """Hash key is used for comparison sources initialised with different settings"""
         return "Base"
 
     @abstractmethod
@@ -68,6 +68,9 @@ class BaseSource(object):
 
     @abstractmethod
     def fetch(self, name, details):
-        """Fetch required component version from the source
-        returns absolute path to archive or directory with component """
+        """
+        Fetch required component version from the source
+        returns absolute path to archive or directory with component
+        """
+
         pass

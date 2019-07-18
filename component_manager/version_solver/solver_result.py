@@ -17,15 +17,19 @@ class SolvedComponent(object):
             component_hash=None  # type: Union[str,None]
     ):
         # type: (...) -> None
-        self.name = name
+        self.name = name.lower()
         self.version = version
         self.source = source
         self.component_hash = component_hash
 
     def as_ordered_dict(self):  # type: () -> OrderedDict
-        component_elements = [("name", self.name.lower()), ("version", str(self.version)), ("source", self.source)]
+        component_elements = [("name", self.name), ("version", str(self.version))]
         if self.component_hash:
             component_elements.append(("component_hash", self.component_hash))
+        # Source
+        # TODO it should return source fields and source_type
+        # ("source", self.source)
+
         return OrderedDict(sorted(component_elements, key=lambda e: e[0]))
 
 
@@ -36,6 +40,14 @@ class SolverResult(object):
         solved_components.sort(key=lambda c: c.name.lower())
         self._solved_components = solved_components
 
+    @classmethod
+    def load_yaml(cls, manifest, lock):
+        # TODO: create SolverResult from YAML
+        solved_components = []
+        solution = cls(manifest, solved_components)
+
+        return solution
+
     @property
     def solved_components(self):  # type: () -> List[SolvedComponent]
         return self._solved_components
@@ -45,10 +57,8 @@ class SolverResult(object):
         return self._manifest
 
     def as_ordered_dict(self):  # type: () -> OrderedDict
-        solution = OrderedDict([
-            ("component_manager_version", str(component_manager.version)),
-            ("manifest_hash", self.manifest.manifest_hash),
-            ("dependencies", '')  # TODO
-        ])
+        dependencies = OrderedDict([(c.name, c.as_ordered_dict()) for c in self.solved_components])  # type: OrderedDict
+        solution = OrderedDict([("component_manager_version", str(component_manager.version)),
+                                ("manifest_hash", self.manifest.manifest_hash), ("dependencies", dependencies)])
 
         return solution

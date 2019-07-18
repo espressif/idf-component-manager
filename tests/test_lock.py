@@ -83,7 +83,7 @@ class TestLockManager(object):
             SolvedComponent(name="idf", version=Version('4.4.4'), source=None),
             SolvedComponent(name="test_cmp", version=Version('1.2.7'), source=None),
         ]
-        solution = SolverResult(manifest, components)
+        solution = SolverResult(manifest, components).as_ordered_dict()
 
         lock.dump(solution)
 

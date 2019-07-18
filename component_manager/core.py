@@ -10,6 +10,7 @@ from .lock.manager import LockManager
 from .manifest_builder import ManifestBuilder
 from .manifest_pipeline import ManifestParser
 from .version_solver import VersionSolver
+from .version_solver.solver_result import SolverResult
 
 
 class ComponentManager(object):
@@ -37,14 +38,16 @@ class ComponentManager(object):
     def install(self):
         parser = ManifestParser(self.manifest_path).prepare()
         manifest = ManifestBuilder(parser.manifest_tree, self.sources).build()
-        lock = LockManager(self.lock_path).load()
+        lock_manager = LockManager(self.lock_path)
+        lock = lock_manager.load()
+        solution = SolverResult.from_yaml(lock)
+
         # TODO: Update lock file if necessary
         if manifest.manifest_hash != lock["manifest_hash"]:
             print("Updating lock file")
             solver = VersionSolver(manifest, lock)
-            lock = solver.solve
-
-        # Get "Lock" object from
+            solution = solver.solve()
+            lock_manager.dump(solution.as_ordered_dict())
 
         # Download components
 

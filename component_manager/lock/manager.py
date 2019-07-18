@@ -3,10 +3,8 @@ import sys
 from collections import OrderedDict
 from typing import Union
 
-from strictyaml import (YAML, Any, EmptyDict, Map, MapPattern, Optional, Regex, Str, YAMLError, as_document)
+from strictyaml import (YAML, EmptyDict, Map, MapPattern, Optional, Regex, Str, YAMLError, as_document)
 from strictyaml import load as load_yaml
-
-from component_manager.version_solver.solver_result import SolverResult
 
 
 class LockManager:
@@ -40,7 +38,7 @@ class LockManager:
     def __init__(self, path):
         self._path = path
 
-    def dump(self, solution):  # type: (Union[SolverResult,OrderedDict,YAML]) -> None
+    def dump(self, solution):  # type: (Union[OrderedDict,YAML]) -> None
         """Writes updated lockfile to disk"""
 
         comment = (
@@ -54,12 +52,10 @@ class LockManager:
             if new_file:
                 f.writelines(comment)
 
-            solution_dict = solution.as_ordered_dict() if isinstance(
-                solution, SolverResult) else solution  # type: Union[YAML,OrderedDict]
-            solution_yaml = solution_dict if isinstance(solution, YAML) else as_document(solution_dict)  # type: YAML
+            solution_yaml = solution if isinstance(solution, YAML) else as_document(solution)  # type: YAML
             f.write(solution_yaml.as_yaml())
 
-    def load(self):  # type: () -> Any
+    def load(self):  # type: () -> YAML
         if not os.path.exists(self._path):
             return as_document(
                 OrderedDict([
@@ -72,6 +68,7 @@ class LockManager:
 
         with open(self._path, "r") as f:
             try:
+                # Load and validate
                 lock = load_yaml(f.read(), schema=self.LOCK_SCHEMA)
 
                 for component in lock['dependencies'].values():
