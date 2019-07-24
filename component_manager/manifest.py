@@ -15,7 +15,7 @@ class Manifest(object):
             manifest_hash=None  # type: Union[str, None]
     ):
         # type: (...) -> None
-        self.name = str(name).lower()  # Use only lower-case names internally
+        self.name = str(name)
         self.version = version
         self.maintainers = maintainers
         if dependencies is None:
@@ -29,7 +29,7 @@ class ComponentRequirement(object):
     def __init__(self, name, source, versions=None, version_spec="*"):
         self.version_spec = version_spec
         self.source = source
-        self.name = name.lower()
+        self.name = name
 
 
 class ComponentVersion(object):
@@ -41,4 +41,4 @@ class ComponentVersion(object):
 class ComponentWithVersions(object):
     def __init__(self, name, versions):
         self.versions = versions
-        self.name = name.lower()  # Use only lower-case names internally
+        self.name = name

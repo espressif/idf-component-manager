@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from semantic_version import Version
 
 from component_manager import ComponentVersion, ComponentWithVersions
@@ -38,3 +40,6 @@ class IDFSource(BaseSource):
 
     def fetch(self, name, details):
         return ""  # TODO
+
+    def as_ordered_dict(self):  # type: () -> OrderedDict
+        return OrderedDict([("type", self.name)])

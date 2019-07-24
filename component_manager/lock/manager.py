@@ -3,17 +3,15 @@ import sys
 from collections import OrderedDict
 from typing import Union
 
-from strictyaml import (YAML, EmptyDict, Map, MapPattern, Optional, Regex, Str, YAMLError, as_document)
+from strictyaml import (YAML, EmptyDict, Map, MapPattern, Optional, Str, YAMLError, as_document)
 from strictyaml import load as load_yaml
 
 
 class LockManager:
     COMPONENT_SCHEMA = EmptyDict() | MapPattern(
-        Str(),
-        Map({
+        Str(), Map({
             Optional("component_hash"): Str(),
-            Optional("source"): (MapPattern(Str(), Str())),
-            "source_type": Str(),
+            "source": (MapPattern(Str(), Str())),
             "version": Str(),
         }))
 
@@ -21,18 +19,6 @@ class LockManager:
         "component_manager_version": Str(),
         "dependencies": COMPONENT_SCHEMA,
         "manifest_hash": Str(),
-    })
-
-    GENERIC_COMPONENT_SCHEMA = Map({
-        "component_hash": Str(),
-        "source": (MapPattern(Str(), Str())),
-        "source_type": Str(),
-        "version": Str(),
-    })
-
-    IDF_COMPONENT_SCHEMA = Map({
-        "source_type": Regex("idf"),
-        "version": Str(),
     })
 
     def __init__(self, path):
@@ -43,7 +29,7 @@ class LockManager:
 
         comment = (
             "# This file is generated automatically by IDF component management tool.\n",
-            "# Please do edit it manually. Run `idf.py component install` to update this lock file.\n",
+            "# Please do not edit it manually. Run `idf.py component install` to update this lock file.\n",
         )
 
         new_file = not os.path.exists(self._path)
@@ -70,13 +56,6 @@ class LockManager:
             try:
                 # Load and validate
                 lock = load_yaml(f.read(), schema=self.LOCK_SCHEMA)
-
-                for component in lock['dependencies'].values():
-                    if component['source_type'] == 'idf':
-                        component.revalidate(self.IDF_COMPONENT_SCHEMA)
-                    else:
-                        component.revalidate(self.GENERIC_COMPONENT_SCHEMA)
-
                 return lock
             except YAMLError as e:
                 print(("Error: Cannot parse components lock file. Please check that\n\t%s\nis valid YAML file.\n"

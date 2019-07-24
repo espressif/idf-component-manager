@@ -1,5 +1,6 @@
 import os
 import re
+from collections import OrderedDict
 from hashlib import sha256
 
 import requests
@@ -25,12 +26,13 @@ class WebServiceSource(BaseSource):
 
         self.api_client = source_details.get("api_client", None) or APIClient(base_url=self.base_url)
 
+    @property
     def name(self):
-        return "Web Service"
+        return "service"
 
     @staticmethod
     def known_keys():
-        return ["version", "service_url"]
+        return ["service_url", "version"]
 
     @property
     def hash_key(self):
@@ -97,3 +99,6 @@ class WebServiceSource(BaseSource):
                         f.write(chunk)
 
         return file_path
+
+    def as_ordered_dict(self):  # type: () -> OrderedDict
+        return OrderedDict([("service_url", self.base_url), ("type", self.name)])

@@ -1,4 +1,5 @@
 import os
+from collections import OrderedDict
 
 from component_manager import ComponentVersion, ComponentWithVersions
 from component_manager.manifest_pipeline import ManifestParser
@@ -18,7 +19,7 @@ class LocalSource(BaseSource):
 
     @property
     def name(self):
-        return "Local"
+        return "local"
 
     @staticmethod
     def known_keys():
@@ -47,3 +48,6 @@ class LocalSource(BaseSource):
     def fetch(self, name, details):
         """`details` are ignored by this implementation"""
         return self._path
+
+    def as_ordered_dict(self):  # type: () -> OrderedDict
+        return OrderedDict([("path", self._path), ("type", self.name)])

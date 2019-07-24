@@ -5,9 +5,11 @@ manifest_hash:
 dependencies:
   idf: 
     version: 3.0.2
-    source_type: idf
+    source:
+      type: idf
   aws-iot: 
     version: 1.2.7
-    hash: "f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b"
-    course:
-      url: https://repo.example.com/aws-iot/1.2.7.tgz
+    component_hash: "f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b"
+    source:
+      type: service
+      service_url: https://repo.example.com

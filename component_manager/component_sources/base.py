@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from collections import OrderedDict
 
 from .errors import SourceError
 
@@ -71,6 +72,14 @@ class BaseSource(object):
         """
         Fetch required component version from the source
         returns absolute path to archive or directory with component
+        """
+
+        pass
+
+    @abstractmethod
+    def as_ordered_dict(self):  # type: () -> OrderedDict
+        """
+        Return fields to describe source to be saved in lock file
         """
 
         pass
