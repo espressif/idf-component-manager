@@ -11,8 +11,9 @@ from .manifest_validator import ManifestValidator
 class ManifestParser(object):
     """Parser for manifest file"""
 
-    def __init__(self, path):
+    def __init__(self, path, component=False):
         # Path of manifest file
+        self._is_component = component
         self._path = path
         self._manifest_tree = None
         self._manifest = None
@@ -23,8 +24,13 @@ class ManifestParser(object):
         """Check manifest's filename"""
         filename = os.path.basename(self._path)
 
-        if filename != "idf_project.yml":
+        if self._is_component and filename != "idf_component.yml":
+            print(
+                "Warning: it's recommended to store your component's list in \"idf_component.yml\" at component's root")
+
+        if not self._is_component and filename != "idf_project.yml":
             print("Warning: it's recommended to store your component's list in \"idf_project.yml\" at project's root")
+
         return self
 
     def init_manifest(self):

@@ -51,9 +51,8 @@ class SolverResult(object):
 
     @classmethod
     def from_yaml(cls, manifest, lock):  # type: (Manifest, YAML) -> SolverResult
-        solved_components = [
-            SolvedComponent.from_yaml(name, component) for name, component in lock["dependencies"].items()
-        ]
+        solved_components = list(
+            [SolvedComponent.from_yaml(name, component) for name, component in lock.data["dependencies"].items()])
 
         return cls(manifest, solved_components)
 

@@ -36,12 +36,13 @@ class LocalSource(BaseSource):
     def unique_path(self, name, details):
         return ""
 
-    def versions(self, name, details):
+    def versions(self, name, spec):
         """For local return version from manifest, or 0.0.0 if manifest not found"""
         manifest_path = os.path.join(self._path, "idf_component.yml")
         version_string = "0.0.0"
         if os.path.isfile(manifest_path):
-            version_string = (ManifestParser(manifest_path).prepare().manifest_tree.get("version", "0.0.0"))
+            version_string = (ManifestParser(manifest_path,
+                                             component=True).prepare().manifest_tree.get("version", "0.0.0"))
 
         return ComponentWithVersions(name=name, versions=[ComponentVersion(version_string)])
 

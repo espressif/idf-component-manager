@@ -63,7 +63,7 @@ class BaseSource(object):
         pass
 
     @abstractmethod
-    def versions(self, name, details):
+    def versions(self, name, spec):
         """List of versions for given spec"""
         pass
 

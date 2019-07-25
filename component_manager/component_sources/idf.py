@@ -33,7 +33,7 @@ class IDFSource(BaseSource):
     def unique_path(self, name, details):
         return ""
 
-    def versions(self, name, details):
+    def versions(self, name, spec):
         """Returns current idf version"""
 
         return ComponentWithVersions(name=name, versions=[ComponentVersion(self._version)])
