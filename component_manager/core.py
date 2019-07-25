@@ -40,9 +40,8 @@ class ComponentManager(object):
         manifest = ManifestBuilder(parser.manifest_tree, self.sources).build()
         lock_manager = LockManager(self.lock_path)
         lock = lock_manager.load()
-        solution = SolverResult.from_yaml(lock)
+        solution = SolverResult.from_yaml(manifest, lock)
 
-        # TODO: Update lock file if necessary
         if manifest.manifest_hash != lock["manifest_hash"]:
             print("Updating lock file")
             solver = VersionSolver(manifest, lock)
@@ -50,6 +49,9 @@ class ComponentManager(object):
             lock_manager.dump(solution.as_ordered_dict())
 
         # Download components
+        for component in solution.solved_components:
+            # Check hash if hash present
+            component.fetch()
 
         print("Installing components from manifest")
 

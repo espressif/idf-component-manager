@@ -21,7 +21,7 @@ class WebServiceSource(BaseSource):
     def __init__(self, source_details=None, download_path=None):
         super(WebServiceSource, self).__init__(source_details=source_details, download_path=download_path)
 
-        self.base_url = (source_details.get("service_url", None)
+        self.base_url = (str(source_details.get("service_url", ""))
                          or os.getenv("DEFAULT_COMPONENT_SERVICE_URL", "https://components.espressif.com/api/"))
 
         self.api_client = source_details.get("api_client", None) or APIClient(base_url=self.base_url)

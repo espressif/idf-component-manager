@@ -3,8 +3,10 @@
 from collections import OrderedDict
 from typing import List, Union
 
+from strictyaml import YAML
+
 import component_manager
-from component_manager.component_sources import BaseSource
+from component_manager.component_sources import BaseSource, SourceBuilder
 from component_manager.manifest import Manifest
 
 
@@ -32,6 +34,13 @@ class SolvedComponent(object):
 
         return OrderedDict(sorted(component_elements, key=lambda e: e[0]))
 
+    @classmethod
+    def from_yaml(cls, name, details):
+        source_details = dict(details["source"])
+        source_name = source_details.pop("type")
+        source = SourceBuilder(source_name, source_details).build()
+        return cls(name=name, version=details["version"], source=source)
+
 
 class SolverResult(object):
     def __init__(self, manifest, solved_components):  # type: (Manifest, List[SolvedComponent]) -> None
@@ -41,12 +50,12 @@ class SolverResult(object):
         self._solved_components = solved_components
 
     @classmethod
-    def load_yaml(cls, manifest, lock):
-        # TODO: create SolverResult from YAML
-        solved_components = []
-        solution = cls(manifest, solved_components)
+    def from_yaml(cls, manifest, lock):  # type: (Manifest, YAML) -> SolverResult
+        solved_components = [
+            SolvedComponent.from_yaml(name, component) for name, component in lock["dependencies"].items()
+        ]
 
-        return solution
+        return cls(manifest, solved_components)
 
     @property
     def solved_components(self):  # type: () -> List[SolvedComponent]
