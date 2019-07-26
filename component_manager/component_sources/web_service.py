@@ -2,10 +2,13 @@ import os
 import re
 from collections import OrderedDict
 from hashlib import sha256
+from typing import Union
 
 import requests
+from semantic_version import Version
 
 from component_manager.api_client import APIClient
+from component_manager.manifest import ComponentWithVersions
 from component_manager.utils.archive import ArchiveError, get_format_from_path
 
 from .base import BaseSource
@@ -18,8 +21,8 @@ except ImportError:
 
 
 class WebServiceSource(BaseSource):
-    def __init__(self, source_details=None, download_path=None):
-        super(WebServiceSource, self).__init__(source_details=source_details, download_path=download_path)
+    def __init__(self, source_details=None):
+        super(WebServiceSource, self).__init__(source_details=source_details)
 
         self.base_url = (str(source_details.get("service_url", ""))
                          or os.getenv("DEFAULT_COMPONENT_SERVICE_URL", "https://components.espressif.com/api/"))
@@ -49,14 +52,17 @@ class WebServiceSource(BaseSource):
         # This should be run last
         return True
 
-    def versions(self, name, spec):
+    def versions(self, name, spec):  # type: (str, Union[str, Version]) -> ComponentWithVersions
         return self.api_client.versions(name, spec)
 
-    def unique_path(self, name, details):
-        return "~".join([name, details["version"], self.hash_key])
+    def unique_path(self, name, version):
+        return "~".join([name, version, self.hash_key])
 
-    def fetch(self, name, details):
-        version = details.get("version")
+    @property
+    def component_hash_required(self):  # type: () -> bool
+        return True
+
+    def fetch(self, name, version, download_path):
         if not version:
             raise FetchingError("Version should provided for %s" % name)
 
@@ -89,9 +95,8 @@ class WebServiceSource(BaseSource):
                 except IndexError:
                     raise FetchingError("Web Service returned invalid download url")
 
-            filename = "%s.%s" % (self.unique_path(name, details), extension)
-
-            file_path = os.path.join(self.download_path, filename)
+            filename = "%s.%s" % (self.unique_path(name, version), extension)
+            file_path = os.path.join(download_path, filename)
 
             with open(file_path, "wb") as f:
                 for chunk in r.iter_content(chunk_size=65536):

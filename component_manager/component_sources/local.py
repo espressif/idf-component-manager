@@ -9,8 +9,8 @@ from .errors import SourceError
 
 
 class LocalSource(BaseSource):
-    def __init__(self, source_details, download_path=None):
-        super(LocalSource, self).__init__(source_details=source_details, download_path=download_path)
+    def __init__(self, source_details):
+        super(LocalSource, self).__init__(source_details=source_details)
 
         self._path = source_details.get("path")
 
@@ -33,7 +33,7 @@ class LocalSource(BaseSource):
     def hash_key(self):
         self.source_details.get("path")
 
-    def unique_path(self, name, details):
+    def unique_path(self, name, version):
         return ""
 
     def versions(self, name, spec):
@@ -46,7 +46,7 @@ class LocalSource(BaseSource):
 
         return ComponentWithVersions(name=name, versions=[ComponentVersion(version_string)])
 
-    def fetch(self, name, details):
+    def fetch(self, name, version, download_path):
         """`details` are ignored by this implementation"""
         return self._path
 

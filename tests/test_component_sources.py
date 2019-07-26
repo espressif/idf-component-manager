@@ -18,22 +18,16 @@ class TestComponentWebServiceSource(object):
         assert WebServiceSource.is_me("test", {"path": "/"})
 
     def test_unique_path(self):
-        source = WebServiceSource(
-            source_details={"service_url": "https://example.com/api"},
-            download_path="/test/path/",
-        )
-        assert (source.unique_path("cmp", {"version": "1.0.0"}) == "cmp~1.0.0~%s" % self.EXAMPLE_HASH)
+        source = WebServiceSource(source_details={"service_url": "https://example.com/api"})
+        assert (source.unique_path("cmp", "1.0.0") == "cmp~1.0.0~%s" % self.EXAMPLE_HASH)
 
     @vcr.use_cassette("fixtures/vcr_cassettes/test_fetch_webservice.yaml")
     def test_fetch(self):
         tempdir = tempfile.mkdtemp()
 
         try:
-            source = WebServiceSource(
-                source_details={"service_url": "http://127.0.0.1:8000/api"},
-                download_path=tempdir,
-            )
-            local_path = source.fetch("cmp", {"version": "0.0.1"})
+            source = WebServiceSource(source_details={"service_url": "http://127.0.0.1:8000/api"})
+            local_path = source.fetch("cmp", "0.0.1", download_path=tempdir)
 
             assert local_path == os.path.join(tempdir, "cmp~0.0.1~%s.tgz" % self.LOCALHOST_HASH)
             assert os.path.isfile(local_path)
@@ -48,24 +42,21 @@ class TestComponentLocalSource(object):
         assert not LocalSource.is_me("test", {"url": "/"})
 
     def test_unique_path(self):
-        source = LocalSource(
-            source_details={"path": os.path.dirname(os.path.realpath(__file__))},
-            download_path="/test/path/",
-        )
-        assert source.unique_path("cmp", {}) == ""
+        source = LocalSource(source_details={"path": os.path.dirname(os.path.realpath(__file__))})
+        assert source.unique_path("cmp", "*") == ""
 
     def test_fetch(self):
         path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "manifests")
-        source = LocalSource(download_path="/test/path/", source_details={"path": path})
-        assert source.fetch("cmp", {}).endswith("manifests")
+        source = LocalSource(source_details={"path": path})
+        assert source.fetch("cmp", "*", "/test/path/").endswith("manifests")
 
     def test_versions_without_manifest(self):
 
         tempdir = tempfile.mkdtemp()
 
         try:
-            source = LocalSource(source_details={"path": tempdir}, download_path="/test/path/")
-            versions = source.versions("test", {})
+            source = LocalSource(source_details={"path": tempdir})
+            versions = source.versions("test", "*")
 
             assert versions.name == "test"
             assert versions.versions[0].version == Version("0.0.0")
@@ -81,8 +72,8 @@ class TestComponentLocalSource(object):
             "components",
             "cmp",
         )
-        source = LocalSource(source_details={"path": path}, download_path="/test/path/")
-        versions = source.versions("test", {})
+        source = LocalSource(source_details={"path": path})
+        versions = source.versions("test", "*")
 
         assert versions.name == "test"
         assert versions.versions[0].version == Version("1.0.0")

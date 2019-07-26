@@ -1,3 +1,4 @@
+import os
 from collections import OrderedDict
 
 from semantic_version import Version
@@ -8,8 +9,8 @@ from .base import BaseSource
 
 
 class IDFSource(BaseSource):
-    def __init__(self, source_details, download_path=None):
-        super(IDFSource, self).__init__(source_details=source_details, download_path=download_path)
+    def __init__(self, source_details):
+        super(IDFSource, self).__init__(source_details=source_details)
 
         # TODO: Add fetching for idf.versions
         self._version = Version("0.0.0")
@@ -30,7 +31,7 @@ class IDFSource(BaseSource):
     def hash_key(self):
         return str(self._version)
 
-    def unique_path(self, name, details):
+    def unique_path(self, name, version):
         return ""
 
     def versions(self, name, spec):
@@ -38,8 +39,11 @@ class IDFSource(BaseSource):
 
         return ComponentWithVersions(name=name, versions=[ComponentVersion(self._version)])
 
-    def fetch(self, name, details):
-        return ""  # TODO
+    def local_path(self, name, version, download_path):
+        return os.getenv("IDF_PATH")
+
+    def fetch(self, name, version, download_path):
+        return self.local_path(name, version, download_path)
 
     def as_ordered_dict(self):  # type: () -> OrderedDict
         return OrderedDict([("type", self.name)])

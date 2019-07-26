@@ -5,7 +5,7 @@ import os
 from typing import List, Union
 
 from .cmake_builder import CMakeBuilder
-from .component_sources import BaseSource, SourceStorage
+from .component_sources import BaseSource, ComponentFetcher, SourceStorage
 from .lock.manager import LockManager
 from .manifest_builder import ManifestBuilder
 from .manifest_pipeline import ManifestParser
@@ -31,6 +31,9 @@ class ComponentManager(object):
         # Working directory
         self.path = path if os.path.isdir(path) else os.path.dirname(path)
 
+        # Components directory
+        self.components_path = os.path.join(self.path, "managed_components")
+
     def add(self, components):
         print("Adding %s to manifest" % ", ".join(components))
         print("Not implemented yet")
@@ -49,11 +52,11 @@ class ComponentManager(object):
             lock_manager.dump(solution.as_ordered_dict())
 
         # Download components
-        for component in solution.solved_components:
-            # Check hash if hash present
-            component.fetch()
-
         print("Installing components from manifest")
+        for component in solution.solved_components:
+            # Check hash if hash present and download component if necessary
+            path = ComponentFetcher(component, self.components_path).fetch()
+            print("Installed component %s to %s" % (component.name, path))
 
     def update(self, components=None):
         if components is None:

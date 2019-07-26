@@ -7,7 +7,7 @@ from .errors import SourceError
 class BaseSource(object):
     __metaclass__ = ABCMeta
 
-    def __init__(self, source_details=None, download_path=None):  # type: (dict, str) -> None
+    def __init__(self, source_details=None):  # type: (dict) -> None
         source_details = source_details or {}
         unknown_keys = []
         for key in source_details.keys():
@@ -19,7 +19,6 @@ class BaseSource(object):
 
         self._source_details = source_details if source_details else {}
         self._hash_key = None
-        self.download_path = download_path
 
     def _hash_values(self):
         return (self.name, self.hash_key)
@@ -57,8 +56,12 @@ class BaseSource(object):
         """Hash key is used for comparison sources initialised with different settings"""
         return "Base"
 
+    @property
+    def component_hash_required(self):  # type: () -> bool
+        return False
+
     @abstractmethod
-    def unique_path(self, name, details):
+    def unique_path(self, name, version):
         """Unique identifier"""
         pass
 
@@ -68,10 +71,18 @@ class BaseSource(object):
         pass
 
     @abstractmethod
-    def fetch(self, name, details):
+    def local_path(self, name, version, download_path):
+        """
+        returns absolute path to archive or directory with component on local filesystem
+        """
+
+        pass
+
+    @abstractmethod
+    def fetch(self, name, version, download_path):
         """
         Fetch required component version from the source
-        returns absolute path to archive or directory with component
+        Returns the same value as self.local_path() if download is successful
         """
 
         pass
