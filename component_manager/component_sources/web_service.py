@@ -13,6 +13,7 @@ from component_manager.utils.archive import ArchiveError, get_format_from_path
 
 from .base import BaseSource
 from .errors import FetchingError
+from .result import FetchingResult
 
 try:
     from urllib.parse import urlparse  # type: ignore
@@ -62,7 +63,7 @@ class WebServiceSource(BaseSource):
     def component_hash_required(self):  # type: () -> bool
         return True
 
-    def fetch(self, name, version, download_path):
+    def fetch(self, name, version, download_path):  # type: (str, str, str) -> FetchingResult
         if not version:
             raise FetchingError("Version should provided for %s" % name)
 
@@ -95,15 +96,17 @@ class WebServiceSource(BaseSource):
                 except IndexError:
                     raise FetchingError("Web Service returned invalid download url")
 
-            filename = "%s.%s" % (self.unique_path(name, version), extension)
-            file_path = os.path.join(download_path, filename)
+            unique_path = self.unique_path(name, version)
+            filename = "%s.%s" % (unique_path, extension)
+            directory = os.path.join(download_path, unique_path)
+            file_path = os.path.join(directory, filename)
 
             with open(file_path, "wb") as f:
                 for chunk in r.iter_content(chunk_size=65536):
                     if chunk:
                         f.write(chunk)
 
-        return file_path
+        return FetchingResult(directory, filename)
 
     def as_ordered_dict(self):  # type: () -> OrderedDict
         return OrderedDict([("service_url", self.base_url), ("type", self.name)])

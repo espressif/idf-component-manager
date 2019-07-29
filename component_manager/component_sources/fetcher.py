@@ -6,6 +6,7 @@ from component_manager.component_sources import BaseSource
 from component_manager.version_solver.solver_result import SolvedComponent
 
 from .errors import FetchingError
+from .result import FetchingResult
 
 
 class ComponentFetcher(object):
@@ -18,9 +19,6 @@ class ComponentFetcher(object):
         self.source = source if source else solved_component.source
         self.component = solved_component
         self.download_path = download_path
-
-    def local_dir(self):
-        return self.source.local_path()
 
     def up_to_date(self):  # type: () -> bool
         # TODO: verify that it's necessary to download component
@@ -36,7 +34,10 @@ class ComponentFetcher(object):
                 raise FetchingError("Cannot install components")
             return True
 
-    def fetch(self):  # type: () -> str
+    def local_dir(self):
+        return self.source.local_path()
+
+    def fetch(self):  # type: () -> FetchingResult
         """If necessary, it download and unpack component, returns local path to component directory"""
         if self.up_to_date():
             return self.local_dir()

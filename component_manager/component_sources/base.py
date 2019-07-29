@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 
 from .errors import SourceError
+from .result import FetchingResult
 
 
 class BaseSource(object):
@@ -73,16 +74,17 @@ class BaseSource(object):
     @abstractmethod
     def local_path(self, name, version, download_path):
         """
-        returns absolute path to archive or directory with component on local filesystem
+        Returns absolute path to archive or directory with component on local filesystem
         """
 
         pass
 
     @abstractmethod
-    def fetch(self, name, version, download_path):
+    def fetch(self, name, version, download_path):  # type: (str, str, str) -> FetchingResult
         """
         Fetch required component version from the source
-        Returns the same value as self.local_path() if download is successful
+        Returns absolute path to directory with component on local filesystem and filename,
+        if it's an archive
         """
 
         pass

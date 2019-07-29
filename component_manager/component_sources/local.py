@@ -6,6 +6,7 @@ from component_manager.manifest_pipeline import ManifestParser
 
 from .base import BaseSource
 from .errors import SourceError
+from .fetcher import FetchingResult
 
 
 class LocalSource(BaseSource):
@@ -36,6 +37,9 @@ class LocalSource(BaseSource):
     def unique_path(self, name, version):
         return ""
 
+    def local_path(self, name, version, download_path):  # type (str, str, str) -> str
+        return self._path
+
     def versions(self, name, spec):
         """For local return version from manifest, or 0.0.0 if manifest not found"""
         manifest_path = os.path.join(self._path, "idf_component.yml")
@@ -46,9 +50,8 @@ class LocalSource(BaseSource):
 
         return ComponentWithVersions(name=name, versions=[ComponentVersion(version_string)])
 
-    def fetch(self, name, version, download_path):
-        """`details` are ignored by this implementation"""
-        return self._path
+    def fetch(self, name, version, download_path):  # type: (str, str, str) -> FetchingResult
+        return FetchingResult(self._path)
 
     def as_ordered_dict(self):  # type: () -> OrderedDict
         return OrderedDict([("path", self._path), ("type", self.name)])

@@ -19,6 +19,7 @@ class APIClient(object):
         parts.append("")
         return "/".join(parts)
 
+    # TODO: add some caching to versions and component endpoints
     def versions(self, component_name, spec):
         """List of versions for given component with required spec"""
 

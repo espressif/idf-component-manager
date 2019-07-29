@@ -6,6 +6,7 @@ from semantic_version import Version
 from component_manager import ComponentVersion, ComponentWithVersions
 
 from .base import BaseSource
+from .result import FetchingResult
 
 
 class IDFSource(BaseSource):
@@ -39,11 +40,12 @@ class IDFSource(BaseSource):
 
         return ComponentWithVersions(name=name, versions=[ComponentVersion(self._version)])
 
-    def local_path(self, name, version, download_path):
-        return os.getenv("IDF_PATH")
+    def local_path(self, name, version, download_path):  # type: (str, str, str) -> str
+        # TODO: handle cases when IDF_PATH is not set
+        return os.environ["IDF_PATH"]
 
-    def fetch(self, name, version, download_path):
-        return self.local_path(name, version, download_path)
+    def fetch(self, name, version, download_path):  # type: (str, str, str) -> FetchingResult
+        return FetchingResult(self.local_path(name, version, download_path))
 
     def as_ordered_dict(self):  # type: () -> OrderedDict
         return OrderedDict([("type", self.name)])
