@@ -1,5 +1,7 @@
 import os
 import re
+import shutil
+import tempfile
 from collections import OrderedDict
 from hashlib import sha256
 from typing import Union
@@ -9,11 +11,10 @@ from semantic_version import Version
 
 from component_manager.api_client import APIClient
 from component_manager.manifest import ComponentWithVersions
-from component_manager.utils.archive import ArchiveError, get_format_from_path
+from component_manager.utils.archive import (ArchiveError, get_format_from_path, unpack_archive)
 
 from .base import BaseSource
 from .errors import FetchingError
-from .result import FetchingResult
 
 try:
     from urllib.parse import urlparse  # type: ignore
@@ -57,13 +58,18 @@ class WebServiceSource(BaseSource):
         return self.api_client.versions(name, spec)
 
     def unique_path(self, name, version):
-        return "~".join([name, version, self.hash_key])
+        return "~".join([name.replace('/', '~~'), version, self.hash_key])
 
     @property
     def component_hash_required(self):  # type: () -> bool
         return True
 
-    def fetch(self, name, version, download_path):  # type: (str, str, str) -> FetchingResult
+    @property
+    def downloadable(self):  # type: () -> bool
+        return True
+
+    def download(self, name, version, download_path):  # type: (str, str, str) -> str
+
         if not version:
             raise FetchingError("Version should provided for %s" % name)
 
@@ -96,17 +102,25 @@ class WebServiceSource(BaseSource):
                 except IndexError:
                     raise FetchingError("Web Service returned invalid download url")
 
-            unique_path = self.unique_path(name, version)
-            filename = "%s.%s" % (unique_path, extension)
-            directory = os.path.join(download_path, unique_path)
-            file_path = os.path.join(directory, filename)
+            tempdir = tempfile.mkdtemp()
 
-            with open(file_path, "wb") as f:
-                for chunk in r.iter_content(chunk_size=65536):
-                    if chunk:
-                        f.write(chunk)
+            try:
+                unique_path = self.unique_path(name, version)
+                filename = "%s.%s" % (unique_path, extension)
+                file_path = os.path.join(tempdir, filename)
 
-        return FetchingResult(directory, filename)
+                with open(file_path, "wb") as f:
+                    for chunk in r.iter_content(chunk_size=65536):
+                        if chunk:
+                            f.write(chunk)
+
+                # Unpack archive
+                unpack_archive(file_path, download_path)
+
+            finally:
+                shutil.rmtree(tempdir)
+
+        return download_path
 
     def as_ordered_dict(self):  # type: () -> OrderedDict
         return OrderedDict([("service_url", self.base_url), ("type", self.name)])

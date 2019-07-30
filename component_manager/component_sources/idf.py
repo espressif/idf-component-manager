@@ -6,7 +6,6 @@ from semantic_version import Version
 from component_manager import ComponentVersion, ComponentWithVersions
 
 from .base import BaseSource
-from .result import FetchingResult
 
 
 class IDFSource(BaseSource):
@@ -32,20 +31,14 @@ class IDFSource(BaseSource):
     def hash_key(self):
         return str(self._version)
 
-    def unique_path(self, name, version):
-        return ""
-
     def versions(self, name, spec):
         """Returns current idf version"""
 
         return ComponentWithVersions(name=name, versions=[ComponentVersion(self._version)])
 
-    def local_path(self, name, version, download_path):  # type: (str, str, str) -> str
+    def download(self, name, version, download_path):  # type: (str, str, str) -> str
         # TODO: handle cases when IDF_PATH is not set
         return os.environ["IDF_PATH"]
-
-    def fetch(self, name, version, download_path):  # type: (str, str, str) -> FetchingResult
-        return FetchingResult(self.local_path(name, version, download_path))
 
     def as_ordered_dict(self):  # type: () -> OrderedDict
         return OrderedDict([("type", self.name)])

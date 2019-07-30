@@ -55,7 +55,7 @@ class ComponentManager(object):
         print("Installing components from manifest")
         for component in solution.solved_components:
             # Check hash if hash present and download component if necessary
-            path = ComponentFetcher(component, self.components_path).fetch()
+            path = ComponentFetcher(component, self.components_path).download()
             print("Installed component %s to %s" % (component.name, path))
 
     def update(self, components=None):

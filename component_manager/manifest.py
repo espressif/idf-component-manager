@@ -33,9 +33,13 @@ class ComponentRequirement(object):
 
 
 class ComponentVersion(object):
-    def __init__(self, version, url_or_path=None):
+    def __init__(self, version, url_or_path=None, component_hash=None):
+        self.component_hash = component_hash
         self.version = version if isinstance(version, Version) else Version(version)
         self.url_or_path = url_or_path
+
+    def __str__(self):
+        return str(self.version)
 
 
 class ComponentWithVersions(object):

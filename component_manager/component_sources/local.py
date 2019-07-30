@@ -6,7 +6,6 @@ from component_manager.manifest_pipeline import ManifestParser
 
 from .base import BaseSource
 from .errors import SourceError
-from .fetcher import FetchingResult
 
 
 class LocalSource(BaseSource):
@@ -34,10 +33,7 @@ class LocalSource(BaseSource):
     def hash_key(self):
         self.source_details.get("path")
 
-    def unique_path(self, name, version):
-        return ""
-
-    def local_path(self, name, version, download_path):  # type (str, str, str) -> str
+    def download(self, name, version, download_path):
         return self._path
 
     def versions(self, name, spec):
@@ -49,9 +45,6 @@ class LocalSource(BaseSource):
                                              component=True).prepare().manifest_tree.get("version", "0.0.0"))
 
         return ComponentWithVersions(name=name, versions=[ComponentVersion(version_string)])
-
-    def fetch(self, name, version, download_path):  # type: (str, str, str) -> FetchingResult
-        return FetchingResult(self._path)
 
     def as_ordered_dict(self):  # type: () -> OrderedDict
         return OrderedDict([("path", self._path), ("type", self.name)])

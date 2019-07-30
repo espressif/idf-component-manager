@@ -2,7 +2,6 @@ from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 
 from .errors import SourceError
-from .result import FetchingResult
 
 
 class BaseSource(object):
@@ -59,12 +58,17 @@ class BaseSource(object):
 
     @property
     def component_hash_required(self):  # type: () -> bool
+        """Returns True if component's hash have to present and be validated"""
         return False
 
-    @abstractmethod
+    @property
+    def downloadable(self):  # type: () -> bool
+        """Returns True if components have to be fetched"""
+        return False
+
     def unique_path(self, name, version):
         """Unique identifier"""
-        pass
+        return ""
 
     @abstractmethod
     def versions(self, name, spec):
@@ -72,19 +76,10 @@ class BaseSource(object):
         pass
 
     @abstractmethod
-    def local_path(self, name, version, download_path):
-        """
-        Returns absolute path to archive or directory with component on local filesystem
-        """
-
-        pass
-
-    @abstractmethod
-    def fetch(self, name, version, download_path):  # type: (str, str, str) -> FetchingResult
+    def download(self, name, version, download_path):  # type: (str, str, str) -> str
         """
         Fetch required component version from the source
-        Returns absolute path to directory with component on local filesystem and filename,
-        if it's an archive
+        Returns absolute path to directory with component on local filesystem
         """
 
         pass

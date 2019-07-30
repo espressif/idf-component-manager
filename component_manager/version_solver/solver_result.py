@@ -39,7 +39,12 @@ class SolvedComponent(object):
         source_details = dict(details["source"])
         source_name = source_details.pop("type")
         source = SourceBuilder(source_name, source_details).build()
-        return cls(name=name, version=details["version"], source=source)
+        return cls(
+            name=name,
+            version=details["version"],
+            source=source,
+            component_hash=details.get("component_hash", None),
+        )
 
 
 class SolverResult(object):

@@ -79,4 +79,5 @@ class HashTools:
     ):
         # type: (...) -> bool
         """Check if directory hash is the same as provided"""
-        return cls.hash_dir(root, ignored_dirs, ignored_files) == hash
+
+        return os.path.isdir(root) and cls.hash_dir(root, ignored_dirs, ignored_files) == hash

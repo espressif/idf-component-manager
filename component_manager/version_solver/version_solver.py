@@ -20,14 +20,16 @@ class VersionSolver(object):
         # TODO: implement real solving, now it will fail on any collision
         # TODO: fetch full tree of dependencies, now it fetches only direct dependencies
         # Thats a quick stub that always installs latest version
-        solved_components = list(
-            map(
-                lambda component: SolvedComponent(
-                    name=component.name,
-                    version=max(component.source.versions(name=component.name, spec=component.version_spec).versions),
-                    source=component.source,
-                ),
-                self.manifest.dependencies,
-            ))
+        def best_version(component):
+            version = max(component.source.versions(name=component.name, spec=component.version_spec).versions)
+            return SolvedComponent(name=component.name,
+                                   version=version,
+                                   source=component.source,
+                                   component_hash=version.component_hash)
+
+        solved_components = list(map(
+            best_version,
+            self.manifest.dependencies,
+        ))
 
         return SolverResult(self.manifest, solved_components)

@@ -22,15 +22,17 @@ class TestComponentWebServiceSource(object):
         assert (source.unique_path("cmp", "1.0.0") == "cmp~1.0.0~%s" % self.EXAMPLE_HASH)
 
     @vcr.use_cassette("fixtures/vcr_cassettes/test_fetch_webservice.yaml")
-    def test_fetch(self):
+    def test_download(self):
         tempdir = tempfile.mkdtemp()
 
         try:
             source = WebServiceSource(source_details={"service_url": "http://127.0.0.1:8000/api"})
-            local_path = source.fetch("cmp", "0.0.1", download_path=tempdir)
+            download_path = os.path.join(tempdir, "cmp~0.0.1~%s" % self.LOCALHOST_HASH)
+            local_path = source.download("cmp", "0.0.1", download_path)
 
-            assert local_path == os.path.join(tempdir, "cmp~0.0.1~%s.tgz" % self.LOCALHOST_HASH)
-            assert os.path.isfile(local_path)
+            assert local_path == download_path
+            assert os.path.isdir(local_path)
+            assert os.path.isfile(os.path.join(local_path, "idf_component.yml"))
 
         finally:
             shutil.rmtree(tempdir)
@@ -45,10 +47,10 @@ class TestComponentLocalSource(object):
         source = LocalSource(source_details={"path": os.path.dirname(os.path.realpath(__file__))})
         assert source.unique_path("cmp", "*") == ""
 
-    def test_fetch(self):
+    def test_download(self):
         path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "manifests")
         source = LocalSource(source_details={"path": path})
-        assert source.fetch("cmp", "*", "/test/path/").endswith("manifests")
+        assert source.download("cmp", "*", "/test/path/").endswith("manifests")
 
     def test_versions_without_manifest(self):
 
