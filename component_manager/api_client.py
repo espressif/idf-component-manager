@@ -32,7 +32,11 @@ class APIClient(object):
             return ComponentWithVersions(
                 name=component_name,
                 versions=map(
-                    lambda v: ComponentVersion(version=v["version"], url_or_path=v["url"], component_hash=v["hash"]),
+                    lambda v: ComponentVersion(
+                        version=v["version"],
+                        url_or_path=v["url"],
+                        component_hash=v.get("hash", None),
+                    ),
                     response,
                 ),
             )
