@@ -15,7 +15,7 @@
 # Contains elements taken from "appdirs" python package
 # https://github.com/ActiveState/appdirs/tree/1.4.3
 # Copyright (c) 2005-2010 ActiveState Software Inc.
-# Copyright (c) 2013 Eddy Petrișor
+# Copyright (c) 2013 Eddy Petrisor
 # Originally released under MIT license
 """Classes to work with file cache"""
 
