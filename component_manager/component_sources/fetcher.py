@@ -43,7 +43,6 @@ class ComponentFetcher(object):
         if self.source.downloadable:
             # Check if component is up to date in managed components path
             if not self.up_to_date(self.managed_path):
-                print("Component %s wan't found in %s" % (self.component.name, self.managed_path))
                 # Check if it's up to date in the cache:
                 component_cache_path = os.path.join(
                     self.cache_path,
@@ -51,13 +50,12 @@ class ComponentFetcher(object):
                 )
 
                 if not self.up_to_date(component_cache_path):
-                    print("Cached component %s wan't found in %s" % (self.component.name, component_cache_path))
                     self.source.download(self.component.name, self.component.version, component_cache_path)
 
-                    if os.path.isdir(self.managed_path):
-                        shutil.rmtree(self.managed_path)
+                if os.path.isdir(self.managed_path):
+                    shutil.rmtree(self.managed_path)
 
-                    shutil.copytree(component_cache_path, self.managed_path)
+                shutil.copytree(component_cache_path, self.managed_path)
 
             return self.managed_path
 

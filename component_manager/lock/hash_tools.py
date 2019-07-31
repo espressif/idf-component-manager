@@ -12,7 +12,7 @@ class HashTools:
 
     BLOCK_SIZE = 65536
     IGNORED_DIRS = [".git", "__pycache__"]
-    IGNORED_FILES = ["*.pyc", "*.pyd", "*.pyo"]
+    IGNORED_FILES = ["*.pyc", "*.pyd", "*.pyo", ".DS_Store"]
 
     @classmethod
     def hash_object(cls, obj):  # type: (Any) -> str

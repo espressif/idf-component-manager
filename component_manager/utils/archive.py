@@ -2,7 +2,7 @@
 
 import os
 import re
-from shutil import get_archive_formats
+from shutil import get_archive_formats, rmtree
 
 
 class ArchiveError(RuntimeError):
@@ -34,9 +34,16 @@ def is_known_format(fmt):
     return False
 
 
-def _prepare_directory(directory):
+def _prepare_empty_directory(directory):
     """Prepare directory"""
-    if not os.path.exists(directory):
+    dir_exist = os.path.exists(directory)
+
+    # Delete path if it's not empty
+    if dir_exist and os.listdir(directory):
+        rmtree(directory)
+        dir_exist = False
+
+    if not dir_exist:
         os.makedirs(directory)
 
 
@@ -46,7 +53,7 @@ def unpack_tar(file, destination_directory):
 
     try:
         tar = tarfile.open(file)
-        _prepare_directory(destination_directory)
+        _prepare_empty_directory(destination_directory)
     except tarfile.TarError:
         raise ArchiveError("%s is not a valid tar archive" % file)
 
@@ -63,7 +70,7 @@ def unpack_zip(file, destination_directory):
     if not zipfile.is_zipfile(file):
         raise ArchiveError("%s is not a zip file" % file)
 
-    _prepare_directory(destination_directory)
+    _prepare_empty_directory(destination_directory)
 
     with zipfile.ZipFile(file) as zip:
         for item in zip.infolist():
@@ -71,7 +78,7 @@ def unpack_zip(file, destination_directory):
 
 
 def unpack_archive(file, destination_directory):
-    _prepare_directory(destination_directory)
+    _prepare_empty_directory(destination_directory)
     format, ext, handler = get_format_from_path(file)
     if not is_known_format(format):
         raise ArchiveError(".%s files are not supported on your system" % ext)

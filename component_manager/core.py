@@ -22,11 +22,9 @@ class ComponentManager(object):
 
         # Set path of manifest file for the project
         self.manifest_path = manifest_path or (os.path.join(path, "idf_project.yml") if os.path.isdir(path) else path)
-        print("\033[1;35;40m Manifest path", self.manifest_path, "\033[0m")
 
         # Lock path
         self.lock_path = lock_path or (os.path.join(path, "dependencies.lock") if os.path.isdir(path) else path)
-        print("\033[1;35;40m Lock path", self.lock_path, "\033[0m")
 
         # Working directory
         self.path = path if os.path.isdir(path) else os.path.dirname(path)
@@ -46,17 +44,28 @@ class ComponentManager(object):
         solution = SolverResult.from_yaml(manifest, lock)
 
         if manifest.manifest_hash != lock["manifest_hash"]:
-            print("Updating lock file")
+            print("Updating lock file at %s" % self.lock_path)
             solver = VersionSolver(manifest, lock)
             solution = solver.solve()
             lock_manager.dump(solution.as_ordered_dict())
 
         # Download components
-        print("Installing components from manifest")
-        for component in solution.solved_components:
+        if not solution.solved_components:
+            return
+
+        components_count = len(solution.solved_components)
+        count_string = "dependencies" if components_count != 1 else "dependency"
+        print("Processing %s %s" % (components_count, count_string))
+        line_len = 0
+        for i, component in enumerate(solution.solved_components):
             # Check hash if hash present and download component if necessary
-            path = ComponentFetcher(component, self.components_path).download()
-            print("Installed component %s to %s" % (component.name, path))
+            line = ("[%d/%d] Processing component %s" % (i + 1, components_count, component.name)).rjust(line_len, ' ')
+            line_len = len(line)
+
+            print(line, end='\r')
+            ComponentFetcher(component, self.components_path).download()
+
+        print("Successfully processed %s %s" % (components_count, count_string))
 
     def update(self, components=None):
         if components is None:

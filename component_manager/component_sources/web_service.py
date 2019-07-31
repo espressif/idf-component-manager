@@ -58,7 +58,7 @@ class WebServiceSource(BaseSource):
         return self.api_client.versions(name, spec)
 
     def unique_path(self, name, version):
-        return "~".join([name.replace('/', '~~'), version, self.hash_key])
+        return "~".join([name.replace('/', '~~'), str(version), self.hash_key])
 
     @property
     def component_hash_required(self):  # type: () -> bool
@@ -92,6 +92,10 @@ class WebServiceSource(BaseSource):
                 extension = get_format_from_path(original_filename)[1]
             except ArchiveError:
                 extension = None
+
+            if r.status_code != 200:
+                raise FetchingError("Cannot download component %s@%s. Server returned HTTP code %s" %
+                                    (name, version, r.status_code))
 
             # If didn't find anything useful, trying content disposition
             content_disposition = r.headers.get("content-disposition")
