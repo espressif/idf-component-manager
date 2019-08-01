@@ -17,6 +17,8 @@
 # Copyright (c) 2018 Sébastien Eustace
 # Originally released under MIT license
 
+# type: ignore
+
 from typing import Dict, List
 
 from .incompatibility_cause import (ConflictCause, DependencyCause, IncompatibilityCause, NoVersionsCause,
@@ -110,14 +112,14 @@ class Incompatibility:
             assert depender.is_positive()  # nosec
             assert not dependee.is_positive()  # nosec
 
-            return "{} depends on {}".format(self._terse(depender, allow_every=True), self._terse(dependee))
+            return '{} depends on {}'.format(self._terse(depender, allow_every=True), self._terse(dependee))
         elif isinstance(self._cause, PythonCause):
             assert len(self._terms) == 1  # nosec
             assert self._terms[0].is_positive()  # nosec
 
             cause = self._cause  # type: PythonCause
-            text = "{} requires ".format(self._terse(self._terms[0], allow_every=True))
-            text += "Python {}".format(cause.python_version)
+            text = '{} requires '.format(self._terse(self._terms[0], allow_every=True))
+            text += 'Python {}'.format(cause.python_version)
 
             return text
         elif isinstance(self._cause, PlatformCause):
@@ -125,15 +127,15 @@ class Incompatibility:
             assert self._terms[0].is_positive()  # nosec
 
             cause = self._cause  # type: PlatformCause
-            text = "{} requires ".format(self._terse(self._terms[0], allow_every=True))
-            text += "platform {}".format(cause.platform)
+            text = '{} requires '.format(self._terse(self._terms[0], allow_every=True))
+            text += 'platform {}'.format(cause.platform)
 
             return text
         elif isinstance(self._cause, NoVersionsCause):
             assert len(self._terms) == 1  # nosec
             assert self._terms[0].is_positive()  # nosec
 
-            return "no versions of {} match {}".format(self._terms[0].dependency.name, self._terms[0].constraint)
+            return 'no versions of {} match {}'.format(self._terms[0].dependency.name, self._terms[0].constraint)
         elif isinstance(self._cause, PackageNotFoundCause):
             assert len(self._terms) == 1  # nosec
             assert self._terms[0].is_positive()  # nosec
@@ -144,21 +146,21 @@ class Incompatibility:
             assert not self._terms[0].is_positive()  # nosec
             assert self._terms[0].dependency.is_root  # nosec
 
-            return "{} is {}".format(self._terms[0].dependency.name, self._terms[0].dependency.constraint)
+            return '{} is {}'.format(self._terms[0].dependency.name, self._terms[0].dependency.constraint)
         elif self.is_failure():
-            return "version solving failed"
+            return 'version solving failed'
 
         if len(self._terms) == 1:
             term = self._terms[0]
             if term.constraint.is_any():
-                return "{} is {}".format(
+                return '{} is {}'.format(
                     term.dependency.name,
-                    "forbidden" if term.is_positive() else "required",
+                    'forbidden' if term.is_positive() else 'required',
                 )
             else:
-                return "{} is {}".format(
+                return '{} is {}'.format(
                     term.dependency.name,
-                    "forbidden" if term.is_positive() else "required",
+                    'forbidden' if term.is_positive() else 'required',
                 )
 
         if len(self._terms) == 2:
@@ -170,9 +172,9 @@ class Incompatibility:
                     package1 = (term1.dependency.name if term1.constraint.is_any() else self._terse(term1))
                     package2 = (term2.dependency.name if term2.constraint.is_any() else self._terse(term2))
 
-                    return "{} is incompatible with {}".format(package1, package2)
+                    return '{} is incompatible with {}'.format(package1, package2)
                 else:
-                    return "either {} or {}".format(self._terse(term1), self._terse(term2))
+                    return 'either {} or {}'.format(self._terse(term1), self._terse(term2))
 
         positive = []
         negative = []
@@ -187,13 +189,13 @@ class Incompatibility:
             if len(positive) == 1:
                 positive_term = [term for term in self._terms if term.is_positive()][0]
 
-                return "{} requires {}".format(self._terse(positive_term, allow_every=True), " or ".join(negative))
+                return '{} requires {}'.format(self._terse(positive_term, allow_every=True), ' or '.join(negative))
             else:
-                return "if {} then {}".format(" and ".join(positive), " or ".join(negative))
+                return 'if {} then {}'.format(' and '.join(positive), ' or '.join(negative))
         elif positive:
-            return "one of {} must be false".format(" or ".join(positive))
+            return 'one of {} must be false'.format(' or '.join(positive))
         else:
-            return "one of {} must be true".format(" or ".join(negative))
+            return 'one of {} must be true'.format(' or '.join(negative))
 
     def and_to_string(self, other, details, this_line, other_line):  # type: (Incompatibility, dict, int, int) -> str
         requires_both = self._try_requires_both(other, details, this_line, other_line)
@@ -210,14 +212,14 @@ class Incompatibility:
 
         buffer = [str(self)]
         if this_line is not None:
-            buffer.append(" " + this_line)
+            buffer.append(' ' + this_line)
 
-        buffer.append(" and {}".format(str(other)))
+        buffer.append(' and {}'.format(str(other)))
 
         if other_line is not None:
-            buffer.append(" " + other_line)
+            buffer.append(' ' + other_line)
 
-        return "\n".join(buffer)
+        return '\n'.join(buffer)
 
     def _try_requires_both(self, other, details, this_line,
                            other_line):  # type: (Incompatibility, dict, int, int) -> str
@@ -235,28 +237,28 @@ class Incompatibility:
         if this_positive.dependency != other_positive.dependency:
             return
 
-        this_negatives = " or ".join([self._terse(term) for term in self._terms if not term.is_positive()])
+        this_negatives = ' or '.join([self._terse(term) for term in self._terms if not term.is_positive()])
 
-        other_negatives = " or ".join([self._terse(term) for term in other.terms if not term.is_positive()])
+        other_negatives = ' or '.join([self._terse(term) for term in other.terms if not term.is_positive()])
 
-        buffer = [self._terse(this_positive, allow_every=True) + " "]
+        buffer = [self._terse(this_positive, allow_every=True) + ' ']
         is_dependency = isinstance(self.cause, DependencyCause) and isinstance(other.cause, DependencyCause)
 
         if is_dependency:
-            buffer.append("depends on")
+            buffer.append('depends on')
         else:
-            buffer.append("requires")
+            buffer.append('requires')
 
-        buffer.append(" both {}".format(this_negatives))
+        buffer.append(' both {}'.format(this_negatives))
         if this_line is not None:
-            buffer.append(" ({})".format(this_line))
+            buffer.append(' ({})'.format(this_line))
 
-        buffer.append(" and {}".format(other_negatives))
+        buffer.append(' and {}'.format(other_negatives))
 
         if other_line is not None:
-            buffer.append(" ({})".format(other_line))
+            buffer.append(' ({})'.format(other_line))
 
-        return "".join(buffer)
+        return ''.join(buffer)
 
     def _try_requires_through(self, other, details, this_line,
                               other_line):  # type: (Incompatibility, dict, int, int) -> str
@@ -295,33 +297,33 @@ class Incompatibility:
 
         buffer = []
         if len(prior_positives) > 1:
-            prior_string = " or ".join([self._terse(term) for term in prior_positives])
-            buffer.append("if {} then ".format(prior_string))
+            prior_string = ' or '.join([self._terse(term) for term in prior_positives])
+            buffer.append('if {} then '.format(prior_string))
         else:
             if isinstance(prior.cause, DependencyCause):
-                verb = "depends on"
+                verb = 'depends on'
             else:
-                verb = "requires"
+                verb = 'requires'
 
-            buffer.append("{} {} ".format(self._terse(prior_positives[0], allow_every=True), verb))
+            buffer.append('{} {} '.format(self._terse(prior_positives[0], allow_every=True), verb))
 
         buffer.append(self._terse(prior_negative))
         if prior_line is not None:
-            buffer.append(" ({})".format(prior_line))
+            buffer.append(' ({})'.format(prior_line))
 
-        buffer.append(" which ")
+        buffer.append(' which ')
 
         if isinstance(latter.cause, DependencyCause):
-            buffer.append("depends on ")
+            buffer.append('depends on ')
         else:
-            buffer.append("requires ")
+            buffer.append('requires ')
 
-        buffer.append(" or ".join([self._terse(term) for term in latter.terms if not term.is_positive()]))
+        buffer.append(' or '.join([self._terse(term) for term in latter.terms if not term.is_positive()]))
 
         if latter_line is not None:
-            buffer.append(" ({})".format(latter_line))
+            buffer.append(' ({})'.format(latter_line))
 
-        return "".join(buffer)
+        return ''.join(buffer)
 
     def _try_requires_forbidden(self, other, details, this_line,
                                 other_line):  # type: (Incompatibility, dict, int, int) -> str
@@ -350,37 +352,37 @@ class Incompatibility:
 
         buffer = []
         if len(positives) > 1:
-            prior_string = " or ".join([self._terse(term) for term in positives])
-            buffer.append("if {} then ".format(prior_string))
+            prior_string = ' or '.join([self._terse(term) for term in positives])
+            buffer.append('if {} then '.format(prior_string))
         else:
             buffer.append(self._terse(positives[0], allow_every=True))
             if isinstance(prior.cause, DependencyCause):
-                buffer.append(" depends on ")
+                buffer.append(' depends on ')
             else:
-                buffer.append(" requires ")
+                buffer.append(' requires ')
 
-        buffer.append(self._terse(latter.terms[0]) + " ")
+        buffer.append(self._terse(latter.terms[0]) + ' ')
         if prior_line is not None:
-            buffer.append("({}) ".format(prior_line))
+            buffer.append('({}) '.format(prior_line))
 
         if isinstance(latter.cause, PythonCause):
             cause = latter.cause  # type: PythonCause
-            buffer.append("which requires Python {}".format(cause.python_version))
+            buffer.append('which requires Python {}'.format(cause.python_version))
         elif isinstance(latter.cause, NoVersionsCause):
             buffer.append("which doesn't match any versions")
         elif isinstance(latter.cause, PackageNotFoundCause):
             buffer.append("which doesn't exist")
         else:
-            buffer.append("which is forbidden")
+            buffer.append('which is forbidden')
 
         if latter_line is not None:
-            buffer.append(" ({})".format(latter_line))
+            buffer.append(' ({})'.format(latter_line))
 
-        return "".join(buffer)
+        return ''.join(buffer)
 
     def _terse(self, term, allow_every=False):
         if allow_every and term.constraint.is_any():
-            return "every version of {}".format(term.dependency.name)
+            return 'every version of {}'.format(term.dependency.name)
 
         return str(term.dependency)
 
@@ -398,4 +400,4 @@ class Incompatibility:
         return found
 
     def __repr__(self):
-        return "<Incompatibility {}>".format(str(self))
+        return '<Incompatibility {}>'.format(str(self))

@@ -43,16 +43,16 @@ class FileCache(object):
         """Path of cache directory"""
         system_cache_path = SystemCachePath()
 
-        if sys.platform.startswith("win"):
+        if sys.platform.startswith('win'):
             cache_directory = system_cache_path.cache_path_win()
-            return os.path.join(cache_directory, "Espressif", "ComponentManager", "Cache")
+            return os.path.join(cache_directory, 'Espressif', 'ComponentManager', 'Cache')
         else:
-            if sys.platform == "darwin":
+            if sys.platform == 'darwin':
                 cache_directory = system_cache_path.cache_path_macos()
             else:
                 cache_directory = system_cache_path.cache_path_unix()
 
-            return os.path.join(cache_directory, "Espressif", "ComponentManager")
+            return os.path.join(cache_directory, 'Espressif', 'ComponentManager')
 
 
 class SystemCachePath(object):
@@ -70,7 +70,7 @@ class SystemCachePath(object):
         else:
             import _winreg
 
-        shell_folder_name = "Local AppData"
+        shell_folder_name = 'Local AppData'
 
         key = _winreg.OpenKey(
             _winreg.HKEY_CURRENT_USER,
@@ -82,7 +82,7 @@ class SystemCachePath(object):
     def _get_win_folder_with_pywin32(self):
         from win32com.shell import shellcon, shell
 
-        dir = shell.SHGetFolderPath(0, getattr(shellcon, "CSIDL_LOCAL_APPDATA"), 0, 0)
+        dir = shell.SHGetFolderPath(0, getattr(shellcon, 'CSIDL_LOCAL_APPDATA'), 0, 0)
         # Try to make this a unicode path because SHGetFolderPath does
         # not return unicode strings when there is unicode data in the
         # path.
@@ -134,16 +134,16 @@ class SystemCachePath(object):
         from com.sun.jna.platform import win32
 
         buf_size = win32.WinDef.MAX_PATH * 2
-        buf = array.zeros("c", buf_size)
+        buf = array.zeros('c', buf_size)
         shell = win32.Shell32.INSTANCE
         shell.SHGetFolderPath(
             None,
-            getattr(win32.ShlObj, "CSIDL_LOCAL_APPDATA"),
+            getattr(win32.ShlObj, 'CSIDL_LOCAL_APPDATA'),
             None,
             win32.ShlObj.SHGFP_TYPE_CURRENT,
             buf,
         )
-        dir = jna.Native.toString(buf.tostring()).rstrip("\0")
+        dir = jna.Native.toString(buf.tostring()).rstrip('\0')
 
         # Downgrade to short path name if have highbit chars.
         has_high_char = False
@@ -152,10 +152,10 @@ class SystemCachePath(object):
                 has_high_char = True
                 break
         if has_high_char:
-            buf = array.zeros("c", buf_size)
+            buf = array.zeros('c', buf_size)
             kernel = win32.Kernel32.INSTANCE
             if kernel.GetShortPathName(dir, buf, buf_size):
-                dir = jna.Native.toString(buf.tostring()).rstrip("\0")
+                dir = jna.Native.toString(buf.tostring()).rstrip('\0')
 
         return dir
 
@@ -178,7 +178,7 @@ class SystemCachePath(object):
                     return self._get_win_folder_from_registry()
 
     def cache_path_macos(self):
-        return os.path.expanduser("~/Library/Caches")
+        return os.path.expanduser('~/Library/Caches')
 
     def cache_path_unix(self):
-        return os.getenv("XDG_CACHE_HOME", os.path.expanduser("~/.cache"))
+        return os.getenv('XDG_CACHE_HOME', os.path.expanduser('~/.cache'))

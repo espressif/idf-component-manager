@@ -15,27 +15,27 @@ class APIClient(object):
         """
         Joins given arguments into an url and add trailing slash
         """
-        parts = list(map(lambda x: x[:-1] if x and x[-1] == "/" else x, args))
-        parts.append("")
-        return "/".join(parts)
+        parts = list(map(lambda x: x[:-1] if x and x[-1] == '/' else x, args))
+        parts.append('')
+        return '/'.join(parts)
 
     # TODO: add some caching to versions and component endpoints
     def versions(self, component_name, spec):
         """List of versions for given component with required spec"""
 
-        endpoint = self.join_url(self.base_url, "components", component_name, "versions")
+        endpoint = self.join_url(self.base_url, 'components', component_name, 'versions')
 
         try:
-            r = requests.get(endpoint, params={"versions": spec})
+            r = requests.get(endpoint, params={'versions': spec})
             response = r.json()
 
             return ComponentWithVersions(
                 name=component_name,
                 versions=map(
                     lambda v: ComponentVersion(
-                        version=v["version"],
-                        url_or_path=v["url"],
-                        component_hash=v.get("hash", None),
+                        version=v['version'],
+                        url_or_path=v['url'],
+                        component_hash=v.get('hash', None),
                     ),
                     response,
                 ),
@@ -47,22 +47,22 @@ class APIClient(object):
             print(e)
 
         except KeyError:
-            print("Unexpected component server response")
+            print('Unexpected component server response')
 
     def component(self, component_name, version=None):
         """Manifest for given version of component"""
 
-        endpoint = self.join_url(self.base_url, "components", component_name)
+        endpoint = self.join_url(self.base_url, 'components', component_name)
 
         try:
             r = requests.get(endpoint)
             response = r.json()
 
             return Manifest(
-                name=response["name"],
-                version=Version(response["version"]),
-                maintainers=response["maintainers"],
-                url=response["url"],
+                name=response['name'],
+                version=Version(response['version']),
+                maintainers=response['maintainers'],
+                url=response['url'],
                 # TODO: add dependencies
                 dependencies=None,
             )
@@ -73,4 +73,4 @@ class APIClient(object):
             print(e)
 
         except KeyError:
-            print("Unexpected component server response")
+            print('Unexpected component server response')

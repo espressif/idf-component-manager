@@ -17,6 +17,8 @@
 # Copyright (c) 2018 Sébastien Eustace
 # Originally released under MIT license
 
+# type: ignore
+
 from .version_solver import VersionSolver
 
 

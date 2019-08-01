@@ -23,8 +23,8 @@ class SetRelation:
     An enum of possible relationships between two sets.
     """
 
-    SUBSET = "subset"
+    SUBSET = 'subset'
 
-    DISJOINT = "disjoint"
+    DISJOINT = 'disjoint'
 
-    OVERLAPPING = "overlapping"
+    OVERLAPPING = 'overlapping'

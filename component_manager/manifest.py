@@ -26,7 +26,7 @@ class Manifest(object):
 
 
 class ComponentRequirement(object):
-    def __init__(self, name, source, versions=None, version_spec="*"):
+    def __init__(self, name, source, versions=None, version_spec='*'):
         self.version_spec = version_spec
         self.source = source
         self.name = name

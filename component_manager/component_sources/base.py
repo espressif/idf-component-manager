@@ -15,7 +15,7 @@ class BaseSource(object):
                 unknown_keys.append(key)
 
         if unknown_keys:
-            raise SourceError("Unknown keys in dependency details: %s" % ", ".join(unknown_keys))
+            raise SourceError('Unknown keys in dependency details: %s' % ', '.join(unknown_keys))
 
         self._source_details = source_details if source_details else {}
         self._hash_key = None
@@ -40,7 +40,7 @@ class BaseSource(object):
     @staticmethod
     def known_keys():
         """List of known details key"""
-        return ["version"]
+        return ['version']
 
     @classmethod
     def build_if_me(cls, name, details):
@@ -49,12 +49,12 @@ class BaseSource(object):
 
     @property
     def name(self):
-        return "base"
+        return 'base'
 
     @property
     def hash_key(self):
         """Hash key is used for comparison sources initialised with different settings"""
-        return "Base"
+        return 'Base'
 
     @property
     def component_hash_required(self):  # type: () -> bool
@@ -68,7 +68,7 @@ class BaseSource(object):
 
     def unique_path(self, name, version):
         """Unique identifier"""
-        return ""
+        return ''
 
     @abstractmethod
     def versions(self, name, spec):

@@ -6,11 +6,11 @@ from semantic_version import Spec, Version
 class ManifestValidator(object):
     """Validator for manifest object, checks for structure, known fields and valid values"""
 
-    KNOWN_ROOT_KEYS = ("maintainers", "dependencies", "targets", "version", "name", "description")
+    KNOWN_ROOT_KEYS = ('maintainers', 'dependencies', 'targets', 'version', 'name', 'description')
 
-    KNOWN_COMPONENT_KEYS = ("version", "path")
+    KNOWN_COMPONENT_KEYS = ('version', 'path')
 
-    KNOWN_PLATFORMS = ("esp32", )
+    KNOWN_PLATFORMS = ('esp32', )
 
     SLUG_RE = re.compile(r"^[-a-zA-Z0-9_/]+\Z")
 
@@ -28,7 +28,7 @@ class ManifestValidator(object):
 
     def _validate_version_spec(self, component, spec):
         try:
-            Spec.parse(spec or "*")
+            Spec.parse(spec or '*')
         except ValueError:
             self.add_error('Version specifications for "%s" are invalid.' % component)
 
@@ -38,25 +38,25 @@ class ManifestValidator(object):
     def validate_root_keys(self):
         unknown = self._validate_keys(self.manifest_tree, self.KNOWN_ROOT_KEYS)
         if unknown:
-            self.add_error("Unknown keys: %s" % ", ".join(unknown))
+            self.add_error('Unknown keys: %s' % ', '.join(unknown))
 
         return self
 
     def validate_root_values(self):
-        version = self.manifest_tree.get("version", None)
+        version = self.manifest_tree.get('version', None)
         try:
             if version:
                 Version.parse(version)
         except ValueError:
-            self.add_error("Project version should be valid semantic version")
+            self.add_error('Project version should be valid semantic version')
 
         return self
 
     def validate_normalize_dependencies(self):
-        if ("dependencies" not in self.manifest_tree.keys() or not self.manifest_tree["dependencies"]):
+        if ('dependencies' not in self.manifest_tree.keys() or not self.manifest_tree['dependencies']):
             return self
 
-        dependencies = self.manifest_tree["dependencies"]
+        dependencies = self.manifest_tree['dependencies']
 
         # List of components should be a dictionary.
         if not isinstance(dependencies, dict):
@@ -71,13 +71,13 @@ class ManifestValidator(object):
                                component)
 
             if isinstance(details, str):
-                dependencies[component] = details = {"version": details}
+                dependencies[component] = details = {'version': details}
 
             if isinstance(details, dict):
                 unknown = self._validate_keys(details, self.KNOWN_COMPONENT_KEYS)
                 if unknown:
-                    self.add_error('Unknown attributes for component "%s": %s' % (component, ", ".join(unknown)))
-                self._validate_version_spec(component, details.get("version", ""))
+                    self.add_error('Unknown attributes for component "%s": %s' % (component, ', '.join(unknown)))
+                self._validate_version_spec(component, details.get('version', ''))
             else:
                 self.add_error(
                     '"%s" version have unknown format. Should be either version string or dictionary with details' %
@@ -87,13 +87,13 @@ class ManifestValidator(object):
         return self
 
     def validate_targets(self):
-        targets = self.manifest_tree.get("targets", [])
+        targets = self.manifest_tree.get('targets', [])
 
         if isinstance(targets, str):
             targets = [targets]
 
         if not isinstance(targets, list):
-            self.add_error("Unknown format for list of supported targets")
+            self.add_error('Unknown format for list of supported targets')
             return self
 
         unknown_targets = []
@@ -102,7 +102,7 @@ class ManifestValidator(object):
                 unknown_targets.append(target)
 
         if unknown_targets:
-            self.add_error("Unknown targets: %s" % ", ".join(unknown_targets))
+            self.add_error('Unknown targets: %s' % ', '.join(unknown_targets))
 
         return self
 

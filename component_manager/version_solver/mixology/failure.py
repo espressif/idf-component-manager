@@ -17,6 +17,8 @@
 # Copyright (c) 2018 Sébastien Eustace
 # Originally released under MIT license
 
+# type: ignore
+
 from typing import Dict, List, Tuple
 
 from .incompatibility import Incompatibility
@@ -55,22 +57,22 @@ class _Writer:
 
         if required_python_version is not None:
             buffer.append(
-                "The current project must support the following Python versions: {}".format(required_python_version))
-            buffer.append("")
+                'The current project must support the following Python versions: {}'.format(required_python_version))
+            buffer.append('')
 
         if isinstance(self._root.cause, ConflictCause):
             self._visit(self._root, {})
         else:
-            self._write(self._root, "Because {}, version solving failed.".format(self._root))
+            self._write(self._root, 'Because {}, version solving failed.'.format(self._root))
 
-        padding = (0 if not self._line_numbers else len("({}) ".format(list(self._line_numbers.values())[-1])))
+        padding = (0 if not self._line_numbers else len('({}) '.format(list(self._line_numbers.values())[-1])))
 
         last_was_empty = False
         for line in self._lines:
             message = line[0]
             if not message:
                 if not last_was_empty:
-                    buffer.append("")
+                    buffer.append('')
 
                 last_was_empty = True
                 continue
@@ -79,13 +81,13 @@ class _Writer:
 
             number = line[-1]
             if number is not None:
-                message = "({})".format(number).ljust(padding) + message
+                message = '({})'.format(number).ljust(padding) + message
             else:
-                message = " " * padding + message
+                message = ' ' * padding + message
 
             buffer.append(message)
 
-        return "\n".join(buffer)
+        return '\n'.join(buffer)
 
     def _write(self, incompatibility, message, numbered=False):  # type: (Incompatibility, str, bool) -> None
         if numbered:
@@ -98,7 +100,7 @@ class _Writer:
     def _visit(self, incompatibility, details_for_incompatibility,
                conclusion=False):  # type: (Incompatibility, Dict, bool) -> None
         numbered = conclusion or self._derivations[incompatibility] > 1
-        conjunction = "So," if conclusion or incompatibility == self._root else "And"
+        conjunction = 'So,' if conclusion or incompatibility == self._root else 'And'
         incompatibility_string = str(incompatibility)
 
         cause = incompatibility.cause  # type: ConflictCause
@@ -110,7 +112,7 @@ class _Writer:
             if conflict_line is not None and other_line is not None:
                 self._write(
                     incompatibility,
-                    "Because {}, {}.".format(
+                    'Because {}, {}.'.format(
                         cause.conflict.and_to_string(cause.other, details_for_cause, conflict_line, other_line),
                         incompatibility_string,
                     ),
@@ -129,7 +131,7 @@ class _Writer:
                 self._visit(without_line, details_for_cause)
                 self._write(
                     incompatibility,
-                    "{} because {} ({}), {}.".format(conjunction, str(with_line), line, incompatibility_string),
+                    '{} because {} ({}), {}.'.format(conjunction, str(with_line), line, incompatibility_string),
                     numbered=numbered,
                 )
             else:
@@ -143,18 +145,18 @@ class _Writer:
                     self._visit(second, details_for_cause)
                     self._write(
                         incompatibility,
-                        "Thus, {}.".format(incompatibility_string),
+                        'Thus, {}.'.format(incompatibility_string),
                         numbered=numbered,
                     )
                 else:
                     self._visit(cause.conflict, {}, conclusion=True)
-                    self._lines.append(("", None))
+                    self._lines.append(('', None))
 
                     self._visit(cause.other, details_for_cause)
 
                     self._write(
                         incompatibility,
-                        "{} because {} ({}), {}".format(
+                        '{} because {} ({}), {}'.format(
                             conjunction,
                             str(cause.conflict),
                             self._line_numbers[cause.conflict],
@@ -170,7 +172,7 @@ class _Writer:
             if derived_line is not None:
                 self._write(
                     incompatibility,
-                    "Because {}, {}.".format(
+                    'Because {}, {}.'.format(
                         ext.and_to_string(derived, details_for_cause, None, derived_line),
                         incompatibility_string,
                     ),
@@ -193,7 +195,7 @@ class _Writer:
                 self._visit(collapsed_derived, details_for_cause)
                 self._write(
                     incompatibility,
-                    "{} because {}, {}.".format(
+                    '{} because {}, {}.'.format(
                         conjunction,
                         collapsed_ext.and_to_string(ext, details_for_cause, None, None),
                         incompatibility_string,
@@ -204,13 +206,13 @@ class _Writer:
                 self._visit(derived, details_for_cause)
                 self._write(
                     incompatibility,
-                    "{} because {}, {}.".format(conjunction, str(ext), incompatibility_string),
+                    '{} because {}, {}.'.format(conjunction, str(ext), incompatibility_string),
                     numbered=numbered,
                 )
         else:
             self._write(
                 incompatibility,
-                "Because {}, {}.".format(
+                'Because {}, {}.'.format(
                     cause.conflict.and_to_string(cause.other, details_for_cause, None, None),
                     incompatibility_string,
                 ),

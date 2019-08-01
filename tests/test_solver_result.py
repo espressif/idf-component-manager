@@ -7,8 +7,8 @@ from component_manager.version_solver.solver_result import (SolvedComponent, Sol
 
 valid_lock_path = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
-    "manifests",
-    "dependencies.lock",
+    'manifests',
+    'dependencies.lock',
 )
 
 
@@ -19,8 +19,8 @@ class TestSolverResult(object):
         solution = SolverResult.from_yaml(Manifest(), lock)
 
         assert len(solution.solved_components) == 2
-        assert solution.solved_components[0].version == "4.4.4"
+        assert solution.solved_components[0].version == '4.4.4'
         cmp = solution.solved_components[1]
         assert isinstance(cmp, SolvedComponent)
         assert isinstance(cmp.source, WebServiceSource)
-        assert cmp.source.base_url == "https://repo.example.com"
+        assert cmp.source.base_url == 'https://repo.example.com'

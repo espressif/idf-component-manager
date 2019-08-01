@@ -10,15 +10,15 @@ from strictyaml import load as load_yaml
 class LockManager:
     COMPONENT_SCHEMA = EmptyDict() | MapPattern(
         Str(), Map({
-            Optional("component_hash"): Str(),
-            "source": (MapPattern(Str(), Str())),
-            "version": Str(),
+            Optional('component_hash'): Str(),
+            'source': (MapPattern(Str(), Str())),
+            'version': Str(),
         }))
 
     LOCK_SCHEMA = Map({
-        "component_manager_version": Str(),
-        "dependencies": COMPONENT_SCHEMA,
-        "manifest_hash": Str(),
+        'component_manager_version': Str(),
+        'dependencies': COMPONENT_SCHEMA,
+        'manifest_hash': Str(),
     })
 
     def __init__(self, path):
@@ -28,13 +28,13 @@ class LockManager:
         """Writes updated lockfile to disk"""
 
         comment = (
-            "# This file is generated automatically by IDF component management tool.\n",
-            "# Please do not edit it manually. Run `idf.py component install` to update this lock file.\n",
+            '# This file is generated automatically by IDF component management tool.\n',
+            '# Please do not edit it manually. Run `idf.py component install` to update this lock file.\n',
         )
 
         new_file = not os.path.exists(self._path)
 
-        with open(self._path, "w") as f:
+        with open(self._path, 'w') as f:
             if new_file:
                 f.writelines(comment)
 
@@ -45,21 +45,21 @@ class LockManager:
         if not os.path.exists(self._path):
             return as_document(
                 OrderedDict([
-                    ("component_manager_version", ""),
-                    ("dependencies", OrderedDict()),
-                    ("manifest_hash", ""),
+                    ('component_manager_version', ''),
+                    ('dependencies', OrderedDict()),
+                    ('manifest_hash', ''),
                 ]),
                 schema=self.LOCK_SCHEMA,
             )
 
-        with open(self._path, "r") as f:
+        with open(self._path, 'r') as f:
             try:
                 # Load and validate
                 lock = load_yaml(f.read(), schema=self.LOCK_SCHEMA)
                 return lock
             except YAMLError as e:
-                print(("Error: Cannot parse components lock file. Please check that\n\t%s\nis valid YAML file.\n"
-                       "You can delete corrupted lock file and it will be recreated on next run. "
-                       "Some components may be updated in this case.") % self._path)
+                print(('Error: Cannot parse components lock file. Please check that\n\t%s\nis valid YAML file.\n'
+                       'You can delete corrupted lock file and it will be recreated on next run. '
+                       'Some components may be updated in this case.') % self._path)
                 print(e)
                 sys.exit(1)

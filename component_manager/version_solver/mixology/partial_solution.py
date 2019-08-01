@@ -17,6 +17,8 @@
 # Copyright (c) 2018 Sébastien Eustace
 # Originally released under MIT license
 
+# type: ignore
+
 from collections import OrderedDict
 from typing import Dict, List
 
@@ -36,7 +38,6 @@ class PartialSolution:
     #
     # See https://github.com/dart-lang/mixology/tree/master/doc/solver.md#partial-solution.
     """
-
     def __init__(self):
         # The assignments that have been made so far, in the order they were
         # assigned.
@@ -202,7 +203,7 @@ class PartialSolution:
             if assigned_term.satisfies(term):
                 return assignment
 
-        raise RuntimeError("[BUG] {} is not satisfied.".format(term))
+        raise RuntimeError('[BUG] {} is not satisfied.'.format(term))
 
     def satisfies(self, term):  # type: (Term) -> bool
         return self.relation(term) == SetRelation.SUBSET

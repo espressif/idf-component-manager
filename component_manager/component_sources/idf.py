@@ -13,19 +13,19 @@ class IDFSource(BaseSource):
         super(IDFSource, self).__init__(source_details=source_details)
 
         # TODO: Add fetching for idf.versions
-        self._version = Version("0.0.0")
+        self._version = Version('0.0.0')
 
     @property
     def name(self):
-        return "idf"
+        return 'idf'
 
     @staticmethod
     def known_keys():
-        return ["version"]
+        return ['version']
 
     @staticmethod
     def is_me(name, details):
-        return name == "idf"
+        return name == 'idf'
 
     @property
     def hash_key(self):
@@ -38,7 +38,7 @@ class IDFSource(BaseSource):
 
     def download(self, name, version, download_path):  # type: (str, str, str) -> str
         # TODO: handle cases when IDF_PATH is not set
-        return os.environ["IDF_PATH"]
+        return os.environ['IDF_PATH']
 
     def as_ordered_dict(self):  # type: () -> OrderedDict
-        return OrderedDict([("type", self.name)])
+        return OrderedDict([('type', self.name)])

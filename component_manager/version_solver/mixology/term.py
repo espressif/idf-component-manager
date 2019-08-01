@@ -19,6 +19,8 @@
 # Copyright (c) 2018 Sébastien Eustace
 # Originally released under MIT license
 
+# type: ignore
+
 from typing import Union
 
 from poetry.packages import Dependency
@@ -33,7 +35,6 @@ class Term(object):
 
     See https://github.com/dart-lang/pub/tree/master/doc/solver.md#term.
     """
-
     def __init__(self, dependency, is_positive):  # type: (Dependency, bool)  -> None
         self._dependency = dependency
         self._positive = is_positive
@@ -59,13 +60,13 @@ class Term(object):
         """
         return (self.dependency.name == other.dependency.name and self.relation(other) == SetRelation.SUBSET)
 
-    def relation(self, other):  # type: (Term) -> int
+    def relation(self, other):  # type: (Term) -> str
         """
         Returns the relationship between the package versions
         allowed by this term and another.
         """
         if self.dependency.name != other.dependency.name:
-            raise ValueError("{} should refer to {}".format(other, self.dependency.name))
+            raise ValueError('{} should refer to {}'.format(other, self.dependency.name))
 
         other_constraint = other.constraint
 
@@ -127,7 +128,7 @@ class Term(object):
         allowed by both this term and another
         """
         if self.dependency.name != other.dependency.name:
-            raise ValueError("{} should refer to {}".format(other, self.dependency.name))
+            raise ValueError('{} should refer to {}'.format(other, self.dependency.name))
 
         if self._compatible_dependency(other.dependency):
             if self.is_positive() != other.is_positive():
@@ -167,7 +168,7 @@ class Term(object):
         return Term(dep, is_positive)
 
     def __str__(self):
-        return "{}{}".format("not " if not self.is_positive() else "", self._dependency)
+        return '{}{}'.format('not ' if not self.is_positive() else '', self._dependency)
 
     def __repr__(self):
-        return "<Term {}>".format(str(self))
+        return '<Term {}>'.format(str(self))

@@ -19,6 +19,8 @@
 # Copyright (c) 2018 Sébastien Eustace
 # Originally released under MIT license
 
+# type: ignore
+
 import time
 from typing import Any, Dict, List, Union
 
@@ -45,7 +47,6 @@ class VersionSolver:
     See https://github.com/dart-lang/pub/tree/master/doc/solver.md for details
     on how this solver works.
     """
-
     def __init__(
             self,
             root,  # type: ProjectPackage
@@ -90,8 +91,8 @@ class VersionSolver:
         except Exception:
             raise
         finally:
-            self._log("Version solving took {:.3f} seconds.\n"
-                      "Tried {} solutions.".format(time.time() - start, self._solution.attempted_solutions))
+            self._log('Version solving took {:.3f} seconds.\n'
+                      'Tried {} solutions.'.format(time.time() - start, self._solution.attempted_solutions))
 
     def _propagate(self, package):  # type: (str) -> None
         """
@@ -170,7 +171,7 @@ class VersionSolver:
         if unsatisfied is None:
             return _conflict
 
-        self._log("derived: {}{}".format("not " if unsatisfied.is_positive() else "", unsatisfied.dependency))
+        self._log('derived: {}{}'.format('not ' if unsatisfied.is_positive() else '', unsatisfied.dependency))
 
         self._solution.derive(unsatisfied.dependency, not unsatisfied.is_positive(), incompatibility)
 
@@ -187,7 +188,7 @@ class VersionSolver:
 
         .. _conflict resolution: https://github.com/dart-lang/pub/tree/master/doc/solver.md#conflict-resolution
         """
-        self._log("conflict: {}".format(incompatibility))
+        self._log('conflict: {}'.format(incompatibility))
 
         new_incompatibility = False
         while not incompatibility.is_failure():
@@ -286,11 +287,11 @@ class VersionSolver:
             incompatibility = Incompatibility(new_terms, ConflictCause(incompatibility, most_recent_satisfier.cause))
             new_incompatibility = True
 
-            partially = "" if difference is None else " partially"
-            bang = "!"
-            self._log("{} {} is{} satisfied by {}".format(bang, most_recent_term, partially, most_recent_satisfier))
+            partially = '' if difference is None else ' partially'
+            bang = '!'
+            self._log('{} {} is{} satisfied by {}'.format(bang, most_recent_term, partially, most_recent_satisfier))
             self._log('{} which is caused by "{}"'.format(bang, most_recent_satisfier.cause))
-            self._log("{} thus: {}".format(bang, incompatibility))
+            self._log('{} thus: {}'.format(bang, incompatibility))
 
         raise SolveFailure(incompatibility)
 
@@ -304,7 +305,7 @@ class VersionSolver:
         """
         unsatisfied = self._solution.unsatisfied
         if not unsatisfied:
-            return
+            return None
 
         # Prefer packages with as few remaining versions as possible,
         # so that if a conflict is necessary it's forced quickly.
@@ -367,7 +368,7 @@ class VersionSolver:
 
         if not conflict:
             self._solution.decide(version)
-            self._log("selecting {} ({})".format(version.name, version.full_pretty_version))
+            self._log('selecting {} ({})'.format(version.name, version.full_pretty_version))
 
         return dependency.name
 
@@ -387,7 +388,7 @@ class VersionSolver:
         )
 
     def _add_incompatibility(self, incompatibility):  # type: (Incompatibility) -> None
-        self._log("fact: {}".format(incompatibility))
+        self._log('fact: {}'.format(incompatibility))
 
         for term in incompatibility.terms:
             if term.dependency.name not in self._incompatibilities:
@@ -400,11 +401,11 @@ class VersionSolver:
 
     def _get_locked(self, package_name):  # type: (str) -> Union[Package, None]
         if package_name in self._use_latest:
-            return
+            return None
 
         locked = self._locked.get(package_name)
         if not locked:
-            return
+            return None
 
         for dep in self._root.all_requires:
             if dep.name == locked.name:

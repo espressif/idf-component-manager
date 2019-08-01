@@ -11,8 +11,8 @@ class HashTools:
     """Tools for sha256 manipulation"""
 
     BLOCK_SIZE = 65536
-    IGNORED_DIRS = [".git", "__pycache__"]
-    IGNORED_FILES = ["*.pyc", "*.pyd", "*.pyo", ".DS_Store"]
+    IGNORED_DIRS = ['.git', '__pycache__']
+    IGNORED_FILES = ['*.pyc', '*.pyd', '*.pyo', '.DS_Store']
 
     @classmethod
     def hash_object(cls, obj):  # type: (Any) -> str
@@ -26,7 +26,7 @@ class HashTools:
         """Calculate sha256 of file"""
         sha = sha256()
 
-        with open(file_path, "rb") as f:
+        with open(file_path, 'rb') as f:
             while True:
                 block = f.read(cls.BLOCK_SIZE)
                 if not block:
@@ -61,11 +61,11 @@ class HashTools:
 
                 # Add file path
                 file_path = os.path.join(os.path.relpath(current_dir, root), file_name)
-                sha.update(file_path.encode("utf-8"))
+                sha.update(file_path.encode('utf-8'))
 
                 # Add content hash
                 full_path = os.path.join(current_dir, file_name)
-                sha.update(cls.hash_file(full_path).encode("utf-8"))
+                sha.update(cls.hash_file(full_path).encode('utf-8'))
 
         return sha.hexdigest()
 

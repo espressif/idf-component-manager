@@ -26,24 +26,24 @@ class SolvedComponent(object):
 
     def as_ordered_dict(self):  # type: () -> OrderedDict
         component_elements = [
-            ("version", str(self.version)),
-            ("source", self.source.as_ordered_dict()),
+            ('version', str(self.version)),
+            ('source', self.source.as_ordered_dict()),
         ]
         if self.component_hash:
-            component_elements.append(("component_hash", self.component_hash))
+            component_elements.append(('component_hash', self.component_hash))
 
         return OrderedDict(sorted(component_elements, key=lambda e: e[0]))
 
     @classmethod
     def from_yaml(cls, name, details):
-        source_details = dict(details["source"])
-        source_name = source_details.pop("type")
+        source_details = dict(details['source'])
+        source_name = source_details.pop('type')
         source = SourceBuilder(source_name, source_details).build()
         return cls(
             name=name,
-            version=details["version"],
+            version=details['version'],
             source=source,
-            component_hash=details.get("component_hash", None),
+            component_hash=details.get('component_hash', None),
         )
 
 
@@ -57,7 +57,7 @@ class SolverResult(object):
     @classmethod
     def from_yaml(cls, manifest, lock):  # type: (Manifest, YAML) -> SolverResult
         solved_components = list(
-            [SolvedComponent.from_yaml(name, component) for name, component in lock.data["dependencies"].items()])
+            [SolvedComponent.from_yaml(name, component) for name, component in lock.data['dependencies'].items()])
 
         return cls(manifest, solved_components)
 
@@ -72,9 +72,9 @@ class SolverResult(object):
     def as_ordered_dict(self):  # type: () -> OrderedDict
         dependencies = OrderedDict([(c.name, c.as_ordered_dict()) for c in self.solved_components])  # type: OrderedDict
         solution = OrderedDict([
-            ("component_manager_version", str(component_manager.version)),
-            ("dependencies", dependencies),
-            ("manifest_hash", self.manifest.manifest_hash),
+            ('component_manager_version', str(component_manager.version)),
+            ('dependencies', dependencies),
+            ('manifest_hash', self.manifest.manifest_hash),
         ])
 
         return solution

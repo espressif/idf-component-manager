@@ -22,4 +22,4 @@ class SourceBuilder(object):
             else:
                 continue
 
-        raise SourceError("Unknown source for component: %s" % self.name)
+        raise SourceError('Unknown source for component: %s' % self.name)

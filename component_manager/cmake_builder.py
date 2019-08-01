@@ -33,7 +33,7 @@ class CMakeBuilder(object):
         return dedent(comment)
 
     def build(self):
-        with open(self.output_filepath, "w") as f:
+        with open(self.output_filepath, 'w') as f:
             # f.write(f"set(BUILD_COMPONENTS {build_components})")
             # f.write(f"set(BUILD_COMPONENT_PATHS {build_component_paths})")
             # TODO: add support for test components

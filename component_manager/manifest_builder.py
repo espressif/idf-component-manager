@@ -20,17 +20,17 @@ class ManifestBuilder(object):
 
     def build(self):  # type: () -> Manifest
         tree = self.manifest_tree
-        manifest = Manifest(name=tree.get("name", None),
-                            maintainers=tree.get("maintainers", None),
+        manifest = Manifest(name=tree.get('name', None),
+                            maintainers=tree.get('maintainers', None),
                             manifest_hash=HashTools.hash_object(dict(tree)))
-        version = tree.get("version", None)
+        version = tree.get('version', None)
 
         if version:
             manifest.version = Version(version)
 
-        for name, details in tree.get("dependencies", {}).items():
+        for name, details in tree.get('dependencies', {}).items():
             source = SourceBuilder(name, details).build()
-            component = ComponentRequirement(name, source, version_spec=details.get("version", "*"))
+            component = ComponentRequirement(name, source, version_spec=details.get('version', '*'))
             manifest.dependencies.append(component)
 
         return manifest

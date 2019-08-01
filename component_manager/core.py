@@ -21,20 +21,20 @@ class ComponentManager(object):
         self.sources = SourceStorage()
 
         # Set path of manifest file for the project
-        self.manifest_path = manifest_path or (os.path.join(path, "idf_project.yml") if os.path.isdir(path) else path)
+        self.manifest_path = manifest_path or (os.path.join(path, 'idf_project.yml') if os.path.isdir(path) else path)
 
         # Lock path
-        self.lock_path = lock_path or (os.path.join(path, "dependencies.lock") if os.path.isdir(path) else path)
+        self.lock_path = lock_path or (os.path.join(path, 'dependencies.lock') if os.path.isdir(path) else path)
 
         # Working directory
         self.path = path if os.path.isdir(path) else os.path.dirname(path)
 
         # Components directory
-        self.components_path = os.path.join(self.path, "managed_components")
+        self.components_path = os.path.join(self.path, 'managed_components')
 
     def add(self, components):
-        print("Adding %s to manifest" % ", ".join(components))
-        print("Not implemented yet")
+        print('Adding %s to manifest' % ', '.join(components))
+        print('Not implemented yet')
 
     def install(self):
         parser = ManifestParser(self.manifest_path).prepare()
@@ -43,8 +43,8 @@ class ComponentManager(object):
         lock = lock_manager.load()
         solution = SolverResult.from_yaml(manifest, lock)
 
-        if manifest.manifest_hash != lock["manifest_hash"]:
-            print("Updating lock file at %s" % self.lock_path)
+        if manifest.manifest_hash != lock['manifest_hash']:
+            print('Updating lock file at %s' % self.lock_path)
             solver = VersionSolver(manifest, lock)
             solution = solver.solve()
             lock_manager.dump(solution.as_ordered_dict())
@@ -54,32 +54,32 @@ class ComponentManager(object):
             return
 
         components_count = len(solution.solved_components)
-        count_string = "dependencies" if components_count != 1 else "dependency"
-        print("Processing %s %s" % (components_count, count_string))
+        count_string = 'dependencies' if components_count != 1 else 'dependency'
+        print('Processing %s %s' % (components_count, count_string))
         line_len = 0
         for i, component in enumerate(solution.solved_components):
             # Check hash if hash present and download component if necessary
-            line = ("[%d/%d] Processing component %s" % (i + 1, components_count, component.name)).rjust(line_len, ' ')
+            line = ('[%d/%d] Processing component %s' % (i + 1, components_count, component.name)).rjust(line_len, ' ')
             line_len = len(line)
 
             print(line, end='\r')
             ComponentFetcher(component, self.components_path).download()
 
-        print("Successfully processed %s %s" % (components_count, count_string))
+        print('Successfully processed %s %s' % (components_count, count_string))
 
     def update(self, components=None):
         if components is None:
             components = []
-        print("Updating %s" % ", ".join(components))
-        print("Not implemented yet")
+        print('Updating %s' % ', '.join(components))
+        print('Not implemented yet')
 
     def eject(self, components):
-        print("Ejecting %s" % ", ".join(components))
-        print("Not implemented yet")
+        print('Ejecting %s' % ', '.join(components))
+        print('Not implemented yet')
 
     def prebuild(self):
         # TODO: read build directory from IDF
-        path = os.path.join(self.path, "build")
+        path = os.path.join(self.path, 'build')
 
         # check lock file state
         self.install()

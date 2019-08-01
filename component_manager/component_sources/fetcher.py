@@ -27,7 +27,7 @@ class ComponentFetcher(object):
 
     def up_to_date(self, path):  # type: (str) -> bool
         if self.source.component_hash_required and not self.component.component_hash:
-            raise FetchingError("Cannot install component with unknown hash")
+            raise FetchingError('Cannot install component with unknown hash')
 
         if self.source.downloadable:
             if not os.path.isdir(path):

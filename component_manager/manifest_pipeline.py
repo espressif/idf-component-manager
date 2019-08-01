@@ -24,11 +24,11 @@ class ManifestParser(object):
         """Check manifest's filename"""
         filename = os.path.basename(self._path)
 
-        if self._is_component and filename != "idf_component.yml":
+        if self._is_component and filename != 'idf_component.yml':
             print(
                 "Warning: it's recommended to store your component's list in \"idf_component.yml\" at component's root")
 
-        if not self._is_component and filename != "idf_project.yml":
+        if not self._is_component and filename != 'idf_project.yml':
             print("Warning: it's recommended to store your component's list in \"idf_project.yml\" at project's root")
 
         return self
@@ -36,7 +36,7 @@ class ManifestParser(object):
     def init_manifest(self):
         """Lazily create manifest file if it doesn't exist"""
         if not os.path.exists(self._path):
-            example_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "manifest_example.yml")
+            example_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'manifest_example.yml')
 
             print("Info: manifest file wasn't found. Creating project's manifest")
             copyfile(example_path, self._path)
@@ -70,11 +70,11 @@ class ManifestParser(object):
         return self._manifest_tree
 
     def parse_manifest_file(self):
-        with open(self._path, "r") as f:
+        with open(self._path, 'r') as f:
             try:
                 return load_yaml(f.read()).data
             except YAMLError as e:
-                print("Error: Cannot parse manifest file. Please check that\n\t%s\nis valid YAML file\n" % self._path)
+                print('Error: Cannot parse manifest file. Please check that\n\t%s\nis valid YAML file\n' % self._path)
                 print(e)
                 sys.exit(1)
 
@@ -89,9 +89,9 @@ class ManifestParser(object):
         if not self.is_valid:
             error_count = len(self._validation_errors)
             if error_count == 1:
-                print("A problem was found in manifest file:")
+                print('A problem was found in manifest file:')
             else:
-                print("%i problems were found in manifest file:" % error_count)
+                print('%i problems were found in manifest file:' % error_count)
             for e in self.validation_errors:
                 print(e)
             sys.exit(1)

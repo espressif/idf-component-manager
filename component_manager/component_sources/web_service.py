@@ -1,3 +1,5 @@
+"""Component source that downloads components from web service"""
+
 import os
 import re
 import shutil
@@ -11,7 +13,7 @@ from semantic_version import Version
 
 from component_manager.api_client import APIClient
 from component_manager.manifest import ComponentWithVersions
-from component_manager.utils.archive import (ArchiveError, get_format_from_path, unpack_archive)
+from component_manager.utils.archive import ArchiveError, get_format_from_path, unpack_archive
 
 from .base import BaseSource
 from .errors import FetchingError
@@ -26,27 +28,27 @@ class WebServiceSource(BaseSource):
     def __init__(self, source_details=None):
         super(WebServiceSource, self).__init__(source_details=source_details)
 
-        self.base_url = (str(source_details.get("service_url", ""))
-                         or os.getenv("DEFAULT_COMPONENT_SERVICE_URL", "https://components.espressif.com/api/"))
+        self.base_url = (str(source_details.get('service_url', ''))
+                         or os.getenv('DEFAULT_COMPONENT_SERVICE_URL', 'https://components.espressif.com/api/'))
 
-        self.api_client = source_details.get("api_client", None) or APIClient(base_url=self.base_url)
+        self.api_client = source_details.get('api_client', None) or APIClient(base_url=self.base_url)
 
     @property
     def name(self):
-        return "service"
+        return 'service'
 
     @staticmethod
     def known_keys():
-        return ["service_url", "version"]
+        return ['service_url', 'version']
 
     @property
     def hash_key(self):
         if self._hash_key is None:
             url = urlparse(self.base_url)
             netloc = url.netloc
-            path = "/".join(filter(None, url.path.split("/")))
-            normalized_path = "/".join([netloc, path])
-            self._hash_key = sha256(normalized_path.encode("utf-8")).hexdigest()
+            path = '/'.join(filter(None, url.path.split('/')))
+            normalized_path = '/'.join([netloc, path])
+            self._hash_key = sha256(normalized_path.encode('utf-8')).hexdigest()
         return self._hash_key
 
     @staticmethod
@@ -58,7 +60,7 @@ class WebServiceSource(BaseSource):
         return self.api_client.versions(name, spec)
 
     def unique_path(self, name, version):
-        return "~".join([name.replace('/', '~~'), str(version), self.hash_key])
+        return '~'.join([name.replace('/', '~~'), str(version), self.hash_key])
 
     @property
     def component_hash_required(self):  # type: () -> bool
@@ -71,7 +73,7 @@ class WebServiceSource(BaseSource):
     def download(self, name, version, download_path):  # type: (str, str, str) -> str
 
         if not version:
-            raise FetchingError("Version should provided for %s" % name)
+            raise FetchingError('Version should provided for %s' % name)
 
         component = self.api_client.component(name, version)
         url = component.url
@@ -86,7 +88,7 @@ class WebServiceSource(BaseSource):
         with requests.get(url, stream=True, allow_redirects=True) as r:
 
             # Trying to get extension from url
-            original_filename = url.split("/")[-1]
+            original_filename = url.split('/')[-1]
 
             try:
                 extension = get_format_from_path(original_filename)[1]
@@ -94,37 +96,35 @@ class WebServiceSource(BaseSource):
                 extension = None
 
             if r.status_code != 200:
-                raise FetchingError("Cannot download component %s@%s. Server returned HTTP code %s" %
+                raise FetchingError('Cannot download component %s@%s. Server returned HTTP code %s' %
                                     (name, version, r.status_code))
 
             # If didn't find anything useful, trying content disposition
-            content_disposition = r.headers.get("content-disposition")
+            content_disposition = r.headers.get('content-disposition')
             if not extension and content_disposition:
-                filenames = re.findall("filename=(.+)", content_disposition)
+                filenames = re.findall('filename=(.+)', content_disposition)
                 try:
                     extension = get_format_from_path(filenames[0])[1]
                 except IndexError:
-                    raise FetchingError("Web Service returned invalid download url")
+                    raise FetchingError('Web Service returned invalid download url')
 
             tempdir = tempfile.mkdtemp()
 
             try:
                 unique_path = self.unique_path(name, version)
-                filename = "%s.%s" % (unique_path, extension)
+                filename = '%s.%s' % (unique_path, extension)
                 file_path = os.path.join(tempdir, filename)
 
-                with open(file_path, "wb") as f:
+                with open(file_path, 'wb') as f:
                     for chunk in r.iter_content(chunk_size=65536):
                         if chunk:
                             f.write(chunk)
 
-                # Unpack archive
                 unpack_archive(file_path, download_path)
-
             finally:
                 shutil.rmtree(tempdir)
 
         return download_path
 
     def as_ordered_dict(self):  # type: () -> OrderedDict
-        return OrderedDict([("service_url", self.base_url), ("type", self.name)])
+        return OrderedDict([('service_url', self.base_url), ('type', self.name)])
