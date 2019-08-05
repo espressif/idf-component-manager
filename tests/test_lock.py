@@ -3,10 +3,10 @@ import os
 from collections import OrderedDict
 
 import pytest
-from semantic_version import Version
 
 from component_manager.component_sources import IDFSource, WebServiceSource
 from component_manager.lock.manager import LockManager
+from component_manager.manifest import ComponentVersion
 from component_manager.manifest_builder import ManifestBuilder
 from component_manager.manifest_pipeline import ManifestParser
 from component_manager.version_solver.solver_result import (SolvedComponent, SolverResult)
@@ -82,12 +82,12 @@ class TestLockManager(object):
         components = [
             SolvedComponent(
                 name='idf',
-                version=Version('4.4.4'),
+                version=ComponentVersion('4.4.4'),
                 source=IDFSource({}),
             ),
             SolvedComponent(
                 name='test_cmp',
-                version=Version('1.2.7'),
+                version=ComponentVersion('1.2.7'),
                 source=WebServiceSource({'service_url': 'https://repo.example.com'}),
                 component_hash='f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b',
             ),

@@ -10,7 +10,6 @@ from .manifest_validator import ManifestValidator
 
 class ManifestParser(object):
     """Parser for manifest file"""
-
     def __init__(self, path, component=False):
         # Path of manifest file
         self._is_component = component
@@ -70,6 +69,10 @@ class ManifestParser(object):
         return self._manifest_tree
 
     def parse_manifest_file(self):
+        if not os.path.isfile(self._path):
+            print('Error: Manifest file does not exist. Please declare valid manifest in: \n\t%s' % self._path)
+            sys.exit(1)
+
         with open(self._path, 'r') as f:
             try:
                 return load_yaml(f.read()).data

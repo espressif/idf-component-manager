@@ -1,6 +1,7 @@
 import os
+import re
 
-from component_manager.lock.hash_tools import HashTools
+from component_manager.utils.hash_tools import (hash_dir, hash_file, hash_object, validate_dir)
 
 
 def fixture_path(id):
@@ -18,34 +19,37 @@ class TestHashTools(object):
         obj = {'b': 2, 'a': {'b': 2, 'a': [1, 2, 3]}}
         expected_sha = '3767afa0787de5a1047a49694ee326ff375109eedba0c7cca052846991ceed03'
 
-        assert HashTools.hash_object(obj) == expected_sha
+        assert hash_object(obj) == expected_sha
 
     def test_hash_file(self):
         file_path = os.path.join(fixture_path(1), '1.txt')
         expected_sha = '6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b'
 
-        assert HashTools.hash_file(file_path) == expected_sha
+        assert hash_file(file_path) == expected_sha
 
     def test_hash_dir(self):
         expected_sha = '2fc3be7897ed4c389941026d8f9e44c67c0b81154827d2578f790739e321670d'
-        assert HashTools.hash_dir(fixture_path(1)) == expected_sha
+        assert hash_dir(fixture_path(1)) == expected_sha
 
     def test_hash_dir_ignore(self):
         expected_sha = '2fc3be7897ed4c389941026d8f9e44c67c0b81154827d2578f790739e321670d'
 
-        assert (HashTools.hash_dir(fixture_path(4), ignored_dirs=['ignore.dir'],
-                                   ignored_files=['*.me']) == expected_sha)
+        assert hash_dir(
+            fixture_path(4),
+            ignored_dirs_re=re.compile(r'ignore\.dir'),
+            ignored_files_re=re.compile(r'.*\.me'),
+        ) == expected_sha
 
     def test_hash_not_equal(self):
         expected_sha = '2fc3be7897ed4c389941026d8f9e44c67c0b81154827d2578f790739e321670d'
 
-        assert HashTools.validate_dir(fixture_path(1), expected_sha)
-        assert HashTools.validate_dir(
+        assert validate_dir(fixture_path(1), expected_sha)
+        assert validate_dir(
             fixture_path(4),
             expected_sha,
-            ignored_dirs=['ignore.dir'],
-            ignored_files=['*.me'],
+            ignored_dirs_re=re.compile(r'ignore\.dir'),
+            ignored_files_re=re.compile(r'.*\.me'),
         )
-        assert not HashTools.validate_dir(fixture_path(2), expected_sha)
-        assert not HashTools.validate_dir(fixture_path(3), expected_sha)
-        assert not HashTools.validate_dir(fixture_path(4), expected_sha)
+        assert not validate_dir(fixture_path(2), expected_sha)
+        assert not validate_dir(fixture_path(3), expected_sha)
+        assert not validate_dir(fixture_path(4), expected_sha)

@@ -1,8 +1,18 @@
 """Classes to work with Espressif Component Web Service"""
 import requests
-from semantic_version import Version
 
 from .manifest import ComponentVersion, ComponentWithVersions, Manifest
+
+
+class APIComponentVersion(ComponentVersion):
+    def __init__(self, version, url_or_path=None, component_hash=None):
+        self.component_hash = component_hash
+        self.url_or_path = url_or_path
+
+        super(APIComponentVersion, self).__init__(version)
+
+    def __eq__(self, other):
+        return super().__eq__(other) and self.component_hash == other.component_hash
 
 
 class APIClient(object):
@@ -32,7 +42,7 @@ class APIClient(object):
             return ComponentWithVersions(
                 name=component_name,
                 versions=map(
-                    lambda v: ComponentVersion(
+                    lambda v: APIComponentVersion(
                         version=v['version'],
                         url_or_path=v['url'],
                         component_hash=v.get('hash', None),
@@ -60,7 +70,7 @@ class APIClient(object):
 
             return Manifest(
                 name=response['name'],
-                version=Version(response['version']),
+                version=ComponentVersion(response['version']),
                 maintainers=response['maintainers'],
                 url=response['url'],
                 # TODO: add dependencies

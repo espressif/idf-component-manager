@@ -1,7 +1,6 @@
 import os
 from collections import OrderedDict
-
-from semantic_version import Version
+from typing import Dict
 
 from component_manager import ComponentVersion, ComponentWithVersions
 
@@ -13,7 +12,7 @@ class IDFSource(BaseSource):
         super(IDFSource, self).__init__(source_details=source_details)
 
         # TODO: Add fetching for idf.versions
-        self._version = Version('0.0.0')
+        self._version = ComponentVersion('*')
 
     @property
     def name(self):
@@ -36,7 +35,7 @@ class IDFSource(BaseSource):
 
         return ComponentWithVersions(name=name, versions=[ComponentVersion(self._version)])
 
-    def download(self, name, version, download_path):  # type: (str, str, str) -> str
+    def download(self, name, details, download_path):  # type: (str, Dict, str) -> str
         # TODO: handle cases when IDF_PATH is not set
         return os.environ['IDF_PATH']
 

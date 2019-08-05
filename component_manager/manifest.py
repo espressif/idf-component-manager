@@ -1,14 +1,18 @@
 """Classes to work with manifest file"""
+import re
+from functools import total_ordering
 from typing import List, Union
 
-from semantic_version import Version
+import semantic_version as semver
+
+COMMIT_ID_RE = re.compile(r"[0-9a-f]{40}")
 
 
 class Manifest(object):
     def __init__(
             self,
             name=None,  # type: Union[str, None]
-            version=None,  # type: Union[str, None]
+            version=None,  # type: Union[str, ComponentVersion, None]
             maintainers=None,  # type: Union[str, None]
             dependencies=None,  # type: Union[List[ComponentRequirement], None]
             url=None,  # type: Union[str, None]
@@ -32,14 +36,36 @@ class ComponentRequirement(object):
         self.name = name
 
 
+@total_ordering
 class ComponentVersion(object):
-    def __init__(self, version, url_or_path=None, component_hash=None):
-        self.component_hash = component_hash
-        self.version = version if isinstance(version, Version) else Version(version)
-        self.url_or_path = url_or_path
+    def __init__(self, version_string):  # type: (str) -> None
+        """
+        version_string - can be `*`, git commit hash (hex, 160 bit) or valid semantic version string
+        """
+        self.is_commit_id = bool(COMMIT_ID_RE.match(version_string))
+        self.is_any = version_string == '*'
+        self.is_semver = False
+
+        if not self.is_commit_id and not self.is_any:
+            self._semver = semver.Version(version_string)
+            self.is_semver = True
+
+        self._version_string = version_string
+
+    def __eq__(self, other):
+        if self.is_semver and other.is_semver:
+            return self._semver == other._semver
+        else:
+            return self._version_string == other._version_string
+
+    def __lt__(self, other):
+        if not self.is_semver or not other.is_semver:
+            raise ValueError('Cannot compare versions of different components')
+
+        return self._semver < other._semver
 
     def __str__(self):
-        return str(self.version)
+        return self._version_string
 
 
 class ComponentWithVersions(object):

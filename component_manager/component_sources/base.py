@@ -1,5 +1,8 @@
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
+from typing import Dict, Union
+
+from component_manager import ComponentVersion, ComponentWithVersions
 
 from .errors import SourceError
 
@@ -34,7 +37,7 @@ class BaseSource(object):
         return self._source_details
 
     @staticmethod
-    def is_me(name, details):
+    def is_me(name, details):  # type: (str, dict) -> bool
         return False
 
     @staticmethod
@@ -66,17 +69,18 @@ class BaseSource(object):
         """Returns True if components have to be fetched"""
         return False
 
-    def unique_path(self, name, version):
-        """Unique identifier"""
-        return ''
-
     @abstractmethod
-    def versions(self, name, spec):
+    def versions(
+            self,
+            name,
+            details,
+            spec='*',
+    ):  # type: (str, Dict, Union[str, ComponentVersion]) -> ComponentWithVersions
         """List of versions for given spec"""
         pass
 
     @abstractmethod
-    def download(self, name, version, download_path):  # type: (str, str, str) -> str
+    def download(self, name, details, download_path):  # type: (str, Dict, str) -> str
         """
         Fetch required component version from the source
         Returns absolute path to directory with component on local filesystem

@@ -3,9 +3,9 @@ import shutil
 import tempfile
 
 import vcr
-from semantic_version import Version
 
 from component_manager.component_sources import LocalSource, WebServiceSource
+from component_manager.manifest import ComponentVersion
 
 
 class TestComponentWebServiceSource(object):
@@ -28,7 +28,7 @@ class TestComponentWebServiceSource(object):
         try:
             source = WebServiceSource(source_details={'service_url': 'http://127.0.0.1:8000/api'})
             download_path = os.path.join(tempdir, 'cmp~0.0.1~%s' % self.LOCALHOST_HASH)
-            local_path = source.download('cmp', '0.0.1', download_path)
+            local_path = source.download('cmp', {'version': '0.0.1'}, download_path)
 
             assert local_path == download_path
             assert os.path.isdir(local_path)
@@ -43,14 +43,10 @@ class TestComponentLocalSource(object):
         assert LocalSource.is_me('test', {'path': '/'})
         assert not LocalSource.is_me('test', {'url': '/'})
 
-    def test_unique_path(self):
-        source = LocalSource(source_details={'path': os.path.dirname(os.path.realpath(__file__))})
-        assert source.unique_path('cmp', '*') == ''
-
     def test_download(self):
         path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'manifests')
         source = LocalSource(source_details={'path': path})
-        assert source.download('cmp', '*', '/test/path/').endswith('manifests')
+        assert source.download('cmp', {'version': '*'}, '/test/path/').endswith('manifests')
 
     def test_versions_without_manifest(self):
 
@@ -61,7 +57,7 @@ class TestComponentLocalSource(object):
             versions = source.versions('test', '*')
 
             assert versions.name == 'test'
-            assert versions.versions[0].version == Version('0.0.0')
+            assert versions.versions[0] == ComponentVersion('0.0.0')
 
         finally:
             shutil.rmtree(tempdir)
@@ -78,4 +74,4 @@ class TestComponentLocalSource(object):
         versions = source.versions('test', '*')
 
         assert versions.name == 'test'
-        assert versions.versions[0].version == Version('1.0.0')
+        assert versions.versions[0] == ComponentVersion('1.0.0')

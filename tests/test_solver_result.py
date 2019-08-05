@@ -3,7 +3,7 @@ import os
 from component_manager.component_sources import WebServiceSource
 from component_manager.lock.manager import LockManager
 from component_manager.manifest import Manifest
-from component_manager.version_solver.solver_result import (SolvedComponent, SolverResult)
+from component_manager.version_solver.solver_result import SolvedComponent, SolverResult
 
 valid_lock_path = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
