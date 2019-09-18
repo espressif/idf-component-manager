@@ -1,8 +1,7 @@
 import os
 from collections import OrderedDict
-from typing import Dict
 
-from component_manager import ComponentVersion, ComponentWithVersions
+from component_manager.manifest import ComponentVersion, ComponentWithVersions
 
 from .base import BaseSource
 
@@ -30,12 +29,12 @@ class IDFSource(BaseSource):
     def hash_key(self):
         return str(self._version)
 
-    def versions(self, name, spec):
+    def versions(self, name, details=None, spec='*'):
         """Returns current idf version"""
 
-        return ComponentWithVersions(name=name, versions=[ComponentVersion(self._version)])
+        return ComponentWithVersions(name=name, versions=[self._version])
 
-    def download(self, name, details, download_path):  # type: (str, Dict, str) -> str
+    def download(self, component, download_path):
         # TODO: handle cases when IDF_PATH is not set
         return os.environ['IDF_PATH']
 

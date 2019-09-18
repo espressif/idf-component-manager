@@ -1,10 +1,13 @@
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
-from typing import Dict, Union
+from typing import TYPE_CHECKING, Dict, Union
 
-from component_manager import ComponentVersion, ComponentWithVersions
+from component_manager.manifest import ComponentWithVersions
 
 from .errors import SourceError
+
+if TYPE_CHECKING:
+    from component_manager.version_solver.solver_result import SolvedComponent
 
 
 class BaseSource(object):
@@ -72,15 +75,16 @@ class BaseSource(object):
     @abstractmethod
     def versions(
             self,
-            name,
-            details,
-            spec='*',
-    ):  # type: (str, Dict, Union[str, ComponentVersion]) -> ComponentWithVersions
+            name,  # type: str
+            details,  # type: Union[Dict, None]
+            spec='*',  # type: str
+    ):
+        # type: (...) -> ComponentWithVersions
         """List of versions for given spec"""
         pass
 
     @abstractmethod
-    def download(self, name, details, download_path):  # type: (str, Dict, str) -> str
+    def download(self, component, download_path):  # type: (SolvedComponent, str) -> str
         """
         Fetch required component version from the source
         Returns absolute path to directory with component on local filesystem

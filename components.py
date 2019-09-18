@@ -93,6 +93,8 @@ def build_parser():
         default=[],
     )
 
+    parser.add_argument('-v', '--verbose', help='Verbose output', default=False)
+
     parser.add_argument('-D', '--debug', help='Run in debug mode', default=False)
     parser.add_argument('-t', '--target', help='Target platform', default=False)
 

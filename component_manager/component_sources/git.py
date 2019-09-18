@@ -2,15 +2,15 @@ import os
 import shutil
 from collections import OrderedDict
 from hashlib import sha256
+from typing import Union
 
-from component_manager import ComponentVersion, ComponentWithVersions
+from component_manager.manifest import ComponentVersion, ComponentWithVersions
 from component_manager.utils.file_cache import FileCache
-from component_manager.utils.file_tools import copytree_ignore
-from component_manager.utils.git_client import GitClient, GitCommandError
+from component_manager.utils.file_tools import create_directory
+from component_manager.utils.git_client import GitClient
 from component_manager.utils.hash_tools import validate_dir
 
 from .base import BaseSource
-from .errors import FetchingError
 
 try:
     from urllib.parse import urlparse  # type: ignore
@@ -21,23 +21,18 @@ except ImportError:
 class GitSource(BaseSource):
     def __init__(self, source_details=None):
         super(GitSource, self).__init__(source_details=source_details)
-
         self.git_repo = source_details['git']
         self.cache_path = os.path.join(FileCache.path(), 'git~%s' % self.hash_key)
+        create_directory(self.cache_path)
         self._client = GitClient()
         # Check for git client immediately
         self._client.check_version()
 
-    def _checkout_git_source(self, details):
-        try:
-            self._client.prepare_branch(
-                repo=self.git_repo,
-                path=self.cache_path,
-                branch=details.get('version'),
-                with_submodules=True,
-            )
-        except GitCommandError:
-            raise FetchingError('Cannot clone repo: %s' % self.git_repo)
+    def _checkout_git_source(self, version):  # type: (Union[str, ComponentVersion, None]) -> None
+        if version is not None:
+            version = str(version)
+
+        self._client.prepare_branch(repo=self.git_repo, path=self.cache_path, branch=version, with_submodules=True)
 
     @staticmethod
     def is_me(name, details):  # type: (str, dict) -> bool
@@ -62,25 +57,28 @@ class GitSource(BaseSource):
             self._hash_key = sha256(normalized_path.encode('utf-8')).hexdigest()
         return self._hash_key
 
-    def download(self, name, details, download_path):
-        dest_path = os.path.join(download_path, name)
+    def download(self, component, download_path):
+        dest_path = os.path.join(download_path)
+        component_hash = component.component_hash
 
-        component_hash = details.get('component_hash')
-        # TODO: what if not? Add validation for required details...
         if component_hash and validate_dir(dest_path, component_hash):
             return dest_path
 
-        self._checkout_git_source(details)
-        source_path = os.path.join(self.cache_path, details.get('path', ''))
-        shutil.copytree(source_path, dest_path, ignore=copytree_ignore())
+        self._checkout_git_source(component.version)
+        source_path = os.path.join(self.cache_path, component.source_specific_options.get('path', ''))
 
+        if os.path.isdir(dest_path):
+            shutil.rmtree(dest_path)
+        # TODO: fix ignore function
+        # ignore = copytree_ignore()
+        shutil.copytree(source_path, dest_path)
         return dest_path
 
-    def versions(self, name, details, spec='*'):
+    def versions(self, name, details=None, spec='*'):
         """For git returns hash of locked commit, ignoring manifest"""
-        self._checkout_git_source(details)
-
-        commit_id = self._client.run(['rev-parse', '--verify', 'head'])
+        version = None if details is None else details.get('version')
+        self._checkout_git_source(version)
+        commit_id = self._client.run(['rev-parse', '--verify', 'head'], cwd=self.cache_path)
         return ComponentWithVersions(name=name, versions=[ComponentVersion(commit_id)])
 
     def as_ordered_dict(self):  # type: () -> OrderedDict

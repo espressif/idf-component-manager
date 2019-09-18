@@ -5,14 +5,10 @@ from .manifest import ComponentVersion, ComponentWithVersions, Manifest
 
 
 class APIComponentVersion(ComponentVersion):
-    def __init__(self, version, url_or_path=None, component_hash=None):
-        self.component_hash = component_hash
+    def __init__(self, version_string, component_hash=None, url_or_path=None):
         self.url_or_path = url_or_path
 
-        super(APIComponentVersion, self).__init__(version)
-
-    def __eq__(self, other):
-        return super().__eq__(other) and self.component_hash == other.component_hash
+        super(APIComponentVersion, self).__init__(version_string, component_hash=component_hash)
 
 
 class APIClient(object):
@@ -43,7 +39,7 @@ class APIClient(object):
                 name=component_name,
                 versions=map(
                     lambda v: APIComponentVersion(
-                        version=v['version'],
+                        version_string=v['version'],
                         url_or_path=v['url'],
                         component_hash=v.get('hash', None),
                     ),

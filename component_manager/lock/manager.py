@@ -9,8 +9,10 @@ from strictyaml import load as load_yaml
 
 class LockManager:
     COMPONENT_SCHEMA = EmptyDict() | MapPattern(
-        Str(), Map({
+        Str(),
+        Map({
             Optional('component_hash'): Str(),
+            Optional('source_specific_options'): (MapPattern(Str(), Str())),
             'source': (MapPattern(Str(), Str())),
             'version': Str(),
         }))

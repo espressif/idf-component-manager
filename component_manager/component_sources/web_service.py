@@ -6,13 +6,13 @@ import shutil
 import tempfile
 from collections import OrderedDict
 from hashlib import sha256
-from typing import Dict, Union
 
 import requests
 
 from component_manager.api_client import APIClient
-from component_manager.manifest import ComponentVersion, ComponentWithVersions
-from component_manager.utils.archive import (ArchiveError, get_format_from_path, unpack_archive)
+from component_manager.utils.archive import ArchiveError, get_format_from_path, unpack_archive
+# TODO: use cache
+# from component_manager.utils.file_cache import FileCache
 
 from .base import BaseSource
 from .errors import FetchingError
@@ -55,13 +55,13 @@ class WebServiceSource(BaseSource):
         # This should be run last
         return True
 
-    def versions(
-            self,
-            name,
-            details,
-            spec='*',
-    ):  # type: (str, Dict, Union[str, ComponentVersion]) -> ComponentWithVersions
-        return self.api_client.versions(name, spec)
+    def versions(self, name, details=None, spec='*'):
+        cmp_with_versions = self.api_client.versions(name, spec)
+
+        if not cmp_with_versions:
+            raise FetchingError('Cannot get versions of "%s"' % name)
+
+        return cmp_with_versions
 
     def unique_path(self, name, version):  # type: (str, str) -> str
         """Unique identifier for cache"""
@@ -75,19 +75,26 @@ class WebServiceSource(BaseSource):
     def downloadable(self):  # type: () -> bool
         return True
 
-    def download(self, name, details, download_path):  # type: (str, Dict, str) -> str
+    def download(self, component, download_path):
 
-        if 'version' not in details.keys():
-            raise FetchingError('Version should provided for %s' % name)
+        # Check for required components
+        if not component.component_hash:
+            raise FetchingError('Component hash is required for componets from web service')
 
-        component = self.api_client.component(name, details['version'])
+        if not component.version:
+            raise FetchingError('Version should provided for %s' % component.name)
+
+        # TODO: add caching
+        # cache_path = os.path.join(FileCache.path(), self.unique_path(component.name, component.version))
+
+        component = self.api_client.component(component.name, component.version)
         url = component.url
 
         if not url:
             raise FetchingError(
                 'Unexpected response: URL wasn\'t found for version %s of "%s"',
-                details['version'],
-                name,
+                component.version,
+                component.name,
             )
 
         with requests.get(url, stream=True, allow_redirects=True) as r:
@@ -102,7 +109,7 @@ class WebServiceSource(BaseSource):
 
             if r.status_code != 200:
                 raise FetchingError('Cannot download component %s@%s. Server returned HTTP code %s' %
-                                    (name, details['version'], r.status_code))
+                                    (component.name, component.version, r.status_code))
 
             # If didn't find anything useful, trying content disposition
             content_disposition = r.headers.get('content-disposition')
@@ -116,7 +123,7 @@ class WebServiceSource(BaseSource):
             tempdir = tempfile.mkdtemp()
 
             try:
-                unique_path = self.unique_path(name, details['version'])
+                unique_path = self.unique_path(component.name, component.version)
                 filename = '%s.%s' % (unique_path, extension)
                 file_path = os.path.join(tempdir, filename)
 

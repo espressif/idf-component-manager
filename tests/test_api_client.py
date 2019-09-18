@@ -32,7 +32,7 @@ class TestAPIClient(object):
         base_url = 'http://localhost:8000/api/'
         client = APIClient(base_url=base_url)
 
-        component = client.versions('test', '>=1.0.0')
+        component = client.versions('test', spec='>=1.0.0')
 
         assert component.name == 'test'
         assert len(list(component.versions)) == 4

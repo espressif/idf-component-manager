@@ -61,7 +61,6 @@ class ComponentManager(object):
             # Check hash if hash present and download component if necessary
             line = ('[%d/%d] Processing component %s' % (i + 1, components_count, component.name)).rjust(line_len, ' ')
             line_len = len(line)
-
             print(line, end='\r')
             ComponentFetcher(component, self.components_path).download()
 

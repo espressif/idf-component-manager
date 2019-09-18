@@ -1,14 +1,27 @@
 import re
 
-from semantic_version import Spec, Version
+from semantic_version import Version
+from component_manager.manifest import ComponentSpec
 
 
 class ManifestValidator(object):
     """Validator for manifest object, checks for structure, known fields and valid values"""
 
-    KNOWN_ROOT_KEYS = ('maintainers', 'dependencies', 'targets', 'version', 'name', 'description')
+    KNOWN_ROOT_KEYS = (
+        'maintainers',
+        'dependencies',
+        'targets',
+        'version',
+        'name',
+        'description',
+    )
 
-    KNOWN_COMPONENT_KEYS = ('version', 'path')
+    # TODO: get this info by listing sources
+    KNOWN_COMPONENT_KEYS = (
+        'git',
+        'version',
+        'path',
+    )
 
     KNOWN_PLATFORMS = ('esp32', )
 
@@ -28,7 +41,7 @@ class ManifestValidator(object):
 
     def _validate_version_spec(self, component, spec):
         try:
-            Spec.parse(spec or '*')
+            ComponentSpec(spec or '*')
         except ValueError:
             self.add_error('Version specifications for "%s" are invalid.' % component)
 

@@ -1,6 +1,8 @@
 """Set of tools and constants to work with files and directories """
 import fnmatch
+import os
 import re
+from shutil import rmtree
 from typing import Any, Callable, List, Pattern, Set
 
 IGNORED_DIRS = ['.git', '__pycache__']
@@ -23,3 +25,22 @@ def copytree_ignore(
         return set([f for f in files if not ignored_files_re.match(f) and not ignored_dirs_re.match(f)])
 
     return filter
+
+
+def create_directory(directory):  # type: (str) -> None
+    """Create directory, if doesn't exist yet"""
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+
+def prepare_empty_directory(directory):  # type: (str) -> None
+    """Prepare directory empty"""
+    dir_exist = os.path.exists(directory)
+
+    # Delete path if it's not empty
+    if dir_exist and os.listdir(directory):
+        rmtree(directory)
+        dir_exist = False
+
+    if not dir_exist:
+        os.makedirs(directory)

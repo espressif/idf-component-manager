@@ -1,7 +1,7 @@
 """Results of the solver"""
 
 from collections import OrderedDict
-from typing import List, Union
+from typing import Dict, List, Union
 
 from strictyaml import YAML
 
@@ -16,19 +16,28 @@ class SolvedComponent(object):
             name,  # type: str
             version,  # type: str
             source,  # type: BaseSource
-            component_hash=None  # type: Union[str,None]
+            component_hash=None,  # type: Union[str,None]
+            source_specific_options=None  # type: Union[Dict,None]
     ):
         # type: (...) -> None
         self.name = name
         self.version = version
         self.source = source
         self.component_hash = component_hash
+        self.source_specific_options = source_specific_options or {}
 
     def as_ordered_dict(self):  # type: () -> OrderedDict
         component_elements = [
             ('version', str(self.version)),
             ('source', self.source.as_ordered_dict()),
         ]
+
+        if self.source_specific_options:
+            component_elements.append((
+                'source_specific_options',
+                OrderedDict(sorted(self.source_specific_options.items())),
+            ))
+
         if self.component_hash:
             component_elements.append(('component_hash', self.component_hash))
 
@@ -39,12 +48,11 @@ class SolvedComponent(object):
         source_details = dict(details['source'])
         source_name = source_details.pop('type')
         source = SourceBuilder(source_name, source_details).build()
-        return cls(
-            name=name,
-            version=details['version'],
-            source=source,
-            component_hash=details.get('component_hash', None),
-        )
+        return cls(name=name,
+                   version=details['version'],
+                   source=source,
+                   component_hash=details.get('component_hash', None),
+                   source_specific_options=details.get('source_specific_options', {}))
 
 
 class SolverResult(object):

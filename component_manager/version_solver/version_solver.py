@@ -6,7 +6,6 @@ class VersionSolver(object):
     The version solver that finds a set of package versions
     that satisfy the root package's dependencies.
     """
-
     def __init__(self, manifest, locked=None):
         """Expects project manifest and optional dict of locked components"""
         self._manifest = manifest
@@ -21,11 +20,13 @@ class VersionSolver(object):
         # TODO: fetch full tree of dependencies, now it fetches only direct dependencies
         # Thats a quick stub that always installs latest version
         def best_version(component):
-            version = max(component.source.versions(name=component.name, spec=component.version_spec).versions)
+            cmp_with_versions = component.source.versions(name=component.name, spec=component.version_spec)
+            version = max(cmp_with_versions.versions)
             return SolvedComponent(name=component.name,
-                                   version=version,
                                    source=component.source,
-                                   component_hash=version.component_hash)
+                                   version=version,
+                                   component_hash=version.component_hash,
+                                   source_specific_options=component.source_specific_options)
 
         solved_components = list(map(
             best_version,

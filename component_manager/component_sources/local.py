@@ -1,7 +1,7 @@
 import os
 from collections import OrderedDict
 
-from component_manager import ComponentVersion, ComponentWithVersions
+from component_manager.manifest import ComponentVersion, ComponentWithVersions
 from component_manager.manifest_pipeline import ManifestParser
 
 from .base import BaseSource
@@ -33,17 +33,15 @@ class LocalSource(BaseSource):
     def hash_key(self):
         self.source_details.get('path')
 
-    def download(self, name, version, download_path):
+    def download(self, component, download_path):
         return self._path
 
-    def versions(self, name, spec):
+    def versions(self, name, details=None, spec='*'):
         """For local return version from manifest, or 0.0.0 if manifest not found"""
         manifest_path = os.path.join(self._path, 'idf_component.yml')
-        version_string = '0.0.0'
+        version_string = '*'
         if os.path.isfile(manifest_path):
-            version_string = (ManifestParser(manifest_path,
-                                             component=True).prepare().manifest_tree.get('version', '0.0.0'))
-
+            version_string = (ManifestParser(manifest_path, component=True).prepare().manifest_tree.get('version', '*'))
         return ComponentWithVersions(name=name, versions=[ComponentVersion(version_string)])
 
     def as_ordered_dict(self):  # type: () -> OrderedDict

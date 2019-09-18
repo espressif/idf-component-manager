@@ -1,9 +1,11 @@
 """Classes to work with manifest file"""
 import re
 from functools import total_ordering
-from typing import List, Union
+from typing import Dict, List, Union
 
 import semantic_version as semver
+
+from component_manager.component_sources import BaseSource
 
 COMMIT_ID_RE = re.compile(r"[0-9a-f]{40}")
 
@@ -30,18 +32,27 @@ class Manifest(object):
 
 
 class ComponentRequirement(object):
-    def __init__(self, name, source, versions=None, version_spec='*'):
+    def __init__(
+            self,
+            name,  # type: str
+            source,  # type: BaseSource
+            version_spec='*',
+            source_specific_options=None  # type: Union[Dict,None]
+    ):
+        # type: (...) -> None
         self.version_spec = version_spec
         self.source = source
         self.name = name
+        self.source_specific_options = source_specific_options or {}
 
 
 @total_ordering
 class ComponentVersion(object):
-    def __init__(self, version_string):  # type: (str) -> None
+    def __init__(self, version_string, component_hash=None):  # type: (str, Union[str, None]) -> None
         """
         version_string - can be `*`, git commit hash (hex, 160 bit) or valid semantic version string
         """
+
         self.is_commit_id = bool(COMMIT_ID_RE.match(version_string))
         self.is_any = version_string == '*'
         self.is_semver = False
@@ -50,9 +61,13 @@ class ComponentVersion(object):
             self._semver = semver.Version(version_string)
             self.is_semver = True
 
-        self._version_string = version_string
+        self._version_string = version_string.strip().lower()
+        self.component_hash = component_hash
 
     def __eq__(self, other):
+        if self.component_hash != other.component_hash:
+            return False
+
         if self.is_semver and other.is_semver:
             return self._semver == other._semver
         else:
@@ -66,6 +81,34 @@ class ComponentVersion(object):
 
     def __str__(self):
         return self._version_string
+
+
+class ComponentSpec(object):
+    def __init__(self, spec_string):  # type: (str) -> None
+        """
+        spec_string - git commit hash (hex, 160 bit) or valid semantic version spec
+        """
+        self.is_commit_id = bool(COMMIT_ID_RE.match(spec_string))
+        self.is_semspec = False
+
+        if not self.is_commit_id:
+            self._semver = semver.Spec(spec_string)
+            self.is_semspec = True
+
+        self._spec_string = spec_string.strip().lower()
+
+    def match(self, version):  # type: (ComponentVersion) -> bool
+        """Check whether a Version satisfies the Spec."""
+        if version.is_any:
+            return True
+
+        if self.is_commit_id:
+            return self._spec_string == str(version)
+        else:
+            return self._semver.match(version)
+
+    def __str__(self):
+        return self._spec_string
 
 
 class ComponentWithVersions(object):

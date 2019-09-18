@@ -23,7 +23,7 @@ class GitClient(object):
 
     def is_git_dir(self, path):
         try:
-            return self.run(['rev-parse', '--is-inside-work-tree'], cwd=path) == 'true'
+            return self.run(['rev-parse', '--is-inside-work-tree'], cwd=path).strip() == 'true'
         except GitCommandError:
             return False
 
@@ -32,19 +32,18 @@ class GitClient(object):
         Checkout required branch to desired path. Clones a repo, if necessary
         """
 
-        # TODO: add support for shallow clones with shallow submodules
         # TODO: add support for changing branches in all cases
         # TODO: check for valid remote
         # Check if target dir is already a valid repo
         if self.is_git_dir(path):
-            self.run(['fetch', 'origin'])
+            self.run(['fetch', 'origin'], cwd=path)
             # Checkout required branch
-            self.run(['checkout', '--force', branch or 'origin/HEAD'])
+            self.run(['checkout', '--force', branch or 'origin'], cwd=path)
             # And remove all untracked files
-            self.run(['reset', '--hard'])
+            self.run(['reset', '--hard'], cwd=path)
 
             if with_submodules:
-                self.run(['submodule', 'update', '--init', '--recursive'])
+                self.run(['submodule', 'update', '--init', '--recursive'], cwd=path)
 
         else:
             shallow_clone_params = [
@@ -65,8 +64,8 @@ class GitClient(object):
             if with_submodules:
                 clone_params += ['--recurse-submodules']
 
-            clone_params.append(path)
-            self.run(clone_params)
+            clone_params.append('.')
+            self.run(clone_params, cwd=path)
 
     def run(self, args, cwd=None):  # type: (List[str], str) -> str
         if cwd is None:
@@ -79,11 +78,12 @@ class GitClient(object):
                 stderr=subprocess.STDOUT,
             ).decode('utf-8')
         except subprocess.CalledProcessError as e:
-            raise GitCommandError("'git %s' failed with exit code %d" % (' '.join(args), e.returncode))
+            raise GitCommandError("'git %s' failed with exit code %d \n%s" %
+                                  (' '.join(args), e.returncode, e.output.decode('utf-8')))
 
     def check_version(
             self,
-            min_supported='2.13',  # As for Aug 2019 2.13 is the oldest supported version of git
+            min_supported='2.13.0',  # As for Aug 2019 2.13 is the oldest supported version of git
     ):  # type: (Union[str,Version]) -> bool
         try:
             version = self.version()

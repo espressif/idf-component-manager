@@ -30,7 +30,16 @@ class ManifestBuilder(object):
 
         for name, details in tree.get('dependencies', {}).items():
             source = SourceBuilder(name, details).build()
-            component = ComponentRequirement(name, source, version_spec=details.get('version', '*'))
+            # Add all extra fields from requirements, excluding version
+            source_specific_options = {}
+            for (key, value) in details.items():
+                if key in source.known_keys() and key != 'version':
+                    source_specific_options[key] = value
+
+            component = ComponentRequirement(name,
+                                             source,
+                                             version_spec=details.get('version', '*'),
+                                             source_specific_options=source_specific_options)
             manifest.dependencies.append(component)
 
         return manifest

@@ -6,6 +6,7 @@ import vcr
 
 from component_manager.component_sources import LocalSource, WebServiceSource
 from component_manager.manifest import ComponentVersion
+from component_manager.version_solver.solver_result import SolvedComponent
 
 
 class TestComponentWebServiceSource(object):
@@ -24,11 +25,13 @@ class TestComponentWebServiceSource(object):
     @vcr.use_cassette('fixtures/vcr_cassettes/test_fetch_webservice.yaml')
     def test_download(self):
         tempdir = tempfile.mkdtemp()
+        source = WebServiceSource(source_details={'service_url': 'https://example.com/api'})
+        cmp = SolvedComponent('cmp', '0.0.1', source, component_hash=self.EXAMPLE_HASH)
 
         try:
             source = WebServiceSource(source_details={'service_url': 'http://127.0.0.1:8000/api'})
             download_path = os.path.join(tempdir, 'cmp~0.0.1~%s' % self.LOCALHOST_HASH)
-            local_path = source.download('cmp', {'version': '0.0.1'}, download_path)
+            local_path = source.download(cmp, download_path)
 
             assert local_path == download_path
             assert os.path.isdir(local_path)
@@ -54,7 +57,7 @@ class TestComponentLocalSource(object):
 
         try:
             source = LocalSource(source_details={'path': tempdir})
-            versions = source.versions('test', '*')
+            versions = source.versions('test', spec='*')
 
             assert versions.name == 'test'
             assert versions.versions[0] == ComponentVersion('0.0.0')
@@ -71,7 +74,7 @@ class TestComponentLocalSource(object):
             'cmp',
         )
         source = LocalSource(source_details={'path': path})
-        versions = source.versions('test', '*')
+        versions = source.versions('test', spec='*')
 
         assert versions.name == 'test'
         assert versions.versions[0] == ComponentVersion('1.0.0')
