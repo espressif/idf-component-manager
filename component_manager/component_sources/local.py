@@ -37,7 +37,7 @@ class LocalSource(BaseSource):
         return self._path
 
     def versions(self, name, details=None, spec='*'):
-        """For local return version from manifest, or 0.0.0 if manifest not found"""
+        """For local return version from manifest, or * if manifest not found"""
         manifest_path = os.path.join(self._path, 'idf_component.yml')
         version_string = '*'
         if os.path.isfile(manifest_path):

@@ -4,7 +4,8 @@ import tempfile
 
 import vcr
 
-from component_manager.component_sources import LocalSource, WebServiceSource
+from component_manager.component_sources.local import LocalSource
+from component_manager.component_sources.web_service import WebServiceSource
 from component_manager.manifest import ComponentVersion
 from component_manager.version_solver.solver_result import SolvedComponent
 
@@ -49,7 +50,8 @@ class TestComponentLocalSource(object):
     def test_download(self):
         path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'manifests')
         source = LocalSource(source_details={'path': path})
-        assert source.download('cmp', {'version': '*'}, '/test/path/').endswith('manifests')
+        component = SolvedComponent('cmp', '*', source)
+        assert source.download(component, '/test/path/').endswith('manifests')
 
     def test_versions_without_manifest(self):
 
@@ -60,7 +62,7 @@ class TestComponentLocalSource(object):
             versions = source.versions('test', spec='*')
 
             assert versions.name == 'test'
-            assert versions.versions[0] == ComponentVersion('0.0.0')
+            assert versions.versions[0] == ComponentVersion('*')
 
         finally:
             shutil.rmtree(tempdir)

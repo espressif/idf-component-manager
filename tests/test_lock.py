@@ -4,12 +4,13 @@ from collections import OrderedDict
 
 import pytest
 
-from component_manager.component_sources import IDFSource, WebServiceSource
+from component_manager.component_sources.idf import IDFSource
+from component_manager.component_sources.web_service import WebServiceSource
 from component_manager.lock.manager import LockManager
 from component_manager.manifest import ComponentVersion
 from component_manager.manifest_builder import ManifestBuilder
 from component_manager.manifest_pipeline import ManifestParser
-from component_manager.version_solver.solver_result import (SolvedComponent, SolverResult)
+from component_manager.version_solver.solver_result import SolvedComponent, SolverResult
 
 dependencies = OrderedDict([
     ('idf', OrderedDict([('version', '4.4.4')])),

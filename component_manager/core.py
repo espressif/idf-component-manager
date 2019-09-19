@@ -5,20 +5,18 @@ import os
 from typing import List, Union
 
 from .cmake_builder import CMakeBuilder
-from .component_sources import BaseSource, ComponentFetcher, SourceStorage
+from .component_sources.base import BaseSource
+from .component_sources.fetcher import ComponentFetcher
 from .lock.manager import LockManager
 from .manifest_builder import ManifestBuilder
 from .manifest_pipeline import ManifestParser
-from .version_solver import VersionSolver
+from .version_solver.version_solver import VersionSolver
 from .version_solver.solver_result import SolverResult
 
 
 class ComponentManager(object):
     def __init__(self, path, lock_path=None, manifest_path=None,
                  sources=None):  # type: (str, Union[None, str], Union[None, str], List[BaseSource]) -> None
-
-        # That may take a while to init sources (in case of git), so all of them are stored between launches
-        self.sources = SourceStorage()
 
         # Set path of manifest file for the project
         self.manifest_path = manifest_path or (os.path.join(path, 'idf_project.yml') if os.path.isdir(path) else path)
@@ -38,7 +36,7 @@ class ComponentManager(object):
 
     def install(self):
         parser = ManifestParser(self.manifest_path).prepare()
-        manifest = ManifestBuilder(parser.manifest_tree, self.sources).build()
+        manifest = ManifestBuilder(parser.manifest_tree).build()
         lock_manager = LockManager(self.lock_path)
         lock = lock_manager.load()
         solution = SolverResult.from_yaml(manifest, lock)

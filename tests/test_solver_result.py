@@ -1,6 +1,6 @@
 import os
 
-from component_manager.component_sources import WebServiceSource
+from component_manager.component_sources.web_service import WebServiceSource
 from component_manager.lock.manager import LockManager
 from component_manager.manifest import Manifest
 from component_manager.version_solver.solver_result import SolvedComponent, SolverResult

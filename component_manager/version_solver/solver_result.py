@@ -6,7 +6,8 @@ from typing import Dict, List, Union
 from strictyaml import YAML
 
 import component_manager
-from component_manager.component_sources import BaseSource, SourceBuilder
+from component_manager.component_sources.base import BaseSource
+from component_manager.component_sources.builder import SourceBuilder
 from component_manager.manifest import Manifest
 
 
