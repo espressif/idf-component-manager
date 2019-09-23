@@ -10,7 +10,8 @@ lint:
   image: python:3.7
   stage: check
   tags:
-    - lint_python
+    - lint
+    - internet
   artifacts:
     when: on_failure
     paths:
@@ -24,13 +25,14 @@ lint:
     - flake8 --config=.flake8 --output-file=flake8_output.txt --tee
 
 .before_test: &before_test |
-  - pip install tox==3.0.0
+  pip install tox==3.0.0
 
 test:py27:
   image: python:2.7
   stage: test
   tags:
-    - test_python
+    - test
+    - internet
   script:
     - *before_test
     - tox -e py27
@@ -39,7 +41,8 @@ test:py35:
   image: python:3.5
   stage: test
   tags:
-    - test_python
+    - test
+    - internet
   script:
     - *before_test
     - tox -e py35
@@ -48,7 +51,8 @@ test:py36:
   image: python:3.6
   stage: test
   tags:
-    - test_python
+    - test
+    - internet
   script:
     - *before_test
     - tox -e py36
@@ -57,7 +61,8 @@ test:py37:
   image: python:3.7
   stage: test
   tags:
-    - *before_test
-    - test_python
+    - test
+    - internet
   script:
+    - *before_test
     - tox -e py37
