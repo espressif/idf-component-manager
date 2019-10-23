@@ -7,7 +7,7 @@ This repo is only intended to be used for initial development, then it should be
 
 - Third party develops a component for use with IDF and wants to make this available to others.
 - User wants to combine components from multiple third parties and from Espressif to compile their firmware. Wants to be able to update this code as necessary when new versions are available.
-- IDF developers want to minimise the amount of external functionality in "core" IDF (for compile time, ease of maintenance, etc)
+- IDF developers want to minimize the amount of external functionality in "core" IDF (for compile time, ease of maintenance, etc)
 - Espressif wants to provide code for support of third party hardware, cloud services, software libraries, etc. without bundling this into IDF.
 
 # IDF Component Management

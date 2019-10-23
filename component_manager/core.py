@@ -17,6 +17,8 @@ from .version_solver.solver_result import SolverResult
 class ComponentManager(object):
     def __init__(self, path, lock_path=None, manifest_path=None,
                  sources=None):  # type: (str, Union[None, str], Union[None, str], List[BaseSource]) -> None
+        # Working directory
+        self.path = path if os.path.isdir(path) else os.path.dirname(path)
 
         # Set path of manifest file for the project
         self.manifest_path = manifest_path or (os.path.join(path, 'idf_project.yml') if os.path.isdir(path) else path)
@@ -24,17 +26,10 @@ class ComponentManager(object):
         # Lock path
         self.lock_path = lock_path or (os.path.join(path, 'dependencies.lock') if os.path.isdir(path) else path)
 
-        # Working directory
-        self.path = path if os.path.isdir(path) else os.path.dirname(path)
-
         # Components directory
         self.components_path = os.path.join(self.path, 'managed_components')
 
-    def add(self, components):
-        print('Adding %s to manifest' % ', '.join(components))
-        print('Not implemented yet')
-
-    def install(self):
+    def install(self, components=None):
         parser = ManifestParser(self.manifest_path).prepare()
         manifest = ManifestBuilder(parser.manifest_tree).build()
         lock_manager = LockManager(self.lock_path)
@@ -64,17 +59,11 @@ class ComponentManager(object):
 
         print('Successfully processed %s %s' % (components_count, count_string))
 
-    def update(self, components=None):
-        if components is None:
-            components = []
-        print('Updating %s' % ', '.join(components))
-        print('Not implemented yet')
-
-    def eject(self, components):
+    def eject(self, components=None):
         print('Ejecting %s' % ', '.join(components))
         print('Not implemented yet')
 
-    def prebuild(self):
+    def prepare_dependencies(self, components=None):
         # TODO: read build directory from IDF
         path = os.path.join(self.path, 'build')
 
