@@ -20,7 +20,7 @@ allow_multiline_lambdas=False
 allow_split_before_default_or_named_assigns=True
 
 # Allow splits before the dictionary value.
-allow_split_before_dict_value=True
+allow_split_before_dict_value=False
 
 #   Let spacing indicate operator precedence. For example:
 #
