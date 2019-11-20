@@ -1,10 +1,17 @@
+import sys
+
 from component_manager.core import ComponentManager
+from component_manager.utils.errors import FatalError
 
 
 def action_extensions(base_actions, project_path):
     def callback(subcommand_name, ctx, args, components=None):
-        manager = ComponentManager(args.project_dir)
-        getattr(manager, subcommand_name)(components)
+        try:
+            manager = ComponentManager(args.project_dir)
+            getattr(manager, subcommand_name)(components)
+        except FatalError as e:
+            print(e)
+            sys.exit(2)
 
     components_option = {
         'names': ['-c', '--components'],

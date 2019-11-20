@@ -5,6 +5,8 @@ from typing import List, Union
 
 from semantic_version import Version
 
+from component_manager.utils.errors import FatalError
+
 
 # Git error that is suppossed to be handled in the code, non-fatal
 class GitCommandError(Exception):
@@ -27,45 +29,41 @@ class GitClient(object):
         except GitCommandError:
             return False
 
-    def prepare_branch(self, repo, path, branch=None, with_submodules=True, shallow=False):
+    def prepare_branch(self, repo, path, branch=None, with_submodules=True):
         """
         Checkout required branch to desired path. Clones a repo, if necessary
         """
 
-        # TODO: add support for changing branches in all cases
-        # TODO: check for valid remote
         # Check if target dir is already a valid repo
         if self.is_git_dir(path):
             self.run(['fetch', 'origin'], cwd=path)
-            # Checkout required branch
-            self.run(['checkout', '--force', branch or 'origin'], cwd=path)
-            # And remove all untracked files
-            self.run(['reset', '--hard'], cwd=path)
+        else:
+            # Init empty repo
+            self.run(['init', '.'], cwd=path)
+            # Add remote
+            self.run(['remote', 'add', 'origin', repo], cwd=path)
+            # And fetch
+            self.run(['fetch', 'origin'], cwd=path)
 
-            if with_submodules:
-                self.run(['submodule', 'update', '--init', '--recursive'], cwd=path)
+        if branch:
+            # If branch is provided check that exists
+            try:
+                self.run(['cat-file', '-t', branch])
+            except GitCommandError:
+                FatalError('Error: branch "%s" doesn\'t exist in repo "%s"' % (branch, repo))
 
         else:
-            shallow_clone_params = [
-                '--depth',
-                '1',
-                '--single-branch',
-            ]
+            # Set to latest commit from remote's head
+            branch = self.run(['ls-remote', '--exit-code', 'origin', 'HEAD'])[:40]
 
-            # Remove non empty dir if any
-            clone_params = ['clone', repo]
+        # Checkout required branch
+        self.run(['checkout', '--force', branch], cwd=path)
+        # And remove all untracked files
+        self.run(['reset', '--hard'], cwd=path)
 
-            if branch:
-                clone_params += ['--branch', branch]
-
-            if shallow:
-                clone_params += shallow_clone_params
-
-            if with_submodules:
-                clone_params += ['--recurse-submodules']
-
-            clone_params.append('.')
-            self.run(clone_params, cwd=path)
+        # Submodules
+        if with_submodules:
+            self.run(['submodule', 'update', '--init', '--recursive'], cwd=path)
 
     def run(self, args, cwd=None):  # type: (List[str], str) -> str
         if cwd is None:
