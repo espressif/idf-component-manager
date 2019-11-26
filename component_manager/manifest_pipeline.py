@@ -1,5 +1,6 @@
 import os
 import sys
+from collections import OrderedDict
 from shutil import copyfile
 
 from strictyaml import YAMLError
@@ -70,8 +71,7 @@ class ManifestParser(object):
 
     def parse_manifest_file(self):
         if not os.path.isfile(self._path):
-            print('Error: Manifest file does not exist. Please declare valid manifest in: \n\t%s' % self._path)
-            sys.exit(1)
+            return OrderedDict()
 
         with open(self._path, 'r') as f:
             try:
