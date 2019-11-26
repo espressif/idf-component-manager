@@ -32,7 +32,7 @@ class GitSource(BaseSource):
         if version is not None:
             version = str(version)
 
-        self._client.prepare_branch(repo=self.git_repo, path=self.cache_path, branch=version, with_submodules=True)
+        return self._client.prepare_ref(repo=self.git_repo, path=self.cache_path, ref=version, with_submodules=True)
 
     @staticmethod
     def is_me(name, details):  # type: (str, dict) -> bool
@@ -76,9 +76,8 @@ class GitSource(BaseSource):
 
     def versions(self, name, details=None, spec='*'):
         """For git returns hash of locked commit, ignoring manifest"""
-        version = None if details is None else details.get('version')
-        self._checkout_git_source(version)
-        commit_id = self._client.run(['rev-parse', '--verify', 'head'], cwd=self.cache_path)
+        version = None if spec == '*' else spec
+        commit_id = self._checkout_git_source(version)
         return ComponentWithVersions(name=name, versions=[ComponentVersion(commit_id)])
 
     def as_ordered_dict(self):  # type: () -> OrderedDict

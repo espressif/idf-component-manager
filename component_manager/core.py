@@ -4,7 +4,6 @@ from __future__ import print_function
 import os
 from typing import List, Union
 
-from .cmake_builder import CMakeBuilder
 from .component_sources.base import BaseSource
 from .component_sources.fetcher import ComponentFetcher
 from .lock.manager import LockManager
@@ -15,8 +14,9 @@ from .version_solver.solver_result import SolverResult
 
 
 class ComponentManager(object):
-    def __init__(self, path, lock_path=None, manifest_path=None,
-                 sources=None):  # type: (str, Union[None, str], Union[None, str], List[BaseSource]) -> None
+    def __init__(
+            self, path, lock_path=None, manifest_path=None,
+            sources=None):  # type: (str, Union[None, str], Union[None, str], List[BaseSource]) -> None
         # Working directory
         self.path = path if os.path.isdir(path) else os.path.dirname(path)
 
@@ -44,7 +44,7 @@ class ComponentManager(object):
 
         # Download components
         if not solution.solved_components:
-            return
+            return solution
 
         components_count = len(solution.solved_components)
         count_string = 'dependencies' if components_count != 1 else 'dependency'
@@ -58,23 +58,8 @@ class ComponentManager(object):
             ComponentFetcher(component, self.components_path).download()
 
         print('Successfully processed %s %s' % (components_count, count_string))
+        return solution
 
     def eject(self, components=None):
         print('Ejecting %s' % ', '.join(components))
         print('Not implemented yet')
-
-    def prepare_dependencies(self, components=None):
-        # TODO: read build directory from IDF
-        path = os.path.join(self.path, 'build')
-
-        # check lock file state
-        self.install()
-
-        # TODO: Check components in other sources
-
-        # TODO: Download all required components
-
-        # TODO: Load flattened dependecy tree
-
-        CMakeBuilder(path).build()
-        # Generate CMake file

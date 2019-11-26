@@ -20,13 +20,15 @@ class VersionSolver(object):
         # TODO: fetch full tree of dependencies, now it fetches only direct dependencies
         # Thats a quick stub that always installs latest version
         def best_version(component):
+
             cmp_with_versions = component.source.versions(name=component.name, spec=component.version_spec)
             version = max(cmp_with_versions.versions)
-            return SolvedComponent(name=component.name,
-                                   source=component.source,
-                                   version=version,
-                                   component_hash=version.component_hash,
-                                   source_specific_options=component.source_specific_options)
+            return SolvedComponent(
+                name=component.name,
+                source=component.source,
+                version=version,
+                component_hash=version.component_hash,
+                source_specific_options=component.source_specific_options)
 
         solved_components = list(map(
             best_version,

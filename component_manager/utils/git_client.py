@@ -29,7 +29,7 @@ class GitClient(object):
         except GitCommandError:
             return False
 
-    def prepare_branch(self, repo, path, branch=None, with_submodules=True):
+    def prepare_ref(self, repo, path, ref=None, with_submodules=True):
         """
         Checkout required branch to desired path. Clones a repo, if necessary
         """
@@ -45,25 +45,27 @@ class GitClient(object):
             # And fetch
             self.run(['fetch', 'origin'], cwd=path)
 
-        if branch:
+        if ref:
             # If branch is provided check that exists
             try:
-                self.run(['cat-file', '-t', branch])
+                self.run(['cat-file', '-t', ref])
             except GitCommandError:
-                FatalError('Error: branch "%s" doesn\'t exist in repo "%s"' % (branch, repo))
+                FatalError('Error: branch "%s" doesn\'t exist in repo "%s"' % (ref, repo))
 
         else:
             # Set to latest commit from remote's head
-            branch = self.run(['ls-remote', '--exit-code', 'origin', 'HEAD'])[:40]
+            ref = self.run(['ls-remote', '--exit-code', 'origin', 'HEAD'], cwd=path)[:40]
 
         # Checkout required branch
-        self.run(['checkout', '--force', branch], cwd=path)
+        self.run(['checkout', '--force', ref], cwd=path)
         # And remove all untracked files
         self.run(['reset', '--hard'], cwd=path)
 
         # Submodules
         if with_submodules:
             self.run(['submodule', 'update', '--init', '--recursive'], cwd=path)
+
+        return self.run(['rev-parse', '--verify', 'head'], cwd=path)
 
     def run(self, args, cwd=None):  # type: (List[str], str) -> str
         if cwd is None:
@@ -76,8 +78,8 @@ class GitClient(object):
                 stderr=subprocess.STDOUT,
             ).decode('utf-8')
         except subprocess.CalledProcessError as e:
-            raise GitCommandError("'git %s' failed with exit code %d \n%s" %
-                                  (' '.join(args), e.returncode, e.output.decode('utf-8')))
+            raise GitCommandError(
+                "'git %s' failed with exit code %d \n%s" % (' '.join(args), e.returncode, e.output.decode('utf-8')))
 
     def check_version(
             self,
@@ -88,10 +90,11 @@ class GitClient(object):
             min_supported = min_supported if isinstance(min_supported, Version) else Version(min_supported)
 
             if version < min_supported:
-                raise GitFatalError('Your git version %s is older than minimally required %s.' % (
-                    version,
-                    min_supported,
-                ))
+                raise GitFatalError(
+                    'Your git version %s is older than minimally required %s.' % (
+                        version,
+                        min_supported,
+                    ))
 
         except GitCommandError:
             raise GitFatalError("git command wasn't found")
