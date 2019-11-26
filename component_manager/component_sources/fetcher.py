@@ -35,7 +35,8 @@ class ComponentFetcher(object):
 
     def download(self):  # type: () -> str
         """If necessary, it downloads component and returns local path to component directory"""
-        managed_path = os.path.join(self.components_path, self.component.name)
+        name_parts = self.component.name.split('/')
+        managed_path = os.path.join(self.components_path, '__'.join(name_parts))
 
         # Check if component is up to date in managed components path
         # TODO: fix up_to_date function

@@ -57,7 +57,7 @@ class ComponentManager(object):
             print(line, end='\r')
             ComponentFetcher(component, self.components_path).download()
 
-        print('Successfully processed %s %s' % (components_count, count_string))
+        print('Successfully processed %s %s ' % (components_count, count_string))
         return solution
 
     def eject(self, components=None):
