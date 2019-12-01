@@ -27,8 +27,9 @@ class WebServiceSource(BaseSource):
     def __init__(self, source_details=None):
         super(WebServiceSource, self).__init__(source_details=source_details)
 
-        self.base_url = (str(source_details.get('service_url', ''))
-                         or os.getenv('DEFAULT_COMPONENT_SERVICE_URL', 'https://components.espressif.com/api/'))
+        self.base_url = (
+            str(source_details.get('service_url', ''))
+            or os.getenv('DEFAULT_COMPONENT_SERVICE_URL', 'https://pacman.dev.brno.espressif.com/api/'))
 
         self.api_client = source_details.get('api_client', None) or APIClient(base_url=self.base_url)
 
@@ -108,8 +109,9 @@ class WebServiceSource(BaseSource):
                 extension = None
 
             if r.status_code != 200:
-                raise FetchingError('Cannot download component %s@%s. Server returned HTTP code %s' %
-                                    (component.name, component.version, r.status_code))
+                raise FetchingError(
+                    'Cannot download component %s@%s. Server returned HTTP code %s' %
+                    (component.name, component.version, r.status_code))
 
             # If didn't find anything useful, trying content disposition
             content_disposition = r.headers.get('content-disposition')
