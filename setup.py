@@ -15,6 +15,6 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=[
         'requests', 'future', 'strictyaml', 'semantic_version', 'typing',
-        'component_manager_tools @ git+ssh://git@gitlab.espressif.cn:27227/idf/component_management_tools.git'
+        'component_management_tools @ git+ssh://git@gitlab.espressif.cn:27227/idf/component_management_tools.git'
     ],
 )
