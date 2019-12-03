@@ -26,6 +26,8 @@ lint:
 
 .before_test: &before_test |
   pip install tox
+  # This is workaround to allow access for git 
+  git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.espressif.cn:6688/idf/component_management_tools.git /test/component_management_tools
 
 test:py27:
   image: python:2.7
