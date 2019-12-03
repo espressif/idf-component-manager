@@ -1,10 +1,10 @@
 from strictyaml import Any
 
+from component_management_tools.hash_tools import hash_object
 from component_manager.manifest import ComponentVersion
 
 from .component_sources.builder import SourceBuilder
 from .manifest import ComponentRequirement, Manifest
-from .utils.hash_tools import hash_object
 
 
 class ManifestBuilder(object):
@@ -14,9 +14,10 @@ class ManifestBuilder(object):
 
     def build(self):  # type: () -> Manifest
         tree = self.manifest_tree
-        manifest = Manifest(name=tree.get('name', None),
-                            maintainers=tree.get('maintainers', None),
-                            manifest_hash=hash_object(dict(tree)))
+        manifest = Manifest(
+            name=tree.get('name', None),
+            maintainers=tree.get('maintainers', None),
+            manifest_hash=hash_object(dict(tree)))
         version = tree.get('version', None)
 
         if version:
@@ -30,10 +31,8 @@ class ManifestBuilder(object):
                 if key in source.known_keys() and key != 'version':
                     source_specific_options[key] = value
 
-            component = ComponentRequirement(name,
-                                             source,
-                                             version_spec=details.get('version', '*'),
-                                             source_specific_options=source_specific_options)
+            component = ComponentRequirement(
+                name, source, version_spec=details.get('version', '*'), source_specific_options=source_specific_options)
             manifest.dependencies.append(component)
 
         return manifest

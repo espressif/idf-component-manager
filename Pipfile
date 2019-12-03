@@ -11,6 +11,7 @@ future = "*"
 strictyaml = "*"
 semantic-version = "*"
 typing = "*"
+component-management-tools = {editable = true,git = "ssh://git@gitlab.espressif.cn:27227/idf/component_management_tools.git"}
 
 [dev-packages]
 pytest = "*"

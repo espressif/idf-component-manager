@@ -5,21 +5,26 @@ from typing import TYPE_CHECKING, Dict, List, Union
 
 import semantic_version as semver
 
+try:
+    from semantic_version import SimpleSpec as Spec
+except ImportError:
+    from semantic_version import Spec
+
 if TYPE_CHECKING:
     from component_manager.component_sources.base import BaseSource
 
-COMMIT_ID_RE = re.compile(r"[0-9a-f]{40}")
+COMMIT_ID_RE = re.compile(r'[0-9a-f]{40}')
 
 
 class Manifest(object):
     def __init__(
-            self,
-            name=None,  # type: Union[str, None]
-            version=None,  # type: Union[str, ComponentVersion, None]
-            maintainers=None,  # type: Union[str, None]
-            dependencies=None,  # type: Union[List[ComponentRequirement], None]
-            url=None,  # type: Union[str, None]
-            manifest_hash=None  # type: Union[str, None]
+        self,
+        name=None,  # type: Union[str, None]
+        version=None,  # type: Union[str, ComponentVersion, None]
+        maintainers=None,  # type: Union[str, None]
+        dependencies=None,  # type: Union[List[ComponentRequirement], None]
+        url=None,  # type: Union[str, None]
+        manifest_hash=None  # type: Union[str, None]
     ):
         # type: (...) -> None
         self.name = str(name)
@@ -34,11 +39,11 @@ class Manifest(object):
 
 class ComponentRequirement(object):
     def __init__(
-            self,
-            name,  # type: str
-            source,  # type: BaseSource
-            version_spec='*',
-            source_specific_options=None  # type: Union[Dict,None]
+        self,
+        name,  # type: str
+        source,  # type: BaseSource
+        version_spec='*',
+        source_specific_options=None  # type: Union[Dict,None]
     ):
         # type: (...) -> None
         self.version_spec = version_spec
@@ -93,7 +98,7 @@ class ComponentSpec(object):
         self.is_semspec = False
 
         if not self.is_commit_id:
-            self._semver = semver.Spec(spec_string)
+            self._semver = Spec(spec_string)
             self.is_semspec = True
 
         self._spec_string = spec_string.strip().lower()

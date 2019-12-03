@@ -1,5 +1,3 @@
-# This file is generated automatically by IDF component management tool.
-# Please do not edit it manually. Run `idf.py component install` to update this lock file.
 component_manager_version: 0.0.1
 dependencies:
   idf:

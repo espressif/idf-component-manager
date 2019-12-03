@@ -12,26 +12,28 @@ from component_manager.manifest_builder import ManifestBuilder
 from component_manager.manifest_pipeline import ManifestParser
 from component_manager.version_solver.solver_result import SolvedComponent, SolverResult
 
-dependencies = OrderedDict([
-    ('idf', OrderedDict([('version', '4.4.4')])),
-    (
-        'test_cmp',
-        OrderedDict([
-            ('version', '1.2.7'),
-            (
-                'component_hash',
-                'f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b',
-            ),
-            (
-                'source',
-                OrderedDict([
-                    ('service_url', 'https://repo.example.com'),
-                    ('type', 'service'),
+dependencies = OrderedDict(
+    [
+        ('idf', OrderedDict([('version', '4.4.4')])),
+        (
+            'test_cmp',
+            OrderedDict(
+                [
+                    ('version', '1.2.7'),
+                    (
+                        'component_hash',
+                        'f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b',
+                    ),
+                    (
+                        'source',
+                        OrderedDict([
+                            ('service_url', 'https://repo.example.com'),
+                            ('type', 'service'),
+                        ]),
+                    ),
                 ]),
-            ),
-        ]),
-    ),
-])
+        ),
+    ])
 manifest_hash = 'f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b'
 valid_lock_path = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
@@ -103,11 +105,12 @@ class TestLockManager(object):
     def test_lock_dump_with_dictionary(self, tmp_path):
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
-        solution = OrderedDict([
-            ('component_manager_version', '1.0.3'),
-            ('dependencies', dependencies),
-            ('manifest_hash', manifest_hash),
-        ])
+        solution = OrderedDict(
+            [
+                ('component_manager_version', '1.0.3'),
+                ('dependencies', dependencies),
+                ('manifest_hash', manifest_hash),
+            ])
 
         parser.dump(solution)
 

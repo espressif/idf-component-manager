@@ -2,8 +2,8 @@
 
 import os
 
+from component_management_tools.hash_tools import validate_dir
 from component_manager.component_sources.base import BaseSource
-from component_manager.utils.hash_tools import validate_dir
 from component_manager.version_solver.solver_result import SolvedComponent
 
 from .errors import FetchingError
