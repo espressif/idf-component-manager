@@ -69,7 +69,7 @@ class ComponentManager(object):
         with open(managed_components_list_file, 'w') as f:
             # TODO: write all components individually
             if solution.solved_components:
-                f.write('__project_component_dir("${CMAKE_CURRENT_LIST_DIR}/managed_components")')
+                f.write('__project_component_dir("%s")' % self.components_path)
 
     def inject_requrements(self, component_requires_file):
         pass
