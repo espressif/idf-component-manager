@@ -66,9 +66,9 @@ class ComponentManager(object):
         solution = self.install()
 
         # Include managed components in project directory
-        if solution.solved_components:
-            with open(managed_components_list_file, 'w') as f:
-                # TODO: write all components individually
+        with open(managed_components_list_file, 'w') as f:
+            # TODO: write all components individually
+            if solution.solved_components:
                 f.write('__project_component_dir("${CMAKE_CURRENT_LIST_DIR}/managed_components")')
 
     def inject_requrements(self, component_requires_file):
