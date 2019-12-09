@@ -13,7 +13,7 @@ __pycache__
 .tox
 
 # Remove Pipfile.lock to run tests under different python versions
-Pipfile.lock 
+Pipfile.lock
 
 # Manifest and components
 /manifest*.yaml
@@ -24,6 +24,7 @@ Pipfile.lock
 /managed_components
 /components
 build
+dist
 
 #Configs
 .env

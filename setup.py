@@ -12,7 +12,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://gitlab.espressif.cn:6688/sergei.silnov/component-manager',
-    packages=['idf_component_manager'],
+    packages=setuptools.find_packages(),
     install_requires=[
         'requests', 'future', 'strictyaml', 'semantic_version', 'typing',
         'component_management_tools @ git+ssh://git@gitlab.espressif.cn:27227/idf/component_management_tools.git'

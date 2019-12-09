@@ -1,7 +1,7 @@
 import sys
 
-from ..core import ComponentManager
-from ..utils.errors import FatalError
+from .core import ComponentManager
+from .utils.errors import FatalError
 
 
 def action_extensions(base_actions, project_path):
