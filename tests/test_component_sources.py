@@ -4,10 +4,10 @@ import tempfile
 
 import vcr
 
-from component_manager.component_sources.local import LocalSource
-from component_manager.component_sources.web_service import WebServiceSource
-from component_manager.manifest import ComponentVersion
-from component_manager.version_solver.solver_result import SolvedComponent
+from idf_component_manager.component_sources.local import LocalSource
+from idf_component_manager.component_sources.web_service import WebServiceSource
+from idf_component_manager.manifest import ComponentVersion
+from idf_component_manager.version_solver.solver_result import SolvedComponent
 
 
 class TestComponentWebServiceSource(object):

@@ -74,7 +74,7 @@ class SystemCachePath(object):
 
         key = _winreg.OpenKey(
             _winreg.HKEY_CURRENT_USER,
-            r"Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders",
+            r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders',
         )
         dir, type = _winreg.QueryValueEx(key, shell_folder_name)
         return dir

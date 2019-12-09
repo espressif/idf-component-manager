@@ -1,6 +1,6 @@
 import vcr
 
-from component_manager.api_client import APIClient
+from idf_component_manager.api_client import APIClient
 
 
 class TestAPIClient(object):

@@ -11,7 +11,7 @@ except ImportError:
     from semantic_version import Spec
 
 if TYPE_CHECKING:
-    from component_manager.component_sources.base import BaseSource
+    from .component_sources.base import BaseSource
 
 COMMIT_ID_RE = re.compile(r'[0-9a-f]{40}')
 

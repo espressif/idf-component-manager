@@ -10,13 +10,13 @@ from hashlib import sha256
 import requests
 
 from component_management_tools.archive_tools import ArchiveError, get_format_from_path, unpack_archive
-from component_manager.api_client import APIClient
+from ..api_client import APIClient
 
 from .base import BaseSource
 from .errors import FetchingError
 
 # TODO: use cache
-# from component_manager.utils.file_cache import FileCache
+# from ..utils.file_cache import FileCache
 
 try:
     from urllib.parse import urlparse  # type: ignore

@@ -5,10 +5,10 @@ from typing import Dict, List, Union
 
 from strictyaml import YAML
 
-import component_manager
-from component_manager.component_sources.base import BaseSource
-from component_manager.component_sources.builder import SourceBuilder
-from component_manager.manifest import Manifest
+from .. import version as component_manager_version
+from ..component_sources.base import BaseSource
+from ..component_sources.builder import SourceBuilder
+from ..manifest import Manifest
 
 
 class SolvedComponent(object):
@@ -81,7 +81,7 @@ class SolverResult(object):
     def as_ordered_dict(self):  # type: () -> OrderedDict
         dependencies = OrderedDict([(c.name, c.as_ordered_dict()) for c in self.solved_components])  # type: OrderedDict
         solution = OrderedDict([
-            ('component_manager_version', str(component_manager.version)),
+            ('component_manager_version', str(component_manager_version)),
             ('dependencies', dependencies),
             ('manifest_hash', self.manifest.manifest_hash),
         ])

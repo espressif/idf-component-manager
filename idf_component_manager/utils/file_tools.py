@@ -8,8 +8,8 @@ from typing import Any, Callable, List, Pattern, Set
 IGNORED_DIRS = ['.git', '__pycache__']
 IGNORED_FILES = ['*.pyc', '*.pyd', '*.pyo', '.DS_Store']
 
-ignored_dirs_re = re.compile(r"|".join([fnmatch.translate(x) for x in IGNORED_DIRS]) or r"$.")
-ignored_files_re = re.compile(r"|".join([fnmatch.translate(x) for x in IGNORED_FILES]) or r"$.")
+ignored_dirs_re = re.compile(r'|'.join([fnmatch.translate(x) for x in IGNORED_DIRS]) or r'$.')
+ignored_files_re = re.compile(r'|'.join([fnmatch.translate(x) for x in IGNORED_FILES]) or r'$.')
 
 
 def copytree_ignore(

@@ -1,7 +1,7 @@
 import sys
 
-from component_manager.core import ComponentManager
-from component_manager.utils.errors import FatalError
+from ..core import ComponentManager
+from ..utils.errors import FatalError
 
 
 def action_extensions(base_actions, project_path):
@@ -30,6 +30,6 @@ def action_extensions(base_actions, project_path):
                 'callback': callback,
                 'help': 'Add/move dependency to directory with unmanaged components.',
                 'options': [components_option]
-            }
+            },
         },
     }

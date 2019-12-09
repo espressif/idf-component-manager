@@ -1,7 +1,7 @@
 import os
 from collections import OrderedDict
 
-from component_manager.manifest import ComponentVersion, ComponentWithVersions
+from ..manifest import ComponentVersion, ComponentWithVersions
 
 from .base import BaseSource
 

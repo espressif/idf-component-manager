@@ -2,12 +2,11 @@ from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 from typing import TYPE_CHECKING, Dict, Union
 
-from component_manager.manifest import ComponentWithVersions
-
+from ..manifest import ComponentWithVersions
 from .errors import SourceError
 
 if TYPE_CHECKING:
-    from component_manager.version_solver.solver_result import SolvedComponent
+    from ..version_solver.solver_result import SolvedComponent
 
 
 class BaseSource(object):

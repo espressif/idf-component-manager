@@ -5,11 +5,11 @@ from hashlib import sha256
 from typing import Union
 
 from component_management_tools.hash_tools import validate_dir
-from component_manager.manifest import ComponentVersion, ComponentWithVersions
-from component_manager.utils.file_cache import FileCache
-from component_manager.utils.file_tools import create_directory
-from component_manager.utils.git_client import GitClient
 
+from ..manifest import ComponentVersion, ComponentWithVersions
+from ..utils.file_cache import FileCache
+from ..utils.file_tools import create_directory
+from ..utils.git_client import GitClient
 from .base import BaseSource
 
 try:

@@ -6,9 +6,9 @@ from copy import deepcopy
 
 import pytest
 
-from component_manager.manifest_builder import ManifestBuilder
-from component_manager.manifest_pipeline import ManifestParser
-from component_manager.manifest_validator import ManifestValidator
+from idf_component_manager.manifest_builder import ManifestBuilder
+from idf_component_manager.manifest_pipeline import ManifestParser
+from idf_component_manager.manifest_validator import ManifestValidator
 
 
 class TestManifestPipeline(object):

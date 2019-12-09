@@ -3,7 +3,7 @@ import os
 import pytest
 from semantic_version import Version
 
-from component_manager.utils.git_client import GitClient, GitFatalError
+from idf_component_manager.utils.git_client import GitClient, GitFatalError
 
 
 class TestGitClient(object):

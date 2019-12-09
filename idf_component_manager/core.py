@@ -14,9 +14,9 @@ from .version_solver.solver_result import SolverResult
 
 
 class ComponentManager(object):
-    def __init__(
-            self, path, lock_path=None, manifest_path=None,
-            sources=None):  # type: (str, Union[None, str], Union[None, str], List[BaseSource]) -> None
+    def __init__(self, path, lock_path=None, manifest_path=None, sources=None):
+        # type: (str, Union[None, str], Union[None, str], List[BaseSource]) -> None
+
         # Working directory
         self.path = path if os.path.isdir(path) else os.path.dirname(path)
 
@@ -59,6 +59,39 @@ class ComponentManager(object):
 
         print('Successfully processed %s %s ' % (components_count, count_string))
         return solution
+
+    def prepare_dep_dirs(self, managed_components_list_file):
+        # Install dependencies first
+        # TODO: deal with IDF as component-bundle
+        solution = self.install()
+
+        # Include managed components in project directory
+        if solution.solved_components:
+            with open(managed_components_list_file, 'w') as f:
+                # TODO: write all components individually
+                f.write('__project_component_dir("${CMAKE_CURRENT_LIST_DIR}/managed_components")')
+
+    def inject_requrements(self, component_requires_file):
+        pass
+        # TODO: update requirements for known components
+        # solution = self.install()
+        # And update temporary requirements file
+        # if solution.solved_components:
+        #     with open(args.component_requires_file, 'r') as f:
+        #         data = f.read()
+
+        #     with open(args.component_requires_file, 'w') as f:
+        #         for component in solution.solved_components:
+        #             # TODO: deal with IDF as component-bundle
+        #             if component.name == 'idf':
+        #                 continue
+
+        #             name_parts = component.name.split('/')
+        #             f.write(
+        #                 '\nidf_build_component("%s")' % os.path.join(args.project_dir,
+        # "managed_components", *name_parts))
+
+        #         f.write(data)
 
     def eject(self, components=None):
         print('Ejecting %s' % ', '.join(components))

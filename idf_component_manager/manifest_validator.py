@@ -1,7 +1,8 @@
 import re
 
 from semantic_version import Version
-from component_manager.manifest import ComponentSpec
+
+from .manifest import ComponentSpec
 
 
 class ManifestValidator(object):
@@ -25,7 +26,7 @@ class ManifestValidator(object):
 
     KNOWN_PLATFORMS = ('esp32', )
 
-    SLUG_RE = re.compile(r"^[-a-zA-Z0-9_/]+\Z")
+    SLUG_RE = re.compile(r'^[-a-zA-Z0-9_/]+\Z')
 
     def __init__(self, parsed_manifest):
         self.manifest_tree = parsed_manifest

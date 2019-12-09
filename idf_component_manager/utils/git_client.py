@@ -5,7 +5,7 @@ from typing import List, Union
 
 from semantic_version import Version
 
-from component_manager.utils.errors import FatalError
+from .errors import FatalError
 
 
 # Git error that is suppossed to be handled in the code, non-fatal
@@ -102,7 +102,7 @@ class GitClient(object):
         return True
 
     def version(self):  # type: () -> Version
-        ver_match = re.match(r"^git version (.*)$", self.run(['--version']))
+        ver_match = re.match(r'^git version (.*)$', self.run(['--version']))
 
         try:
             if ver_match:
