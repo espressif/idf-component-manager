@@ -81,10 +81,7 @@ class GitClient(object):
             raise GitCommandError(
                 "'git %s' failed with exit code %d \n%s" % (' '.join(args), e.returncode, e.output.decode('utf-8')))
 
-    def check_version(
-            self,
-            min_supported='2.13.0',  # As for Aug 2019 2.13 is the oldest supported version of git
-    ):  # type: (Union[str,Version]) -> bool
+    def check_version(self, min_supported='2.0.0'):  # type: (Union[str,Version]) -> bool
         try:
             version = self.version()
             min_supported = min_supported if isinstance(min_supported, Version) else Version(min_supported)
