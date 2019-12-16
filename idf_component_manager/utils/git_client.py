@@ -53,7 +53,7 @@ class GitClient(object):
                 FatalError('Error: branch "%s" doesn\'t exist in repo "%s"' % (ref, repo))
 
         else:
-            # Set to latest commit from remote's head
+            # Set to latest commit from remote's HEAD
             ref = self.run(['ls-remote', '--exit-code', 'origin', 'HEAD'], cwd=path)[:40]
 
         # Checkout required branch
@@ -65,7 +65,7 @@ class GitClient(object):
         if with_submodules:
             self.run(['submodule', 'update', '--init', '--recursive'], cwd=path)
 
-        return self.run(['rev-parse', '--verify', 'head'], cwd=path)
+        return self.run(['rev-parse', '--verify', 'HEAD'], cwd=path)
 
     def run(self, args, cwd=None):  # type: (List[str], str) -> str
         if cwd is None:
