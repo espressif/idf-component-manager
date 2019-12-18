@@ -16,6 +16,7 @@ class ManifestParser(object):
         self._is_component = component
         self._path = path
         self._manifest_tree = None
+        self._manifest_exists = None
         self._manifest = None
         self._is_valid = None
         self._validation_errors = []
@@ -66,11 +67,18 @@ class ManifestParser(object):
 
     @property
     def manifest_tree(self):
-        self._manifest_tree = self._manifest_tree or self.parse_manifest_file()
+        if not self._manifest_tree:
+            self._manifest_tree = self.parse_manifest_file()
         return self._manifest_tree
 
+    @property
+    def manifest_exists(self):
+        if self._manifest_exists is None:
+            self._manifest_exists = os.path.isfile(self._path)
+        return self._manifest_exists
+
     def parse_manifest_file(self):
-        if not os.path.isfile(self._path):
+        if not self.manifest_exists:
             return OrderedDict()
 
         with open(self._path, 'r') as f:

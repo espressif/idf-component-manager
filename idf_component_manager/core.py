@@ -37,10 +37,13 @@ class ComponentManager(object):
         solution = SolverResult.from_yaml(manifest, lock)
 
         if manifest.manifest_hash != lock['manifest_hash']:
-            print('Updating lock file at %s' % self.lock_path)
             solver = VersionSolver(manifest, lock)
             solution = solver.solve()
-            lock_manager.dump(solution.as_ordered_dict())
+
+            # Create lock only if manifest exists
+            if parser.manifest_exists:
+                print('Updating lock file at %s' % self.lock_path)
+                lock_manager.dump(solution.as_ordered_dict())
 
         # Download components
         if not solution.solved_components:

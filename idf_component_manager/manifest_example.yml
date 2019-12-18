@@ -1,8 +1,8 @@
 ## Espressif Component Manager Manifest File
 ## Version of your project. Should conform Semantic Versioning 2.0 rules https://semver.org/
-version: "1.0.0" 
+version: "1.0.0"
 ## List of targets
-targets: 
+targets:
   - esp32
 dependencies:
   ## Required IDF version
@@ -12,4 +12,4 @@ dependencies:
   # component: "~1.0.0"
   ## or long form:
   # component:
-  #   version: "~1.0.0" 
+  #   version: "~1.0.0"
