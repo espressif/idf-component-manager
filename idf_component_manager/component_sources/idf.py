@@ -2,7 +2,7 @@ import os
 from collections import OrderedDict
 
 from ..manifest import ComponentVersion, ComponentWithVersions
-
+from ..utils.errors import FatalError
 from .base import BaseSource
 
 
@@ -35,7 +35,9 @@ class IDFSource(BaseSource):
         return ComponentWithVersions(name=name, versions=[self._version])
 
     def download(self, component, download_path):
-        # TODO: handle cases when IDF_PATH is not set
+        if 'IDF_PATH' not in os.environ:
+            FatalError('Please set IDF_PATH environment variable with a valid path to ESP-IDF')
+
         return os.environ['IDF_PATH']
 
     def as_ordered_dict(self):  # type: () -> OrderedDict
