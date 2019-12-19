@@ -52,12 +52,9 @@ class ComponentManager(object):
         components_count = len(solution.solved_components)
         count_string = 'dependencies' if components_count != 1 else 'dependency'
         print('Processing %s %s' % (components_count, count_string))
-        line_len = 0
         for i, component in enumerate(solution.solved_components):
-            # Check hash if hash present and download component if necessary
-            line = ('[%d/%d] Processing component %s' % (i + 1, components_count, component.name)).rjust(line_len, ' ')
-            line_len = len(line)
-            print(line, end='\r')
+            line = ('[%d/%d] Processing component %s' % (i + 1, components_count, component.name))
+            print(line)
             ComponentFetcher(component, self.components_path).download()
 
         print('Successfully processed %s %s ' % (components_count, count_string))
