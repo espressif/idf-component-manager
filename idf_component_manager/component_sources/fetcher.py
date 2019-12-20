@@ -1,20 +1,23 @@
 """Small class that manages getting components to right path using system-wide cache"""
 
 import os
+from typing import TYPE_CHECKING
 
 from component_management_tools.hash_tools import validate_dir
-from ..component_sources.base import BaseSource
-from ..version_solver.solver_result import SolvedComponent
 
+from ..version_solver.solver_result import SolvedComponent
 from .errors import FetchingError
+
+if TYPE_CHECKING:
+    from ..component_sources.base import BaseSource
 
 
 class ComponentFetcher(object):
     def __init__(
-            self,
-            solved_component,
-            components_path,
-            source=None,
+        self,
+        solved_component,
+        components_path,
+        source=None,
     ):  # type: (SolvedComponent, str, BaseSource) -> None
         self.source = source if source else solved_component.source
         self.component = solved_component

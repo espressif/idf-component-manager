@@ -2,15 +2,17 @@
 from __future__ import print_function
 
 import os
-from typing import List, Union
+from typing import TYPE_CHECKING, List, Union
 
-from .component_sources.base import BaseSource
 from .component_sources.fetcher import ComponentFetcher
 from .lock.manager import LockManager
 from .manifest_builder import ManifestBuilder
 from .manifest_pipeline import ManifestParser
-from .version_solver.version_solver import VersionSolver
 from .version_solver.solver_result import SolverResult
+from .version_solver.version_solver import VersionSolver
+
+if TYPE_CHECKING:
+    from .component_sources.base import BaseSource
 
 
 class ComponentManager(object):

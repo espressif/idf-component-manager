@@ -1,4 +1,5 @@
 import re
+from typing import Set
 
 from semantic_version import Version
 
@@ -17,20 +18,20 @@ class ManifestValidator(object):
         'description',
     )
 
-    # TODO: get this info by listing sources
-    KNOWN_COMPONENT_KEYS = (
-        'git',
-        'version',
-        'path',
-    )
-
-    KNOWN_PLATFORMS = ('esp32', )
+    # TODO: Replace with call to idf.py targets
+    KNOWN_TARGETS = ('esp32', )
 
     SLUG_RE = re.compile(r'^[-a-zA-Z0-9_/]+\Z')
 
     def __init__(self, parsed_manifest):
         self.manifest_tree = parsed_manifest
         self._errors = []
+
+        self.known_component_keys = set([
+            'git',
+            'version',
+            'path',
+        ])  # type: Set[str]
 
     @staticmethod
     def _validate_keys(manifest, known_keys):
@@ -74,21 +75,22 @@ class ManifestValidator(object):
 
         # List of components should be a dictionary.
         if not isinstance(dependencies, dict):
-            self.add_error('List of dependencies should be a dictionary.' +
-                           ' For example:\ndependencies:\n  some-component: ">=1.2.3,!=1.2.5"')
+            self.add_error(
+                'List of dependencies should be a dictionary.' +
+                ' For example:\ndependencies:\n  some-component: ">=1.2.3,!=1.2.5"')
 
             return self
 
         for component, details in dependencies.items():
             if not self.SLUG_RE.match(component):
-                self.add_error('Component\'s name is not valid "%s", should contain only letters, numbers _ and -.' %
-                               component)
+                self.add_error(
+                    'Component\'s name is not valid "%s", should contain only letters, numbers _ and -.' % component)
 
             if isinstance(details, str):
                 dependencies[component] = details = {'version': details}
 
             if isinstance(details, dict):
-                unknown = self._validate_keys(details, self.KNOWN_COMPONENT_KEYS)
+                unknown = self._validate_keys(details, self.known_component_keys)
                 if unknown:
                     self.add_error('Unknown attributes for component "%s": %s' % (component, ', '.join(unknown)))
                 self._validate_version_spec(component, details.get('version', ''))
@@ -112,7 +114,7 @@ class ManifestValidator(object):
 
         unknown_targets = []
         for target in targets:
-            if target not in self.KNOWN_PLATFORMS:
+            if target not in self.KNOWN_TARGETS:
                 unknown_targets.append(target)
 
         if unknown_targets:

@@ -1,24 +1,26 @@
 """Results of the solver"""
 
 from collections import OrderedDict
-from typing import Dict, List, Union
+from typing import Dict, List, Union, TYPE_CHECKING
 
 from strictyaml import YAML
 
 from .. import version as component_manager_version
-from ..component_sources.base import BaseSource
 from ..component_sources.builder import SourceBuilder
 from ..manifest import Manifest
+
+if TYPE_CHECKING:
+    from ..component_sources.base import BaseSource
 
 
 class SolvedComponent(object):
     def __init__(
-            self,
-            name,  # type: str
-            version,  # type: str
-            source,  # type: BaseSource
-            component_hash=None,  # type: Union[str,None]
-            source_specific_options=None  # type: Union[Dict,None]
+        self,
+        name,  # type: str
+        version,  # type: str
+        source,  # type: BaseSource
+        component_hash=None,  # type: Union[str,None]
+        source_specific_options=None  # type: Union[Dict,None]
     ):
         # type: (...) -> None
         self.name = name
@@ -34,10 +36,11 @@ class SolvedComponent(object):
         ]
 
         if self.source_specific_options:
-            component_elements.append((
-                'source_specific_options',
-                OrderedDict(sorted(self.source_specific_options.items())),
-            ))
+            component_elements.append(
+                (
+                    'source_specific_options',
+                    OrderedDict(sorted(self.source_specific_options.items())),
+                ))
 
         if self.component_hash:
             component_elements.append(('component_hash', self.component_hash))
@@ -49,11 +52,12 @@ class SolvedComponent(object):
         source_details = dict(details['source'])
         source_name = source_details.pop('type')
         source = SourceBuilder(source_name, source_details).build()
-        return cls(name=name,
-                   version=details['version'],
-                   source=source,
-                   component_hash=details.get('component_hash', None),
-                   source_specific_options=details.get('source_specific_options', {}))
+        return cls(
+            name=name,
+            version=details['version'],
+            source=source,
+            component_hash=details.get('component_hash', None),
+            source_specific_options=details.get('source_specific_options', {}))
 
 
 class SolverResult(object):
@@ -80,10 +84,11 @@ class SolverResult(object):
 
     def as_ordered_dict(self):  # type: () -> OrderedDict
         dependencies = OrderedDict([(c.name, c.as_ordered_dict()) for c in self.solved_components])  # type: OrderedDict
-        solution = OrderedDict([
-            ('component_manager_version', str(component_manager_version)),
-            ('dependencies', dependencies),
-            ('manifest_hash', self.manifest.manifest_hash),
-        ])
+        solution = OrderedDict(
+            [
+                ('component_manager_version', str(component_manager_version)),
+                ('dependencies', dependencies),
+                ('manifest_hash', self.manifest.manifest_hash),
+            ])
 
         return solution
