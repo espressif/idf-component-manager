@@ -14,7 +14,7 @@ setuptools.setup(
     url='https://gitlab.espressif.cn:6688/sergei.silnov/component-manager',
     packages=setuptools.find_packages(),
     install_requires=[
-        'requests', 'future', 'strictyaml', 'semantic_version', 'typing',
+        'requests', 'future', 'strictyaml', 'semantic_version', 'typing', 'marshmallow',
         'component_management_tools @ git+ssh://git@gitlab.espressif.cn:27227/idf/component_management_tools.git'
     ],
 )
