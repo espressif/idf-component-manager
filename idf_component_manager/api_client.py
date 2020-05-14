@@ -1,7 +1,7 @@
 """Classes to work with Espressif Component Web Service"""
 import requests
 
-from .manifest import ComponentVersion, ComponentWithVersions, Manifest
+from component_management_tools.manifest import ComponentVersion, ComponentWithVersions, Manifest
 
 
 class APIComponentVersion(ComponentVersion):

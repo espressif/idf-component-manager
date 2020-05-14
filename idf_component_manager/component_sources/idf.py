@@ -1,7 +1,8 @@
 import os
 from collections import OrderedDict
 
-from ..manifest import ComponentVersion, ComponentWithVersions
+from component_management_tools.manifest import ComponentVersion, ComponentWithVersions
+
 from ..utils.errors import FatalError
 from .base import BaseSource
 

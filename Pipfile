@@ -1,35 +1,34 @@
-# Pipenv is only used for development
-
 [[source]]
-url = "https://pypi.org/simple"
+url = 'https://pypi.org/simple'
 verify_ssl = true
-name = "pypi"
+name = 'pypi'
 
 [packages]
-requests = "*"
-future = "*"
-strictyaml = "*"
-semantic-version = "*"
-typing = "*"
-component-management-tools = {editable = true,git = "ssh://git@gitlab.espressif.cn:27227/idf/component_management_tools.git"}
-marshmallow = "*"
+requests = '*'
+future = '*'
+strictyaml = '*'
+semantic-version = '*'
+typing = '*'
+marshmallow = '<3'
+
+[packages.component-management-tools]
+editable = true
+ref = 'add_manifest_tools'
+git = 'ssh://git@gitlab.espressif.cn:27227/idf/component_management_tools.git'
 
 [dev-packages]
-pytest = "*"
-tox = "<=3.0.0"
-bandit = "*"
-"flake8-quotes" = "*"
-pytest-cov = "*"
-"flake8" = "*"
-pylint = "*"
-vcrpy = "*"
-rope = "*"
-yapf = "*"
-mypy = "*"
-unify = "*"
-
-[requires]
-python_version = "3.7"
+pytest = '*'
+tox = '<=3.0.0'
+bandit = '*'
+flake8-quotes = '*'
+pytest-cov = '*'
+flake8 = '*'
+pylint = '*'
+vcrpy = '*'
+rope = '*'
+yapf = '*'
+mypy = '*'
+unify = '*'
 
 [pipenv]
 allow_prereleases = false

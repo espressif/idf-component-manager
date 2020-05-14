@@ -1,8 +1,8 @@
 import os
 
+from component_management_tools.manifest import Manifest
 from idf_component_manager.component_sources.web_service import WebServiceSource
 from idf_component_manager.lock.manager import LockManager
-from idf_component_manager.manifest import Manifest
 from idf_component_manager.version_solver.solver_result import SolvedComponent, SolverResult
 
 valid_lock_path = os.path.join(

@@ -3,7 +3,7 @@ from typing import Set
 
 from semantic_version import Version
 
-from .manifest import ComponentSpec
+from component_management_tools.manifest import ComponentSpec
 
 
 class ManifestValidator(object):
@@ -19,7 +19,10 @@ class ManifestValidator(object):
     )
 
     # TODO: Replace with call to idf.py targets
-    KNOWN_TARGETS = ('esp32', )
+    KNOWN_TARGETS = (
+        'esp32',
+        'esp32s2',
+    )
 
     SLUG_RE = re.compile(r'^[-a-zA-Z0-9_/]+\Z')
 

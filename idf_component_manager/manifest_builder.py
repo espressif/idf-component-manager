@@ -1,9 +1,9 @@
 from strictyaml import Any
 
 from component_management_tools.hash_tools import hash_object
+from component_management_tools.manifest import ComponentRequirement, ComponentVersion, Manifest
 
 from .component_sources.builder import SourceBuilder
-from .manifest import ComponentRequirement, ComponentVersion, Manifest
 
 
 class ManifestBuilder(object):

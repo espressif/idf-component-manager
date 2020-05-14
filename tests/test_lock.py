@@ -4,10 +4,10 @@ from collections import OrderedDict
 
 import pytest
 
+from component_management_tools.manifest import ComponentVersion
 from idf_component_manager.component_sources.idf import IDFSource
 from idf_component_manager.component_sources.web_service import WebServiceSource
 from idf_component_manager.lock.manager import LockManager
-from idf_component_manager.manifest import ComponentVersion
 from idf_component_manager.manifest_builder import ManifestBuilder
 from idf_component_manager.manifest_pipeline import ManifestParser
 from idf_component_manager.version_solver.solver_result import SolvedComponent, SolverResult

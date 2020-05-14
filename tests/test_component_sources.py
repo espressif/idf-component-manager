@@ -4,9 +4,9 @@ import tempfile
 
 import vcr
 
+from component_management_tools.manifest import ComponentVersion
 from idf_component_manager.component_sources.local import LocalSource
 from idf_component_manager.component_sources.web_service import WebServiceSource
-from idf_component_manager.manifest import ComponentVersion
 from idf_component_manager.version_solver.solver_result import SolvedComponent
 
 

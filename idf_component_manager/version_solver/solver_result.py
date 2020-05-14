@@ -1,13 +1,14 @@
 """Results of the solver"""
 
 from collections import OrderedDict
-from typing import Dict, List, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List, Union
 
 from strictyaml import YAML
 
+from component_management_tools.manifest import Manifest
+
 from .. import version as component_manager_version
 from ..component_sources.builder import SourceBuilder
-from ..manifest import Manifest
 
 if TYPE_CHECKING:
     from ..component_sources.base import BaseSource
@@ -15,12 +16,12 @@ if TYPE_CHECKING:
 
 class SolvedComponent(object):
     def __init__(
-        self,
-        name,  # type: str
-        version,  # type: str
-        source,  # type: BaseSource
-        component_hash=None,  # type: Union[str,None]
-        source_specific_options=None  # type: Union[Dict,None]
+            self,
+            name,  # type: str
+            version,  # type: str
+            source,  # type: BaseSource
+            component_hash=None,  # type: Union[str,None]
+            source_specific_options=None  # type: Union[Dict,None]
     ):
         # type: (...) -> None
         self.name = name

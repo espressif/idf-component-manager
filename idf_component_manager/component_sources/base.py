@@ -2,7 +2,8 @@ from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 from typing import TYPE_CHECKING, Dict, Union
 
-from ..manifest import ComponentWithVersions
+from component_management_tools.manifest import ComponentWithVersions
+
 from .errors import SourceError
 
 if TYPE_CHECKING:
