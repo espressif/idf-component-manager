@@ -4,15 +4,16 @@ from __future__ import print_function
 import os
 from typing import TYPE_CHECKING, List, Union
 
-from .component_sources.fetcher import ComponentFetcher
+from component_management_tools.builders import ManifestBuilder
+from component_management_tools.manifest import ManifestParser
+from component_management_tools.sources.fetcher import ComponentFetcher
+
 from .lock.manager import LockManager
-from .manifest_builder import ManifestBuilder
-from .manifest_pipeline import ManifestParser
 from .version_solver.solver_result import SolverResult
 from .version_solver.version_solver import VersionSolver
 
 if TYPE_CHECKING:
-    from .component_sources.base import BaseSource
+    from component_management_tools.sources.base import BaseSource
 
 
 class ComponentManager(object):
@@ -33,6 +34,32 @@ class ComponentManager(object):
 
     def install(self, components=None):
         parser = ManifestParser(self.manifest_path).prepare()
+
+        # TODO
+        # def init_manifest(self):
+        #     """Lazily create manifest file if it doesn't exist"""
+        #     if not os.path.exists(self._path):
+        #         example_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'manifest_example.yml')
+        #         print("Info: manifest file wasn't found. Creating project's manifest")
+        #         copyfile(example_path, self._path)
+
+        #     def test_init_manifest(self):
+        # tempdir = tempfile.mkdtemp()
+        # try:
+        #     manifest_path = os.path.join(tempdir, 'idf_project.yml')
+        #     parser = ManifestParser(manifest_path)
+
+        #     parser.init_manifest()
+
+        #     with open(manifest_path, 'r') as f:
+        #         assert f.readline().startswith('## Espressif')
+
+        # finally:
+        #     shutil.rmtree(tempdir)
+
+        # TODO: Handle ManifestError
+
+        return self
         manifest = ManifestBuilder(parser.manifest_tree).build()
         lock_manager = LockManager(self.lock_path)
         lock = lock_manager.load()

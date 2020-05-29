@@ -1,35 +1,17 @@
 """Results of the solver"""
 
 from collections import OrderedDict
-from typing import TYPE_CHECKING, Dict, List, Union
+from typing import List
 
+from component_management_tools.builders import SourceBuilder
+from component_management_tools.component import SolvedComponent as BaseSolvedComponent
+from component_management_tools.manifest import Manifest
 from strictyaml import YAML
 
-from component_management_tools.manifest import Manifest
-
 from .. import version as component_manager_version
-from ..component_sources.builder import SourceBuilder
-
-if TYPE_CHECKING:
-    from ..component_sources.base import BaseSource
 
 
-class SolvedComponent(object):
-    def __init__(
-            self,
-            name,  # type: str
-            version,  # type: str
-            source,  # type: BaseSource
-            component_hash=None,  # type: Union[str,None]
-            source_specific_options=None  # type: Union[Dict,None]
-    ):
-        # type: (...) -> None
-        self.name = name
-        self.version = version
-        self.source = source
-        self.component_hash = component_hash
-        self.source_specific_options = source_specific_options or {}
-
+class SolvedComponent(BaseSolvedComponent):
     def as_ordered_dict(self):  # type: () -> OrderedDict
         component_elements = [
             ('version', str(self.version)),
@@ -52,7 +34,7 @@ class SolvedComponent(object):
     def from_yaml(cls, name, details):
         source_details = dict(details['source'])
         source_name = source_details.pop('type')
-        source = SourceBuilder(source_name, source_details).build()
+        source = SourceBuilder(source_name, source_details)()
         return cls(
             name=name,
             version=details['version'],

@@ -1,9 +1,8 @@
 import os
 from collections import OrderedDict
 
-from component_management_tools.manifest import ComponentVersion, ComponentWithVersions
+from component_management_tools.manifest import ComponentVersion, ComponentWithVersions, ManifestParser
 
-from ..manifest_pipeline import ManifestParser
 from .base import BaseSource
 from .errors import SourceError
 

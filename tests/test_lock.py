@@ -3,13 +3,10 @@ import os
 from collections import OrderedDict
 
 import pytest
-
-from component_management_tools.manifest import ComponentVersion
-from idf_component_manager.component_sources.idf import IDFSource
-from idf_component_manager.component_sources.web_service import WebServiceSource
+from component_management_tools.builders import ManifestBuilder
+from component_management_tools.manifest import ComponentVersion, ManifestParser
+from component_management_tools.sources import IDFSource, WebServiceSource
 from idf_component_manager.lock.manager import LockManager
-from idf_component_manager.manifest_builder import ManifestBuilder
-from idf_component_manager.manifest_pipeline import ManifestParser
 from idf_component_manager.version_solver.solver_result import SolvedComponent, SolverResult
 
 dependencies = OrderedDict(
@@ -81,7 +78,7 @@ class TestLockManager(object):
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         lock = LockManager(lock_path)
         mparser = ManifestParser(manifest_path).prepare()
-        manifest = ManifestBuilder(mparser.manifest_tree).build()
+        manifest = ManifestBuilder(mparser.manifest_tree)()
         components = [
             SolvedComponent(
                 name='idf',
@@ -101,7 +98,6 @@ class TestLockManager(object):
 
         assert filecmp.cmp(lock_path, valid_lock_path, shallow=False)
 
-    @pytest.fixture(scope='session')
     def test_lock_dump_with_dictionary(self, tmp_path):
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
@@ -116,7 +112,6 @@ class TestLockManager(object):
 
         assert filecmp.cmp(lock_path, valid_lock_path, shallow=False)
 
-    @pytest.fixture(scope='session')
     def test_lock_dump(self, tmp_path):
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
