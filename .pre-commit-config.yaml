@@ -5,6 +5,7 @@ repos:
     rev: v2.4.0
     hooks:
       - id: check-yaml
+        exclude: tests
       - id: check-added-large-files
       - id: flake8
   - repo: https://github.com/PyCQA/bandit
@@ -20,3 +21,11 @@ repos:
     rev: v0.5
     hooks:
       - id: unify
+  - repo: https://github.com/pre-commit/mirrors-yapf
+    rev: "v0.30.0"
+    hooks:
+      - id: yapf
+  - repo: https://github.com/pre-commit/mirrors-isort
+    rev: v4.3.21
+    hooks:
+      - id: isort
