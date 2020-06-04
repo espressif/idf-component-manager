@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import os
+from shutil import copyfile
 from typing import TYPE_CHECKING, List, Union
 
 from component_management_tools.builders import ManifestBuilder
@@ -31,6 +32,16 @@ class ComponentManager(object):
 
         # Components directory
         self.components_path = os.path.join(self.path, 'managed_components')
+
+    def init_project(self):
+        """Create manifest file if it doesn't exist in workdi"""
+        if os.path.exists(self.manifest_path):
+            print('`idf_project.yml` already exists in projects folder, skipping...')
+        else:
+            example_path = os.path.join(
+                os.path.dirname(os.path.realpath(__file__)), 'templates', 'idf_project_template.yml')
+            print('Creating `idf_project.yml` in projects folder')
+            copyfile(example_path, self.manifest_path)
 
     def install(self, components=None):
         parser = ManifestParser(self.manifest_path).prepare()

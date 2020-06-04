@@ -1,0 +1,18 @@
+## IDF Component Manager Manifest File
+## Version of your project. Should conform Semantic Versioning 2.0 rules https://semver.org/
+version: "1.0.0"
+## List of chips supported by the project
+targets:
+  - esp32
+  - esp32s2
+dependencies:
+  ## Required IDF version
+  idf:
+    version: "^4.1"
+  # # Put list of dependencies here
+  # # For components maintained by Espressif:
+  # component:
+  #   version: "~1.0.0"
+  # # For 3rd party components:
+  # username/component:
+  #   version: "~1.0.0"

@@ -18,12 +18,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-
-# WARNING: we don't check for Python build-time dependencies until
-# check_environment() function below. If possible, avoid importing
-# any external libraries here - put in external script, or import in
-# their specific function instead.
 
 import argparse
 
