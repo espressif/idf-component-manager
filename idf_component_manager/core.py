@@ -35,32 +35,9 @@ class ComponentManager(object):
     def install(self, components=None):
         parser = ManifestParser(self.manifest_path).prepare()
 
-        # TODO
-        # def init_manifest(self):
-        #     """Lazily create manifest file if it doesn't exist"""
-        #     if not os.path.exists(self._path):
-        #         example_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'manifest_example.yml')
-        #         print("Info: manifest file wasn't found. Creating project's manifest")
-        #         copyfile(example_path, self._path)
-
-        #     def test_init_manifest(self):
-        # tempdir = tempfile.mkdtemp()
-        # try:
-        #     manifest_path = os.path.join(tempdir, 'idf_project.yml')
-        #     parser = ManifestParser(manifest_path)
-
-        #     parser.init_manifest()
-
-        #     with open(manifest_path, 'r') as f:
-        #         assert f.readline().startswith('## Espressif')
-
-        # finally:
-        #     shutil.rmtree(tempdir)
-
         # TODO: Handle ManifestError
 
-        return self
-        manifest = ManifestBuilder(parser.manifest_tree).build()
+        manifest = ManifestBuilder(parser.manifest_tree)()
         lock_manager = LockManager(self.lock_path)
         lock = lock_manager.load()
         solution = SolverResult.from_yaml(manifest, lock)
@@ -121,7 +98,3 @@ class ComponentManager(object):
         # "managed_components", *name_parts))
 
         #         f.write(data)
-
-    def eject(self, components=None):
-        print('Ejecting %s' % ', '.join(components))
-        print('Not implemented yet')

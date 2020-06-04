@@ -27,10 +27,5 @@ def action_extensions(base_actions, project_path):
                 'help': 'Install dependencies.',
                 'options': [components_option]
             },
-            'eject': {
-                'callback': callback,
-                'help': 'Add/move dependency to directory with unmanaged components.',
-                'options': [components_option]
-            },
         },
     }
