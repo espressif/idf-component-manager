@@ -1,6 +1,6 @@
 import sys
 
-from component_management_tools.errors import FatalError
+from idf_component_tools.errors import FatalError
 
 from .core import ComponentManager
 

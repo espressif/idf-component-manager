@@ -1,1 +1,5 @@
-from .__version__ import __version__ as version  # noqa: F401
+import semantic_version as semver
+
+from .__version__ import __version__
+
+version = semver.Version(__version__)

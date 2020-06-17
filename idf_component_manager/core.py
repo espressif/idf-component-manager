@@ -3,23 +3,18 @@ from __future__ import print_function
 
 import os
 from shutil import copyfile
-from typing import TYPE_CHECKING, List, Union
+from typing import Union
 
-from component_management_tools.builders import ManifestBuilder
-from component_management_tools.manifest import ManifestParser
-from component_management_tools.sources.fetcher import ComponentFetcher
+from idf_component_tools.lock import LockManager
+from idf_component_tools.manifest import Manifest, ManifestManager, SolvedManifest
+from idf_component_tools.sources.fetcher import ComponentFetcher
 
-from .lock.manager import LockManager
-from .version_solver.solver_result import SolverResult
 from .version_solver.version_solver import VersionSolver
-
-if TYPE_CHECKING:
-    from component_management_tools.sources.base import BaseSource
 
 
 class ComponentManager(object):
-    def __init__(self, path, lock_path=None, manifest_path=None, sources=None):
-        # type: (str, Union[None, str], Union[None, str], List[BaseSource]) -> None
+    def __init__(self, path, lock_path=None, manifest_path=None):
+        # type: (str, Union[None, str], Union[None, str]) -> None
 
         # Working directory
         self.path = path if os.path.isdir(path) else os.path.dirname(path)
@@ -44,23 +39,20 @@ class ComponentManager(object):
             copyfile(example_path, self.manifest_path)
 
     def install(self, components=None):
-        parser = ManifestParser(self.manifest_path).prepare()
-
-        # TODO: Handle ManifestError
-
-        manifest = ManifestBuilder(parser.manifest_tree)()
+        manager = ManifestManager(self.manifest_path)
+        manifest = Manifest.from_dict(manager.load())
         lock_manager = LockManager(self.lock_path)
         lock = lock_manager.load()
-        solution = SolverResult.from_yaml(manifest, lock)
+        solution = SolvedManifest.from_dict(manifest, lock)
 
         if manifest.manifest_hash != lock['manifest_hash']:
             solver = VersionSolver(manifest, lock)
             solution = solver.solve()
 
             # Create lock only if manifest exists
-            if parser.manifest_exists:
+            if manager.exists():
                 print('Updating lock file at %s' % self.lock_path)
-                lock_manager.dump(solution.as_ordered_dict())
+                lock_manager.dump(solution)
 
         # Download components
         if not solution.solved_components:

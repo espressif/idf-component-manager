@@ -1,20 +1,30 @@
+import io
+import os
+
 import setuptools
 
-with open('README.md', 'r') as fh:
+with io.open('README.md', mode='r', encoding='utf-8') as fh:
     long_description = fh.read()
+
+info = {}  # type: ignore
+path = os.path.abspath(os.path.dirname(__file__))
+with io.open(os.path.join(path, 'idf_component_manager', '__version__.py'), mode='r', encoding='utf-8') as f:
+    exec(f.read(), info)  # nosec
 
 setuptools.setup(
     name='idf_component_manager',
-    version='0.0.1',
+    version=info['__version__'],
     author='Sergei Silnov',
     author_email='sergei.silnov@espressif.com',
     description='Component Manager for ESP IDF',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://gitlab.espressif.cn:6688/sergei.silnov/component-manager',
-    packages=setuptools.find_packages(),
+    url='https://espressif.com',
+    packages=setuptools.find_packages(exclude=('*.tests', '*.tests.*', 'tests.*', 'tests')),
     install_requires=[
-        'requests', 'future', 'pyyaml', 'semantic_version', 'typing', 'marshmallow',
-        'component_management_tools @ git+ssh://git@gitlab.espressif.cn:27227/idf/component_management_tools.git'
+        'future',
+        'idf_component_tools',
+        'semantic_version',
+        'typing',
     ],
 )

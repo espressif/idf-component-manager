@@ -4,31 +4,23 @@ verify_ssl = true
 name = 'pypi'
 
 [packages]
-requests = '*'
 future = '*'
-strictyaml = '*'
+idf-component-tools = '>=0.1.0a2'
 semantic-version = '*'
 typing = '*'
-marshmallow = '<3'
 
-[packages.component-management-tools]
-editable = true
-ref = 'add_manifest_tools'
-git = 'ssh://git@gitlab.espressif.cn:27227/idf/component_management_tools.git'
-
-[dev-packages]
-pytest = '*'
-tox = '<=3.0.0'
+[dev-packages] 
 bandit = '*'
-flake8-quotes = '*'
-pytest-cov = '*'
 flake8 = '*'
-pylint = '*'
-vcrpy = '*'
-rope = '*'
-yapf = '*'
+flake8-quotes = '*'
 mypy = '*'
+pylint = '*'
+pytest = '*'
+pytest-cov = '*'
+rope = '*'
+tox = '<=3.0.0'
 unify = '*'
+yapf = '*'
 
 [pipenv]
 allow_prereleases = false

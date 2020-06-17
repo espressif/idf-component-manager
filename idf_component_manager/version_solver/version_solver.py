@@ -1,4 +1,4 @@
-from .solver_result import SolvedComponent, SolverResult
+from idf_component_tools.manifest import SolvedComponent, SolvedManifest
 
 
 class VersionSolver(object):
@@ -18,9 +18,8 @@ class VersionSolver(object):
     def solve(self):
         # TODO: implement real solving, now it will fail on any collision
         # TODO: fetch full tree of dependencies, now it fetches only direct dependencies
-        # Thats a quick stub that always installs latest version
+        # That's a quick stub that always installs latest version
         def best_version(component):
-
             cmp_with_versions = component.source.versions(name=component.name, spec=component.version_spec)
             version = max(cmp_with_versions.versions)
             return SolvedComponent(
@@ -35,4 +34,4 @@ class VersionSolver(object):
             self.manifest.dependencies,
         ))
 
-        return SolverResult(self.manifest, solved_components)
+        return SolvedManifest(self.manifest, solved_components)
