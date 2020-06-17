@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import os
+from io import open
 from shutil import copyfile
 from typing import Union
 
@@ -75,7 +76,7 @@ class ComponentManager(object):
         solution = self.install()
 
         # Include managed components in project directory
-        with open(managed_components_list_file, 'w') as f:
+        with open(managed_components_list_file, mode='w', encoding='utf-8') as f:
             # TODO: write all components individually
             if solution.solved_components:
                 f.write('__project_component_dir("%s")' % self.components_path)
@@ -86,10 +87,10 @@ class ComponentManager(object):
         # solution = self.install()
         # And update temporary requirements file
         # if solution.solved_components:
-        #     with open(args.component_requires_file, 'r') as f:
+        #     with open(args.component_requires_file, mode='r', encoding='utf-8') as f:
         #         data = f.read()
 
-        #     with open(args.component_requires_file, 'w') as f:
+        #     with open(args.component_requires_file, mode='w', encoding='utf-8') as f:
         #         for component in solution.solved_components:
         #             # TODO: deal with IDF as component-bundle
         #             if component.name == 'idf':

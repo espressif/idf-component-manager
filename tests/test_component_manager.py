@@ -1,6 +1,7 @@
 import os
 import shutil
 import tempfile
+from io import open
 
 from idf_component_manager.core import ComponentManager
 
@@ -13,8 +14,8 @@ def test_init_project():
 
         manager.init_project()
 
-        with open(manifest_path, 'r') as f:
-            assert f.readline().startswith('## IDF Component Manager')
+        with open(manifest_path, mode='r', encoding='utf-8') as file:
+            assert file.readline().startswith('## IDF Component Manager')
 
     finally:
         shutil.rmtree(tempdir)
