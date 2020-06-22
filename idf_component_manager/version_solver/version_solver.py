@@ -23,11 +23,7 @@ class VersionSolver(object):
             cmp_with_versions = component.source.versions(name=component.name, spec=component.version_spec)
             version = max(cmp_with_versions.versions)
             return SolvedComponent(
-                name=component.name,
-                source=component.source,
-                version=version,
-                component_hash=version.component_hash,
-                source_specific_options=component.source_specific_options)
+                name=component.name, source=component.source, version=version, component_hash=version.component_hash)
 
         solved_components = list(map(
             best_version,
