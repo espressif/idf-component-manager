@@ -1,1 +1,0 @@
-void cmp_hello();
