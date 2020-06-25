@@ -1,5 +1,6 @@
 import os
 import re
+from io import open
 
 import yaml
 from idf_component_tools.errors import FatalError
@@ -41,7 +42,7 @@ class Config(object):
 
     @property
     def services(self):
-        return self._config['services']
+        return self._config.setdefault('services', {})
 
     def validate(self):
         try:
