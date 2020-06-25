@@ -37,6 +37,16 @@ test:py27:
     - *before_test
     - tox -e py27
 
+test:py34:
+  image: python:3.4
+  stage: test
+  tags:
+    - test
+    - internet
+  script:
+    - *before_test
+    - tox -e py34
+
 test:py35:
   image: python:3.5
   stage: test
