@@ -8,6 +8,7 @@ from schema import And, Optional, Or, Regex, Schema, SchemaError
 
 DEFAULT_CONFIG_DIR = os.path.join('~', '.espressif')
 CONFIG_DIR = os.environ.get('IDF_TOOLS_PATH') or os.path.expanduser(DEFAULT_CONFIG_DIR)
+
 URL_RE = re.compile(
     r'^https?://'  # http:// or https://
     r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain
@@ -19,9 +20,9 @@ URL_RE = re.compile(
 
 CONFIG_SCHEMA = Schema(
     {
-        Optional('services'): {
+        Optional('profiles'): {
             str: {
-                Optional('url'): Or('default', Regex(URL_RE)),
+                Optional('service_url'): Or('default', Regex(URL_RE)),
                 Optional('default_namespace'): And(str, len),
                 Optional('api_token'): And(str, len)
             }
@@ -41,8 +42,8 @@ class Config(object):
         return iter(self._config.items())
 
     @property
-    def services(self):
-        return self._config.setdefault('services', {})
+    def profiles(self):
+        return self._config.setdefault('profiles', {})
 
     def validate(self):
         try:

@@ -6,10 +6,15 @@ from io import open
 from shutil import copyfile
 from typing import Union
 
+from idf_component_tools.api_client import APIClient, APIClientError
+from idf_component_tools.archive_tools import pack_archive
+from idf_component_tools.errors import FatalError, ManifestError
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import Manifest, ManifestManager, SolvedManifest
 from idf_component_tools.sources.fetcher import ComponentFetcher
+from idf_component_tools.sources.web_service import DEFAULT_COMPONENT_SERVICE_URL
 
+from .config import ConfigManager
 from .version_solver.version_solver import VersionSolver
 
 
@@ -21,7 +26,8 @@ class ComponentManager(object):
         self.path = path if os.path.isdir(path) else os.path.dirname(path)
 
         # Set path of manifest file for the project
-        self.manifest_path = manifest_path or (os.path.join(path, 'idf_project.yml') if os.path.isdir(path) else path)
+        self.project_manifest_path = manifest_path or (
+            os.path.join(path, 'idf_project.yml') if os.path.isdir(path) else path)
 
         # Lock path
         self.lock_path = lock_path or (os.path.join(path, 'dependencies.lock') if os.path.isdir(path) else path)
@@ -29,18 +35,21 @@ class ComponentManager(object):
         # Components directory
         self.components_path = os.path.join(self.path, 'managed_components')
 
-    def init_project(self):
-        """Create manifest file if it doesn't exist in workdi"""
-        if os.path.exists(self.manifest_path):
+        # Dist directory
+        self.dist_path = os.path.join(self.path, 'dist')
+
+    def init_project(self, args):
+        """Create manifest file if it doesn't exist in work directory"""
+        if os.path.exists(self.project_manifest_path):
             print('`idf_project.yml` already exists in projects folder, skipping...')
         else:
             example_path = os.path.join(
                 os.path.dirname(os.path.realpath(__file__)), 'templates', 'idf_project_template.yml')
             print('Creating `idf_project.yml` in projects folder')
-            copyfile(example_path, self.manifest_path)
+            copyfile(example_path, self.project_manifest_path)
 
-    def install(self, components=None):
-        manager = ManifestManager(self.manifest_path)
+    def install(self, args):
+        manager = ManifestManager(self.project_manifest_path)
         manifest = Manifest.from_dict(manager.load())
         lock_manager = LockManager(self.lock_path)
         lock = lock_manager.load()
@@ -70,10 +79,72 @@ class ComponentManager(object):
         print('Successfully processed %s %s ' % (components_count, count_string))
         return solution
 
+    def _component_manifest(self):
+        manager = ManifestManager(os.path.join(self.path, 'idf_component.yml'), is_component=True)
+        manifest = Manifest.from_dict(manager.load())
+
+        if not (manifest.name or manifest.version):
+            raise ManifestError('Component name and version have to be in the component manifest')
+
+        return manifest
+
+    def _archive_name(self, manifest):
+        return '%s_%s.tgz' % (manifest.name, manifest.version)
+
+    def pack_component(self, args):
+        def _filter_files(info):
+            # Ignore dist files
+            if os.path.split(info.path)[-1] == 'dist':
+                return None
+            return info
+
+        manifest = self._component_manifest()
+        archive_file = self._archive_name(manifest)
+        print('Saving archive to %s' % os.path.join(self.dist_path, archive_file))
+        pack_archive(
+            source_directory=self.path,
+            destination_directory=self.dist_path,
+            filename=archive_file,
+            filter=_filter_files)
+
+    def upload_component(self, args):
+        config = ConfigManager().load()
+
+        profile_name = args.get('service_profile', 'default')
+        profile = config.profiles.get(profile_name, {})
+        service_url = profile.get('url')
+        if not service_url or service_url == 'default':
+            service_url = DEFAULT_COMPONENT_SERVICE_URL
+
+        manifest = self._component_manifest()
+        archive_file = os.path.join(self.dist_path, self._archive_name(manifest))
+        print('Uploading archive: %s' % archive_file)
+
+        # Priorities: idf.py option > IDF_COMPONENT_NAMESPACE env variable > profile value
+        namespace = args.get('namespace', profile.get('default_namespace'))
+
+        if not namespace:
+            raise FatalError('Namespace is required to upload component')
+
+        # Priorities: IDF_COMPONENT_API_TOKEN env variable > profile value
+        token = os.getenv('IDF_COMPONENT_API_TOKEN', profile.get('api_token'))
+
+        if not token:
+            raise FatalError('API token is required to upload component')
+
+        client = APIClient(base_url=service_url, auth_token=token)
+
+        try:
+            client.upload_version(component_name='/'.join([namespace, manifest.name]), file_path=archive_file)
+        except APIClientError as e:
+            raise FatalError(e)
+
+        print('Component was successfully uploaded')
+
     def prepare_dep_dirs(self, managed_components_list_file):
         # Install dependencies first
         # TODO: deal with IDF as component-bundle
-        solution = self.install()
+        solution = self.install({})
 
         # Include managed components in project directory
         with open(managed_components_list_file, mode='w', encoding='utf-8') as f:
