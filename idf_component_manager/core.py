@@ -143,14 +143,13 @@ class ComponentManager(object):
 
     def prepare_dep_dirs(self, managed_components_list_file):
         # Install dependencies first
-        # TODO: deal with IDF as component-bundle
         solution = self.install({})
 
         # Include managed components in project directory
         with open(managed_components_list_file, mode='w', encoding='utf-8') as f:
             # TODO: write all components individually
             if solution.solved_components:
-                f.write('__project_component_dir("%s")' % self.components_path)
+                f.write(u'__project_component_dir("%s")' % self.components_path)
 
     def inject_requrements(self, component_requires_file):
         pass
