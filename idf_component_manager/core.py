@@ -12,7 +12,7 @@ from idf_component_tools.errors import FatalError, ManifestError
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import Manifest, ManifestManager, SolvedManifest
 from idf_component_tools.sources.fetcher import ComponentFetcher
-from idf_component_tools.sources.web_service import DEFAULT_COMPONENT_SERVICE_URL
+from idf_component_tools.sources.web_service import default_component_service_url
 
 from .config import ConfigManager
 from .version_solver.version_solver import VersionSolver
@@ -114,7 +114,7 @@ class ComponentManager(object):
         profile = config.profiles.get(profile_name, {})
         service_url = profile.get('url')
         if not service_url or service_url == 'default':
-            service_url = DEFAULT_COMPONENT_SERVICE_URL
+            service_url = default_component_service_url()
 
         manifest = self._component_manifest()
         archive_file = os.path.join(self.dist_path, self._archive_name(manifest))
