@@ -27,4 +27,5 @@ setuptools.setup(
         'semantic_version',
         'typing',
     ],
+    include_package_data=True,
 )
