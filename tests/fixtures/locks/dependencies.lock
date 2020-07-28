@@ -1,0 +1,13 @@
+dependencies:
+  idf:
+    source:
+      type: idf
+    version: 4.4.4
+  test_cmp:
+    component_hash: f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b
+    source:
+      service_url: https://repo.example.com
+      type: service
+    version: 1.2.7
+manifest_hash: b0010b8c806b2b238dbabb582be4d7d5a432691f0e15e4e5fe8cea0c8b732cd8
+version: 1.0.0

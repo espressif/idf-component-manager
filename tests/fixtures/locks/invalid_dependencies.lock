@@ -1,0 +1,15 @@
+# This file is generated automatically. Please never edit it manually. Run "idf.py component install" to update lock file.
+version: 1.0.0
+manifest_hash:  
+  a: b
+dependencies:
+  idf: 
+    version: 3.0.2
+    source:
+      type: idf
+  aws-iot: 
+    version: 1.2.7
+    component_hash: "f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b"
+    source:
+      type: service
+      service_url: https://repo.example.com

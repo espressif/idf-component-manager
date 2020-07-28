@@ -1,0 +1,77 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.23.0
+    method: GET
+    uri: http://localhost:5000/components/test/cmp/
+  response:
+    body:
+      string: "{\n  \"created_at\": \"2020-05-28T15:50:48.510102+00:00\", \n  \"name\":
+        \"cmp\", \n  \"namespace\": \"test\", \n  \"versions\": [\n    {\n      \"component_hash\":
+        \"02d9269ed8690352e6bfc5f6a6c60e859fa6cbfc56efe75a1199b35bdd6c54c8\", \n      \"created_at\":
+        \"2020-06-01T13:28:35.085856+00:00\", \n      \"description\": null, \n      \"url\":
+        \"http://localhost:5001/c8c68b99-c93d-4aa2-a77d-524fdc671308.tgz\", \n      \"version\":
+        \"1.0.1\"\n    }, \n    {\n      \"component_hash\": \"2ff52f6756d97da66af110122856e0b4027d6986cf74cb857700f6550f7ca730\",
+        \n      \"created_at\": \"2020-05-29T18:30:53.559190+00:00\", \n      \"description\":
+        null, \n      \"url\": \"http://localhost:5001/4ad9c4d5-904f-449c-b057-57025f0bb17f.tgz\",
+        \n      \"version\": \"1.0.0\"\n    }\n  ]\n}\n"
+    headers:
+      Content-Length:
+      - '711'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 04 Jun 2020 13:02:21 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.0
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.23.0
+    method: GET
+    uri: http://localhost:5001/c8c68b99-c93d-4aa2-a77d-524fdc671308.tgz
+  response:
+    body:
+      string: !!binary |
+        H4sIAFgC1V4AA+2XTWvbMBiAc9avEN4lOUyRLNuCtguDtLBA241k22lgjC03opbs2UrpGPvve+WE
+        dSss2WFOGNMDtpAlW5KlRx9kOr/J7uW16mxH7KMdDQClNIki7EKRxH1Iw228h0UMM54kMRNCsBhT
+        xuOYjzAdojLP2XQ2a6Eq95v9+SBbWe5J3zYF/wj/EXINvZ9qZZTe6LSVnzeqlcX449VytXh7izlh
+        4QQhVZRpXuumNtJYyHUHw0W249VyvsJBrhuSB3hxO7/+cHmVXi6W8FCZvNoUMpicuoGevZBp332D
+        lnHQfx5u/Q8pY0yA/0ywxPt/DF7sRMUXnS1UTdYzhB5qVWAYFulaVlU9nqCvCO9oWmVsOQ7euBRc
+        trXG85t3+EG2naoNZoQS9skEk3P07dQt8/wJZPrL3E6+6Oqvl3HQf/GT/2EC/kc88v4fBZNpedav
+        4QHaWQzR3uMAwZ+5k7Y7A/1fYtk1PEQ6gwkALtlCtveys9jdZIsvLISv5WOmm0oSGFCzABWykaaQ
+        Jley/wgMNXhr9ioiNECnbrnHAf5vF4DpcGU47+P49/47XxgH5QUXCXXrfxhFdITj4ar0xH/u/1P/
+        u33gepAyDs3/NHTnPy54mETQ9e785+f/I/F8r3d+6gp5PB6P5yh8B+GwpxIAFgAA
+    headers:
+      Content-Length:
+      - '504'
+      Content-type:
+      - application/octet-stream
+      Date:
+      - Thu, 04 Jun 2020 13:02:21 GMT
+      Last-Modified:
+      - Mon, 01 Jun 2020 13:28:34 GMT
+      Server:
+      - SimpleHTTP/0.6 Python/3.8.0
+    status:
+      code: 200
+      message: OK
+version: 1

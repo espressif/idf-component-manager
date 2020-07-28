@@ -5,7 +5,9 @@ name = 'pypi'
 
 [packages]
 future = '*'
-idf-component-tools = '>=0.1.0a2'
+pyyaml = "<5.3" # Last version with Python 3.4 support is 5.2
+requests = "*"
+schema = "*"
 semantic-version = '*'
 typing = '*'
 
@@ -14,14 +16,18 @@ bandit = '*'
 flake8 = '*'
 flake8-quotes = '*'
 mypy = '*'
-pylint = '*'
+pre-commit = '*'
+pylint = "*"
 pytest = '*'
 pytest-cov = '*'
 rope = '*'
+setuptools = "*"
 tox = '<=3.0.0'
-unify = '*'
-yapf = '*'
 twine = "*"
+unify = '*'
+vcrpy = '<5'
+wheel = "*"
+yapf = '*'
 
 [pipenv]
-allow_prereleases = true
+allow_prereleases = false

@@ -1,0 +1,38 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.23.0
+    method: GET
+    uri: http://localhost:5000/components/test/cmp/
+  response:
+    body:
+      string: "{\n  \"created_at\": \"2020-05-28T15:50:48.510102+00:00\", \n  \"name\":
+        \"cmp\", \n  \"namespace\": \"test\", \n  \"versions\": [\n    {\n      \"component_hash\":
+        \"02d9269ed8690352e6bfc5f6a6c60e859fa6cbfc56efe75a1199b35bdd6c54c8\", \n      \"created_at\":
+        \"2020-06-01T13:28:35.085856+00:00\", \n      \"description\": null, \n      \"url\":
+        \"http://localhost:5001/c8c68b99-c93d-4aa2-a77d-524fdc671308.tgz\", \n      \"version\":
+        \"1.0.1\"\n    }, \n    {\n      \"component_hash\": \"2ff52f6756d97da66af110122856e0b4027d6986cf74cb857700f6550f7ca730\",
+        \n      \"created_at\": \"2020-05-29T18:30:53.559190+00:00\", \n      \"description\":
+        null, \n      \"url\": \"http://localhost:5001/4ad9c4d5-904f-449c-b057-57025f0bb17f.tgz\",
+        \n      \"version\": \"1.0.0\"\n    }\n  ]\n}\n"
+    headers:
+      Content-Length:
+      - '711'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 04 Jun 2020 13:02:20 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.8.0
+    status:
+      code: 200
+      message: OK
+version: 1

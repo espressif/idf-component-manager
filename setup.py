@@ -3,29 +3,61 @@ import os
 
 import setuptools
 
-with io.open('README.md', mode='r', encoding='utf-8') as fh:
-    long_description = fh.read()
+AUTHOR = 'Sergei Silnov'
+MAINTAINER = 'Sergei Silnov'
+EMAIL = 'sergei.silnov@esspressif.com'
+
+NAME = 'idf_component_manager'
+SHORT_DESCRIPTION = 'Espressif IDF component manager'
+LICENSE = 'Apache License 2.0'
+URL = 'https://espressif.com'
+REQUIRES = [
+    'future',
+    'pyyaml',
+    'requests',
+    'schema',
+    'semantic_version',
+    'typing',
+]
 
 info = {}  # type: ignore
 path = os.path.abspath(os.path.dirname(__file__))
+
+with io.open('README.md', mode='r', encoding='utf-8') as readme:
+    LONG_DESCRIPTION = readme.read()
+
 with io.open(os.path.join(path, 'idf_component_manager', '__version__.py'), mode='r', encoding='utf-8') as f:
     exec(f.read(), info)  # nosec
 
 setuptools.setup(
-    name='idf_component_manager',
-    version=info['__version__'],
-    author='Sergei Silnov',
-    author_email='sergei.silnov@espressif.com',
-    description='Component Manager for ESP IDF',
-    long_description=long_description,
+    name=NAME,
+    description=SHORT_DESCRIPTION,
+    long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown',
-    url='https://espressif.com',
-    packages=setuptools.find_packages(exclude=('*.tests', '*.tests.*', 'tests.*', 'tests')),
-    install_requires=[
-        'future',
-        'idf_component_tools',
-        'semantic_version',
-        'typing',
+    license=LICENSE,
+    version=info['__version__'],
+    author=AUTHOR,
+    maintainer=MAINTAINER,
+    author_email=EMAIL,
+    url=URL,
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers',
+        'Natural Language :: English',
+        'License :: OSI Approved :: Apache Software License',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: Implementation :: CPython',
     ],
-    include_package_data=True,
+    packages=setuptools.find_packages(exclude=('*.tests', '*.tests.*', 'tests.*', 'tests')),
+    scripts=[],
+    install_requires=REQUIRES,
+    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
 )
