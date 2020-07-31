@@ -59,7 +59,7 @@ class Manifest(object):
         self.targets = targets
 
     @classmethod
-    def from_dict(cls, manifest_tree):  # type: (dict) -> Manifest
+    def from_dict(cls, manifest_tree, name_required=False):  # type: (dict, bool) -> Manifest
         """Coverts manifest dict to manifest object"""
         manifest = cls(
             name=manifest_tree.get('name'),
@@ -67,7 +67,8 @@ class Manifest(object):
             url=manifest_tree.get('url'),
             description=manifest_tree.get('description'),
             targets=manifest_tree.get('targets', []),
-            manifest_hash=hash_object(dict(manifest_tree)))
+            manifest_hash=hash_object(dict(manifest_tree)),
+            name_required=name_required)
         version = manifest_tree.get('version')
 
         if version:
