@@ -9,6 +9,7 @@ from typing import Union
 from idf_component_tools.api_client import APIClient, APIClientError
 from idf_component_tools.archive_tools import pack_archive
 from idf_component_tools.errors import FatalError, ManifestError
+from idf_component_tools.file_tools import create_directory
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import Manifest, ManifestManager, SolvedManifest
 from idf_component_tools.sources.fetcher import ComponentFetcher
@@ -19,15 +20,18 @@ from .version_solver.version_solver import VersionSolver
 
 
 class ComponentManager(object):
-    def __init__(self, path, lock_path=None, manifest_path=None):
-        # type: (str, Union[None, str], Union[None, str]) -> None
+    def __init__(self, path, lock_path=None, manifest_path=None, main_component_path=None):
+        # type: (str, Union[None, str], Union[None, str], Union[None, str]) -> None
 
         # Working directory
         self.path = path if os.path.isdir(path) else os.path.dirname(path)
 
-        # Set path of manifest file for the project
-        self.project_manifest_path = manifest_path or (
-            os.path.join(path, 'idf_project.yml') if os.path.isdir(path) else path)
+        # Set path of the project's main component
+        self.main_component_path = main_component_path or os.path.join(self.path, 'main')
+
+        # Set path of the manifest file for the project's main component
+        self.main_manifest_path = manifest_path or (
+            os.path.join(path, 'main', 'idf_component.yml') if os.path.isdir(path) else path)
 
         # Lock path
         self.lock_path = lock_path or (os.path.join(path, 'dependencies.lock') if os.path.isdir(path) else path)
@@ -40,16 +44,17 @@ class ComponentManager(object):
 
     def init_project(self, args):
         """Create manifest file if it doesn't exist in work directory"""
-        if os.path.exists(self.project_manifest_path):
-            print('`idf_project.yml` already exists in projects folder, skipping...')
+        if os.path.exists(self.main_manifest_path):
+            print('`idf_component.yml` already exists in main component directroy, skipping...')
         else:
             example_path = os.path.join(
-                os.path.dirname(os.path.realpath(__file__)), 'templates', 'idf_project_template.yml')
-            print('Creating `idf_project.yml` in projects folder')
-            copyfile(example_path, self.project_manifest_path)
+                os.path.dirname(os.path.realpath(__file__)), 'templates', 'idf_component_template.yml')
+            create_directory(self.main_component_path)
+            print('Creating `idf_component.yml` in the main component directory')
+            copyfile(example_path, self.main_manifest_path)
 
     def install(self, args):
-        manager = ManifestManager(self.project_manifest_path)
+        manager = ManifestManager(self.main_manifest_path)
         manifest = Manifest.from_dict(manager.load())
         lock_manager = LockManager(self.lock_path)
         lock = lock_manager.load()
@@ -72,15 +77,14 @@ class ComponentManager(object):
         count_string = 'dependencies' if components_count != 1 else 'dependency'
         print('Processing %s %s' % (components_count, count_string))
         for i, component in enumerate(solution.solved_components):
-            line = ('[%d/%d] Processing component %s' % (i + 1, components_count, component.name))
-            print(line)
+            print('[%d/%d] Processing component %s' % (i + 1, components_count, component.name))
             ComponentFetcher(component, self.components_path).download()
 
         print('Successfully processed %s %s ' % (components_count, count_string))
         return solution
 
     def _component_manifest(self):
-        manager = ManifestManager(os.path.join(self.path, 'idf_component.yml'), is_component=True)
+        manager = ManifestManager(os.path.join(self.path, 'idf_component.yml'))
         manifest = Manifest.from_dict(manager.load())
 
         if not (manifest.name or manifest.version):

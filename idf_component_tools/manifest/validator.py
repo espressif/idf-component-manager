@@ -27,9 +27,8 @@ class ManifestValidator(object):
 
     SLUG_RE = re.compile(r'^[-a-zA-Z0-9_/]+\Z')
 
-    def __init__(self, parsed_manifest, is_component=False):
+    def __init__(self, parsed_manifest):
         self.manifest_tree = parsed_manifest
-        self.is_component = is_component
         self._errors = []
 
         self.known_component_keys = set([])  # type: Set[str]
@@ -43,10 +42,6 @@ class ManifestValidator(object):
             if key not in known_keys:
                 unknown_keys.append(key)
         return unknown_keys
-
-    @property
-    def manifest_type(self):
-        return 'component' if self.is_component else 'project'
 
     def _validate_version_spec(self, component, spec):
         try:
@@ -70,7 +65,7 @@ class ManifestValidator(object):
             if version:
                 Version.parse(version)
         except ValueError:
-            self.add_error('%s version should be valid semantic version' % self.manifest_type.capitalize())
+            self.add_error('Component version should be valid semantic version')
 
         return self
 

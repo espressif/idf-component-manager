@@ -9,7 +9,7 @@ from idf_component_manager.core import ComponentManager
 def test_init_project():
     tempdir = tempfile.mkdtemp()
     try:
-        manifest_path = os.path.join(tempdir, 'idf_project.yml')
+        manifest_path = os.path.join(tempdir, 'main', 'idf_component.yml')
         manager = ComponentManager(path=tempdir)
 
         manager.init_project({})

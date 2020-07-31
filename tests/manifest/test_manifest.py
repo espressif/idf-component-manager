@@ -7,7 +7,7 @@ from idf_component_tools.manifest import ManifestManager, ManifestValidator
 
 class TestManifestPipeline(object):
     def test_check_filename(self, capsys):
-        parser = ManifestManager('some/path/idf_project.yaml')
+        parser = ManifestManager('some/path/idf_component.yaml')
 
         parser.check_filename()
 
@@ -25,13 +25,13 @@ class TestManifestPipeline(object):
         assert str(e.value).startswith('Cannot parse manifest file')
 
     def test_parse_valid_yaml(self, capsys):
-        manifest_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'fixtures', 'idf_project.yml')
+        manifest_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'fixtures', 'idf_component.yml')
         parser = ManifestManager(manifest_path)
 
-        assert len(parser.manifest_tree.keys()) == 6
+        assert len(parser.manifest_tree.keys()) == 7
 
     def test_prepare(self):
-        manifest_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'fixtures', 'idf_project.yml')
+        manifest_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'fixtures', 'idf_component.yml')
         parser = ManifestManager(manifest_path)
 
         parser.load()
@@ -57,7 +57,7 @@ class TestManifestValidator(object):
         errors = validator.validate_normalize()
 
         assert len(errors) == 1
-        assert errors[0].startswith('Project version should be valid')
+        assert errors[0].startswith('Component version should be valid')
 
     def test_validate_component_versions_not_in_manifest(self, valid_manifest):
         valid_manifest.pop('dependencies')

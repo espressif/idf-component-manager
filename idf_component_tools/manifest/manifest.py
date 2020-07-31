@@ -27,22 +27,21 @@ COMMIT_ID_RE = re.compile(r'[0-9a-f]{40}')
 
 class Manifest(object):
     def __init__(
-        self,
-        name=None,  # type: Union[str, None] # Component name
-        version=None,  # type: Union[str, ComponentVersion, None] # Version
-        maintainers=None,  # type: Union[str, None] # List of maintainers
-        dependencies=None,  # type: Union[List[ComponentRequirement], None] # Dependencies, list of component
-        description=None,  # description type: Union[str, None] # Human-readable
-        download_url=None,  # type: Union[str, None] # Direct url for tarball download
-        url=None,  # type: Union[str, None] # Url of the repo
-        targets=None,  # type: Union[List[str], None] # List of supported chips
-        manifest_hash=None,  # type: Union[str, None] # Check-sum of manifest content
-        is_component=False  # type: bool # True if component, False if project
+            self,
+            name=None,  # type: Union[str, None] # Component name
+            version=None,  # type: Union[str, ComponentVersion, None] # Version
+            maintainers=None,  # type: Union[str, None] # List of maintainers
+            dependencies=None,  # type: Union[List[ComponentRequirement], None] # Dependencies, list of component
+            description=None,  # description type: Union[str, None] # Human-readable
+            download_url=None,  # type: Union[str, None] # Direct url for tarball download
+            url=None,  # type: Union[str, None] # Url of the repo
+            targets=None,  # type: Union[List[str], None] # List of supported chips
+            manifest_hash=None,  # type: Union[str, None] # Check-sum of manifest content
+            name_required=False,  # type: bool # Enables component name check
     ):
         # type: (...) -> None
-        self.is_component = is_component
 
-        if is_component and not name:
+        if not name and name_required:
             raise ManifestError('Name is required for component')
 
         self.name = str(name) if name else ''
@@ -60,7 +59,7 @@ class Manifest(object):
         self.targets = targets
 
     @classmethod
-    def from_dict(cls, manifest_tree, is_component=False):  # type: (dict, bool) -> Manifest
+    def from_dict(cls, manifest_tree):  # type: (dict) -> Manifest
         """Coverts manifest dict to manifest object"""
         manifest = cls(
             name=manifest_tree.get('name'),
@@ -68,8 +67,7 @@ class Manifest(object):
             url=manifest_tree.get('url'),
             description=manifest_tree.get('description'),
             targets=manifest_tree.get('targets', []),
-            manifest_hash=hash_object(dict(manifest_tree)),
-            is_component=is_component)
+            manifest_hash=hash_object(dict(manifest_tree)))
         version = manifest_tree.get('version')
 
         if version:

@@ -24,7 +24,7 @@ dependencies = {
     }
 }
 
-manifest_hash = 'b0010b8c806b2b238dbabb582be4d7d5a432691f0e15e4e5fe8cea0c8b732cd8'
+manifest_hash = 'bd7763113fbae1930ae1cccb8a717d3f267523a923f80e69a3d33d9e912ac450'
 valid_lock_path = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     'fixtures',
@@ -34,7 +34,7 @@ valid_lock_path = os.path.join(
 manifest_path = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     'fixtures',
-    'idf_project.yml',
+    'idf_component.yml',
 )
 
 

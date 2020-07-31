@@ -37,7 +37,7 @@ class LocalSource(BaseSource):
         manifest_path = os.path.join(self._path, 'idf_component.yml')
         version_string = '*'
         if os.path.isfile(manifest_path):
-            version_string = (ManifestManager(manifest_path, is_component=True).load().get('version', '*'))
+            version_string = (ManifestManager(manifest_path).load().get('version', '*'))
         return ComponentWithVersions(name=name, versions=[ComponentVersion(version_string)])
 
     def as_dict(self):  # type: () -> Dict

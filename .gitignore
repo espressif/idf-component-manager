@@ -16,10 +16,7 @@ __pycache__
 Pipfile.lock
 
 # Manifest and components
-/manifest*.yaml
-/manifest*.yml
 /dependencies.lock
-/idf_project*.yaml
 /idf_component*.yaml
 /managed_components
 /components

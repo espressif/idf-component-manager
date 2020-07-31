@@ -12,9 +12,8 @@ EMPTY_MANIFEST = dict()  # type: Dict[str, Any]
 
 class ManifestManager(object):
     """Parser for manifest file"""
-    def __init__(self, path, is_component=False):
+    def __init__(self, path):
         # Path of manifest file
-        self._is_component = is_component
         self._path = path
         self._manifest_tree = None
         self._manifest = None
@@ -25,17 +24,14 @@ class ManifestManager(object):
         """Check manifest's filename"""
         filename = os.path.basename(self._path)
 
-        if self._is_component and filename != 'idf_component.yml':
+        if filename != 'idf_component.yml':
             print(
-                "Warning: it's recommended to store your component's list in \"idf_component.yml\" at component's root")
-
-        if not self._is_component and filename != 'idf_project.yml':
-            print("Warning: it's recommended to store your component's list in \"idf_project.yml\" at project's root")
-
+                "Warning: it's recommended to keep the manifest in \"idf_component.yml\" of component's root directory."
+            )
         return self
 
     def validate(self):
-        validator = ManifestValidator(self.manifest_tree, self._is_component)
+        validator = ManifestValidator(self.manifest_tree)
         self._validation_errors = validator.validate_normalize()
         self._is_valid = not self._validation_errors
         return self
