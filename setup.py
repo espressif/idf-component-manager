@@ -17,6 +17,7 @@ REQUIRES = [
     'requests',
     'schema',
     'semantic_version',
+    'six',
     'typing',
 ]
 

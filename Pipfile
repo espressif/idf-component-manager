@@ -1,17 +1,18 @@
 [[source]]
+name = 'pypi'
 url = 'https://pypi.org/simple'
 verify_ssl = true
-name = 'pypi'
 
 [packages]
-future = '*'
+future = '*' 
 pyyaml = "<5.3" # Last version with Python 3.4 support is 5.2
-requests = "*"
-schema = "*"
-semantic-version = '*'
-typing = '*'
+requests = "*" 
+schema = "*" 
+semantic-version = '*' 
+six = "*" 
+typing = '*' 
 
-[dev-packages] 
+[dev-packages]
 bandit = '*'
 flake8 = '*'
 flake8-quotes = '*'

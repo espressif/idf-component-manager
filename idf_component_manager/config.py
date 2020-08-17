@@ -5,6 +5,7 @@ from io import open
 import yaml
 from idf_component_tools.errors import FatalError
 from schema import And, Optional, Or, Regex, Schema, SchemaError
+from six import string_types
 
 DEFAULT_CONFIG_DIR = os.path.join('~', '.espressif')
 CONFIG_DIR = os.environ.get('IDF_TOOLS_PATH') or os.path.expanduser(DEFAULT_CONFIG_DIR)
@@ -21,10 +22,10 @@ URL_RE = re.compile(
 CONFIG_SCHEMA = Schema(
     {
         Optional('profiles'): {
-            str: {
+            Or(*string_types): {
                 Optional('service_url'): Or('default', Regex(URL_RE)),
-                Optional('default_namespace'): And(str, len),
-                Optional('api_token'): And(str, len)
+                Optional('default_namespace'): And(Or(*string_types), len),
+                Optional('api_token'): And(Or(*string_types), len)
             }
         }
     })

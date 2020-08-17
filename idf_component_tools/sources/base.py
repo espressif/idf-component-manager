@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING, Callable, Dict, List, Union
 
 import idf_component_tools as tools
 from idf_component_tools.manifest import ComponentWithVersions
-from schema import Optional
+from schema import Optional, Or
+from six import string_types
 
 from ..errors import SourceError
 
@@ -73,10 +74,10 @@ class BaseSource(object):
         source_schema = {'type': cls.NAME}  # type: Dict[str, Union[str, Callable]]
 
         for key in cls.required_keys():
-            source_schema[key] = str
+            source_schema[key] = Or(*string_types)
 
         for key in cls.optional_keys():
-            source_schema[Optional(key)] = str
+            source_schema[Optional(key)] = Or(*string_types)
 
         return source_schema
 

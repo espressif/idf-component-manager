@@ -5,6 +5,7 @@ from typing import Any, Dict, Union
 import idf_component_tools as tools
 import yaml
 from schema import And, Optional, Or, Schema, SchemaError
+from six import string_types
 
 from ..errors import LockError
 from ..manifest import FORMAT_VERSION, SolvedManifest
@@ -16,19 +17,19 @@ EMPTY_LOCK = {
     'version': FORMAT_VERSION,
 }
 
-HASH_SCHEMA = And(str, lambda h: len(h) == 64)
+HASH_SCHEMA = And(Or(*string_types), lambda h: len(h) == 64)
 
 LOCK_SCHEMA = Schema(
     {
         'dependencies': {
-            str: {
+            Or(*string_types): {
                 'source': Or(*[source.schema() for source in tools.sources.KNOWN_SOURCES]),
-                'version': str,
+                'version': Or(*string_types),
                 Optional('component_hash'): HASH_SCHEMA,
             }
         },
         'manifest_hash': HASH_SCHEMA,
-        'version': And(str, len),
+        'version': And(Or(*string_types), len),
     })
 
 
