@@ -57,11 +57,9 @@ class LockManager:
             try:
                 lock = LOCK_SCHEMA.validate(yaml.safe_load(f.read()))
                 return lock
-            except yaml.YAMLError:
+            except (yaml.YAMLError, SchemaError):
                 raise LockError(
                     (
-                        'Cannot parse components lock file. Please check that\n\t%s\nis valid YAML file.\n'
+                        'Cannot parse components lock file. Please check that\n\t%s\nis a valid lock YAML file.\n'
                         'You can delete corrupted lock file and it will be recreated on next run. '
                         'Some components may be updated in this case.') % self._path)
-            except SchemaError as e:
-                raise LockError('Lock format is not valid:\n%s' % str(e))

@@ -20,6 +20,9 @@
 # limitations under the License.
 
 import argparse
+import sys
+
+from idf_component_tools.errors import FatalError
 
 from ..core import ComponentManager
 
@@ -57,4 +60,9 @@ def main():
     inject_step.add_argument('--idf_path', help='Path to IDF')
 
     args = parser.parse_args()
-    args.func(args)
+
+    try:
+        args.func(args)
+    except FatalError as e:
+        print(e)
+        sys.exit(2)
