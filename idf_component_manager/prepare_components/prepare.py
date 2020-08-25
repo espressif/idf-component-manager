@@ -28,7 +28,9 @@ from ..core import ComponentManager
 
 
 def prepare_dep_dirs(args):
-    ComponentManager(args.project_dir).prepare_dep_dirs(args.managed_components_list_file)
+    ComponentManager(args.project_dir).prepare_dep_dirs(
+        managed_components_list_file=args.managed_components_list_file,
+        local_components_list_file=args.local_components_list_file)
 
 
 def inject_requirements(args):
@@ -48,7 +50,15 @@ def main():
         'prepare_dependencies', help='Solve and download dependencies and provide directories to build system')
     prepare_step.set_defaults(func=prepare_dep_dirs)
     prepare_step.add_argument(
-        '--managed_components_list_file', help='Path to file with list of managed component directories')
+        '--managed_components_list_file',
+        help='Path to file with list of managed component directories (output)',
+        required=True)
+    prepare_step.add_argument(
+        '--local_components_list_file',
+        help=(
+            'Path to file with list of components discovered by build system (input). '
+            'Only "components" directory will be processed if argument is not provided'),
+        required=False)
 
     inject_step_data = [
         {

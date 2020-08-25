@@ -159,7 +159,7 @@ class ComponentManager(object):
         except APIClientError as e:
             raise FatalError(e)
 
-    def prepare_dep_dirs(self, managed_components_list_file):
+    def prepare_dep_dirs(self, managed_components_list_file, local_components_list_file=None):
         # Install dependencies first
         solution = self.install({})
 
