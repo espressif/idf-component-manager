@@ -160,18 +160,24 @@ class ComponentManager(object):
             raise FatalError(e)
 
     def prepare_dep_dirs(self, managed_components_list_file, local_components_list_file=None):
+        # Find all manifests
+
+        # Process them all
+
         # Install dependencies first
         solution = self.install({})
 
         # Include managed components in project directory
         with open(managed_components_list_file, mode='w', encoding='utf-8') as f:
-            # TODO: write all components individually
+            # Use idf_build_component for all components
             if solution.solved_components:
-                f.write(u'__project_component_dir("%s")' % self.components_path)
+                f.write(u'idf_build_component("%s")' % self.components_path)
 
     def inject_requirements(self, component_requires_file):
         pass
         # TODO: update requirements for known components
+        # TODO: deal with namespaces
+
         # solution = self.install()
         # And update temporary requirements file
         # if solution.solved_components:
