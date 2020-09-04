@@ -31,7 +31,8 @@ class TestAPIClient(object):
         base_url = 'http://localhost:5000/'
         client = APIClient(base_url=base_url)
 
-        component = client.versions('test/cmp', spec='>=1.0.0')
+        # Also check case normalisation
+        component = client.versions('Test/Cmp', spec='>=1.0.0')
 
         assert component.name == 'test/cmp'
         assert len(list(component.versions)) == 2
@@ -41,7 +42,8 @@ class TestAPIClient(object):
         base_url = 'http://localhost:5000/'
         client = APIClient(base_url=base_url)
 
-        manifest = client.component('test/cmp')
+        # Also check case normalisation
+        manifest = client.component('tesT/CMP')
 
         assert manifest.name == 'test/cmp'
         assert str(manifest.version) == '1.0.1'

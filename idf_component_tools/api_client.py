@@ -28,6 +28,8 @@ class APIClient(object):
     # TODO: add some caching to versions and component endpoints
     def versions(self, component_name, spec):
         """List of versions for given component with required spec"""
+        component_name = component_name.lower()
+
         endpoint = self.join_url(self.base_url, 'components', component_name)
 
         try:
@@ -55,7 +57,7 @@ class APIClient(object):
     def component(self, component_name, version=None):
         """Manifest for given version of component, if version is None most recent version returned"""
 
-        endpoint = self.join_url(self.base_url, 'components', component_name)
+        endpoint = self.join_url(self.base_url, 'components', component_name.lower())
 
         try:
             r = requests.get(endpoint)
@@ -87,7 +89,7 @@ class APIClient(object):
             raise APIClientError('Unexpected component server response')
 
     def upload_version(self, component_name, file_path):
-        endpoint = self.join_url(self.base_url, 'components', component_name, 'versions')
+        endpoint = self.join_url(self.base_url, 'components', component_name.lower(), 'versions')
         filename = os.path.basename(file_path)
 
         files = {'file': (filename, open(file_path, 'rb'), 'application/octet-stream')}
