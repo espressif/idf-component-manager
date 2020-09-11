@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import os
+from collections import namedtuple
 from io import open
 from shutil import copyfile
 from typing import Union
@@ -17,6 +18,32 @@ from idf_component_tools.sources.web_service import default_component_service_ur
 
 from .config import ConfigManager
 from .version_solver.version_solver import VersionSolver
+
+ServiceDetails = namedtuple('ServiceDetails', ['client', 'namespace'])
+
+
+def _service_details(args):
+    config = ConfigManager().load()
+    profile_name = args.get('service_profile') or 'default'
+    profile = config.profiles.get(profile_name, {})
+
+    service_url = profile.get('url')
+    if not service_url or service_url == 'default':
+        service_url = default_component_service_url()
+
+    # Priorities: idf.py option > IDF_COMPONENT_NAMESPACE env variable > profile value
+    namespace = args.get('namespace') or profile.get('default_namespace')
+    if not namespace:
+        raise FatalError('Namespace is required to upload component')
+
+    # Priorities: IDF_COMPONENT_API_TOKEN env variable > profile value
+    token = os.getenv('IDF_COMPONENT_API_TOKEN', profile.get('api_token'))
+    if not token:
+        raise FatalError('API token is required to upload component')
+
+    client = APIClient(base_url=service_url, auth_token=token)
+
+    return ServiceDetails(client, namespace)
 
 
 class ComponentManager(object):
@@ -112,38 +139,25 @@ class ComponentManager(object):
             filter=_filter_files)
 
     def upload_component(self, args):
-        config = ConfigManager().load()
-
-        profile_name = args.get('service_profile', 'default')
-        profile = config.profiles.get(profile_name, {})
-        service_url = profile.get('url')
-        if not service_url or service_url == 'default':
-            service_url = default_component_service_url()
-
+        client, namespace = _service_details(args)
         manifest = self._component_manifest()
         archive_file = os.path.join(self.dist_path, self._archive_name(manifest))
         print('Uploading archive: %s' % archive_file)
 
-        # Priorities: idf.py option > IDF_COMPONENT_NAMESPACE env variable > profile value
-        namespace = args.get('namespace', profile.get('default_namespace'))
-
-        if not namespace:
-            raise FatalError('Namespace is required to upload component')
-
-        # Priorities: IDF_COMPONENT_API_TOKEN env variable > profile value
-        token = os.getenv('IDF_COMPONENT_API_TOKEN', profile.get('api_token'))
-
-        if not token:
-            raise FatalError('API token is required to upload component')
-
-        client = APIClient(base_url=service_url, auth_token=token)
-
         try:
             client.upload_version(component_name='/'.join([namespace, manifest.name]), file_path=archive_file)
+            print('Component was successfully uploaded')
         except APIClientError as e:
             raise FatalError(e)
 
-        print('Component was successfully uploaded')
+    def create_remote_component(self, args):
+        client, namespace = _service_details(args)
+        name = '/'.join([namespace, args['name']])
+        try:
+            client.create_component(component_name=name)
+            print('Component "%s" was successfully created' % name)
+        except APIClientError as e:
+            raise FatalError(e)
 
     def prepare_dep_dirs(self, managed_components_list_file):
         # Install dependencies first

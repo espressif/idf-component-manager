@@ -1,5 +1,11 @@
+import pytest
 import vcr
 from idf_component_tools.api_client import APIClient
+
+
+@pytest.fixture
+def base_url():
+    return 'http://localhost:5000'
 
 
 class TestAPIClient(object):
@@ -27,8 +33,7 @@ class TestAPIClient(object):
             assert APIClient.join_url(*test['in']) == test['out']
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_component_versions.yaml')
-    def test_version(self):
-        base_url = 'http://localhost:5000/'
+    def test_version(self, base_url):
         client = APIClient(base_url=base_url)
 
         # Also check case normalisation
@@ -38,8 +43,7 @@ class TestAPIClient(object):
         assert len(list(component.versions)) == 2
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_component_details.yaml')
-    def test_component(self):
-        base_url = 'http://localhost:5000/'
+    def test_component(self, base_url):
         client = APIClient(base_url=base_url)
 
         # Also check case normalisation
@@ -47,3 +51,18 @@ class TestAPIClient(object):
 
         assert manifest.name == 'test/cmp'
         assert str(manifest.version) == '1.0.1'
+
+    def test_create_component(self, requests_mock, base_url):
+        requests_mock.post(
+            '%s/components/test/new_cmp/' % base_url,
+            json={
+                'created_at': '2020-09-11T15:40:27.590469+00:00',
+                'name': 'new_cmp',
+                'namespace': 'test',
+                'versions': []
+            })
+
+        client = APIClient(base_url=base_url, auth_token='token')
+        name = client.create_component('test/new_cmp')
+
+        assert name == ('test', 'new_cmp')

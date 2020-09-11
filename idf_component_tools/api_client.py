@@ -15,6 +15,7 @@ class APIClient(object):
     def __init__(self, base_url, auth_token=None):
         self.base_url = base_url
         self.auth_token = auth_token
+        self.auth_header = {'Authorization': 'Bearer %s' % auth_token}
 
     @staticmethod
     def join_url(*args):
@@ -34,15 +35,17 @@ class APIClient(object):
 
         try:
             # TODO may be add versions endpoint
-            r = requests.get(endpoint)
-            response = r.json()
+            response = requests.get(endpoint)
+            response.raise_for_status()
+
+            body = response.json()
 
             return tools.manifest.ComponentWithVersions(
                 name=component_name,
                 versions=map(
                     lambda v: tools.manifest.ComponentVersion(
                         version_string=v['version'], component_hash=v['component_hash']),
-                    response['versions'],
+                    body['versions'],
                 ),
             )
 
@@ -60,8 +63,9 @@ class APIClient(object):
         endpoint = self.join_url(self.base_url, 'components', component_name.lower())
 
         try:
-            r = requests.get(endpoint)
-            response = r.json()
+            raw_response = requests.get(endpoint)
+            raw_response.raise_for_status()
+            response = raw_response.json()
             versions = response['versions']
 
             if version:
@@ -97,13 +101,26 @@ class APIClient(object):
         if not self.auth_token:
             raise APIClientError('API token is required')
 
-        headers = {'Authorization': 'Bearer %s' % self.auth_token}
-
         try:
-            r = requests.post(endpoint, files=files, headers=headers)
-            r.raise_for_status()
-            response = r.json()
-            return response['id']
+            response = requests.post(endpoint, files=files, headers=self.auth_header)
+            response.raise_for_status()
+            body = response.json()
+            return body['id']
 
         except requests.exceptions.RequestException as e:
             raise APIClientError('Cannot upload version:\n%s' % e)
+
+    def create_component(self, component_name):
+        endpoint = self.join_url(self.base_url, 'components', component_name.lower())
+
+        if not self.auth_token:
+            raise APIClientError('API token is required')
+
+        try:
+            response = requests.post(endpoint, headers=self.auth_header)
+            response.raise_for_status()
+            body = response.json()
+            return (body['namespace'], body['name'])
+
+        except requests.exceptions.RequestException as e:
+            raise APIClientError('Cannot create new component on the service.\n%s' % e)
