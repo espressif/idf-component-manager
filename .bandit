@@ -1,2 +1,2 @@
 [bandit]
-exclude: ./tests/*,./.tox/*,./.git/*
+exclude: ./tests/*,./.tox/*,./.git/*,./integration_tests/*

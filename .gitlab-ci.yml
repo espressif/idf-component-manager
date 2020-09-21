@@ -8,7 +8,7 @@ stages:
   - deploy
 
 lint:
-  image: python:3.8-slim-buster
+  image: python:3.8-buster
   stage: check
   tags:
     - lint
@@ -22,7 +22,7 @@ lint:
   before_script:
     - pip install bandit flake8
   script:
-    - bandit --exclude="./tests,./.tox,./.git" -r -f txt -o bandit_output.txt .
+    - bandit --exclude="./tests,./integration_tests,./.tox,./.git" -r -f txt -o bandit_output.txt .
     - flake8 --config=.flake8 --output-file=flake8_output.txt --tee
 
 test:
@@ -54,3 +54,48 @@ publish_on_pypi:
   only:
     refs:
       - master
+
+test:py27int:
+  image: python:2.7-slim-buster
+  stage: test
+  tags:
+    - test
+    - internet
+  only:
+    refs:
+      - master
+      - schedules
+  before_script:
+    - apt-get update && apt-get install -y -q libusb-1.0 cmake git ninja-build
+    - git clone https://github.com/espressif/esp-idf.git
+    - cd ./esp-idf/
+    - ./install.sh
+    - . ./export.sh
+    - git submodule update --init --recursive
+    - cd ..
+    - pip install $CI_PROJECT_DIR pytest
+  script:
+    - py.test -s -c pytest_integration.ini
+
+test:py38int:
+  image: python:3.8-slim-buster
+  stage: test
+  tags:
+    - test
+    - internet
+  only:
+    refs:
+      - master
+      - schedules
+  before_script:
+    - apt-get update && apt-get install -y -q libusb-1.0 cmake git ninja-build
+    - git clone https://github.com/espressif/esp-idf.git
+    - cd ./esp-idf/
+    - ./install.sh
+    - . ./export.sh
+    - git submodule update --init --recursive
+    - cd ..
+    - pip install $CI_PROJECT_DIR pytest
+  script:
+    - py.test -s -c pytest_integration.ini
+
