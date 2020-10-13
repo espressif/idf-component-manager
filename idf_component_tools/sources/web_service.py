@@ -25,7 +25,7 @@ except ImportError:
 
 
 def default_component_service_url():
-    return os.getenv('DEFAULT_COMPONENT_SERVICE_URL', 'https://api.components.dev.espressif.tools/')
+    return os.getenv('DEFAULT_COMPONENT_SERVICE_URL', 'https://api.components.espressif.com/')
 
 
 class WebServiceSource(BaseSource):
