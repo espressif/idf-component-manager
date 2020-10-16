@@ -32,7 +32,6 @@ test:
     - test
     - internet
   script:
-    - pip3 install tox
     - tox
 
 publish_on_pypi:
