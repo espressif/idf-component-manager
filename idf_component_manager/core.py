@@ -169,7 +169,7 @@ class ComponentManager(object):
             if solution.solved_components:
                 f.write(u'__project_component_dir("%s")' % self.components_path)
 
-    def inject_requrements(self, component_requires_file):
+    def inject_requirements(self, component_requires_file):
         pass
         # TODO: update requirements for known components
         # solution = self.install()

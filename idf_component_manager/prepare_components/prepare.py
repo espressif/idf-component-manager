@@ -31,8 +31,8 @@ def prepare_dep_dirs(args):
     ComponentManager(args.project_dir).prepare_dep_dirs(args.managed_components_list_file)
 
 
-def inject_requrements(args):
-    ComponentManager(args.project_dir).inject_requrements(args.component_requires_file)
+def inject_requirements(args):
+    ComponentManager(args.project_dir).inject_requirements(args.component_requires_file)
 
 
 def main():
@@ -50,8 +50,11 @@ def main():
     prepare_step.add_argument(
         '--managed_components_list_file', help='Path to file with list of managed component directories')
 
-    inject_step = subparsers.add_parser('inject_requrements', help='Inject requirements to CMake')
-    inject_step.set_defaults(func=inject_requrements)
+    inject_step = subparsers.add_parser(
+        'inject_requirements',
+        aliases=['inject_requrements'],  # To support typo in idf 4.1-4.2
+        help='Inject requirements to CMake')
+    inject_step.set_defaults(func=inject_requirements)
     inject_step.add_argument('--build_properties_file', help='Path to temporary file with build properties')
     inject_step.add_argument('--component_properties_file', help='Path to temporary file with component properties')
     inject_step.add_argument('--component_requires_file', help='Path to temporary file with component requirements')
