@@ -11,7 +11,7 @@ EMPTY_MANIFEST = dict()  # type: Dict[str, Any]
 
 
 class ManifestManager(object):
-    """Parser for manifest file"""
+    """Parser for manifest files in the project"""
     def __init__(self, path):
         # Path of manifest file
         self._path = path

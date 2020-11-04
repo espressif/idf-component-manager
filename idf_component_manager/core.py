@@ -12,11 +12,13 @@ from idf_component_tools.archive_tools import pack_archive
 from idf_component_tools.errors import FatalError, ManifestError
 from idf_component_tools.file_tools import create_directory
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import Manifest, ManifestManager, SolvedManifest
+from idf_component_tools.manifest import ComponentRequirement, Manifest, ManifestManager, SolvedManifest
 from idf_component_tools.sources.fetcher import ComponentFetcher
+from idf_component_tools.sources.local import LocalSource
 from idf_component_tools.sources.web_service import default_component_service_url
 
 from .config import ConfigManager
+from .local_component_list import parse_component_list
 from .version_solver.version_solver import VersionSolver
 
 ServiceDetails = namedtuple('ServiceDetails', ['client', 'namespace'])
@@ -51,7 +53,7 @@ class ComponentManager(object):
         # type: (str, Union[None, str], Union[None, str], Union[None, str]) -> None
 
         # Working directory
-        self.path = path if os.path.isdir(path) else os.path.dirname(path)
+        self.path = os.path.abspath(path if os.path.isdir(path) else os.path.dirname(path))
 
         # Set path of the project's main component
         self.main_component_path = main_component_path or os.path.join(self.path, 'main')
@@ -63,13 +65,14 @@ class ComponentManager(object):
         # Lock path
         self.lock_path = lock_path or (os.path.join(path, 'dependencies.lock') if os.path.isdir(path) else path)
 
-        # Components directory
-        self.components_path = os.path.join(self.path, 'managed_components')
+        # Components directories
+        self.components_path = os.path.join(self.path, 'components')
+        self.managed_components_path = os.path.join(self.path, 'managed_components')
 
         # Dist directory
         self.dist_path = os.path.join(self.path, 'dist')
 
-    def init_project(self, args):
+    def create_manifest(self, args):
         """Create manifest file if it doesn't exist in work directory"""
         if os.path.exists(self.main_manifest_path):
             print('`idf_component.yml` already exists in main component directroy, skipping...')
@@ -79,36 +82,6 @@ class ComponentManager(object):
             create_directory(self.main_component_path)
             print('Creating `idf_component.yml` in the main component directory')
             copyfile(example_path, self.main_manifest_path)
-
-    def install(self, args):
-        manager = ManifestManager(self.main_manifest_path)
-        manifest = Manifest.from_dict(manager.load())
-        lock_manager = LockManager(self.lock_path)
-        lock = lock_manager.load()
-        solution = SolvedManifest.from_dict(manifest, lock)
-
-        if manifest.manifest_hash != lock['manifest_hash']:
-            solver = VersionSolver(manifest, lock)
-            solution = solver.solve()
-
-            # Create lock only if manifest exists
-            if manager.exists():
-                print('Updating lock file at %s' % self.lock_path)
-                lock_manager.dump(solution)
-
-        # Download components
-        if not solution.solved_components:
-            return solution
-
-        components_count = len(solution.solved_components)
-        count_string = 'dependencies' if components_count != 1 else 'dependency'
-        print('Processing %s %s' % (components_count, count_string))
-        for i, component in enumerate(solution.solved_components):
-            print('[%d/%d] Processing component %s' % (i + 1, components_count, component.name))
-            ComponentFetcher(component, self.components_path).download()
-
-        print('Successfully processed %s %s ' % (components_count, count_string))
-        return solution
 
     def _component_manifest(self):
         manager = ManifestManager(os.path.join(self.path, 'idf_component.yml'))
@@ -161,17 +134,65 @@ class ComponentManager(object):
 
     def prepare_dep_dirs(self, managed_components_list_file, local_components_list_file=None):
         # Find all manifests
+        if local_components_list_file and os.path.isfile(local_components_list_file):
+            local_component_paths = parse_component_list(local_components_list_file)
+        else:
+            components_items = os.listdir(self.components_path)
+            local_component_paths = [
+                {
+                    'name': item,
+                    'path': os.path.join(self.components_path, item)
+                } for item in components_items if os.path.isdir(os.path.join(self.components_path, item))
+            ]
 
-        # Process them all
+        local_component_paths.append({'name': 'main', 'path': self.main_component_path})
 
-        # Install dependencies first
-        solution = self.install({})
+        # Checking that CMakeLists.txt exists for all component dirs
+        non_cmake_component_paths = [
+            component['path'] for component in local_component_paths
+            if not os.path.isfile(os.path.join(component['path'], 'CMakeLists.txt'))
+        ]
+
+        if non_cmake_component_paths:
+            raise FatalError(
+                'All component directories must contain "CMakeLists.txt":\n%s' % '\n'.join(non_cmake_component_paths))
+
+        project_requirements = [
+            ComponentRequirement(
+                name=component['name'], source=LocalSource(source_details={'path': component['path']}))
+            for component in local_component_paths
+        ]
+
+        manifest = Manifest(dependencies=project_requirements)
+        lock_manager = LockManager(self.lock_path)
+        lock = lock_manager.load()
+        solution = SolvedManifest.from_dict(manifest, lock)
+
+        if manifest.manifest_hash != lock['manifest_hash']:
+            solver = VersionSolver(manifest, lock)
+            solution = solver.solve()
+
+            print('Updating lock file at %s' % self.lock_path)
+            lock_manager.dump(solution)
+
+        # Download components
+        if not solution.solved_components:
+            return
+
+        components_count = len(solution.solved_components)
+        count_string = 'dependencies' if components_count != 1 else 'dependency'
+        print('Processing %s %s' % (components_count, count_string))
+        for i, component in enumerate(solution.solved_components):
+            print('[%d/%d] Processing component %s' % (i + 1, components_count, component.name))
+            ComponentFetcher(component, self.managed_components_path).download()
+
+        print('Successfully processed %s %s ' % (components_count, count_string))
 
         # Include managed components in project directory
         with open(managed_components_list_file, mode='w', encoding='utf-8') as f:
             # Use idf_build_component for all components
             if solution.solved_components:
-                f.write(u'idf_build_component("%s")' % self.components_path)
+                f.write(u'idf_build_component("%s")' % self.managed_components_path)
 
     def inject_requirements(self, component_requires_file):
         pass

@@ -12,7 +12,7 @@ def test_init_project():
         manifest_path = os.path.join(tempdir, 'main', 'idf_component.yml')
         manager = ComponentManager(path=tempdir)
 
-        manager.init_project({})
+        manager.create_manifest({})
 
         with open(manifest_path, mode='r', encoding='utf-8') as file:
             assert file.readline().startswith('## IDF Component Manager')

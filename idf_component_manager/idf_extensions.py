@@ -29,13 +29,9 @@ def action_extensions(base_actions, project_path):
 
     return {
         'actions': {
-            'install-deps': {
+            'create-manifest': {
                 'callback': callback,
-                'help': 'Download dependencies.',
-            },
-            'init-project': {
-                'callback': callback,
-                'help': "Create manifest in project's directory.",
+                'help': "Create manifest for project's main component.",
             },
             'create-remote-component': {
                 'callback': callback,
