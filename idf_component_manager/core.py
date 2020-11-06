@@ -135,21 +135,20 @@ class ComponentManager(object):
     def prepare_dep_dirs(self, managed_components_list_file, local_components_list_file=None):
         # Find all manifests
         if local_components_list_file and os.path.isfile(local_components_list_file):
-            local_component_paths = parse_component_list(local_components_list_file)
+            local_components = parse_component_list(local_components_list_file)
         else:
             components_items = os.listdir(self.components_path)
-            local_component_paths = [
+            local_components = [
                 {
                     'name': item,
                     'path': os.path.join(self.components_path, item)
                 } for item in components_items if os.path.isdir(os.path.join(self.components_path, item))
             ]
-
-        local_component_paths.append({'name': 'main', 'path': self.main_component_path})
+            local_components.append({'name': 'main', 'path': self.main_component_path})
 
         # Checking that CMakeLists.txt exists for all component dirs
         non_cmake_component_paths = [
-            component['path'] for component in local_component_paths
+            component['path'] for component in local_components
             if not os.path.isfile(os.path.join(component['path'], 'CMakeLists.txt'))
         ]
 
@@ -160,7 +159,7 @@ class ComponentManager(object):
         project_requirements = [
             ComponentRequirement(
                 name=component['name'], source=LocalSource(source_details={'path': component['path']}))
-            for component in local_component_paths
+            for component in local_components
         ]
 
         manifest = Manifest(dependencies=project_requirements)
@@ -176,23 +175,25 @@ class ComponentManager(object):
             lock_manager.dump(solution)
 
         # Download components
-        if not solution.solved_components:
-            return
+        downloaded_component_paths = set()
 
-        components_count = len(solution.solved_components)
-        count_string = 'dependencies' if components_count != 1 else 'dependency'
-        print('Processing %s %s' % (components_count, count_string))
-        for i, component in enumerate(solution.solved_components):
-            print('[%d/%d] Processing component %s' % (i + 1, components_count, component.name))
-            ComponentFetcher(component, self.managed_components_path).download()
+        if solution.solved_components:
+            components_count = len(solution.solved_components)
+            count_string = 'dependencies' if components_count != 1 else 'dependency'
+            print('Processing %s %s' % (components_count, count_string))
+            for i, component in enumerate(solution.solved_components):
+                print('[%d/%d] Processing component %s' % (i + 1, components_count, component.name))
+                download_path = ComponentFetcher(component, self.managed_components_path).download()
+                downloaded_component_paths.add(download_path)
+            print('Successfully processed %s %s ' % (components_count, count_string))
 
-        print('Successfully processed %s %s ' % (components_count, count_string))
+        # Exclude requirements paths
+        downloaded_component_paths -= {component['path'] for component in local_components}
 
         # Include managed components in project directory
-        with open(managed_components_list_file, mode='w', encoding='utf-8') as f:
-            # Use idf_build_component for all components
-            if solution.solved_components:
-                f.write(u'idf_build_component("%s")' % self.managed_components_path)
+        with open(managed_components_list_file, mode='w', encoding='utf-8') as file:
+            for component_path in downloaded_component_paths:
+                file.write(u'idf_build_component("%s")' % component_path)
 
     def inject_requirements(self, component_requires_file):
         pass
