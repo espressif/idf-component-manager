@@ -16,6 +16,7 @@ from idf_component_tools.manifest import ComponentRequirement, Manifest, Manifes
 from idf_component_tools.sources.fetcher import ComponentFetcher
 from idf_component_tools.sources.local import LocalSource
 from idf_component_tools.sources.web_service import default_component_service_url
+from tqdm import tqdm
 
 from .config import ConfigManager
 from .local_component_list import parse_component_list
@@ -155,7 +156,6 @@ class ComponentManager(object):
         if non_cmake_component_paths:
             raise FatalError(
                 'All component directories must contain "CMakeLists.txt":\n%s' % '\n'.join(non_cmake_component_paths))
-
         project_requirements = [
             ComponentRequirement(
                 name=component['name'], source=LocalSource(source_details={'path': component['path']}))
@@ -169,6 +169,7 @@ class ComponentManager(object):
 
         if manifest.manifest_hash != lock['manifest_hash']:
             solver = VersionSolver(manifest, lock)
+            print('Solving dependencies requirements')
             solution = solver.solve()
 
             print('Updating lock file at %s' % self.lock_path)
@@ -178,14 +179,9 @@ class ComponentManager(object):
         downloaded_component_paths = set()
 
         if solution.solved_components:
-            components_count = len(solution.solved_components)
-            count_string = 'dependencies' if components_count != 1 else 'dependency'
-            print('Processing %s %s' % (components_count, count_string))
-            for i, component in enumerate(solution.solved_components):
-                print('[%d/%d] Processing component %s' % (i + 1, components_count, component.name))
+            for component in tqdm(solution.solved_components):
                 download_path = ComponentFetcher(component, self.managed_components_path).download()
                 downloaded_component_paths.add(download_path)
-            print('Successfully processed %s %s ' % (components_count, count_string))
 
         # Exclude requirements paths
         downloaded_component_paths -= {component['path'] for component in local_components}

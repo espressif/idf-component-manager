@@ -18,6 +18,7 @@ REQUIRES = [
     'schema',
     'semantic_version',
     'six',
+    'tqdm',
     'typing',
 ]
 

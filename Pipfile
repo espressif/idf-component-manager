@@ -4,13 +4,14 @@ url = 'https://pypi.org/simple'
 verify_ssl = true
 
 [packages]
-future = '*' 
+future = '*'
 pyyaml = "<5.3" # Last version with Python 3.4 support is 5.2
-requests = "*" 
-schema = "*" 
-semantic-version = '*' 
-six = "*" 
-typing = '*' 
+requests = "*"
+schema = "*"
+semantic-version = '*'
+six = "*"
+tqdm = '*'
+typing = '*'
 
 [dev-packages]
 bandit = '*'

@@ -17,8 +17,6 @@ class VersionSolver(object):
 
     def solve(self):
         # TODO: implement real solving, now it will fail on any collision
-        # TODO: fetch full tree of dependencies, now it fetches only direct dependencies
-        # That's a quick stub that always installs latest version
         def best_version(component):
             cmp_with_versions = component.source.versions(name=component.name, spec=component.version_spec)
             version = max(cmp_with_versions.versions)
