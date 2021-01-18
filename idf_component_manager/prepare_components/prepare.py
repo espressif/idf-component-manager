@@ -50,17 +50,26 @@ def main():
     prepare_step.add_argument(
         '--managed_components_list_file', help='Path to file with list of managed component directories')
 
-    inject_step = subparsers.add_parser(
-        'inject_requirements',
-        aliases=['inject_requrements'],  # To support typo in idf 4.1-4.2
-        help='Inject requirements to CMake')
-    inject_step.set_defaults(func=inject_requirements)
-    inject_step.add_argument('--build_properties_file', help='Path to temporary file with build properties')
-    inject_step.add_argument('--component_properties_file', help='Path to temporary file with component properties')
-    inject_step.add_argument('--component_requires_file', help='Path to temporary file with component requirements')
-    inject_step.add_argument('--build_dir', help='Working directory for build process')
-    inject_step.add_argument('--cmake_command', help='Path to CMake command')
-    inject_step.add_argument('--idf_path', help='Path to IDF')
+    inject_step_data = [
+        {
+            'name': 'inject_requirements',
+        },
+        {
+            'name': 'inject_requrements',  # Workaroud for a typo in idf 4.1-4.2
+            'extra_help': ' (alias)',
+        }
+    ]
+
+    for step in inject_step_data:
+        inject_step = subparsers.add_parser(
+            step['name'], help='Inject requirements to CMake%s' % step.get('extra_help', ''))
+        inject_step.set_defaults(func=inject_requirements)
+        inject_step.add_argument('--build_properties_file', help='Path to temporary file with build properties')
+        inject_step.add_argument('--component_properties_file', help='Path to temporary file with component properties')
+        inject_step.add_argument('--component_requires_file', help='Path to temporary file with component requirements')
+        inject_step.add_argument('--build_dir', help='Working directory for build process')
+        inject_step.add_argument('--cmake_command', help='Path to CMake command')
+        inject_step.add_argument('--idf_path', help='Path to IDF')
 
     args = parser.parse_args()
 
