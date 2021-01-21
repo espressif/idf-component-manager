@@ -17,15 +17,12 @@ class VersionSolver(object):
 
     def solve(self):
         # TODO: implement real solving, now it will fail on any collision
+        # TODO: solve recursively
         def best_version(component):
             cmp_with_versions = component.source.versions(name=component.name, spec=component.version_spec)
             version = max(cmp_with_versions.versions)
             return SolvedComponent(
                 name=component.name, source=component.source, version=version, component_hash=version.component_hash)
 
-        solved_components = list(map(
-            best_version,
-            self.manifest.dependencies,
-        ))
-
+        solved_components = [best_version(dependency) for dependency in self.manifest.dependencies]
         return SolvedManifest(self.manifest, solved_components)

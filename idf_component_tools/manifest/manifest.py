@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, List, Union
 import idf_component_tools as tools
 import semantic_version as semver
 
-from ..errors import ManifestError
 from ..hash_tools import hash_object
 
 try:
@@ -37,12 +36,8 @@ class Manifest(object):
             url=None,  # type: Union[str, None] # Url of the repo
             targets=None,  # type: Union[List[str], None] # List of supported chips
             manifest_hash=None,  # type: Union[str, None] # Check-sum of manifest content
-            name_required=False,  # type: bool # Enables component name check
     ):
         # type: (...) -> None
-
-        if not name and name_required:
-            raise ManifestError('Name is required for component')
 
         self.name = str(name) if name else ''
         self.version = version
@@ -59,7 +54,7 @@ class Manifest(object):
         self.targets = targets
 
     @classmethod
-    def from_dict(cls, manifest_tree, name_required=False):  # type: (dict, bool) -> Manifest
+    def from_dict(cls, manifest_tree):  # type: (dict) -> Manifest
         """Coverts manifest dict to manifest object"""
         manifest = cls(
             name=manifest_tree.get('name'),
@@ -68,7 +63,7 @@ class Manifest(object):
             description=manifest_tree.get('description'),
             targets=manifest_tree.get('targets', []),
             manifest_hash=hash_object(dict(manifest_tree)),
-            name_required=name_required)
+        )
         version = manifest_tree.get('version')
 
         if version:
