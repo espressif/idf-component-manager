@@ -39,7 +39,7 @@ class BaseSource(object):
         return hash(self._hash_values())
 
     @staticmethod
-    def from_dict(name, details):  # type: (str, Dict) -> BaseSource
+    def fromdict(name, details):  # type: (str, Dict) -> BaseSource
         '''Build component source by dct'''
         for source_class in tools.sources.KNOWN_SOURCES:
             source = source_class.build_if_me(name, details)
@@ -130,10 +130,10 @@ class BaseSource(object):
         pass
 
     def __iter__(self):
-        return iter(self.as_dict().items())
+        return iter(self.asdict().items())
 
     @abstractmethod
-    def as_dict(self):  # type: () -> Dict
+    def asdict(self):  # type: () -> Dict
         """
         Return fields to describe source to be saved in lock file
         """

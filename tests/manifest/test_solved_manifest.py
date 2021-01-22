@@ -18,7 +18,7 @@ class TestSolverResult(object):
         manager = LockManager(valid_lock_path)
         lock = manager.load()
 
-        solution = SolvedManifest.from_dict(Manifest(), lock)
+        solution = SolvedManifest.fromdict(Manifest(), lock)
 
         assert manager.exists()
         assert len(solution.solved_components) == 2

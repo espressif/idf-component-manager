@@ -139,7 +139,7 @@ class WebServiceSource(BaseSource):
 
         return download_path
 
-    def as_dict(self):  # type: () -> Dict
+    def asdict(self):  # type: () -> Dict
         return {
             'service_url': self.base_url,
             'type': self.name,

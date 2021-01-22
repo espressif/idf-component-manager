@@ -40,7 +40,7 @@ class LocalSource(BaseSource):
             version_string = (ManifestManager(manifest_path).load().get('version', '*'))
         return ComponentWithVersions(name=name, versions=[ComponentVersion(version_string)])
 
-    def as_dict(self):  # type: () -> Dict
+    def asdict(self):  # type: () -> Dict
         return {
             'path': self._path,
             'type': self.name,

@@ -8,7 +8,7 @@ def dep_by_name(manifest, name):
 
 
 def test_project_manifest_builder(valid_manifest):
-    manifest = Manifest.from_dict(valid_manifest)
+    manifest = Manifest.fromdict(valid_manifest)
     assert str(manifest.version) == '2.3.1'
     assert manifest.description == 'Test project'
     assert manifest.url == 'https://github.com/espressif/esp-idf'

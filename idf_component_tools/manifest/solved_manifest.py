@@ -14,9 +14,9 @@ class SolvedManifest(object):
         self._solved_components = solved_components
 
     @classmethod
-    def from_dict(cls, manifest, lock):  # type: (Manifest, Dict) -> SolvedManifest
+    def fromdict(cls, manifest, lock):  # type: (Manifest, Dict) -> SolvedManifest
         solved_components = [
-            SolvedComponent.from_dict(name, component) for name, component in lock['dependencies'].items()
+            SolvedComponent.fromdict(name, component) for name, component in lock['dependencies'].items()
         ]
 
         return cls(manifest, solved_components)
@@ -30,9 +30,9 @@ class SolvedManifest(object):
         return self._manifest
 
     def __iter__(self):
-        return iter(self.as_dict().items())
+        return iter(self.asdict().items())
 
-    def as_dict(self):  # type: () -> Dict
+    def asdict(self):  # type: () -> Dict
         dependencies = dict([(c.name, dict(c)) for c in self.solved_components])
         solution = {
             'version': FORMAT_VERSION,

@@ -34,5 +34,5 @@ class IDFSource(BaseSource):
 
         return os.environ['IDF_PATH']
 
-    def as_dict(self):  # type: () -> Dict
+    def asdict(self):  # type: () -> Dict
         return {'type': self.name}

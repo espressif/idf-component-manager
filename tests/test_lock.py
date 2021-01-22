@@ -52,7 +52,7 @@ class TestLockManager(object):
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         lock = LockManager(lock_path)
         tree = ManifestManager(manifest_path).load()
-        manifest = Manifest.from_dict(tree)
+        manifest = Manifest.fromdict(tree)
         components = [
             SolvedComponent(
                 name='idf',

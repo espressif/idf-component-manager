@@ -1,7 +1,7 @@
 """Classes to work with manifest file"""
 import re
 from functools import total_ordering
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
 import idf_component_tools as tools
 import semantic_version as semver
@@ -27,15 +27,15 @@ COMMIT_ID_RE = re.compile(r'[0-9a-f]{40}')
 class Manifest(object):
     def __init__(
             self,
-            name=None,  # type: Union[str, None] # Component name
+            name=None,  # type: Optional[str] # Component name
             version=None,  # type: Union[str, ComponentVersion, None] # Version
-            maintainers=None,  # type: Union[str, None] # List of maintainers
-            dependencies=None,  # type: Union[List[ComponentRequirement], None] # Dependencies, list of component
-            description=None,  # description type: Union[str, None] # Human-readable
-            download_url=None,  # type: Union[str, None] # Direct url for tarball download
-            url=None,  # type: Union[str, None] # Url of the repo
-            targets=None,  # type: Union[List[str], None] # List of supported chips
-            manifest_hash=None,  # type: Union[str, None] # Check-sum of manifest content
+            maintainers=None,  # type: Optional[str] # List of maintainers
+            dependencies=None,  # type: Optional[List[ComponentRequirement]] # Dependencies, list of component
+            description=None,  # description type: Optional[str] # Human-readable
+            download_url=None,  # type: Optional[str] # Direct url for tarball download
+            url=None,  # type: Optional[str] # Url of the repo
+            targets=None,  # type: Optional[List[str]] # List of supported chips
+            manifest_hash=None,  # type: Optional[str] # Check-sum of manifest content
     ):
         # type: (...) -> None
 
@@ -48,13 +48,14 @@ class Manifest(object):
         self.description = description
         self.download_url = download_url
         self.url = url
-        self.manifest_hash = manifest_hash
         if targets is None:
             targets = []
         self.targets = targets
 
+        self._manifest_hash = manifest_hash
+
     @classmethod
-    def from_dict(cls, manifest_tree):  # type: (dict) -> Manifest
+    def fromdict(cls, manifest_tree):  # type: (dict) -> Manifest
         """Coverts manifest dict to manifest object"""
         manifest = cls(
             name=manifest_tree.get('name'),
@@ -73,11 +74,15 @@ class Manifest(object):
             if not isinstance(details, Mapping):
                 details = {'version': details}
 
-            source = tools.sources.BaseSource.from_dict(name, details)
+            source = tools.sources.BaseSource.fromdict(name, details)
             component = ComponentRequirement(name, source, version_spec=details.get('version') or '*')
             manifest.dependencies.append(component)
 
         return manifest
+
+    @property
+    def manifest_hash(self):  # type: () -> Optional[str]
+        return self._manifest_hash
 
 
 class ComponentRequirement(object):
@@ -94,7 +99,7 @@ class ComponentRequirement(object):
 
 @total_ordering
 class ComponentVersion(object):
-    def __init__(self, version_string, component_hash=None):  # type: (str, Union[str, None]) -> None
+    def __init__(self, version_string, component_hash=None):  # type: (str, Optional[str]) -> None
         """
         version_string - can be `*`, git commit hash (hex, 160 bit) or valid semantic version string
         """

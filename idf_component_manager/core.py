@@ -86,7 +86,7 @@ class ComponentManager(object):
 
     def _component_manifest(self):
         manager = ManifestManager(os.path.join(self.path, 'idf_component.yml'))
-        manifest = Manifest.from_dict(manager.load())
+        manifest = Manifest.fromdict(manager.load())
 
         if not (manifest.name or manifest.version):
             raise ManifestError('Component name and version have to be in the component manifest')
@@ -148,14 +148,11 @@ class ComponentManager(object):
             local_components.append({'name': 'main', 'path': self.main_component_path})
 
         # Checking that CMakeLists.txt exists for all component dirs
-        non_cmake_component_paths = [
-            component['path'] for component in local_components
-            if not os.path.isfile(os.path.join(component['path'], 'CMakeLists.txt'))
+        local_components = [
+            component for component in local_components
+            if os.path.isfile(os.path.join(component['path'], 'CMakeLists.txt'))
         ]
 
-        if non_cmake_component_paths:
-            raise FatalError(
-                'All component directories must contain "CMakeLists.txt":\n%s' % '\n'.join(non_cmake_component_paths))
         project_requirements = [
             ComponentRequirement(
                 name=component['name'], source=LocalSource(source_details={'path': component['path']}))
@@ -165,7 +162,7 @@ class ComponentManager(object):
         manifest = Manifest(dependencies=project_requirements)
         lock_manager = LockManager(self.lock_path)
         lock = lock_manager.load()
-        solution = SolvedManifest.from_dict(manifest, lock)
+        solution = SolvedManifest.fromdict(manifest, lock)
 
         if manifest.manifest_hash != lock['manifest_hash']:
             solver = VersionSolver(manifest, lock)

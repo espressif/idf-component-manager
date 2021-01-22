@@ -24,9 +24,9 @@ class SolvedComponent(object):
         return ('SolvedComponent: %s %s %s' % (self.name, self.version, self.component_hash))
 
     def __iter__(self):
-        return iter(self.as_dict().items())
+        return iter(self.asdict().items())
 
-    def as_dict(self):  # type: () -> Dict
+    def asdict(self):  # type: () -> Dict
         component_elements = {
             'version': str(self.version),
             'source': dict(self.source),
@@ -38,12 +38,12 @@ class SolvedComponent(object):
         return component_elements
 
     @classmethod
-    def from_dict(cls, name, details):
+    def fromdict(cls, name, details):
         try:
             # raise Exception(details)
             source_details = dict(details['source'])
             source_name = source_details.pop('type')
-            source = BaseSource.from_dict(source_name, source_details)
+            source = BaseSource.fromdict(source_name, source_details)
             return cls(
                 name=name,
                 version=details['version'],
