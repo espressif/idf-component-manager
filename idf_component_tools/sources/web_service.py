@@ -8,8 +8,9 @@ from hashlib import sha256
 from io import open
 from typing import Dict
 
-import idf_component_tools.api_client as api_client
 import requests
+
+import idf_component_tools.api_client as api_client
 
 from ..archive_tools import ArchiveError, get_format_from_path, unpack_archive
 from ..errors import FetchingError
@@ -139,7 +140,11 @@ class WebServiceSource(BaseSource):
 
         return download_path
 
-    def asdict(self):  # type: () -> Dict
+    @property
+    def service_url(self):
+        return self.base_url
+
+    def serialize(self):  # type: () -> Dict
         return {
             'service_url': self.base_url,
             'type': self.name,

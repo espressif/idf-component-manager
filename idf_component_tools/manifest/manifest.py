@@ -3,8 +3,10 @@ import re
 from functools import total_ordering
 from typing import TYPE_CHECKING, List, Optional, Union
 
-import idf_component_tools as tools
 import semantic_version as semver
+
+import idf_component_tools as tools
+from idf_component_tools.serialization import serializable
 
 from ..hash_tools import hash_object
 
@@ -24,18 +26,29 @@ if TYPE_CHECKING:
 COMMIT_ID_RE = re.compile(r'[0-9a-f]{40}')
 
 
+@serializable
 class Manifest(object):
+    _serializaton_properties = [
+        'dependencies',
+        'description',
+        'maintainers',
+        'name',
+        'targets',
+        'url',
+        'version',
+    ]
+
     def __init__(
             self,
-            name=None,  # type: Optional[str] # Component name
-            version=None,  # type: Union[str, ComponentVersion, None] # Version
-            maintainers=None,  # type: Optional[str] # List of maintainers
             dependencies=None,  # type: Optional[List[ComponentRequirement]] # Dependencies, list of component
             description=None,  # description type: Optional[str] # Human-readable
             download_url=None,  # type: Optional[str] # Direct url for tarball download
-            url=None,  # type: Optional[str] # Url of the repo
-            targets=None,  # type: Optional[List[str]] # List of supported chips
+            maintainers=None,  # type: Optional[str] # List of maintainers
             manifest_hash=None,  # type: Optional[str] # Check-sum of manifest content
+            name=None,  # type: Optional[str] # Component name
+            targets=None,  # type: Optional[List[str]] # List of supported chips
+            url=None,  # type: Optional[str] # Url of the repo
+            version=None,  # type: Union[str, ComponentVersion, None] # Version
     ):
         # type: (...) -> None
 
@@ -62,9 +75,7 @@ class Manifest(object):
             maintainers=manifest_tree.get('maintainers'),
             url=manifest_tree.get('url'),
             description=manifest_tree.get('description'),
-            targets=manifest_tree.get('targets', []),
-            manifest_hash=hash_object(dict(manifest_tree)),
-        )
+            targets=manifest_tree.get('targets', []))
         version = manifest_tree.get('version')
 
         if version:
@@ -81,10 +92,15 @@ class Manifest(object):
         return manifest
 
     @property
-    def manifest_hash(self):  # type: () -> Optional[str]
-        return self._manifest_hash
+    def manifest_hash(self):  # type: () -> str
+        if self._manifest_hash:
+            return self.manifest_hash
+
+        serialized = self.serialize()  # type: ignore
+        return hash_object(serialized)
 
 
+@serializable
 class ComponentRequirement(object):
     def __init__(
             self,
@@ -98,6 +114,7 @@ class ComponentRequirement(object):
 
 
 @total_ordering
+@serializable(like='str')
 class ComponentVersion(object):
     def __init__(self, version_string, component_hash=None):  # type: (str, Optional[str]) -> None
         """

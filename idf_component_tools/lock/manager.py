@@ -1,14 +1,17 @@
 import os
 from io import open
-from typing import Any, Dict, Union
+from typing import Any, Dict
 
-import idf_component_tools as tools
 import yaml
 from schema import And, Optional, Or, Schema, SchemaError
 from six import string_types
 
+import idf_component_tools as tools
+
 from ..errors import LockError
-from ..manifest import FORMAT_VERSION, SolvedManifest
+from ..manifest import SolvedManifest
+
+FORMAT_VERSION = '1.0.0'
 
 EMPTY_DEPS = dict()  # type: Dict[str, Any]
 EMPTY_LOCK = {
@@ -17,7 +20,7 @@ EMPTY_LOCK = {
     'version': FORMAT_VERSION,
 }
 
-HASH_SCHEMA = And(Or(*string_types), lambda h: len(h) == 64)
+HASH_SCHEMA = Or(And(Or(*string_types), lambda h: len(h) == 64), None)
 
 LOCK_SCHEMA = Schema(
     {
@@ -40,23 +43,33 @@ class LockManager:
     def exists(self):
         return os.path.isfile(self._path)
 
-    def dump(self, solution):  # type: (Union[Dict, SolvedManifest]) -> None
+    def dump(self, solution):  # type: (SolvedManifest) -> None
         """Writes updated lockfile to disk"""
         try:
             with open(self._path, mode='w', encoding='utf-8') as f:
-                lock = LOCK_SCHEMA.validate(dict(solution))
+                # inject format version
+                solution_dict = solution.serialize()
+                solution_dict['version'] = FORMAT_VERSION
+                lock = LOCK_SCHEMA.validate(solution_dict)
                 yaml.dump(data=lock, stream=f, encoding='utf-8', allow_unicode=True)
         except SchemaError as e:
             raise LockError('Lock format is not valid:\n%s' % str(e))
 
-    def load(self):  # type: () -> Dict
+    def load(self):  # type: () -> SolvedManifest
         if not self.exists():
-            return EMPTY_LOCK
+            return SolvedManifest.fromdict(EMPTY_LOCK)
 
         with open(self._path, mode='r', encoding='utf-8') as f:
             try:
                 lock = LOCK_SCHEMA.validate(yaml.safe_load(f.read()))
-                return lock
+
+                version = lock.pop('version')
+                if version != FORMAT_VERSION:
+                    raise LockError(
+                        'Cannot parse components lock file.'
+                        'Lock file format version is %s, while only %s is supported' % (version, FORMAT_VERSION))
+
+                return SolvedManifest.fromdict(lock)
             except (yaml.YAMLError, SchemaError):
                 raise LockError(
                     (

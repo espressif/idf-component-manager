@@ -63,11 +63,11 @@ def hash_dir(
 
 def validate_dir(
         root,  # type: Text
-        hash,  # type: Text
+        dir_hash,  # type: Text
         ignored_dirs_re=ignored_dirs_re,  # type: Pattern[str]
         ignored_files_re=ignored_files_re  # type: Pattern[str]
 ):
     # type: (...) -> bool
     """Check if directory hash is the same as provided"""
 
-    return os.path.isdir(root) and hash_dir(root, ignored_dirs_re, ignored_files_re) == hash
+    return os.path.isdir(root) and hash_dir(root, ignored_dirs_re, ignored_files_re) == dir_hash

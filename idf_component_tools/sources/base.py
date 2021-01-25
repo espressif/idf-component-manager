@@ -1,10 +1,11 @@
 from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING, Callable, Dict, List, Union
 
-import idf_component_tools as tools
-from idf_component_tools.manifest import ComponentWithVersions
 from schema import Optional, Or
 from six import string_types
+
+import idf_component_tools as tools
+from idf_component_tools.manifest import ComponentWithVersions
 
 from ..errors import SourceError
 
@@ -129,11 +130,8 @@ class BaseSource(object):
 
         pass
 
-    def __iter__(self):
-        return iter(self.asdict().items())
-
     @abstractmethod
-    def asdict(self):  # type: () -> Dict
+    def serialize(self):  # type: () -> Dict
         """
         Return fields to describe source to be saved in lock file
         """

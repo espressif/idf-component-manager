@@ -1,7 +1,7 @@
 from .manager import ManifestManager
 from .manifest import ComponentRequirement, ComponentSpec, ComponentVersion, ComponentWithVersions, Manifest
 from .solved_component import SolvedComponent
-from .solved_manifest import FORMAT_VERSION, SolvedManifest
+from .solved_manifest import SolvedManifest
 from .validator import ManifestValidator
 
 __all__ = [
@@ -14,5 +14,4 @@ __all__ = [
     'ManifestManager',
     'SolvedComponent',
     'SolvedManifest',
-    'FORMAT_VERSION',
 ]

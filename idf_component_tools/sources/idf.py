@@ -34,5 +34,5 @@ class IDFSource(BaseSource):
 
         return os.environ['IDF_PATH']
 
-    def asdict(self):  # type: () -> Dict
+    def serialize(self):  # type: () -> Dict
         return {'type': self.name}

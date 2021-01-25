@@ -2,6 +2,7 @@ import filecmp
 import os
 
 import pytest
+
 from idf_component_tools.errors import LockError
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import ComponentVersion, Manifest, ManifestManager, SolvedComponent, SolvedManifest
@@ -24,7 +25,7 @@ dependencies = {
     }
 }
 
-manifest_hash = 'bd7763113fbae1930ae1cccb8a717d3f267523a923f80e69a3d33d9e912ac450'
+MANIFEST_HASH = '145601a909ff39faf9fc846504dedd90b6c0ee311d401b70e4c3aef00bd454b9'
 valid_lock_path = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     'fixtures',
@@ -43,10 +44,10 @@ class TestLockManager(object):
         parser = LockManager(valid_lock_path)
 
         lock = parser.load()
-
         assert parser.exists()
-        assert lock['version'] == '1.0.0'
-        assert (lock['dependencies']['test_cmp']['source']['service_url'] == 'https://repo.example.com')
+
+        test_cmp = [cmp for cmp in lock.dependencies if cmp.name == 'test_cmp'][0]
+        assert (test_cmp.source.service_url == 'https://repo.example.com')
 
     def test_lock_dump_with_solution(self, tmp_path):
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
@@ -67,7 +68,7 @@ class TestLockManager(object):
             ),
         ]
 
-        solution = SolvedManifest(manifest, components)
+        solution = SolvedManifest(components, manifest_hash=manifest.manifest_hash)
         lock.dump(solution)
 
         assert filecmp.cmp(lock_path, valid_lock_path, shallow=False)
@@ -75,11 +76,12 @@ class TestLockManager(object):
     def test_lock_dump_with_dictionary(self, tmp_path):
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
-        solution = dict([
-            ('version', '1.0.0'),
-            ('dependencies', dependencies),
-            ('manifest_hash', manifest_hash),
-        ])
+        solution = SolvedManifest.fromdict(
+            dict([
+                ('version', '1.0.0'),
+                ('dependencies', dependencies),
+                ('manifest_hash', MANIFEST_HASH),
+            ]))
 
         parser.dump(solution)
 
@@ -89,9 +91,10 @@ class TestLockManager(object):
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
         solution = parser.load()
-        solution['version'] = '1.0.0'
-        solution['manifest_hash'] = manifest_hash
-        solution['dependencies'] = dependencies
+        solution.manifest_hash = MANIFEST_HASH
+        for (name, details) in dependencies.items():
+            details['name'] = name
+            solution.dependencies.append(SolvedComponent.fromdict(details))
 
         parser.dump(solution)
 

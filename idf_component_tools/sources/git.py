@@ -84,7 +84,7 @@ class GitSource(BaseSource):
         commit_id = self._checkout_git_source(version)
         return ComponentWithVersions(name=name, versions=[ComponentVersion(commit_id)])
 
-    def asdict(self):  # type: () -> Dict
+    def serialize(self):  # type: () -> Dict
         source = {
             'git': self.git_repo,
             'type': self.name,

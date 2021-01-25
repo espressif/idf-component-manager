@@ -1,5 +1,6 @@
 dependencies:
   idf:
+    component_hash: null
     source:
       type: idf
     version: 4.4.4
@@ -9,5 +10,5 @@ dependencies:
       service_url: https://repo.example.com
       type: service
     version: 1.2.7
-manifest_hash: bd7763113fbae1930ae1cccb8a717d3f267523a923f80e69a3d33d9e912ac450
+manifest_hash: 145601a909ff39faf9fc846504dedd90b6c0ee311d401b70e4c3aef00bd454b9
 version: 1.0.0

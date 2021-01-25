@@ -7,6 +7,11 @@ def dep_by_name(manifest, name):
             return d
 
 
+def test_manifest_hash(valid_manifest):
+    manifest = Manifest.fromdict(valid_manifest)
+    assert manifest.manifest_hash == 'd2ff46dace8c1175af8a17a4329f7ffb45f6172096ab53eceea4cb21b579b04f'
+
+
 def test_project_manifest_builder(valid_manifest):
     manifest = Manifest.fromdict(valid_manifest)
     assert str(manifest.version) == '2.3.1'

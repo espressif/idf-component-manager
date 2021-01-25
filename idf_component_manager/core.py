@@ -7,6 +7,8 @@ from io import open
 from shutil import copyfile
 from typing import Union
 
+from tqdm import tqdm
+
 from idf_component_tools.api_client import APIClient, APIClientError
 from idf_component_tools.archive_tools import pack_archive
 from idf_component_tools.errors import FatalError, ManifestError
@@ -16,7 +18,6 @@ from idf_component_tools.manifest import ComponentRequirement, Manifest, Manifes
 from idf_component_tools.sources.fetcher import ComponentFetcher
 from idf_component_tools.sources.local import LocalSource
 from idf_component_tools.sources.web_service import default_component_service_url
-from tqdm import tqdm
 
 from .config import ConfigManager
 from .local_component_list import parse_component_list
@@ -175,8 +176,8 @@ class ComponentManager(object):
         # Download components
         downloaded_component_paths = set()
 
-        if solution.solved_components:
-            for component in tqdm(solution.solved_components):
+        if solution.dependencies:
+            for component in tqdm(solution.dependencies):
                 download_path = ComponentFetcher(component, self.managed_components_path).download()
                 downloaded_component_paths.add(download_path)
 
@@ -195,12 +196,12 @@ class ComponentManager(object):
 
         # solution = self.install()
         # And update temporary requirements file
-        # if solution.solved_components:
+        # if solution.dependencies:
         #     with open(args.component_requires_file, mode='r', encoding='utf-8') as f:
         #         data = f.read()
 
         #     with open(args.component_requires_file, mode='w', encoding='utf-8') as f:
-        #         for component in solution.solved_components:
+        #         for component in solution.dependencies:
         #             # TODO: deal with IDF as component-bundle
         #             if component.name == 'idf':
         #                 continue
