@@ -6,9 +6,8 @@ from typing import TYPE_CHECKING, List, Optional, Union
 import semantic_version as semver
 
 import idf_component_tools as tools
+from idf_component_tools.hash_tools import hash_object
 from idf_component_tools.serialization import serializable
-
-from ..hash_tools import hash_object
 
 try:
     from collections.abc import Mapping
@@ -187,3 +186,19 @@ class ComponentWithVersions(object):
     def __init__(self, name, versions):
         self.versions = versions
         self.name = name
+
+
+class ProjectRequirements(object):
+    '''Representation of all manifests required by project'''
+    def __init__(self, manifests):  # type: (List[Manifest]) -> None
+        self.manifests = manifests
+        self._manifest_hash = None
+
+    @property
+    def manifest_hash(self):  # type: () -> str
+        '''Lazily calculate requirements hash'''
+        if self._manifest_hash:
+            return self._manifest_hash
+
+        manifest_hashes = [manifest.manifest_hash for manifest in self.manifests]
+        return hash_object(manifest_hashes)

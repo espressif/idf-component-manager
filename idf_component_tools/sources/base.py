@@ -114,7 +114,7 @@ class BaseSource(object):
     def versions(
             self,
             name,  # type: str
-            details,  # type: Union[Dict, None]
+            details=None,  # type: Union[Dict, None]
             spec='*',  # type: str
     ):
         # type: (...) -> ComponentWithVersions

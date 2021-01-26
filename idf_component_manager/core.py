@@ -14,9 +14,9 @@ from idf_component_tools.archive_tools import pack_archive
 from idf_component_tools.errors import FatalError
 from idf_component_tools.file_tools import create_directory
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import ComponentRequirement, Manifest, ManifestManager
+from idf_component_tools.manifest import ManifestManager
+from idf_component_tools.manifest.manifest import ProjectRequirements
 from idf_component_tools.sources.fetcher import ComponentFetcher
-from idf_component_tools.sources.local import LocalSource
 from idf_component_tools.sources.web_service import default_component_service_url
 
 from .config import ConfigManager
@@ -145,18 +145,13 @@ class ComponentManager(object):
             if os.path.isfile(os.path.join(component['path'], 'CMakeLists.txt'))
         ]
 
-        project_requirements = [
-            ComponentRequirement(
-                name=component['name'], source=LocalSource(source_details={'path': component['path']}))
-            for component in local_components
-        ]
-
-        manifest = Manifest(dependencies=project_requirements)
+        manifests = [ManifestManager(component['path']).load() for component in local_components]
+        project_requirements = ProjectRequirements(manifests)
         lock_manager = LockManager(self.lock_path)
         solution = lock_manager.load()
 
-        if manifest.manifest_hash != solution.manifest_hash:
-            solver = VersionSolver(manifest, solution)
+        if project_requirements.manifest_hash != solution.manifest_hash:
+            solver = VersionSolver(project_requirements, solution)
             print('Solving dependencies requirements')
             solution = solver.solve()
 
@@ -177,28 +172,9 @@ class ComponentManager(object):
         # Include managed components in project directory
         with open(managed_components_list_file, mode='w', encoding='utf-8') as file:
             for component_path in downloaded_component_paths:
-                file.write(u'idf_build_component("%s")' % component_path)
+                file.write(u'idf_build_component("%s")\n' % component_path)
 
     def inject_requirements(self, component_requires_file):
         pass
         # TODO: update requirements for known components
         # TODO: deal with namespaces
-
-        # solution = self.install()
-        # And update temporary requirements file
-        # if solution.dependencies:
-        #     with open(args.component_requires_file, mode='r', encoding='utf-8') as f:
-        #         data = f.read()
-
-        #     with open(args.component_requires_file, mode='w', encoding='utf-8') as f:
-        #         for component in solution.dependencies:
-        #             # TODO: deal with IDF as component-bundle
-        #             if component.name == 'idf':
-        #                 continue
-
-        #             name_parts = component.name.split('/')
-        #             f.write(
-        #                 '\nidf_build_component("%s")' % os.path.join(args.project_dir,
-        # "managed_components", *name_parts))
-
-        #         f.write(data)
