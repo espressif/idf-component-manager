@@ -14,7 +14,7 @@ from idf_component_tools.archive_tools import pack_archive
 from idf_component_tools.errors import FatalError, ManifestError
 from idf_component_tools.file_tools import create_directory
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import ComponentRequirement, Manifest, ManifestManager, SolvedManifest
+from idf_component_tools.manifest import ComponentRequirement, Manifest, ManifestManager
 from idf_component_tools.sources.fetcher import ComponentFetcher
 from idf_component_tools.sources.local import LocalSource
 from idf_component_tools.sources.web_service import default_component_service_url
@@ -162,11 +162,10 @@ class ComponentManager(object):
 
         manifest = Manifest(dependencies=project_requirements)
         lock_manager = LockManager(self.lock_path)
-        lock = lock_manager.load()
-        solution = SolvedManifest.fromdict(manifest, lock)
+        solution = lock_manager.load()
 
-        if manifest.manifest_hash != lock['manifest_hash']:
-            solver = VersionSolver(manifest, lock)
+        if manifest.manifest_hash != solution.manifest_hash:
+            solver = VersionSolver(manifest, solution)
             print('Solving dependencies requirements')
             solution = solver.solve()
 

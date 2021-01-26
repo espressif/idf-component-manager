@@ -1,4 +1,4 @@
-from idf_component_tools.manifest import SolvedComponent, SolvedManifest
+from idf_component_tools.manifest import Manifest, SolvedComponent, SolvedManifest
 
 
 class VersionSolver(object):
@@ -6,10 +6,10 @@ class VersionSolver(object):
     The version solver that finds a set of package versions
     that satisfy the root package's dependencies.
     """
-    def __init__(self, manifest, locked=None):
+    def __init__(self, manifest, old_solution):  # type: (Manifest, SolvedManifest) -> None
         """Expects project manifest and optional dict of locked components"""
         self._manifest = manifest
-        self.locked = locked
+        self.old_solution = old_solution
 
     @property
     def manifest(self):
@@ -25,4 +25,4 @@ class VersionSolver(object):
                 name=component.name, source=component.source, version=version, component_hash=version.component_hash)
 
         solved_components = [best_version(dependency) for dependency in self.manifest.dependencies]
-        return SolvedManifest(self.manifest, solved_components)
+        return SolvedManifest(solved_components, self.manifest.manifest_hash)
