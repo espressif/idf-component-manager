@@ -48,7 +48,7 @@ class Manifest(object):
             name=None,  # type: Optional[str] # Component name
             targets=None,  # type: Optional[List[str]] # List of supported chips
             url=None,  # type: Optional[str] # Url of the repo
-            version=None,  # type: Union[str, ComponentVersion, None] # Version
+            version=None,  # type: Union[ComponentVersion, None] # Version
     ):
         # type: (...) -> None
 

@@ -35,10 +35,12 @@ class LocalSource(BaseSource):
     def versions(self, name, details=None, spec='*'):
         """For local return version from manifest, or * if manifest not found"""
         manifest_path = os.path.join(self._path, 'idf_component.yml')
-        version_string = '*'
+        version = ComponentVersion('*')
         if os.path.isfile(manifest_path):
-            version_string = (ManifestManager(manifest_path).load().get('version', '*'))
-        return ComponentWithVersions(name=name, versions=[ComponentVersion(version_string)])
+            manifest = ManifestManager(manifest_path).load()
+            if manifest.version:
+                version = manifest.version
+        return ComponentWithVersions(name=name, versions=[version])
 
     def serialize(self):  # type: () -> Dict
         return {

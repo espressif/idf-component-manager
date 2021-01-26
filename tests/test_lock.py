@@ -5,7 +5,7 @@ import pytest
 
 from idf_component_tools.errors import LockError
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import ComponentVersion, Manifest, ManifestManager, SolvedComponent, SolvedManifest
+from idf_component_tools.manifest import ComponentVersion, ManifestManager, SolvedComponent, SolvedManifest
 from idf_component_tools.sources import IDFSource, WebServiceSource
 
 dependencies = {
@@ -52,8 +52,7 @@ class TestLockManager(object):
     def test_lock_dump_with_solution(self, tmp_path):
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         lock = LockManager(lock_path)
-        tree = ManifestManager(manifest_path).load()
-        manifest = Manifest.fromdict(tree)
+        manifest = ManifestManager(manifest_path).load()
         components = [
             SolvedComponent(
                 name='idf',

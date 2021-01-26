@@ -1,39 +1,44 @@
 import re
-from typing import Set
+from typing import List, Set
 
-# Use absolute import to avoid circular dependencies
-import idf_component_tools as tools
 from semantic_version import Version
 
+import idf_component_tools as tools
+
 from .manifest import ComponentSpec
+
+KNOWN_ROOT_KEYS = (
+    'maintainers',
+    'dependencies',
+    'targets',
+    'version',
+    'name',
+    'description',
+    'url',
+)
+
+KNOWN_TARGETS = (
+    'esp32',
+    'esp32s2',
+)
+
+REQUIRED_KEYS = (
+    'name',
+    'version',
+)
+
+SLUG_RE = re.compile(r'^[-a-zA-Z0-9_/]+\Z')
 
 
 class ManifestValidator(object):
     """Validator for manifest object, checks for structure, known fields and valid values"""
-    KNOWN_ROOT_KEYS = (
-        'maintainers',
-        'dependencies',
-        'targets',
-        'version',
-        'name',
-        'description',
-        'url',
-    )
-
-    KNOWN_TARGETS = (
-        'esp32',
-        'esp32s2',
-    )
-
-    SLUG_RE = re.compile(r'^[-a-zA-Z0-9_/]+\Z')
-
-    def __init__(self, parsed_manifest):
+    def __init__(self, parsed_manifest, check_required_fields=False):  # type: (dict, bool) -> None
         self.manifest_tree = parsed_manifest
-        self._errors = []
-
+        self._errors = []  # type: List[str]
         self.known_component_keys = set([])  # type: Set[str]
         for source in tools.sources.KNOWN_SOURCES:
             self.known_component_keys.update(source.known_keys())
+        self.check_required_fields = check_required_fields
 
     @staticmethod
     def _validate_keys(manifest, known_keys):
@@ -53,7 +58,7 @@ class ManifestValidator(object):
         self._errors.append(message)
 
     def validate_root_keys(self):
-        unknown = sorted(self._validate_keys(self.manifest_tree, self.KNOWN_ROOT_KEYS))
+        unknown = sorted(self._validate_keys(self.manifest_tree, KNOWN_ROOT_KEYS))
         if unknown:
             self.add_error('Unknown keys: %s' % ', '.join(unknown))
 
@@ -78,13 +83,13 @@ class ManifestValidator(object):
         # List of components should be a dictionary.
         if not isinstance(dependencies, dict):
             self.add_error(
-                'List of dependencies should be a dictionary.' +
+                'List of dependencies should be a dictionary.'
                 ' For example:\ndependencies:\n  some-component: ">=1.2.3,!=1.2.5"')
 
             return self
 
         for component, details in dependencies.items():
-            if not self.SLUG_RE.match(component):
+            if not SLUG_RE.match(component):
                 self.add_error(
                     'Component\'s name is not valid "%s", should contain only letters, numbers, /, _ and -.' %
                     component)
@@ -105,6 +110,18 @@ class ManifestValidator(object):
 
         return self
 
+    def validate_required_keys(self):
+        '''Check for required keys in the manifest, if necessary'''
+        if not self.check_required_fields:
+            return self
+
+        for key in REQUIRED_KEYS:
+            try:
+                key = self.manifest_tree[key]
+            except KeyError:
+                self.add_error('"%s" is required for this manifest')
+        return self
+
     def validate_targets(self):
         targets = self.manifest_tree.get('targets', [])
 
@@ -117,7 +134,7 @@ class ManifestValidator(object):
 
         unknown_targets = []
         for target in targets:
-            if target not in self.KNOWN_TARGETS:
+            if target not in KNOWN_TARGETS:
                 unknown_targets.append(target)
 
         if unknown_targets:
@@ -126,5 +143,6 @@ class ManifestValidator(object):
         return self
 
     def validate_normalize(self):
-        self.validate_root_keys().validate_root_values().validate_normalize_dependencies().validate_targets()
+        self.validate_root_keys().validate_root_values().validate_normalize_dependencies().validate_targets(
+        ).validate_required_keys()
         return self._errors

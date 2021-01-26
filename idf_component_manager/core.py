@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 from idf_component_tools.api_client import APIClient, APIClientError
 from idf_component_tools.archive_tools import pack_archive
-from idf_component_tools.errors import FatalError, ManifestError
+from idf_component_tools.errors import FatalError
 from idf_component_tools.file_tools import create_directory
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import ComponentRequirement, Manifest, ManifestManager
@@ -85,15 +85,6 @@ class ComponentManager(object):
             print('Creating `idf_component.yml` in the main component directory')
             copyfile(example_path, self.main_manifest_path)
 
-    def _component_manifest(self):
-        manager = ManifestManager(os.path.join(self.path, 'idf_component.yml'))
-        manifest = Manifest.fromdict(manager.load())
-
-        if not (manifest.name or manifest.version):
-            raise ManifestError('Component name and version have to be in the component manifest')
-
-        return manifest
-
     def _archive_name(self, manifest):
         return '%s_%s.tgz' % (manifest.name, manifest.version)
 
@@ -104,7 +95,7 @@ class ComponentManager(object):
                 return None
             return info
 
-        manifest = self._component_manifest()
+        manifest = ManifestManager(args.path, check_required_fields=True).load()
         archive_file = self._archive_name(manifest)
         print('Saving archive to %s' % os.path.join(self.dist_path, archive_file))
         pack_archive(
@@ -115,7 +106,7 @@ class ComponentManager(object):
 
     def upload_component(self, args):
         client, namespace = _service_details(args)
-        manifest = self._component_manifest()
+        manifest = ManifestManager(args.path, check_required_fields=True).load()
         archive_file = os.path.join(self.dist_path, self._archive_name(manifest))
         print('Uploading archive: %s' % archive_file)
 

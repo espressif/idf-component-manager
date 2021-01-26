@@ -5,6 +5,7 @@ from typing import Any, Dict
 import yaml
 
 from ..errors import ManifestError
+from .manifest import Manifest
 from .validator import ManifestValidator
 
 EMPTY_MANIFEST = dict()  # type: Dict[str, Any]
@@ -12,16 +13,20 @@ EMPTY_MANIFEST = dict()  # type: Dict[str, Any]
 
 class ManifestManager(object):
     """Parser for manifest files in the project"""
-    def __init__(self, path):
+    def __init__(self, path, check_required_fields=False):
         # Path of manifest file
         self._path = path
         self._manifest_tree = None
         self._manifest = None
         self._is_valid = None
         self._validation_errors = []
+        self.check_required_fields = check_required_fields
 
     def check_filename(self):
         """Check manifest's filename"""
+        if os.path.isdir(self._path):
+            self._path = os.path.join(self._path, 'idf_component.yml')
+
         filename = os.path.basename(self._path)
 
         if filename != 'idf_component.yml':
@@ -31,7 +36,7 @@ class ManifestManager(object):
         return self
 
     def validate(self):
-        validator = ManifestValidator(self.manifest_tree)
+        validator = ManifestValidator(self.manifest_tree, check_required_fields=self.check_required_fields)
         self._validation_errors = validator.validate_normalize()
         self._is_valid = not self._validation_errors
         return self
@@ -72,7 +77,7 @@ class ManifestManager(object):
                 raise ManifestError(
                     'Cannot parse manifest file. Please check that\n\t%s\nis valid YAML file\n' % self._path)
 
-    def load(self):
+    def load(self):  # type: () -> Manifest
         self.check_filename().validate()
 
         if not self.is_valid:
@@ -84,4 +89,4 @@ class ManifestManager(object):
 
             raise ManifestError('\n'.join(error_desc))
 
-        return self.manifest_tree
+        return Manifest.fromdict(self.manifest_tree)

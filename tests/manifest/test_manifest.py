@@ -1,8 +1,10 @@
 import os
 
 import pytest
+
 from idf_component_tools.errors import ManifestError
 from idf_component_tools.manifest import ManifestManager, ManifestValidator
+from idf_component_tools.manifest.validator import SLUG_RE
 
 
 class TestManifestPipeline(object):
@@ -149,13 +151,11 @@ class TestManifestValidator(object):
         valid_names = ('asdf-fadsf', '_', '-', '_good', '123', 'asdf-_-fdsa-')
         invalid_names = ('!', 'asdf$f', 'daf411~', 'adf\nadsf')
 
-        slug_re = ManifestValidator.SLUG_RE
-
         for name in valid_names:
-            assert slug_re.match(name)
+            assert SLUG_RE.match(name)
 
         for name in invalid_names:
-            assert not slug_re.match(name)
+            assert not SLUG_RE.match(name)
 
     def test_validate_version_list(self, valid_manifest):
         validator = ManifestValidator(valid_manifest)
@@ -163,3 +163,17 @@ class TestManifestValidator(object):
         errors = validator.validate_normalize()
 
         assert not errors
+
+    def test_check_required_keys(self, valid_manifest):
+        validator = ManifestValidator(valid_manifest, check_required_fields=True)
+
+        errors = validator.validate_normalize()
+
+        assert not errors
+
+    def test_check_required_keys_empty_manifest(self):
+        validator = ManifestValidator({}, check_required_fields=True)
+
+        errors = validator.validate_normalize()
+
+        assert len(errors) == 2
