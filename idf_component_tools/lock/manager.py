@@ -1,10 +1,13 @@
 import os
+from collections import OrderedDict
 from io import open
 from typing import Any, Dict
 
-import yaml
 from schema import And, Optional, Or, Schema, SchemaError
 from six import string_types
+from yaml import Dumper, YAMLError
+from yaml import dump as dump_yaml
+from yaml import safe_load
 
 import idf_component_tools as tools
 
@@ -36,6 +39,13 @@ LOCK_SCHEMA = Schema(
     })
 
 
+def _ordered_dict_representer(dumper, data):  # type: (Dumper, OrderedDict) -> Dumper
+    return dumper.represent_data(dict(data))
+
+
+Dumper.add_representer(OrderedDict, _ordered_dict_representer)
+
+
 class LockManager:
     def __init__(self, path):
         self._path = path
@@ -45,13 +55,14 @@ class LockManager:
 
     def dump(self, solution):  # type: (SolvedManifest) -> None
         """Writes updated lockfile to disk"""
+
         try:
             with open(self._path, mode='w', encoding='utf-8') as f:
                 # inject format version
                 solution_dict = solution.serialize()
                 solution_dict['version'] = FORMAT_VERSION
                 lock = LOCK_SCHEMA.validate(solution_dict)
-                yaml.dump(data=lock, stream=f, encoding='utf-8', allow_unicode=True)
+                dump_yaml(data=lock, stream=f, encoding='utf-8', allow_unicode=True, Dumper=Dumper)
         except SchemaError as e:
             raise LockError('Lock format is not valid:\n%s' % str(e))
 
@@ -61,7 +72,7 @@ class LockManager:
 
         with open(self._path, mode='r', encoding='utf-8') as f:
             try:
-                lock = LOCK_SCHEMA.validate(yaml.safe_load(f.read()))
+                lock = LOCK_SCHEMA.validate(safe_load(f.read()))
 
                 version = lock.pop('version')
                 if version != FORMAT_VERSION:
@@ -70,7 +81,7 @@ class LockManager:
                         'Lock file format version is %s, while only %s is supported' % (version, FORMAT_VERSION))
 
                 return SolvedManifest.fromdict(lock)
-            except (yaml.YAMLError, SchemaError):
+            except (YAMLError, SchemaError):
                 raise LockError(
                     (
                         'Cannot parse components lock file. Please check that\n\t%s\nis a valid lock YAML file.\n'

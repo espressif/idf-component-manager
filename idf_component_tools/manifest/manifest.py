@@ -57,7 +57,7 @@ class Manifest(object):
         self.maintainers = maintainers
         if dependencies is None:
             dependencies = []
-        self.dependencies = dependencies
+        self._dependencies = dependencies
         self.description = description
         self.download_url = download_url
         self.url = url
@@ -87,9 +87,13 @@ class Manifest(object):
 
             source = tools.sources.BaseSource.fromdict(name, details)
             component = ComponentRequirement(name, source, version_spec=details.get('version') or '*')
-            manifest.dependencies.append(component)
+            manifest._dependencies.append(component)
 
         return manifest
+
+    @property
+    def dependencies(self):
+        return sorted(self._dependencies, key=lambda d: d.name)
 
     @property
     def manifest_hash(self):  # type: () -> str

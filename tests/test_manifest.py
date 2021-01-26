@@ -7,9 +7,9 @@ def dep_by_name(manifest, name):
             return d
 
 
-def test_manifest_hash(valid_manifest):
+def test_manifest_hash(valid_manifest, valid_manifest_hash):
     manifest = Manifest.fromdict(valid_manifest)
-    assert manifest.manifest_hash == 'd2ff46dace8c1175af8a17a4329f7ffb45f6172096ab53eceea4cb21b579b04f'
+    assert manifest.manifest_hash == valid_manifest_hash
 
 
 def test_project_manifest_builder(valid_manifest):

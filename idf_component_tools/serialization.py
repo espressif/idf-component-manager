@@ -1,5 +1,6 @@
 '''Class decorators to help with serialization'''
 
+from collections import OrderedDict
 from numbers import Number
 
 from six import string_types
@@ -12,13 +13,17 @@ except ImportError:
 BASIC_TYPES = (Number, type(None)) + string_types
 
 
+def _by_key(item):
+    return item[0]
+
+
 def serialize(value):
     '''Serialize value'''
     if isinstance(value, BASIC_TYPES):
         return value
 
     if isinstance(value, Mapping):
-        return {k: serialize(v) for (k, v) in value.items()}
+        return OrderedDict((k, serialize(v)) for (k, v) in sorted(value.items(), key=_by_key))
 
     if isinstance(value, Iterable):
         return [serialize(v) for v in value]
@@ -38,8 +43,8 @@ def serializable(_cls=None, like='dict'):
 
             def _serialize(self):
                 # Use all properties if list is not selected
-                properties = set(getattr(self, '_serializaton_properties', self.__dict__.keys()))
-                return {prop: serialize(getattr(self, prop)) for prop in properties}
+                properties = sorted(list(set(getattr(self, '_serializaton_properties', self.__dict__.keys()))))
+                return OrderedDict((prop, serialize(getattr(self, prop))) for prop in properties)
 
         elif like == 'str':
 

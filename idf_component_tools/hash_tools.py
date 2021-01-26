@@ -13,7 +13,8 @@ BLOCK_SIZE = 65536
 def hash_object(obj):  # type: (Any) -> str
     """Calculate sha256 of passed json-serialisable object"""
     sha = sha256()
-    sha.update(json.dumps(obj, sort_keys=True, separators=(',', ':')).encode())
+    json_string = json.dumps(obj, sort_keys=True, separators=(',', ':'))
+    sha.update(json_string.encode())
     return sha.hexdigest()
 
 

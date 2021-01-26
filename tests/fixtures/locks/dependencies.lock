@@ -10,5 +10,5 @@ dependencies:
       service_url: https://repo.example.com
       type: service
     version: 1.2.7
-manifest_hash: 145601a909ff39faf9fc846504dedd90b6c0ee311d401b70e4c3aef00bd454b9
+manifest_hash: 977e0a1debe94ec78828a8d9a479126ca070f385f8979be082ad851de1fbef0e
 version: 1.0.0
