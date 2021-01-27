@@ -1,7 +1,7 @@
 """Small class that manages getting components to right path using system-wide cache"""
 
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 from ..errors import FetchingError
 from ..hash_tools import validate_dir
@@ -35,7 +35,7 @@ class ComponentFetcher(object):
 
         return True
 
-    def download(self):  # type: () -> str
+    def download(self):  # type: () -> List[str]
         """If necessary, it downloads component and returns local path to component directory"""
         name_parts = self.component.name.split('/')
         managed_path = os.path.join(self.components_path, '__'.join(name_parts))

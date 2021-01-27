@@ -138,7 +138,7 @@ class WebServiceSource(BaseSource):
             finally:
                 shutil.rmtree(tempdir)
 
-        return download_path
+        return [download_path]
 
     @property
     def service_url(self):

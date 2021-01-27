@@ -30,7 +30,7 @@ class LocalSource(BaseSource):
         self.source_details.get('path')
 
     def download(self, component, download_path):
-        return self._path
+        return [self._path]
 
     def versions(self, name, details=None, spec='*'):
         """For local return version from manifest, or * if manifest not found"""

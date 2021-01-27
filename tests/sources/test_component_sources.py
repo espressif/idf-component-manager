@@ -3,6 +3,7 @@ import shutil
 import tempfile
 
 import vcr
+
 from idf_component_tools.manifest import ComponentVersion, SolvedComponent
 from idf_component_tools.sources import LocalSource, WebServiceSource
 
@@ -31,9 +32,10 @@ class TestComponentWebServiceSource(object):
             download_path = os.path.join(tempdir, 'cmp~0.0.1~%s' % self.LOCALHOST_HASH)
             local_path = source.download(cmp, download_path)
 
-            assert local_path == download_path
-            assert os.path.isdir(local_path)
-            assert os.path.isfile(os.path.join(local_path, 'idf_component.yml'))
+            assert len(local_path) == 1
+            assert local_path[0] == download_path
+            assert os.path.isdir(local_path[0])
+            assert os.path.isfile(os.path.join(local_path[0], 'idf_component.yml'))
 
         finally:
             shutil.rmtree(tempdir)
@@ -48,7 +50,7 @@ class TestComponentLocalSource(object):
         path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'fixtures')
         source = LocalSource(source_details={'path': path})
         component = SolvedComponent('cmp', '*', source)
-        assert source.download(component, '/test/path/').endswith('fixtures')
+        assert source.download(component, '/test/path/')[0].endswith('fixtures')
 
     def test_versions_without_manifest(self):
 

@@ -110,6 +110,11 @@ class BaseSource(object):
         """Returns True if components have to be fetched"""
         return False
 
+    @property
+    def meta(self):  # type: () -> bool
+        """Returns True for meta components. Meta components are not included in the build directly"""
+        return False
+
     @abstractmethod
     def versions(
             self,
@@ -122,10 +127,10 @@ class BaseSource(object):
         pass
 
     @abstractmethod
-    def download(self, component, download_path):  # type: (SolvedComponent, str) -> str
+    def download(self, component, download_path):  # type: (SolvedComponent, str) -> List[str]
         """
         Fetch required component version from the source
-        Returns absolute path to directory with component on local filesystem
+        Returns list of absolute paths to directories with component on local filesystem
         """
 
         pass

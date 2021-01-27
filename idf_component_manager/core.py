@@ -2,52 +2,19 @@
 from __future__ import print_function
 
 import os
-from collections import namedtuple
 from io import open
 from shutil import copyfile
 from typing import Union
 
-from tqdm import tqdm
-
-from idf_component_tools.api_client import APIClient, APIClientError
+from idf_component_tools.api_client import APIClientError
 from idf_component_tools.archive_tools import pack_archive
 from idf_component_tools.errors import FatalError
 from idf_component_tools.file_tools import create_directory
-from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import ManifestManager
-from idf_component_tools.manifest.manifest import ProjectRequirements
-from idf_component_tools.sources.fetcher import ComponentFetcher
-from idf_component_tools.sources.web_service import default_component_service_url
 
-from .config import ConfigManager
+from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
-from .version_solver.version_solver import VersionSolver
-
-ServiceDetails = namedtuple('ServiceDetails', ['client', 'namespace'])
-
-
-def _service_details(args):
-    config = ConfigManager().load()
-    profile_name = args.get('service_profile') or 'default'
-    profile = config.profiles.get(profile_name, {})
-
-    service_url = profile.get('url')
-    if not service_url or service_url == 'default':
-        service_url = default_component_service_url()
-
-    # Priorities: idf.py option > IDF_COMPONENT_NAMESPACE env variable > profile value
-    namespace = args.get('namespace') or profile.get('default_namespace')
-    if not namespace:
-        raise FatalError('Namespace is required to upload component')
-
-    # Priorities: IDF_COMPONENT_API_TOKEN env variable > profile value
-    token = os.getenv('IDF_COMPONENT_API_TOKEN', profile.get('api_token'))
-    if not token:
-        raise FatalError('API token is required to upload component')
-
-    client = APIClient(base_url=service_url, auth_token=token)
-
-    return ServiceDetails(client, namespace)
+from .service_details import service_details
 
 
 class ComponentManager(object):
@@ -105,7 +72,7 @@ class ComponentManager(object):
             filter=_filter_files)
 
     def upload_component(self, args):
-        client, namespace = _service_details(args)
+        client, namespace = service_details(args.get('namespace'), args.get('service_profile'))
         manifest = ManifestManager(args.path, check_required_fields=True).load()
         archive_file = os.path.join(self.dist_path, self._archive_name(manifest))
         print('Uploading archive: %s' % archive_file)
@@ -117,7 +84,7 @@ class ComponentManager(object):
             raise FatalError(e)
 
     def create_remote_component(self, args):
-        client, namespace = _service_details(args)
+        client, namespace = service_details(args.get('namespace'), args.get('service_profile'))
         name = '/'.join([namespace, args['name']])
         try:
             client.create_component(component_name=name)
@@ -126,7 +93,7 @@ class ComponentManager(object):
             raise FatalError(e)
 
     def prepare_dep_dirs(self, managed_components_list_file, local_components_list_file=None):
-        # Find all manifests
+        # Find all components
         if local_components_list_file and os.path.isfile(local_components_list_file):
             local_components = parse_component_list(local_components_list_file)
         else:
@@ -139,36 +106,20 @@ class ComponentManager(object):
             ]
             local_components.append({'name': 'main', 'path': self.main_component_path})
 
-        # Checking that CMakeLists.txt exists for all component dirs
+        # Check that CMakeLists.txt and idf_component.yml exists for all component dirs
         local_components = [
             component for component in local_components
             if os.path.isfile(os.path.join(component['path'], 'CMakeLists.txt'))
+            and os.path.isfile(os.path.join(component['path'], 'idf_component.yml'))
         ]
 
-        manifests = [ManifestManager(component['path']).load() for component in local_components]
-        project_requirements = ProjectRequirements(manifests)
-        lock_manager = LockManager(self.lock_path)
-        solution = lock_manager.load()
-
-        if project_requirements.manifest_hash != solution.manifest_hash:
-            solver = VersionSolver(project_requirements, solution)
-            print('Solving dependencies requirements')
-            solution = solver.solve()
-
-            print('Updating lock file at %s' % self.lock_path)
-            lock_manager.dump(solution)
-
-        # Download components
         downloaded_component_paths = set()
-
-        if solution.dependencies:
-            for component in tqdm(solution.dependencies):
-                download_path = ComponentFetcher(component, self.managed_components_path).download()
-                downloaded_component_paths.add(download_path)
+        if local_components:
+            downloaded_component_paths = download_project_dependencies(
+                local_components, self.lock_path, self.managed_components_path)
 
         # Exclude requirements paths
         downloaded_component_paths -= {component['path'] for component in local_components}
-
         # Include managed components in project directory
         with open(managed_components_list_file, mode='w', encoding='utf-8') as file:
             for component_path in downloaded_component_paths:

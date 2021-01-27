@@ -23,6 +23,10 @@ class IDFSource(BaseSource):
     def hash_key(self):
         return str(self._version)
 
+    @property
+    def meta(self):
+        return True
+
     def versions(self, name, details=None, spec='*'):
         """Returns current idf version"""
 
@@ -32,7 +36,7 @@ class IDFSource(BaseSource):
         if 'IDF_PATH' not in os.environ:
             FetchingError('Please set IDF_PATH environment variable with a valid path to ESP-IDF')
 
-        return os.environ['IDF_PATH']
+        return []
 
     def serialize(self):  # type: () -> Dict
         return {'type': self.name}

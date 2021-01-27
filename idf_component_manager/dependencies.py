@@ -1,0 +1,37 @@
+from typing import List, Set
+
+from tqdm import tqdm
+
+from idf_component_tools.lock import LockManager
+from idf_component_tools.manifest import ManifestManager
+from idf_component_tools.manifest.manifest import ProjectRequirements
+from idf_component_tools.sources.fetcher import ComponentFetcher
+
+from .version_solver.version_solver import VersionSolver
+
+
+def download_project_dependencies(manifest_paths, lock_path, managed_components_path):
+    # type: (List[dict], str, str) -> Set[str]
+    '''Solves dependencies and download components'''
+    manifests = [ManifestManager(component['path']).load() for component in manifest_paths]
+    project_requirements = ProjectRequirements(manifests)
+    lock_manager = LockManager(lock_path)
+    solution = lock_manager.load()
+
+    if project_requirements.manifest_hash != solution.manifest_hash:
+        print('Solving dependencies requirements')
+        solver = VersionSolver(project_requirements, solution)
+        solution = solver.solve()
+
+        print('Updating lock file at %s' % lock_path)
+        lock_manager.dump(solution)
+
+    # Download components
+    downloaded_component_paths = set()
+
+    if solution.dependencies:
+        for component in tqdm(solution.dependencies):
+            download_paths = ComponentFetcher(component, managed_components_path).download()
+            downloaded_component_paths.update(download_paths)
+
+    return downloaded_component_paths

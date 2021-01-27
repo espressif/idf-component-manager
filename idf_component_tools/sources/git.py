@@ -76,7 +76,7 @@ class GitSource(BaseSource):
         # TODO: fix ignore function
         # ignore = copytree_ignore()
         shutil.copytree(source_path, dest_path)
-        return dest_path
+        return [dest_path]
 
     def versions(self, name, details=None, spec='*'):
         """For git returns hash of locked commit, ignoring manifest"""
