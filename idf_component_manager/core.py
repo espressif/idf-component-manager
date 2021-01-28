@@ -91,9 +91,10 @@ class ComponentManager(object):
 
     def prepare_dep_dirs(self, managed_components_list_file, local_components_list_file=None):
         # Find all components
+        local_components = []
         if local_components_list_file and os.path.isfile(local_components_list_file):
             local_components = parse_component_list(local_components_list_file)
-        else:
+        elif os.path.isdir(self.components_path):
             components_items = os.listdir(self.components_path)
             local_components = [
                 {
