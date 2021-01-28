@@ -44,16 +44,13 @@ class ComponentManager(object):
     def create_manifest(self, args):
         """Create manifest file if it doesn't exist in work directory"""
         if os.path.exists(self.main_manifest_path):
-            print('`idf_component.yml` already exists in main component directroy, skipping...')
+            print('`idf_component.yml` already exists in main component directory, skipping...')
         else:
             example_path = os.path.join(
                 os.path.dirname(os.path.realpath(__file__)), 'templates', 'idf_component_template.yml')
             create_directory(self.main_component_path)
             print('Creating `idf_component.yml` in the main component directory')
             copyfile(example_path, self.main_manifest_path)
-
-    def _archive_name(self, manifest):
-        return '%s_%s.tgz' % (manifest.name, manifest.version)
 
     def pack_component(self, args):
         def _filter_files(info):
@@ -63,7 +60,7 @@ class ComponentManager(object):
             return info
 
         manifest = ManifestManager(args.path, check_required_fields=True).load()
-        archive_file = self._archive_name(manifest)
+        archive_file = _archive_name(manifest)
         print('Saving archive to %s' % os.path.join(self.dist_path, archive_file))
         pack_archive(
             source_directory=self.path,
@@ -74,7 +71,7 @@ class ComponentManager(object):
     def upload_component(self, args):
         client, namespace = service_details(args.get('namespace'), args.get('service_profile'))
         manifest = ManifestManager(args.path, check_required_fields=True).load()
-        archive_file = os.path.join(self.dist_path, self._archive_name(manifest))
+        archive_file = os.path.join(self.dist_path, _archive_name(manifest))
         print('Uploading archive: %s' % archive_file)
 
         try:
@@ -129,3 +126,7 @@ class ComponentManager(object):
         pass
         # TODO: update requirements for known components
         # TODO: deal with namespaces
+
+
+def _archive_name(manifest):  # type (Manifest) -> str
+    return '%s_%s.tgz' % (manifest.name, manifest.version)

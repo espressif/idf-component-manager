@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import ManifestManager
-from idf_component_tools.manifest.manifest import ProjectRequirements
+from idf_component_tools.manifest import ProjectRequirements
 from idf_component_tools.sources.fetcher import ComponentFetcher
 
 from .version_solver.version_solver import VersionSolver

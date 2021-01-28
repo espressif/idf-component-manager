@@ -65,7 +65,7 @@ def main():
             'name': 'inject_requirements',
         },
         {
-            'name': 'inject_requrements',  # Workaroud for a typo in idf 4.1-4.2
+            'name': 'inject_requrements',  # Workaround for a typo in idf 4.1-4.2
             'extra_help': ' (alias)',
         }
     ]
