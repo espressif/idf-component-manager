@@ -94,15 +94,16 @@ class ComponentManager(object):
         local_components = []
         if local_components_list_file and os.path.isfile(local_components_list_file):
             local_components = parse_component_list(local_components_list_file)
-        elif os.path.isdir(self.components_path):
-            components_items = os.listdir(self.components_path)
-            local_components = [
-                {
-                    'name': item,
-                    'path': os.path.join(self.components_path, item)
-                } for item in components_items if os.path.isdir(os.path.join(self.components_path, item))
-            ]
+        else:
             local_components.append({'name': 'main', 'path': self.main_component_path})
+
+            if os.path.isdir(self.components_path):
+                local_components.extend(
+                    {
+                        'name': item,
+                        'path': os.path.join(self.components_path, item)
+                    } for item in os.listdir(self.components_path)
+                    if os.path.isdir(os.path.join(self.components_path, item)))
 
         # Check that CMakeLists.txt and idf_component.yml exists for all component dirs
         local_components = [
