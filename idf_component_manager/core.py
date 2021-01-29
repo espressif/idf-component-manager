@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import os
 from io import open
+from pathlib import Path
 from shutil import copyfile
 from typing import Union
 
@@ -122,7 +123,7 @@ class ComponentManager(object):
         # Include managed components in project directory
         with open(managed_components_list_file, mode='w', encoding='utf-8') as file:
             for component_path in downloaded_component_paths:
-                file.write(u'idf_build_component("%s")\n' % component_path)
+                file.write(u'idf_build_component("%s")\n' % Path(component_path).as_posix())
 
             component_names = ';'.join(os.path.basename(path) for path in downloaded_component_paths)
             file.write(u'set(managed_components "%s")\n' % component_names)

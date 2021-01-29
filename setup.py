@@ -13,6 +13,7 @@ LICENSE = 'Apache License 2.0'
 URL = 'https://espressif.com'
 REQUIRES = [
     'future',
+    'pathlib;python_version<"3.4"',
     'pyyaml',
     'requests',
     'schema',
