@@ -93,7 +93,7 @@ class GitClient(object):
         return True
 
     def version(self):  # type: () -> Version
-        ver_match = re.match(r'^git version ([\.0-9]+)', self.run(['--version']))
+        ver_match = re.match(r'^git version (\d+\.\d+\.\d+)', self.run(['--version']))
 
         try:
             if ver_match:
