@@ -59,7 +59,7 @@ class ComponentManager(object):
                 return None
             return info
 
-        manifest = ManifestManager(args.path, check_required_fields=True).load()
+        manifest = ManifestManager(self.path, check_required_fields=True).load()
         archive_file = _archive_name(manifest)
         print('Saving archive to %s' % os.path.join(self.dist_path, archive_file))
         pack_archive(
@@ -70,7 +70,7 @@ class ComponentManager(object):
 
     def upload_component(self, args):
         client, namespace = service_details(args.get('namespace'), args.get('service_profile'))
-        manifest = ManifestManager(args.path, check_required_fields=True).load()
+        manifest = ManifestManager(self.path, check_required_fields=True).load()
         archive_file = os.path.join(self.dist_path, _archive_name(manifest))
         print('Uploading archive: %s' % archive_file)
 
