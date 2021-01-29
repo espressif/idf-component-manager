@@ -124,6 +124,9 @@ class ComponentManager(object):
             for component_path in downloaded_component_paths:
                 file.write(u'idf_build_component("%s")\n' % component_path)
 
+            component_names = ';'.join(os.path.basename(path) for path in downloaded_component_paths)
+            file.write(u'set(managed_components "%s")\n' % component_names)
+
     def inject_requirements(self, component_requires_file):
         pass
         # TODO: update requirements for known components
