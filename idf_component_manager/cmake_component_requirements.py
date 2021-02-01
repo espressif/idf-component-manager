@@ -1,0 +1,61 @@
+import re
+from collections import OrderedDict, namedtuple
+from io import open
+from typing import Dict, Mapping, Set, Union
+
+from idf_component_tools.errors import FatalError
+
+ComponentName = namedtuple('ComponentName', ['prefix', 'name'])
+ComponentProperty = namedtuple('ComponentProperty', ['component', 'prop', 'value'])
+ITERABLE_PROPS = ['REQUIRES', 'PRIV_REQUIRES']
+REQ_RE = re.compile(
+    r'^__component_set_property\(___(?P<prefix>[a-z\d]+)_(?P<name>[a-z\d_]+)\s+(?P<prop>\w+)\s+(?P<value>.*)\)')
+
+
+class RequirementsProcessingError(FatalError):
+    pass
+
+
+def parse_requirements_line(line):  # type: (str) -> ComponentProperty
+    match = REQ_RE.match(line)
+
+    if not match:
+        raise RequirementsProcessingError('Cannot parse CMake requirements line: %s' % line)
+
+    return ComponentProperty(
+        ComponentName(match.group('prefix'), match.group('name')),
+        match.group('prop'),
+        match.group('value'),
+    )
+
+
+class CMakeRequirementsManager(object):
+    def __init__(self, path):
+        self.path = path
+
+    def dump(self, requirements):  # type: (Mapping[ComponentName, Dict[str, Union[Set, str]]]) -> None
+        with open(self.path, mode='w', encoding='utf-8') as f:
+            for name, requirement in requirements.items():
+                for prop, value in requirement.items():
+                    if prop in ITERABLE_PROPS:
+                        value = '"{}"'.format(';'.join(sorted(value)))
+
+                    f.write(
+                        u'__component_set_property(___{prefix}_{name} {prop} {value})\n'.format(
+                            prefix=name.prefix, name=name.name, prop=prop, value=value))
+
+    def load(self):  # type: () -> Dict[ComponentName, Dict[str, Union[Set, str]]]
+        requirements = OrderedDict()  # type: Dict[ComponentName, Dict[str, Union[Set, str]]]
+
+        with open(self.path, mode='r', encoding='utf-8') as f:
+            for line in f:
+                prop = parse_requirements_line(line)
+                requirement = requirements.setdefault(prop.component, OrderedDict())
+
+                value = prop.value
+                if prop.prop in ITERABLE_PROPS:
+                    value = set(value.strip('"').split(';'))
+
+                requirement[prop.prop] = value
+
+        return requirements
