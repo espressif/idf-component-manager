@@ -324,7 +324,7 @@ indent-after-paren=4
 indent-string='    '
 
 # Maximum number of characters on a single line.
-max-line-length=100
+max-line-length=120
 
 # Maximum number of lines in a module
 max-module-lines=1000
@@ -391,7 +391,7 @@ const-naming-style=UPPER_CASE
 
 # Minimum line length for functions/classes that require docstrings, shorter
 # ones are exempt.
-docstring-min-length=-1
+docstring-min-length=5
 
 # Naming style matching correct function names
 function-naming-style=snake_case
@@ -404,6 +404,8 @@ function-naming-style=snake_case
 good-names=i,
            j,
            k,
+           f,
+           e,
            ex,
            Run,
            _
