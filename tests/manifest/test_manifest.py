@@ -8,13 +8,13 @@ from idf_component_tools.manifest.validator import SLUG_RE
 
 
 class TestManifestPipeline(object):
-    def test_check_filename(self, capsys):
-        parser = ManifestManager('some/path/idf_component.yaml')
+    def test_check_filename(self, tmp_path):
+        path = tmp_path.as_posix()
+        parser = ManifestManager(path)
 
         parser.check_filename()
 
-        captured = capsys.readouterr()
-        assert captured.out.startswith('Warning')
+        assert parser._path == os.path.join(path, 'idf_component.yml')
 
     def test_parse_invalid_yaml(self):
         manifest_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'fixtures', 'invalid_yaml.yml')

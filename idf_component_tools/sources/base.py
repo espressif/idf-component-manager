@@ -115,6 +115,9 @@ class BaseSource(object):
         """Returns True for meta components. Meta components are not included in the build directly"""
         return False
 
+    def normalized_name(self, name):  # type: (str) -> str
+        return name
+
     @abstractmethod
     def versions(
             self,

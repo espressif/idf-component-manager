@@ -26,13 +26,6 @@ class ManifestManager(object):
         """Check manifest's filename"""
         if os.path.isdir(self._path):
             self._path = os.path.join(self._path, 'idf_component.yml')
-
-        filename = os.path.basename(self._path)
-
-        if filename != 'idf_component.yml':
-            print(
-                "Warning: it's recommended to keep the manifest in \"idf_component.yml\" of component's root directory."
-            )
         return self
 
     def validate(self):

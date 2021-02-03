@@ -5,28 +5,30 @@ import os
 from io import open
 from pathlib import Path
 from shutil import copyfile
-from typing import Union
+from typing import Optional
 
 from idf_component_tools.api_client import APIClientError
 from idf_component_tools.archive_tools import pack_archive
+from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.errors import FatalError
 from idf_component_tools.file_tools import create_directory
 from idf_component_tools.manifest import ManifestManager
 
+from .cmake_component_requirements import CMakeRequirementsManager, ComponentName
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
 from .service_details import service_details
 
 
 class ComponentManager(object):
-    def __init__(self, path, lock_path=None, manifest_path=None, main_component_path=None):
-        # type: (str, Union[None, str], Union[None, str], Union[None, str]) -> None
+    def __init__(self, path, lock_path=None, manifest_path=None):
+        # type: (str, Optional[str], Optional[str]) -> None
 
         # Working directory
         self.path = os.path.abspath(path if os.path.isdir(path) else os.path.dirname(path))
 
         # Set path of the project's main component
-        self.main_component_path = main_component_path or os.path.join(self.path, 'main')
+        self.main_component_path = os.path.join(self.path, 'main')
 
         # Set path of the manifest file for the project's main component
         self.main_manifest_path = manifest_path or (
@@ -90,7 +92,8 @@ class ComponentManager(object):
         except APIClientError as e:
             raise FatalError(e)
 
-    def prepare_dep_dirs(self, managed_components_list_file, local_components_list_file=None):
+    def prepare_dep_dirs(self, managed_components_list_file, component_list_file, local_components_list_file=None):
+        '''Process all manifests and download all dependencies'''
         # Find all components
         local_components = []
         if local_components_list_file and os.path.isfile(local_components_list_file):
@@ -128,10 +131,33 @@ class ComponentManager(object):
             component_names = ';'.join(os.path.basename(path) for path in downloaded_component_paths)
             file.write(u'set(managed_components "%s")\n' % component_names)
 
-    def inject_requirements(self, component_requires_file):
-        pass
-        # TODO: update requirements for known components
-        # TODO: deal with namespaces
+        # Saving list of all components with manifests for use on requirements injection step
+        all_components = downloaded_component_paths.union(component['path'] for component in local_components)
+        with open(component_list_file, mode='w', encoding='utf-8') as file:
+            file.write('\n'.join(all_components))
+
+    def inject_requirements(self, component_requires_file, component_list_file):
+        '''Set build dependencies for components with manifests'''
+        requirements_manager = CMakeRequirementsManager(component_requires_file)
+        requirements = requirements_manager.load()
+
+        try:
+            with open(component_list_file, mode='r', encoding='utf-8') as f:
+                components_with_manifests = f.readlines()
+            # os.remove(component_list_file)
+        except FileNotFoundError:
+            raise FatalError('Cannont find component list file. Please make sure this script is executed from CMake')
+
+        for component in components_with_manifests:
+            name = os.path.basename(component)
+            manifest = ManifestManager(component).load()
+            name_key = ComponentName('idf', name)
+
+            for dependency in manifest.dependencies:
+                dependency_name = build_name(dependency.name)
+                requirements[name_key]['PRIV_REQUIRES'].add(dependency_name)
+
+        requirements_manager.dump(requirements)
 
 
 def _archive_name(manifest):  # type (Manifest) -> str

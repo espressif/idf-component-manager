@@ -29,6 +29,9 @@ def default_component_service_url():
     return os.getenv('DEFAULT_COMPONENT_SERVICE_URL', 'https://api.components.espressif.com/')
 
 
+DEFAULT_NAMESPACE = 'espressif'
+
+
 class WebServiceSource(BaseSource):
     NAME = 'service'
 
@@ -75,6 +78,12 @@ class WebServiceSource(BaseSource):
     @property
     def downloadable(self):  # type: () -> bool
         return True
+
+    def normalized_name(self, name):
+        if '/' not in name:
+            name = '/'.join([DEFAULT_NAMESPACE, name])
+
+        return name
 
     def download(self, component, download_path):
         # Check for required components

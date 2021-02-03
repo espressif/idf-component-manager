@@ -20,8 +20,8 @@ class TestSolverResult(object):
 
         assert manager.exists()
         assert len(solution.dependencies) == 2
-        assert solution.dependencies[0].version == '4.4.4'
-        cmp = solution.dependencies[1]
+        cmp = solution.dependencies[0]
         assert isinstance(cmp, SolvedComponent)
         assert isinstance(cmp.source, WebServiceSource)
         assert cmp.source.base_url == 'https://repo.example.com'
+        assert solution.dependencies[1].version == '4.4.4'

@@ -15,7 +15,7 @@ dependencies = {
             'type': 'idf'
         }
     },
-    'test_cmp': {
+    'espressif/test_cmp': {
         'version': '1.2.7',
         'component_hash': 'f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b',
         'source': {
@@ -25,7 +25,7 @@ dependencies = {
     }
 }
 
-MANIFEST_HASH = '977e0a1debe94ec78828a8d9a479126ca070f385f8979be082ad851de1fbef0e'
+MANIFEST_HASH = '25f891c73c83e19ae3517b31b9b9723223ee347e2f30872b2753515735d261b8'
 valid_lock_path = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     'fixtures',
@@ -46,7 +46,7 @@ class TestLockManager(object):
         lock = parser.load()
         assert parser.exists()
 
-        test_cmp = [cmp for cmp in lock.dependencies if cmp.name == 'test_cmp'][0]
+        test_cmp = [cmp for cmp in lock.dependencies if cmp.name == 'espressif/test_cmp'][0]
         assert (test_cmp.source.service_url == 'https://repo.example.com')
 
     def test_lock_dump_with_solution(self, tmp_path):
@@ -60,7 +60,7 @@ class TestLockManager(object):
                 source=IDFSource({}),
             ),
             SolvedComponent(
-                name='test_cmp',
+                name='espressif/test_cmp',
                 version=ComponentVersion('1.2.7'),
                 source=WebServiceSource({'service_url': 'https://repo.example.com'}),
                 component_hash='f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b',

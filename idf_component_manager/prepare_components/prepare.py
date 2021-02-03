@@ -20,6 +20,7 @@
 # limitations under the License.
 
 import argparse
+import os
 import sys
 
 from idf_component_tools.errors import FatalError
@@ -27,14 +28,24 @@ from idf_component_tools.errors import FatalError
 from ..core import ComponentManager
 
 
+def _component_list_file(build_dir):
+    return os.path.join(build_dir, 'components_with_manifests_list.temp')
+
+
 def prepare_dep_dirs(args):
+    build_dir = args.build_dir or os.path.dirname(args.managed_components_list_file)
     ComponentManager(args.project_dir).prepare_dep_dirs(
         managed_components_list_file=args.managed_components_list_file,
-        local_components_list_file=args.local_components_list_file)
+        component_list_file=_component_list_file(build_dir),
+        local_components_list_file=args.local_components_list_file,
+    )
 
 
 def inject_requirements(args):
-    ComponentManager(args.project_dir).inject_requirements(args.component_requires_file)
+    ComponentManager(args.project_dir).inject_requirements(
+        component_requires_file=args.component_requires_file,
+        component_list_file=_component_list_file(args.build_dir),
+    )
 
 
 def main():
@@ -52,13 +63,20 @@ def main():
     prepare_step.add_argument(
         '--managed_components_list_file',
         help='Path to file with list of managed component directories (output)',
-        required=True)
+        required=True,
+    )
     prepare_step.add_argument(
         '--local_components_list_file',
         help=(
             'Path to file with list of components discovered by build system (input). '
             'Only "components" directory will be processed if argument is not provided'),
-        required=False)
+        required=False,
+    )
+    prepare_step.add_argument(
+        '--build_dir',
+        help='Working directory for build process',
+        required=False,
+    )
 
     inject_step_data = [
         {
@@ -74,11 +92,16 @@ def main():
         inject_step = subparsers.add_parser(
             step['name'], help='Inject requirements to CMake%s' % step.get('extra_help', ''))
         inject_step.set_defaults(func=inject_requirements)
-        inject_step.add_argument('--build_properties_file', help='Path to temporary file with build properties')
-        inject_step.add_argument('--component_properties_file', help='Path to temporary file with component properties')
-        inject_step.add_argument('--component_requires_file', help='Path to temporary file with component requirements')
-        inject_step.add_argument('--build_dir', help='Working directory for build process')
-        inject_step.add_argument('--cmake_command', help='Path to CMake command')
+        inject_step.add_argument(
+            '--component_requires_file',
+            help='Path to temporary file with component requirements',
+            required=True,
+        )
+        inject_step.add_argument(
+            '--build_dir',
+            help='Working directory for build process',
+            required=True,
+        )
         inject_step.add_argument('--idf_path', help='Path to IDF')
 
     args = parser.parse_args()

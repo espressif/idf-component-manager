@@ -105,6 +105,12 @@ class Manifest(object):
 
 @serializable
 class ComponentRequirement(object):
+    _serializaton_properties = [
+        'version_spec',
+        'source',
+        'name',
+    ]
+
     def __init__(
             self,
             name,  # type: str
@@ -113,7 +119,11 @@ class ComponentRequirement(object):
         # type: (...) -> None
         self.version_spec = version_spec
         self.source = source
-        self.name = name
+        self._name = name
+
+    @property
+    def name(self):
+        return self.source.normalized_name(self._name)
 
 
 @total_ordering

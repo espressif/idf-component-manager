@@ -9,7 +9,7 @@ ComponentName = namedtuple('ComponentName', ['prefix', 'name'])
 ComponentProperty = namedtuple('ComponentProperty', ['component', 'prop', 'value'])
 ITERABLE_PROPS = ['REQUIRES', 'PRIV_REQUIRES']
 REQ_RE = re.compile(
-    r'^__component_set_property\(___(?P<prefix>[a-z\d]+)_(?P<name>[a-z\d_]+)\s+(?P<prop>\w+)\s+(?P<value>.*)\)')
+    r'^__component_set_property\(___(?P<prefix>[a-z\d]+)_(?P<name>[a-z\d_-]+)\s+(?P<prop>\w+)\s+(?P<value>.*)\)')
 
 
 class RequirementsProcessingError(FatalError):
@@ -49,13 +49,18 @@ class CMakeRequirementsManager(object):
 
         with open(self.path, mode='r', encoding='utf-8') as f:
             for line in f:
-                prop = parse_requirements_line(line)
-                requirement = requirements.setdefault(prop.component, OrderedDict())
+                if line.strip():
+                    prop = parse_requirements_line(line)
+                    requirement = requirements.setdefault(prop.component, OrderedDict())
 
-                value = prop.value
-                if prop.prop in ITERABLE_PROPS:
-                    value = set(value.strip('"').split(';'))
+                    value = prop.value
+                    if prop.prop in ITERABLE_PROPS:
+                        value = set(value.strip('"').split(';'))
+                        try:
+                            value.remove('')
+                        except KeyError:
+                            pass
 
-                requirement[prop.prop] = value
+                    requirement[prop.prop] = value
 
         return requirements

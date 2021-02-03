@@ -3,6 +3,7 @@
 import os
 from typing import TYPE_CHECKING, List
 
+from ..build_system_tools import build_name
 from ..errors import FetchingError
 from ..hash_tools import validate_dir
 from ..manifest import SolvedComponent
@@ -37,8 +38,7 @@ class ComponentFetcher(object):
 
     def download(self):  # type: () -> List[str]
         """If necessary, it downloads component and returns local path to component directory"""
-        name_parts = self.component.name.split('/')
-        managed_path = os.path.join(self.components_path, '__'.join(name_parts))
+        managed_path = os.path.join(self.components_path, build_name(self.component.name))
 
         # Check if component is up to date in managed components path
         # TODO: fix up_to_date function

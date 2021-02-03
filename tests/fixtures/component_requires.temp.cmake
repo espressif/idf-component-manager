@@ -1,5 +1,5 @@
 __component_set_property(___idf_espressif__cmp REQUIRES "cxx;def;esp32;esp_common;esp_hw_support;esp_rom;esp_system;freertos;hal;heap;log;lwip;newlib;soc")
-__component_set_property(___idf_espressif__cmp PRIV_REQUIRES ";abc")
+__component_set_property(___idf_espressif__cmp PRIV_REQUIRES "abc")
 __component_set_property(___idf_espressif__cmp __COMPONENT_REGISTERED 1)
 __component_set_property(___idf_main REQUIRES "cxx;esp32;esp_common;esp_hw_support;esp_rom;esp_system;freertos;hal;heap;log;lwip;newlib;soc")
 __component_set_property(___idf_main PRIV_REQUIRES "")

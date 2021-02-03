@@ -2,9 +2,9 @@ from idf_component_tools.manifest import Manifest, ManifestValidator
 
 
 def dep_by_name(manifest, name):
-    for d in manifest.dependencies:
-        if d.name == name:
-            return d
+    for dependency in manifest.dependencies:
+        if dependency.name == name:
+            return dependency
 
 
 def test_manifest_hash(valid_manifest, valid_manifest_hash):
@@ -19,9 +19,9 @@ def test_project_manifest_builder(valid_manifest):
     assert manifest.url == 'https://github.com/espressif/esp-idf'
     assert len(manifest.dependencies) == 7
     assert manifest.targets == ['esp32']
-    assert dep_by_name(manifest, 'test-1').version_spec == '^1.2.7'
-    assert dep_by_name(manifest, 'test-2').version_spec == '*'
-    assert dep_by_name(manifest, 'test-4').version_spec == '*'
+    assert dep_by_name(manifest, 'espressif/test-1').version_spec == '^1.2.7'
+    assert dep_by_name(manifest, 'espressif/test-2').version_spec == '*'
+    assert dep_by_name(manifest, 'espressif/test-4').version_spec == '*'
 
 
 def test_validator_broken_deps():

@@ -1,6 +1,6 @@
 """Results of the solver"""
 
-from typing import Optional
+from typing import List, Optional
 
 from idf_component_tools.serialization import serializable
 
@@ -23,12 +23,17 @@ class SolvedComponent(object):
             version,  # type: str
             source,  # type: BaseSource
             component_hash=None,  # type: Optional[str]
+            dependencies=None,  # type: Optional[List[SolvedComponent]]
     ):
         # type: (...) -> None
         self.name = name
         self.version = version
         self.source = source
         self.component_hash = component_hash
+
+        if dependencies is None:
+            dependencies = []
+        self.dependencies = dependencies
 
     def __str__(self):
         return ('SolvedComponent: %s %s %s' % (self.name, self.version, self.component_hash))
