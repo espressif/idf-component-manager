@@ -19,7 +19,11 @@ def test_project_manifest_builder(valid_manifest):
     assert manifest.url == 'https://github.com/espressif/esp-idf'
     assert len(manifest.dependencies) == 7
     assert manifest.targets == ['esp32']
-    assert dep_by_name(manifest, 'espressif/test-1').version_spec == '^1.2.7'
+    test1 = dep_by_name(manifest, 'espressif/test-1')
+    assert test1.version_spec == '^1.2.7'
+    assert not test1.public
+    test8 = dep_by_name(manifest, 'espressif/test-8')
+    assert test8.public
     assert dep_by_name(manifest, 'espressif/test-2').version_spec == '*'
     assert dep_by_name(manifest, 'espressif/test-4').version_spec == '*'
 

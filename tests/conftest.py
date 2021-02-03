@@ -3,7 +3,7 @@ import pytest
 
 @pytest.fixture()
 def valid_manifest_hash():
-    return '4005550d5c500fae5a5ce4555258e92d83bad677e5ab90bb324b94d2c39bdff1'
+    return '4514062436c2fe6c569710fa3a339a8c5c61281a29e9ef908ddc284d7f3a98f8'
 
 
 @pytest.fixture()
@@ -22,7 +22,8 @@ def valid_manifest():
             },
             'test-1': '^1.2.7',
             'test-8': {
-                'version': ''
+                'version': '',
+                'public': True,
             },
             'test-2': '',
             'test-4': '*',

@@ -1,6 +1,6 @@
 """Results of the solver"""
 
-from typing import List, Optional
+from typing import Iterable, Optional
 
 from idf_component_tools.serialization import serializable
 
@@ -10,11 +10,11 @@ from ..sources.base import BaseSource
 
 @serializable
 class SolvedComponent(object):
-    _serializaton_properties = [
-        'name',
-        'version',
-        'source',
+    _serialization_properties = [
         'component_hash',
+        'name',
+        'source',
+        'version',
     ]
 
     def __init__(
@@ -23,7 +23,7 @@ class SolvedComponent(object):
             version,  # type: str
             source,  # type: BaseSource
             component_hash=None,  # type: Optional[str]
-            dependencies=None,  # type: Optional[List[SolvedComponent]]
+            dependencies=None,  # type: Optional[Iterable[SolvedComponent]]
     ):
         # type: (...) -> None
         self.name = name

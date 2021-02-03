@@ -10,5 +10,5 @@ dependencies:
     source:
       type: idf
     version: 4.4.4
-manifest_hash: 25f891c73c83e19ae3517b31b9b9723223ee347e2f30872b2753515735d261b8
+manifest_hash: 39b81aab91bca3f90841e24ef0e61dc59b7e8721f97f00a0e8a251962b8ba60c
 version: 1.0.0

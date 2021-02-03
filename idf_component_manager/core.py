@@ -144,9 +144,9 @@ class ComponentManager(object):
         try:
             with open(component_list_file, mode='r', encoding='utf-8') as f:
                 components_with_manifests = f.readlines()
-            # os.remove(component_list_file)
+            os.remove(component_list_file)
         except FileNotFoundError:
-            raise FatalError('Cannont find component list file. Please make sure this script is executed from CMake')
+            raise FatalError('Cannot find component list file. Please make sure this script is executed from CMake')
 
         for component in components_with_manifests:
             name = os.path.basename(component)
@@ -154,8 +154,11 @@ class ComponentManager(object):
             name_key = ComponentName('idf', name)
 
             for dependency in manifest.dependencies:
+                if dependency.meta:
+                    continue
                 dependency_name = build_name(dependency.name)
-                requirements[name_key]['PRIV_REQUIRES'].add(dependency_name)
+                requirement_key = 'REQUIRES' if dependency.public else 'PRIV_REQUIRES'
+                requirements[name_key][requirement_key].add(dependency_name)
 
         requirements_manager.dump(requirements)
 

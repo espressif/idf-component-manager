@@ -31,11 +31,13 @@ dependencies:
     idf:
         version: ">=4.1"
     # For components maintained by Espressif:
+    # Same as `espressif/component`
     component:
         version: "~1.0.0"
     # For 3rd party components :
     username/component:
         version: "~1.0.0"
+        public: true # For transient dependencies
     # For components hosted on non-official web service:
     company_user/component:
         version: "~1.0.0"

@@ -27,7 +27,7 @@ COMMIT_ID_RE = re.compile(r'[0-9a-f]{40}')
 
 @serializable
 class Manifest(object):
-    _serializaton_properties = [
+    _serialization_properties = [
         'dependencies',
         'description',
         'maintainers',
@@ -85,7 +85,12 @@ class Manifest(object):
                 details = {'version': details}
 
             source = tools.sources.BaseSource.fromdict(name, details)
-            component = ComponentRequirement(name, source, version_spec=details.get('version') or '*')
+            component = ComponentRequirement(
+                name,
+                source,
+                version_spec=details.get('version') or '*',
+                public=details.get('public', False),
+            )
             manifest._dependencies.append(component)
 
         return manifest
@@ -105,21 +110,29 @@ class Manifest(object):
 
 @serializable
 class ComponentRequirement(object):
-    _serializaton_properties = [
-        'version_spec',
-        'source',
+    _serialization_properties = [
         'name',
+        'public',
+        'source',
+        'version_spec',
     ]
 
     def __init__(
             self,
             name,  # type: str
             source,  # type: BaseSource
-            version_spec='*'):
+            version_spec='*',  # type: str
+            public=False,  # type: bool
+    ):
         # type: (...) -> None
         self.version_spec = version_spec
         self.source = source
         self._name = name
+        self.public = public
+
+    @property
+    def meta(self):
+        return self.source.meta
 
     @property
     def name(self):

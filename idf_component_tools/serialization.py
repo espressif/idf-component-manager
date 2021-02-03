@@ -33,7 +33,7 @@ def serialize(value):
 
 def serializable(_cls=None, like='dict'):
     """Returns the same class with `serialize` method to handle nested structures.
-    Requires `_serializaton_properties` to be defined in the class"""
+    Requires `_serialization_properties` to be defined in the class"""
     def wrapper(cls):
         # Check if class is already serializable by custom implementation
         if hasattr(cls, 'serialize'):
@@ -43,7 +43,7 @@ def serializable(_cls=None, like='dict'):
 
             def _serialize(self):
                 # Use all properties if list is not selected
-                properties = sorted(list(set(getattr(self, '_serializaton_properties', self.__dict__.keys()))))
+                properties = sorted(list(set(getattr(self, '_serialization_properties', []))))
                 return OrderedDict((prop, serialize(getattr(self, prop))) for prop in properties)
 
         elif like == 'str':
