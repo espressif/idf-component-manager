@@ -2,13 +2,14 @@
 from __future__ import print_function
 
 import os
+import shutil
+import tempfile
 from io import open
 from pathlib import Path
-from shutil import copyfile
 from typing import Optional
 
 from idf_component_tools.api_client import APIClientError
-from idf_component_tools.archive_tools import pack_archive
+from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.errors import FatalError
 from idf_component_tools.file_tools import create_directory
@@ -53,7 +54,7 @@ class ComponentManager(object):
                 os.path.dirname(os.path.realpath(__file__)), 'templates', 'idf_component_template.yml')
             create_directory(self.main_component_path)
             print('Creating `idf_component.yml` in the main component directory')
-            copyfile(example_path, self.main_manifest_path)
+            shutil.copyfile(example_path, self.main_manifest_path)
 
     def pack_component(self, args):
         def _filter_files(info):
@@ -73,8 +74,24 @@ class ComponentManager(object):
 
     def upload_component(self, args):
         client, namespace = service_details(args.get('namespace'), args.get('service_profile'))
-        manifest = ManifestManager(self.path, check_required_fields=True).load()
-        archive_file = os.path.join(self.dist_path, _archive_name(manifest))
+        archive_file = args.get('archive')
+        if archive_file:
+            if not os.path.isfile(archive_file):
+                raise FatalError('Cannot find archive to upload: {}'.format(archive_file))
+
+            tempdir = tempfile.mkdtemp()
+            try:
+                unpack_archive(archive_file, tempdir)
+                manifest = ManifestManager(tempdir, check_required_fields=True).load()
+            finally:
+                shutil.rmtree(tempdir)
+
+        else:
+            manifest = ManifestManager(self.path, check_required_fields=True).load()
+            archive_file = os.path.join(self.dist_path, _archive_name(manifest))
+            if not os.path.isfile(archive_file):
+                self.pack_component(args)
+
         print('Uploading archive: %s' % archive_file)
 
         try:

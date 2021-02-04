@@ -51,8 +51,10 @@ def action_extensions(base_actions, project_path):
             'upload-component': {
                 'callback': callback,
                 'help': 'Upload component in dist directory to the component service.',
-                'dependencies': ['pack-component'],
-                'options': SERVICE_OPTIONS
+                'options': SERVICE_OPTIONS + [{
+                    'names': ['--archive'],
+                    'help': 'Pass an archive to for upload',
+                }],
             },
         },
     }
