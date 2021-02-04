@@ -95,7 +95,10 @@ class ComponentManager(object):
         print('Uploading archive: %s' % archive_file)
 
         try:
-            client.upload_version(component_name='/'.join([namespace, manifest.name]), file_path=archive_file)
+            client.upload_version(
+                component_name='/'.join([namespace, manifest.name]),
+                file_path=archive_file,
+            )
             print('Component was successfully uploaded')
         except APIClientError as e:
             raise FatalError(e)

@@ -2,9 +2,12 @@
 import os
 from io import open
 
-import idf_component_tools as tools
 import requests
 import semantic_version as semver
+from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
+from tqdm import tqdm
+
+import idf_component_tools as tools
 
 
 class APIClientError(Exception):
@@ -93,22 +96,41 @@ class APIClient(object):
             raise APIClientError('Unexpected component server response')
 
     def upload_version(self, component_name, file_path):
-        endpoint = self.join_url(self.base_url, 'components', component_name.lower(), 'versions')
-        filename = os.path.basename(file_path)
-
-        files = {'file': (filename, open(file_path, 'rb'), 'application/octet-stream')}
-
         if not self.auth_token:
             raise APIClientError('API token is required')
 
-        try:
-            response = requests.post(endpoint, files=files, headers=self.auth_header)
-            response.raise_for_status()
-            body = response.json()
-            return body['id']
+        endpoint = self.join_url(self.base_url, 'components', component_name.lower(), 'versions')
 
-        except requests.exceptions.RequestException as e:
-            raise APIClientError('Cannot upload version:\n%s' % e)
+        with open(file_path, 'rb') as file:
+            filename = os.path.basename(file_path)
+
+            encoder = MultipartEncoder({'file': (filename, file, 'application/octet-stream')})
+            headers = {'Content-Type': encoder.content_type}
+            headers.update(self.auth_header)
+
+            progress_bar = tqdm(total=encoder.len, unit_scale=True, unit='B', disable=None)
+
+            def callback(monitor, memo={'progress': 0}):  # type: (MultipartEncoderMonitor, dict) -> None
+                progress_bar.update(monitor.bytes_read - memo['progress'])
+                memo['progress'] = monitor.bytes_read
+
+            data = MultipartEncoderMonitor(encoder, callback)
+
+            try:
+                response = requests.post(
+                    endpoint,
+                    data=data,
+                    headers=headers,
+                )
+
+                response.raise_for_status()
+                body = response.json()
+                return body['id']
+
+            except requests.exceptions.RequestException as e:
+                raise APIClientError('Cannot upload version:\n%s' % e)
+            finally:
+                progress_bar.close()
 
     def create_component(self, component_name):
         endpoint = self.join_url(self.base_url, 'components', component_name.lower())

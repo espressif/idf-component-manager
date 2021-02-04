@@ -16,6 +16,7 @@ REQUIRES = [
     'pathlib;python_version<"3.4"',
     'pyyaml',
     'requests',
+    'requests-toolbelt',
     'schema',
     'semantic_version',
     'six',
