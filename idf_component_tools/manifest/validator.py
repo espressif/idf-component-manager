@@ -27,7 +27,7 @@ REQUIRED_KEYS = (
     'version',
 )
 
-SLUG_RE = re.compile(r'^[-a-zA-Z0-9_/]+\Z')
+SLUG_RE = re.compile(r'^[-a-z0-9_/]+\Z')
 
 
 class ManifestValidator(object):
@@ -74,6 +74,15 @@ class ManifestValidator(object):
 
         return self
 
+    def _check_name(self, component):
+        if not SLUG_RE.match(component):
+            self.add_error(
+                'Component\'s name is not valid "%s", should contain only lowercase letters, numbers, /, _ and -.' %
+                component)
+
+        if '__' in component:
+            self.add_error('Component\'s name "%s" should not contain two consecutive underscores.' % component)
+
     def validate_normalize_dependencies(self):
         if ('dependencies' not in self.manifest_tree.keys() or not self.manifest_tree['dependencies']):
             return self
@@ -89,10 +98,7 @@ class ManifestValidator(object):
             return self
 
         for component, details in dependencies.items():
-            if not SLUG_RE.match(component):
-                self.add_error(
-                    'Component\'s name is not valid "%s", should contain only letters, numbers, /, _ and -.' %
-                    component)
+            self._check_name(component)
 
             if isinstance(details, str):
                 dependencies[component] = details = {'version': details}
@@ -117,9 +123,13 @@ class ManifestValidator(object):
 
         for key in REQUIRED_KEYS:
             try:
-                key = self.manifest_tree[key]
+                value = self.manifest_tree[key]
+                if key == 'name':
+                    self._check_name(value)
+
             except KeyError:
-                self.add_error('"%s" is required for this manifest')
+                self.add_error('"%s" is required for this manifest' % key)
+
         return self
 
     def validate_targets(self):
