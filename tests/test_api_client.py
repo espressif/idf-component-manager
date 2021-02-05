@@ -1,6 +1,7 @@
 import pytest
 import vcr
-from idf_component_tools.api_client import APIClient
+
+from idf_component_tools.api_client import APIClient, join_url
 
 
 @pytest.fixture
@@ -30,7 +31,7 @@ class TestAPIClient(object):
         ]
 
         for test in tests:
-            assert APIClient.join_url(*test['in']) == test['out']
+            assert join_url(*test['in']) == test['out']
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_component_versions.yaml')
     def test_version(self, base_url):

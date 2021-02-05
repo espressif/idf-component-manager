@@ -14,27 +14,27 @@ class APIClientError(Exception):
     pass
 
 
+def join_url(*args):  # type: (*str) -> str
+    """
+    Joins given arguments into an url and add trailing slash
+    """
+    parts = [part[:-1] if part and part[-1] == '/' else part for part in args]
+    parts.append('')
+    return '/'.join(parts)
+
+
 class APIClient(object):
     def __init__(self, base_url, auth_token=None):
         self.base_url = base_url
         self.auth_token = auth_token
         self.auth_header = {'Authorization': 'Bearer %s' % auth_token}
 
-    @staticmethod
-    def join_url(*args):
-        """
-        Joins given arguments into an url and add trailing slash
-        """
-        parts = list(map(lambda x: x[:-1] if x and x[-1] == '/' else x, args))
-        parts.append('')
-        return '/'.join(parts)
-
     # TODO: add some caching to versions and component endpoints
-    def versions(self, component_name, spec):
+    def versions(self, component_name, spec='*'):
         """List of versions for given component with required spec"""
         component_name = component_name.lower()
 
-        endpoint = self.join_url(self.base_url, 'components', component_name)
+        endpoint = join_url(self.base_url, 'components', component_name)
 
         try:
             # TODO may be add versions endpoint
@@ -45,11 +45,9 @@ class APIClient(object):
 
             return tools.manifest.ComponentWithVersions(
                 name=component_name,
-                versions=map(
-                    lambda v: tools.manifest.ComponentVersion(
-                        version_string=v['version'], component_hash=v['component_hash']),
-                    body['versions'],
-                ),
+                versions=[
+                    tools.manifest.ComponentVersion(version_string=version['version']) for version in body['versions']
+                ],
             )
 
         except requests.exceptions.RequestException:
@@ -63,7 +61,7 @@ class APIClient(object):
     def component(self, component_name, version=None):
         """Manifest for given version of component, if version is None most recent version returned"""
 
-        endpoint = self.join_url(self.base_url, 'components', component_name.lower())
+        endpoint = join_url(self.base_url, 'components', component_name.lower())
 
         try:
             raw_response = requests.get(endpoint)
@@ -99,7 +97,7 @@ class APIClient(object):
         if not self.auth_token:
             raise APIClientError('API token is required')
 
-        endpoint = self.join_url(self.base_url, 'components', component_name.lower(), 'versions')
+        endpoint = join_url(self.base_url, 'components', component_name.lower(), 'versions')
 
         with open(file_path, 'rb') as file:
             filename = os.path.basename(file_path)
@@ -133,7 +131,7 @@ class APIClient(object):
                 progress_bar.close()
 
     def create_component(self, component_name):
-        endpoint = self.join_url(self.base_url, 'components', component_name.lower())
+        endpoint = join_url(self.base_url, 'components', component_name.lower())
 
         if not self.auth_token:
             raise APIClientError('API token is required')

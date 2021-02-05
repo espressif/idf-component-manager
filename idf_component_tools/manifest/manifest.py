@@ -75,8 +75,8 @@ class Manifest(object):
             url=manifest_tree.get('url'),
             description=manifest_tree.get('description'),
             targets=manifest_tree.get('targets', []))
-        version = manifest_tree.get('version')
 
+        version = manifest_tree.get('version')
         if version:
             manifest.version = ComponentVersion(version)
 
@@ -142,26 +142,24 @@ class ComponentRequirement(object):
 @total_ordering
 @serializable(like='str')
 class ComponentVersion(object):
-    def __init__(self, version_string, component_hash=None):  # type: (str, Optional[str]) -> None
+    def __init__(self, version_string):  # type: (str) -> None
         """
         version_string - can be `*`, git commit hash (hex, 160 bit) or valid semantic version string
         """
 
-        self.is_commit_id = bool(COMMIT_ID_RE.match(version_string))
-        self.is_any = version_string == '*'
+        self._version_string = version_string.strip().lower()
+        self._semver = None
+
+        # Setting flags:
+        self.is_commit_id = bool(COMMIT_ID_RE.match(self._version_string))
+        self.is_any = self._version_string == '*'
         self.is_semver = False
 
-        if not self.is_commit_id and not self.is_any:
-            self._semver = semver.Version(version_string)
-            self.is_semver = True
-
-        self._version_string = version_string.strip().lower()
-        self.component_hash = component_hash
+        # Checking format
+        if not (self.is_any or self.is_commit_id):
+            self._semver = semver.Version(self._version_string)
 
     def __eq__(self, other):
-        if self.component_hash != other.component_hash:
-            return False
-
         if self.is_semver and other.is_semver:
             return self._semver == other._semver
         else:
@@ -169,9 +167,12 @@ class ComponentVersion(object):
 
     def __lt__(self, other):
         if not self.is_semver or not other.is_semver:
-            raise ValueError('Cannot compare versions of different components')
+            raise ValueError('Can only compare semantic versions')
 
         return self._semver < other._semver
+
+    def __repr__(self):
+        return 'ComponentVersion("{}")'.format(self._version_string)
 
     def __str__(self):
         return self._version_string

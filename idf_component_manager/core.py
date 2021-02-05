@@ -92,13 +92,18 @@ class ComponentManager(object):
             if not os.path.isfile(archive_file):
                 self.pack_component(args)
 
-        print('Uploading archive: %s' % archive_file)
-
         try:
-            client.upload_version(
-                component_name='/'.join([namespace, manifest.name]),
-                file_path=archive_file,
-            )
+            component_name = '/'.join([namespace, manifest.name])
+            # Checking if current version already uploaded
+            versions = client.versions(component_name, spec='*').versions
+            if manifest.version in versions:
+                raise FatalError(
+                    'Version {} of the component "{}" is already on the service'.format(
+                        manifest.version, component_name))
+
+            # Uploading the component
+            print('Uploading archive: %s' % archive_file)
+            client.upload_version(component_name=component_name, file_path=archive_file)
             print('Component was successfully uploaded')
         except APIClientError as e:
             raise FatalError(e)
