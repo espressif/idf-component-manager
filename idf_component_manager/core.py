@@ -11,7 +11,7 @@ from typing import Optional
 from idf_component_tools.api_client import APIClientError
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name
-from idf_component_tools.errors import FatalError
+from idf_component_tools.errors import FatalError, NothingToDoError
 from idf_component_tools.file_tools import create_directory
 from idf_component_tools.manifest import ManifestManager
 
@@ -97,7 +97,7 @@ class ComponentManager(object):
             # Checking if current version already uploaded
             versions = client.versions(component_name, spec='*').versions
             if manifest.version in versions:
-                raise FatalError(
+                raise NothingToDoError(
                     'Version {} of the component "{}" is already on the service'.format(
                         manifest.version, component_name))
 

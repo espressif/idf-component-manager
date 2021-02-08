@@ -33,7 +33,7 @@ def main():
         getattr(manager, str(args.command).replace('-', '_'))(vars(args))
     except FatalError as e:
         print(e)
-        sys.exit(2)
+        sys.exit(e.exit_code)
 
 
 if __name__ == '__main__':

@@ -1,8 +1,20 @@
+from typing import Any
+
+
 class FatalError(RuntimeError):
-    """
-    Wrapper class for unrecoverable runtime errors.
-    """
-    pass
+    """Generic unrecoverable runtime error"""
+    exit_code = 2
+
+    def __init__(self, *args, **kwargs):  # type: (Any, Any) -> None
+        super(FatalError, self).__init__(*args)
+        exit_code = kwargs.pop('exit_code', None)
+        if exit_code:
+            self.exit_code = exit_code
+
+
+class NothingToDoError(FatalError):
+    '''Generic Runtime error for states when operation is prematurely aborted due to nothing to do'''
+    exit_code = 144  # NOP
 
 
 class ProcessingError(FatalError):

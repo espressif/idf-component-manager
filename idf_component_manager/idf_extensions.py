@@ -25,7 +25,7 @@ def action_extensions(base_actions, project_path):
             getattr(manager, str(subcommand_name).replace('-', '_'))(kwargs)
         except FatalError as e:
             print(e)
-            sys.exit(2)
+            sys.exit(e.exit_code)
 
     return {
         'actions': {

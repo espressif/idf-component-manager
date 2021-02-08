@@ -110,4 +110,4 @@ def main():
         args.func(args)
     except FatalError as e:
         print(e)
-        sys.exit(2)
+        sys.exit(e.exit_code)
