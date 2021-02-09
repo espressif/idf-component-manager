@@ -12,6 +12,7 @@ except ImportError:
     pass
 
 KNOWN_ROOT_KEYS = (
+    'name',  # Name key is ignored
     'maintainers',
     'dependencies',
     'targets',
@@ -124,6 +125,9 @@ class ManifestValidator(object):
         for key in REQUIRED_KEYS:
             if key not in self.manifest_tree:
                 self.add_error('"%s" is required for this manifest' % key)
+
+        if 'name' in self.manifest_tree:
+            self.add_error('Name is not supported for components on the service')
 
         return self
 

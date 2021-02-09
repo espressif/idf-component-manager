@@ -3,7 +3,7 @@
 from idf_component_tools.serialization import serializable
 
 from ..errors import LockError
-from ..manifest import ComponentVersion
+from ..manifest import ComponentRequirement, ComponentVersion
 from ..sources.base import BaseSource
 
 try:
@@ -27,7 +27,7 @@ class SolvedComponent(object):
             version,  # type: ComponentVersion
             source,  # type: BaseSource
             component_hash=None,  # type: Optional[str]
-            dependencies=None,  # type: Optional[Iterable[SolvedComponent]]
+            dependencies=None,  # type: Optional[Iterable[ComponentRequirement]]
     ):
         # type: (...) -> None
         self.name = name

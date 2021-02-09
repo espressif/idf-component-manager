@@ -150,7 +150,7 @@ class ComponentRequirement(object):
 @total_ordering
 @serializable(like='str')
 class ComponentVersion(object):
-    def __init__(self, version_string):  # type: (str) -> None
+    def __init__(self, version_string, dependencies=None):  # type: (str, Optional[List[ComponentRequirement]]) -> None
         """
         version_string - can be `*`, git commit hash (hex, 160 bit) or valid semantic version string
         """
@@ -218,9 +218,11 @@ class ComponentSpec(object):
 class HashedComponentVersion(ComponentVersion):
     def __init__(self, *args, **kwargs):
         component_hash = kwargs.pop('component_hash', None)
+        dependencies = kwargs.pop('dependencies', [])
         super(HashedComponentVersion, self).__init__(*args, **kwargs)
 
         self.component_hash = component_hash
+        self.dependencies = dependencies
 
 
 class ComponentWithVersions(object):

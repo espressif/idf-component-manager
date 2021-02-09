@@ -7,6 +7,7 @@ import semantic_version as semver
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 from tqdm import tqdm
 
+# Import whole module to avoid circular dependencies
 import idf_component_tools as tools
 
 
@@ -24,10 +25,30 @@ def join_url(*args):  # type: (*str) -> str
 
 
 class APIClient(object):
-    def __init__(self, base_url, auth_token=None):
+    def __init__(self, base_url, source=None, auth_token=None):
         self.base_url = base_url
         self.auth_token = auth_token
         self.auth_header = {'Authorization': 'Bearer %s' % auth_token}
+        self.source = source
+
+    def _version_dependencies(self, version):
+        dependencies = []
+        for dependency in version.get('dependencies', []):
+            # Support only idf and service sources
+            if dependency['source'] == 'idf':
+                source = tools.sources.IDFSource({})
+            else:
+                source = self.source or tools.sources.WebServiceSource({})
+
+            dependencies.append(
+                tools.manifest.ComponentRequirement(
+                    name='{}/{}'.format(dependency['namespace'], dependency['name']),
+                    version_spec=dependency['spec'],
+                    public=dependency['is_public'],
+                    source=source,
+                ))
+
+        return dependencies
 
     def versions(self, component_name, spec='*'):
         """List of versions for given component with required spec"""
@@ -47,6 +68,7 @@ class APIClient(object):
                     tools.manifest.HashedComponentVersion(
                         version_string=version['version'],
                         component_hash=version['component_hash'],
+                        dependencies=self._version_dependencies(version),
                     ) for version in body['versions']
                 ],
             )
@@ -70,8 +92,9 @@ class APIClient(object):
 
             if version:
                 requested_version = tools.manifest.ComponentVersion(str(version))
-                best_version = list(
-                    filter(lambda v: tools.manifest.ComponentVersion(v['version']) == requested_version, versions))[0]
+                best_version = [
+                    v for v in versions if tools.manifest.ComponentVersion(v['version']) == requested_version
+                ][0]
             else:
                 best_version = max(versions, key=lambda v: semver.Version(v['version']))
 
@@ -79,7 +102,7 @@ class APIClient(object):
                 name=('%s/%s' % (response['namespace'], response['name'])),
                 version=tools.manifest.ComponentVersion(best_version['version']),
                 download_url=best_version['url'],
-                dependencies=None,
+                dependencies=self._version_dependencies(best_version),
                 maintainers=None,
             )
 

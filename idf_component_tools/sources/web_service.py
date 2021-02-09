@@ -39,7 +39,8 @@ class WebServiceSource(BaseSource):
     def __init__(self, source_details=None):
         super(WebServiceSource, self).__init__(source_details=source_details)
         self.base_url = str(source_details.get('service_url') or default_component_service_url())
-        self.api_client = source_details.get('api_client', None) or api_client.APIClient(base_url=self.base_url)
+        self.api_client = source_details.get('api_client', None) or api_client.APIClient(
+            base_url=self.base_url, source=self)
 
     @classmethod
     def required_keys(cls):
