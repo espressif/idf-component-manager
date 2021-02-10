@@ -1,19 +1,21 @@
-from typing import List, Set
-
 from tqdm import tqdm
 
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import ManifestManager
-from idf_component_tools.manifest import ProjectRequirements
+from idf_component_tools.manifest import ManifestManager, ProjectRequirements
 from idf_component_tools.sources.fetcher import ComponentFetcher
 
 from .version_solver.version_solver import VersionSolver
+
+try:
+    from typing import List, Set
+except ImportError:
+    pass
 
 
 def download_project_dependencies(manifest_paths, lock_path, managed_components_path):
     # type: (List[dict], str, str) -> Set[str]
     '''Solves dependencies and download components'''
-    manifests = [ManifestManager(component['path']).load() for component in manifest_paths]
+    manifests = [ManifestManager(component['path'], component['name']).load() for component in manifest_paths]
     project_requirements = ProjectRequirements(manifests)
     lock_manager = LockManager(lock_path)
     solution = lock_manager.load()

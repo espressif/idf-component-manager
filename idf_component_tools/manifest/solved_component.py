@@ -1,11 +1,15 @@
 """Results of the solver"""
 
-from typing import Iterable, Optional
-
 from idf_component_tools.serialization import serializable
 
 from ..errors import LockError
+from ..manifest import ComponentVersion
 from ..sources.base import BaseSource
+
+try:
+    from typing import Iterable, Optional
+except ImportError:
+    pass
 
 
 @serializable
@@ -20,7 +24,7 @@ class SolvedComponent(object):
     def __init__(
             self,
             name,  # type: str
-            version,  # type: str
+            version,  # type: ComponentVersion
             source,  # type: BaseSource
             component_hash=None,  # type: Optional[str]
             dependencies=None,  # type: Optional[Iterable[SolvedComponent]]
@@ -46,7 +50,7 @@ class SolvedComponent(object):
             source = BaseSource.fromdict(source_name, source_details)
             return cls(
                 name=details['name'],
-                version=details['version'],
+                version=ComponentVersion(details['version']),
                 source=source,
                 component_hash=details.get('component_hash', None))
         except KeyError as e:

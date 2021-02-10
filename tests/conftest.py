@@ -9,7 +9,6 @@ def valid_manifest_hash():
 @pytest.fixture()
 def valid_manifest():
     return {
-        'name': 'test',
         'version': '2.3.1',
         'targets': ['esp32'],
         'maintainers': ['Test Tester <test@example.com>'],

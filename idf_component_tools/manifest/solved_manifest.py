@@ -1,6 +1,9 @@
-from typing import Dict, List
-
 from .solved_component import SolvedComponent
+
+try:
+    from typing import Dict, List
+except ImportError:
+    pass
 
 
 class SolvedManifest(object):

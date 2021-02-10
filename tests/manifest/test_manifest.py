@@ -3,14 +3,44 @@ import os
 import pytest
 
 from idf_component_tools.errors import ManifestError
-from idf_component_tools.manifest import ManifestManager, ManifestValidator
+from idf_component_tools.manifest import ComponentVersion, ManifestManager, ManifestValidator
 from idf_component_tools.manifest.validator import SLUG_RE
+
+
+class TestComponentVersion(object):
+    def test_comparison(self):
+        versions = [
+            ComponentVersion('3.0.4'),
+            ComponentVersion('3.0.6'),
+            ComponentVersion('3.0.5'),
+        ]
+
+        assert versions[0] == ComponentVersion('3.0.4')
+        assert versions[0] != ComponentVersion('*')
+        assert versions[0] != ComponentVersion('699d3202533d13b55df3021d93352d8c242ee81e')
+        assert str(max(versions)) == '3.0.6'
+
+    def test_flags(self):
+        semver = ComponentVersion('1.2.3')
+        assert semver.is_semver
+        assert not semver.is_commit_id
+        assert not semver.is_any
+
+        semver = ComponentVersion('*')
+        assert not semver.is_semver
+        assert not semver.is_commit_id
+        assert semver.is_any
+
+        semver = ComponentVersion('699d3202533d13b55df3021d93352d8c242ee81e')
+        assert not semver.is_semver
+        assert semver.is_commit_id
+        assert not semver.is_any
 
 
 class TestManifestPipeline(object):
     def test_check_filename(self, tmp_path):
         path = tmp_path.as_posix()
-        parser = ManifestManager(path)
+        parser = ManifestManager(path, name='test')
 
         parser.check_filename()
 
@@ -18,7 +48,7 @@ class TestManifestPipeline(object):
 
     def test_parse_invalid_yaml(self):
         manifest_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'fixtures', 'invalid_yaml.yml')
-        parser = ManifestManager(manifest_path)
+        parser = ManifestManager(manifest_path, name='fixtures')
 
         with pytest.raises(ManifestError) as e:
             parser.manifest_tree
@@ -28,13 +58,13 @@ class TestManifestPipeline(object):
 
     def test_parse_valid_yaml(self, capsys):
         manifest_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'fixtures', 'idf_component.yml')
-        parser = ManifestManager(manifest_path)
+        parser = ManifestManager(manifest_path, name='fixtures')
 
-        assert len(parser.manifest_tree.keys()) == 7
+        assert len(parser.manifest_tree.keys()) == 6
 
     def test_prepare(self):
         manifest_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'fixtures', 'idf_component.yml')
-        parser = ManifestManager(manifest_path)
+        parser = ManifestManager(manifest_path, name='fixtures')
 
         parser.load()
 
@@ -176,4 +206,4 @@ class TestManifestValidator(object):
 
         errors = validator.validate_normalize()
 
-        assert len(errors) == 2
+        assert len(errors) == 1

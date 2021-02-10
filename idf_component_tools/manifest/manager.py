@@ -1,6 +1,5 @@
 import os
 from io import open
-from typing import Any, Dict
 
 import yaml
 
@@ -8,18 +7,24 @@ from ..errors import ManifestError
 from .manifest import Manifest
 from .validator import ManifestValidator
 
+try:
+    from typing import Any, Dict, List
+except ImportError:
+    pass
+
 EMPTY_MANIFEST = dict()  # type: Dict[str, Any]
 
 
 class ManifestManager(object):
     """Parser for manifest files in the project"""
-    def __init__(self, path, check_required_fields=False):
+    def __init__(self, path, name, check_required_fields=False):  # type: (str, str, bool) -> None
         # Path of manifest file
         self._path = path
+        self.name = name
         self._manifest_tree = None
         self._manifest = None
         self._is_valid = None
-        self._validation_errors = []
+        self._validation_errors = []  # type: List[str]
         self.check_required_fields = check_required_fields
 
     def check_filename(self):
@@ -82,4 +87,4 @@ class ManifestManager(object):
 
             raise ManifestError('\n'.join(error_desc))
 
-        return Manifest.fromdict(self.manifest_tree)
+        return Manifest.fromdict(self.manifest_tree, name=self.name)

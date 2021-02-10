@@ -1,15 +1,19 @@
 """Small class that manages getting components to right path using system-wide cache"""
 
 import os
-from typing import TYPE_CHECKING, List
 
 from ..build_system_tools import build_name
 from ..errors import FetchingError
 from ..hash_tools import validate_dir
 from ..manifest import SolvedComponent
 
-if TYPE_CHECKING:
-    from . import BaseSource
+try:
+    from typing import TYPE_CHECKING, List
+
+    if TYPE_CHECKING:
+        from . import BaseSource
+except ImportError:
+    pass
 
 
 class ComponentFetcher(object):

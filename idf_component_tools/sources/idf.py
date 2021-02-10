@@ -1,9 +1,13 @@
 import os
-from typing import Dict
 
 from ..errors import FetchingError
-from ..manifest import ComponentVersion, ComponentWithVersions
+from ..manifest import ComponentWithVersions, HashedComponentVersion
 from .base import BaseSource
+
+try:
+    from typing import Dict
+except ImportError:
+    pass
 
 
 class IDFSource(BaseSource):
@@ -13,7 +17,7 @@ class IDFSource(BaseSource):
         super(IDFSource, self).__init__(source_details=source_details)
 
         # TODO: Add fetching for idf.versions
-        self._version = ComponentVersion('*')
+        self._version = HashedComponentVersion('*')
 
     @staticmethod
     def is_me(name, details):

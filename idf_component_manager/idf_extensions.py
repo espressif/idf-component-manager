@@ -6,6 +6,11 @@ from .core import ComponentManager
 
 SERVICE_OPTIONS = [
     {
+        'names': ['--name'],
+        'help': 'Component name',
+        'required': True,
+    },
+    {
         'names': ['--namespace'],
         'help': 'Namespace for the component. Can be set in config file.',
         'envvar': 'IDF_COMPONENT_NAMESPACE',

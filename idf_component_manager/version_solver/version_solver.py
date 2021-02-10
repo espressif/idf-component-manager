@@ -1,6 +1,9 @@
-from typing import Optional
-
 from idf_component_tools.manifest import ComponentRequirement, ProjectRequirements, SolvedComponent, SolvedManifest
+
+try:
+    from typing import Optional
+except ImportError:
+    pass
 
 
 class VersionSolver(object):

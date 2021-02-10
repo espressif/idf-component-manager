@@ -8,12 +8,12 @@ def dep_by_name(manifest, name):
 
 
 def test_manifest_hash(valid_manifest, valid_manifest_hash):
-    manifest = Manifest.fromdict(valid_manifest)
+    manifest = Manifest.fromdict(valid_manifest, name='test')
     assert manifest.manifest_hash == valid_manifest_hash
 
 
 def test_project_manifest_builder(valid_manifest):
-    manifest = Manifest.fromdict(valid_manifest)
+    manifest = Manifest.fromdict(valid_manifest, name='test')
     assert str(manifest.version) == '2.3.1'
     assert manifest.description == 'Test project'
     assert manifest.url == 'https://github.com/espressif/esp-idf'

@@ -1,5 +1,4 @@
 import re
-from typing import List, Set
 
 from semantic_version import Version
 
@@ -7,12 +6,16 @@ import idf_component_tools as tools
 
 from .manifest import ComponentSpec
 
+try:
+    from typing import List, Set
+except ImportError:
+    pass
+
 KNOWN_ROOT_KEYS = (
     'maintainers',
     'dependencies',
     'targets',
     'version',
-    'name',
     'description',
     'url',
 )
@@ -22,10 +25,7 @@ KNOWN_TARGETS = (
     'esp32s2',
 )
 
-REQUIRED_KEYS = (
-    'name',
-    'version',
-)
+REQUIRED_KEYS = ('version', )
 
 SLUG_RE = re.compile(r'^[-a-z0-9_/]+\Z')
 
@@ -122,12 +122,7 @@ class ManifestValidator(object):
             return self
 
         for key in REQUIRED_KEYS:
-            try:
-                value = self.manifest_tree[key]
-                if key == 'name':
-                    self._check_name(value)
-
-            except KeyError:
+            if key not in self.manifest_tree:
                 self.add_error('"%s" is required for this manifest' % key)
 
         return self

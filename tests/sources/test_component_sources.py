@@ -60,7 +60,7 @@ class TestComponentLocalSource(object):
             source = LocalSource(source_details={'path': tempdir})
             versions = source.versions('test', spec='*')
 
-            assert versions.name == 'test'
+            assert versions.name == os.path.basename(tempdir)
             assert versions.versions[0] == ComponentVersion('*')
 
         finally:
@@ -75,7 +75,7 @@ class TestComponentLocalSource(object):
             'cmp',
         )
         source = LocalSource(source_details={'path': path})
-        versions = source.versions('test', spec='*')
+        versions = source.versions('cmp', spec='*')
 
-        assert versions.name == 'test'
+        assert versions.name == 'cmp'
         assert versions.versions[0] == ComponentVersion('1.0.0')

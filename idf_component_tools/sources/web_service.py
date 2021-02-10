@@ -6,7 +6,6 @@ import shutil
 import tempfile
 from hashlib import sha256
 from io import open
-from typing import Dict
 
 import requests
 
@@ -23,6 +22,11 @@ try:
     from urllib.parse import urlparse  # type: ignore
 except ImportError:
     from urlparse import urlparse  # type: ignore
+
+try:
+    from typing import Dict
+except ImportError:
+    pass
 
 
 def default_component_service_url():

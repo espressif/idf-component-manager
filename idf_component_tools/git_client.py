@@ -1,11 +1,15 @@
 import os
 import re
 import subprocess  # nosec
-from typing import List, Union
 
 from semantic_version import Version
 
 from .errors import GitError
+
+try:
+    from typing import List, Union
+except ImportError:
+    pass
 
 
 # Git error that is suppossed to be handled in the code, non-fatal

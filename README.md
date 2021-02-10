@@ -16,15 +16,15 @@ The component manager may be executed as a python module, for example:
 python -m idf_component_manager create-remote-component --namespace espressif --name test
 ```
 
-## Writing a project manifest
+## Writing the manifest
 
-Example of project manifest:
+Example of a component manifest:
 
 ```yaml
-version: "2.3.1" # Project or component version (optional)
-targets: # List of supported targets (optional)
+version: "2.3.1" # Component version, required only for components pushed to the service
+targets: # List of supported targets (optional, if missing all targets are considered to be supported)
     - esp32
-description: Test project # Project description (optional)
+description: Test project # Description (optional)
 url: https://github.com/espressif/esp-idf # Original repository (optional)
 dependencies:
     # Required IDF version

@@ -1,5 +1,4 @@
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Callable, Dict, List, Union
 
 from schema import Optional, Or
 from six import string_types
@@ -9,8 +8,13 @@ from idf_component_tools.manifest import ComponentWithVersions
 
 from ..errors import SourceError
 
-if TYPE_CHECKING:
-    from ..manifest import SolvedComponent
+try:
+    from typing import TYPE_CHECKING, Callable, Dict, List, Union
+
+    if TYPE_CHECKING:
+        from ..manifest import SolvedComponent
+except ImportError:
+    pass
 
 
 class BaseSource(object):
@@ -127,7 +131,6 @@ class BaseSource(object):
     ):
         # type: (...) -> ComponentWithVersions
         """List of versions for given spec"""
-        pass
 
     @abstractmethod
     def download(self, component, download_path):  # type: (SolvedComponent, str) -> List[str]
@@ -136,12 +139,8 @@ class BaseSource(object):
         Returns list of absolute paths to directories with component on local filesystem
         """
 
-        pass
-
     @abstractmethod
     def serialize(self):  # type: () -> Dict
         """
         Return fields to describe source to be saved in lock file
         """
-
-        pass

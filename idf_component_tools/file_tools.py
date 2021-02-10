@@ -3,7 +3,11 @@ import fnmatch
 import os
 import re
 from shutil import rmtree
-from typing import Any, Callable, List, Pattern, Set
+
+try:
+    from typing import Any, Callable, List, Pattern, Set
+except ImportError:
+    pass
 
 IGNORED_DIRS = ['.git', '__pycache__']
 IGNORED_FILES = ['*.pyc', '*.pyd', '*.pyo', '.DS_Store']

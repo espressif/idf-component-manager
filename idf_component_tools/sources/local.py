@@ -1,9 +1,13 @@
 import os
-from typing import Dict
 
 from ..errors import SourceError
-from ..manifest import ComponentVersion, ComponentWithVersions, ManifestManager
+from ..manifest import ComponentWithVersions, HashedComponentVersion, ManifestManager
 from .base import BaseSource
+
+try:
+    from typing import Dict
+except ImportError:
+    pass
 
 
 class LocalSource(BaseSource):
@@ -35,11 +39,12 @@ class LocalSource(BaseSource):
     def versions(self, name, details=None, spec='*'):
         """For local return version from manifest, or * if manifest not found"""
         manifest_path = os.path.join(self._path, 'idf_component.yml')
-        version = ComponentVersion('*')
+        name = os.path.basename(self._path)
+        version = HashedComponentVersion('*')
         if os.path.isfile(manifest_path):
-            manifest = ManifestManager(manifest_path).load()
+            manifest = ManifestManager(manifest_path, name=name).load()
             if manifest.version:
-                version = manifest.version
+                version = HashedComponentVersion(str(manifest.version))
         return ComponentWithVersions(name=name, versions=[version])
 
     def serialize(self):  # type: () -> Dict

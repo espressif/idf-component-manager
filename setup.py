@@ -21,7 +21,6 @@ REQUIRES = [
     'semantic_version',
     'six',
     'tqdm',
-    'typing;python_version<"3.5"',
 ]
 
 info = {}  # type: ignore

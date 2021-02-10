@@ -1,7 +1,6 @@
 """Classes to work with manifest file"""
 import re
 from functools import total_ordering
-from typing import TYPE_CHECKING, List, Optional, Union
 
 import semantic_version as semver
 
@@ -19,8 +18,13 @@ try:
 except ImportError:
     from semantic_version import Spec
 
-if TYPE_CHECKING:
-    from ..sources import BaseSource
+try:
+    from typing import TYPE_CHECKING, List, Optional, Union
+
+    if TYPE_CHECKING:
+        from ..sources import BaseSource
+except ImportError:
+    pass
 
 COMMIT_ID_RE = re.compile(r'[0-9a-f]{40}')
 
@@ -51,7 +55,7 @@ class Manifest(object):
     ):
         # type: (...) -> None
 
-        self.name = str(name) if name else ''
+        self.name = name or ''
         self.version = version
         self.maintainers = maintainers
         if dependencies is None:
@@ -67,10 +71,10 @@ class Manifest(object):
         self._manifest_hash = manifest_hash
 
     @classmethod
-    def fromdict(cls, manifest_tree):  # type: (dict) -> Manifest
+    def fromdict(cls, manifest_tree, name):  # type: (dict, str) -> Manifest
         """Coverts manifest dict to manifest object"""
         manifest = cls(
-            name=manifest_tree.get('name'),
+            name=name,
             maintainers=manifest_tree.get('maintainers'),
             url=manifest_tree.get('url'),
             description=manifest_tree.get('description'),
@@ -158,6 +162,7 @@ class ComponentVersion(object):
         # Checking format
         if not (self.is_any or self.is_commit_id):
             self._semver = semver.Version(self._version_string)
+            self.is_semver = True
 
     def __eq__(self, other):
         if self.is_semver and other.is_semver:
@@ -166,7 +171,7 @@ class ComponentVersion(object):
             return self._version_string == other._version_string
 
     def __lt__(self, other):
-        if not self.is_semver or not other.is_semver:
+        if not (self.is_semver and other.is_semver):
             raise ValueError('Can only compare semantic versions')
 
         return self._semver < other._semver
@@ -206,8 +211,16 @@ class ComponentSpec(object):
         return self._spec_string
 
 
+class HashedComponentVersion(ComponentVersion):
+    def __init__(self, *args, **kwargs):
+        component_hash = kwargs.pop('component_hash', None)
+        super(HashedComponentVersion, self).__init__(*args, **kwargs)
+
+        self.component_hash = component_hash
+
+
 class ComponentWithVersions(object):
-    def __init__(self, name, versions):
+    def __init__(self, name, versions):  # type: (str, List[HashedComponentVersion]) -> None
         self.versions = versions
         self.name = name
 

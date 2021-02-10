@@ -1,13 +1,17 @@
 ''' Helper function to init API client'''
 import os
 from collections import namedtuple
-from typing import Optional
 
 from idf_component_tools.api_client import APIClient
 from idf_component_tools.errors import FatalError
 from idf_component_tools.sources.web_service import default_component_service_url
 
 from .config import ConfigManager
+
+try:
+    from typing import Optional
+except ImportError:
+    pass
 
 ServiceDetails = namedtuple('ServiceDetails', ['client', 'namespace'])
 

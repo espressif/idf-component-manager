@@ -51,8 +51,9 @@ class TestLockManager(object):
 
     def test_lock_dump_with_solution(self, tmp_path):
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
+
         lock = LockManager(lock_path)
-        manifest = ManifestManager(manifest_path).load()
+        manifest = ManifestManager(manifest_path, name='test').load()
         components = [
             SolvedComponent(
                 name='idf',

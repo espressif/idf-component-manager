@@ -1,9 +1,13 @@
 import re
 from collections import OrderedDict, namedtuple
 from io import open
-from typing import Dict, Mapping, Set, Union
 
 from idf_component_tools.errors import FatalError
+
+try:
+    from typing import Dict, Mapping, Set, Union
+except ImportError:
+    pass
 
 ComponentName = namedtuple('ComponentName', ['prefix', 'name'])
 ComponentProperty = namedtuple('ComponentProperty', ['component', 'prop', 'value'])

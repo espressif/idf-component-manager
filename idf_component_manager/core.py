@@ -6,7 +6,6 @@ import shutil
 import tempfile
 from io import open
 from pathlib import Path
-from typing import Optional
 
 from idf_component_tools.api_client import APIClientError
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
@@ -19,6 +18,11 @@ from .cmake_component_requirements import CMakeRequirementsManager, ComponentNam
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
 from .service_details import service_details
+
+try:
+    from typing import Optional
+except ImportError:
+    pass
 
 
 class ComponentManager(object):
@@ -63,7 +67,7 @@ class ComponentManager(object):
                 return None
             return info
 
-        manifest = ManifestManager(self.path, check_required_fields=True).load()
+        manifest = ManifestManager(self.path, args['name'], check_required_fields=True).load()
         archive_file = _archive_name(manifest)
         print('Saving archive to %s' % os.path.join(self.dist_path, archive_file))
         pack_archive(
@@ -82,12 +86,12 @@ class ComponentManager(object):
             tempdir = tempfile.mkdtemp()
             try:
                 unpack_archive(archive_file, tempdir)
-                manifest = ManifestManager(tempdir, check_required_fields=True).load()
+                manifest = ManifestManager(tempdir, args['name'], check_required_fields=True).load()
             finally:
                 shutil.rmtree(tempdir)
 
         else:
-            manifest = ManifestManager(self.path, check_required_fields=True).load()
+            manifest = ManifestManager(self.path, args['name'], check_required_fields=True).load()
             archive_file = os.path.join(self.dist_path, _archive_name(manifest))
             if not os.path.isfile(archive_file):
                 self.pack_component(args)
@@ -175,7 +179,7 @@ class ComponentManager(object):
 
         for component in components_with_manifests:
             name = os.path.basename(component)
-            manifest = ManifestManager(component).load()
+            manifest = ManifestManager(component, name).load()
             name_key = ComponentName('idf', name)
 
             for dependency in manifest.dependencies:

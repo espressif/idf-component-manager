@@ -24,7 +24,7 @@ def main():
         '--service-profile',
         help='Profile for component service to use. By default profile named "default" will be used.',
         default='default')
-    parser.add_argument('--name', help='Component name')
+    parser.add_argument('--name', help='Component name', required=True)
     parser.add_argument('--archive', help='Archive name for component upload')
     args = parser.parse_args()
 

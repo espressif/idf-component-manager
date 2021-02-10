@@ -24,4 +24,4 @@ class TestSolverResult(object):
         assert isinstance(cmp, SolvedComponent)
         assert isinstance(cmp.source, WebServiceSource)
         assert cmp.source.base_url == 'https://repo.example.com'
-        assert solution.dependencies[1].version == '4.4.4'
+        assert str(solution.dependencies[1].version) == '4.4.4'

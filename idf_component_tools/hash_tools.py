@@ -3,9 +3,13 @@ import json
 import os
 from hashlib import sha256
 from io import open
-from typing import Any, Pattern, Text
 
 from .file_tools import ignored_dirs_re, ignored_files_re
+
+try:
+    from typing import Any, Pattern, Text
+except ImportError:
+    pass
 
 BLOCK_SIZE = 65536
 

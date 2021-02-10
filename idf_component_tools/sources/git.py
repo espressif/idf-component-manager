@@ -1,19 +1,23 @@
 import os
 import shutil
 from hashlib import sha256
-from typing import Dict, Union
 
 from ..file_cache import FileCache
 from ..file_tools import create_directory
 from ..git_client import GitClient
 from ..hash_tools import validate_dir
-from ..manifest import ComponentVersion, ComponentWithVersions
+from ..manifest import ComponentVersion, ComponentWithVersions, HashedComponentVersion
 from .base import BaseSource
 
 try:
     from urllib.parse import urlparse  # type: ignore
 except ImportError:
     from urlparse import urlparse  # type: ignore
+
+try:
+    from typing import Dict, Union
+except ImportError:
+    pass
 
 
 class GitSource(BaseSource):
@@ -82,7 +86,7 @@ class GitSource(BaseSource):
         """For git returns hash of locked commit, ignoring manifest"""
         version = None if spec == '*' else spec
         commit_id = self._checkout_git_source(version)
-        return ComponentWithVersions(name=name, versions=[ComponentVersion(commit_id)])
+        return ComponentWithVersions(name=name, versions=[HashedComponentVersion(commit_id)])
 
     def serialize(self):  # type: () -> Dict
         source = {

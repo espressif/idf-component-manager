@@ -1,7 +1,6 @@
 import os
 from collections import OrderedDict
 from io import open
-from typing import Any, Dict
 
 from schema import And, Optional, Or, Schema, SchemaError
 from six import string_types
@@ -13,6 +12,11 @@ import idf_component_tools as tools
 
 from ..errors import LockError
 from ..manifest import SolvedManifest
+
+try:
+    from typing import Any, Dict
+except ImportError:
+    pass
 
 FORMAT_VERSION = '1.0.0'
 

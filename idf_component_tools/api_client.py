@@ -46,7 +46,10 @@ class APIClient(object):
             return tools.manifest.ComponentWithVersions(
                 name=component_name,
                 versions=[
-                    tools.manifest.ComponentVersion(version_string=version['version']) for version in body['versions']
+                    tools.manifest.HashedComponentVersion(
+                        version_string=version['version'],
+                        component_hash=version['component_hash'],
+                    ) for version in body['versions']
                 ],
             )
 
