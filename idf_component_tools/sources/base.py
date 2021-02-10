@@ -43,6 +43,9 @@ class BaseSource(object):
     def __hash__(self):
         return hash(self._hash_values())
 
+    def __repr__(self):  # type: () -> str
+        return '{}()'.format(type(self).__name__)
+
     @staticmethod
     def fromdict(name, details):  # type: (str, Dict) -> BaseSource
         '''Build component source by dct'''

@@ -178,6 +178,7 @@ class ComponentManager(object):
             raise FatalError('Cannot find component list file. Please make sure this script is executed from CMake')
 
         for component in components_with_manifests:
+            component = component.strip()
             name = os.path.basename(component)
             manifest = ManifestManager(component, name).load()
             name_key = ComponentName('idf', name)
@@ -185,9 +186,17 @@ class ComponentManager(object):
             for dependency in manifest.dependencies:
                 if dependency.meta:
                     continue
+
                 dependency_name = build_name(dependency.name)
                 requirement_key = 'REQUIRES' if dependency.public else 'PRIV_REQUIRES'
-                requirements[name_key][requirement_key].add(dependency_name)
+
+                # Don't add requirements to the main component
+                # to let it be handled specially by the IDF build system
+                if name_key == ComponentName('idf', 'main'):
+                    continue
+
+                if dependency_name not in requirements[name_key][requirement_key]:
+                    requirements[name_key][requirement_key].append(dependency_name)
 
         requirements_manager.dump(requirements)
 

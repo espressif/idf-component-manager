@@ -24,8 +24,8 @@ def test_e2e_cmake_requirements(tmp_path):
     manager = CMakeRequirementsManager(result_path)
     requirements = manager.load()
     name = ComponentName('idf', 'espressif__cmp')
-    requirements[name]['PRIV_REQUIRES'].add('abc')
-    requirements[name]['REQUIRES'].add('def')
+    requirements[name]['PRIV_REQUIRES'].append('abc')
+    requirements[name]['REQUIRES'].append('def')
     manager.dump(requirements)
 
     assert filecmp.cmp(MODIFIED_PATH, result_path, shallow=False)

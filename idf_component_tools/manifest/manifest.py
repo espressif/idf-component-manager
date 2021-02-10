@@ -142,6 +142,10 @@ class ComponentRequirement(object):
     def name(self):
         return self.source.normalized_name(self._name)
 
+    def __repr__(self):  # type: () -> str
+        return 'ComponentRequirement("{}", {}, version_spec="{}", public={})'.format(
+            self._name, self.source, self.version_spec, self.public)
+
 
 @total_ordering
 @serializable(like='str')

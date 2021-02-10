@@ -5,7 +5,7 @@ from io import open
 from idf_component_tools.errors import FatalError
 
 try:
-    from typing import Dict, Mapping, Set, Union
+    from typing import Dict, List, Mapping, Union
 except ImportError:
     pass
 
@@ -37,19 +37,19 @@ class CMakeRequirementsManager(object):
     def __init__(self, path):
         self.path = path
 
-    def dump(self, requirements):  # type: (Mapping[ComponentName, Dict[str, Union[Set, str]]]) -> None
+    def dump(self, requirements):  # type: (Mapping[ComponentName, Dict[str, Union[List, str]]]) -> None
         with open(self.path, mode='w', encoding='utf-8') as f:
             for name, requirement in requirements.items():
                 for prop, value in requirement.items():
                     if prop in ITERABLE_PROPS:
-                        value = '"{}"'.format(';'.join(sorted(value)))
+                        value = '"{}"'.format(';'.join(value))
 
                     f.write(
                         u'__component_set_property(___{prefix}_{name} {prop} {value})\n'.format(
                             prefix=name.prefix, name=name.name, prop=prop, value=value))
 
-    def load(self):  # type: () -> Dict[ComponentName, Dict[str, Union[Set, str]]]
-        requirements = OrderedDict()  # type: Dict[ComponentName, Dict[str, Union[Set, str]]]
+    def load(self):  # type: () -> Dict[ComponentName, Dict[str, Union[List, str]]]
+        requirements = OrderedDict()  # type: Dict[ComponentName, Dict[str, Union[List, str]]]
 
         with open(self.path, mode='r', encoding='utf-8') as f:
             for line in f:
@@ -59,10 +59,10 @@ class CMakeRequirementsManager(object):
 
                     value = prop.value
                     if prop.prop in ITERABLE_PROPS:
-                        value = set(value.strip('"').split(';'))
+                        value = value.strip('"').split(';')
                         try:
                             value.remove('')
-                        except KeyError:
+                        except ValueError:
                             pass
 
                     requirement[prop.prop] = value
