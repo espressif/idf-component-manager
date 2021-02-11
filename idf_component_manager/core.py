@@ -193,6 +193,10 @@ class ComponentManager(object):
                 # Don't add requirements to the main component
                 # to let it be handled specially by the IDF build system
                 if name_key == ComponentName('idf', 'main'):
+                    if dependency.public is False:
+                        print(
+                            'WARNING: Public flag is ignored for the main dependency "{}". '
+                            'All dependencies of the main component are always public.'.format(dependency.name))
                     continue
 
                 if dependency_name not in requirements[name_key][requirement_key]:

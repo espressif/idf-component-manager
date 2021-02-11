@@ -3,7 +3,7 @@ import pytest
 
 @pytest.fixture()
 def valid_manifest_hash():
-    return '4514062436c2fe6c569710fa3a339a8c5c61281a29e9ef908ddc284d7f3a98f8'
+    return '30d1813d79462269249b4697ce76c9dfa6b377b338114dc42bd28408f35f97ad'
 
 
 @pytest.fixture()

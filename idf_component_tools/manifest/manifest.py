@@ -93,7 +93,7 @@ class Manifest(object):
                 name,
                 source,
                 version_spec=details.get('version') or '*',
-                public=details.get('public', False),
+                public=details.get('public'),
             )
             manifest._dependencies.append(component)
 
@@ -126,7 +126,7 @@ class ComponentRequirement(object):
             name,  # type: str
             source,  # type: BaseSource
             version_spec='*',  # type: str
-            public=False,  # type: bool
+            public=None,  # type: Optional[bool]
     ):
         # type: (...) -> None
         self.version_spec = version_spec
