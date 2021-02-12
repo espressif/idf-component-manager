@@ -15,8 +15,6 @@ class IDFSource(BaseSource):
 
     def __init__(self, source_details):
         super(IDFSource, self).__init__(source_details=source_details)
-
-        # TODO: Add fetching for idf.versions
         self._version = HashedComponentVersion('*')
 
     @staticmethod

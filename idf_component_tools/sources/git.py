@@ -77,8 +77,6 @@ class GitSource(BaseSource):
 
         if os.path.isdir(dest_path):
             shutil.rmtree(dest_path)
-        # TODO: fix ignore function
-        # ignore = copytree_ignore()
         shutil.copytree(source_path, dest_path)
         return [dest_path]
 

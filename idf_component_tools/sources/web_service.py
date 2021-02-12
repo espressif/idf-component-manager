@@ -15,9 +15,6 @@ from ..archive_tools import ArchiveError, get_format_from_path, unpack_archive
 from ..errors import FetchingError
 from .base import BaseSource
 
-# TODO: use cache
-# from ..utils.file_cache import FileCache
-
 try:
     from urllib.parse import urlparse  # type: ignore
 except ImportError:
@@ -97,9 +94,6 @@ class WebServiceSource(BaseSource):
 
         if not component.version:
             raise FetchingError('Version should provided for %s' % component.name)
-
-        # TODO: add caching
-        # cache_path = os.path.join(FileCache.path(), self.unique_path(component.name, component.version))
 
         component = self.api_client.component(component.name, component.version)
         url = component.download_url

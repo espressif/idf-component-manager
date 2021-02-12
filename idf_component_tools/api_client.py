@@ -29,7 +29,6 @@ class APIClient(object):
         self.auth_token = auth_token
         self.auth_header = {'Authorization': 'Bearer %s' % auth_token}
 
-    # TODO: add some caching to versions and component endpoints
     def versions(self, component_name, spec='*'):
         """List of versions for given component with required spec"""
         component_name = component_name.lower()
@@ -37,7 +36,6 @@ class APIClient(object):
         endpoint = join_url(self.base_url, 'components', component_name)
 
         try:
-            # TODO may be add versions endpoint
             response = requests.get(endpoint)
             response.raise_for_status()
 
@@ -54,8 +52,6 @@ class APIClient(object):
             )
 
         except requests.exceptions.RequestException:
-            # TODO: better display for HTTP/Connection errors
-            # TODO: Retry couple times on timeout
             raise APIClientError('HTTP request error')
 
         except KeyError:
@@ -83,14 +79,11 @@ class APIClient(object):
                 name=('%s/%s' % (response['namespace'], response['name'])),
                 version=tools.manifest.ComponentVersion(best_version['version']),
                 download_url=best_version['url'],
-                # TODO: add dependencies and maintainers
                 dependencies=None,
                 maintainers=None,
             )
 
         except requests.exceptions.RequestException:
-            # TODO: better display for HTTP/Connection errors
-            # TODO: Retry couple times on timeout
             raise APIClientError('HTTP request error')
 
         except (ValueError, KeyError, IndexError):
