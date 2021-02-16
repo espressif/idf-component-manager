@@ -42,16 +42,7 @@ def action_extensions(base_actions, project_path):
                 'callback': callback,
                 'help': ('Register a new component on the component service.\n\n'
                          'NAME\tname of the component.'),
-                'arguments': [
-                    {
-                        'names': ['name'],
-                    },
-                ],
                 'options': SERVICE_OPTIONS,
-            },
-            'pack-component': {
-                'callback': callback,
-                'help': 'Create component archive.',
             },
             'upload-component': {
                 'callback': callback,
@@ -60,6 +51,10 @@ def action_extensions(base_actions, project_path):
                     'names': ['--archive'],
                     'help': 'Pass an archive to for upload',
                 }],
+            },
+            'pack-component': {
+                'callback': callback,
+                'help': 'Create component archive.',
             },
         },
     }
