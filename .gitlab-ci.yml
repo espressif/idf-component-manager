@@ -33,6 +33,9 @@ test:
     - internet
   script:
     - tox
+  artifacts:
+    reports:
+      cobertura: coverage.xml
 
 publish_on_pypi:
   image: python:3.8-slim-buster

@@ -33,3 +33,7 @@ diagram.mdj
 
 
 bandit_output.txt
+
+# Coverage reports
+.coverage
+coverage.xml

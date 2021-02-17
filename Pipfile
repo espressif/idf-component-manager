@@ -4,18 +4,19 @@ url = 'https://pypi.org/simple'
 verify_ssl = true
 
 [packages]
-future = '*'
-pathlib = {version = "*", markers = "python_version<'3.4'"}
+future = '*' 
+pathlib = {version = "*", markers = "python_version<'3.4'"} 
 pyyaml = "<5.3" # Last version with Python 3.4 support is 5.2
-requests = "*"
-requests-toolbelt = "*"
-schema = "*"
-semantic-version = '*'
-six = "*"
-tqdm = '*'
+requests = "*" 
+requests-toolbelt = "*" 
+schema = "*" 
+semantic-version = '*' 
+six = "*" 
+tqdm = '*' 
 
 [dev-packages]
 bandit = '*'
+coverage = '*'
 flake8 = '*'
 flake8-quotes = '*'
 mypy = '*'
