@@ -163,7 +163,7 @@ class ComponentManager(object):
         # Saving list of all components with manifests for use on requirements injection step
         all_components = downloaded_component_paths.union(component['path'] for component in local_components)
         with open(component_list_file, mode='w', encoding='utf-8') as file:
-            file.write('\n'.join(all_components))
+            file.write(u'\n'.join(all_components))
 
     def inject_requirements(self, component_requires_file, component_list_file):
         '''Set build dependencies for components with manifests'''
