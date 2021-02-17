@@ -1,0 +1,8 @@
+components:
+  - name: "app_trace"
+    path: "/home/ku/e/esp-idf/components/app_trace"
+  - name: "app_update"
+    path: "/home/ku/e/esp-idf/components/app_update"
+  - name: "asio"
+  - name: "bootloader"
+    path: "/home/ku/e/esp-idf/components/bootloader"

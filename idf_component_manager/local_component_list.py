@@ -1,7 +1,10 @@
+from io import open
+
 import yaml
-from idf_component_tools.errors import ProcessingError
 from schema import Or, Schema, SchemaError
 from six import string_types
+
+from idf_component_tools.errors import ProcessingError
 
 COMPONENT_LIST_SCHEMA = Schema(
     {'components': [
@@ -12,7 +15,7 @@ COMPONENT_LIST_SCHEMA = Schema(
     ]}, ignore_extra_keys=True)
 
 
-def parse_component_list(path):
+def parse_component_list(path):  # type: (str) -> list[dict[str,str]]
     with open(path, mode='r', encoding='utf-8') as f:
         try:
             components = COMPONENT_LIST_SCHEMA.validate(yaml.safe_load(f.read()))
