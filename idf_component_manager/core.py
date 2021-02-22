@@ -4,8 +4,12 @@ from __future__ import print_function
 import os
 import shutil
 import tempfile
+import time
+from datetime import datetime, timedelta
 from io import open
 from pathlib import Path
+
+from tqdm import tqdm
 
 from idf_component_tools.api_client import APIClientError
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
@@ -23,6 +27,17 @@ try:
     from typing import Optional
 except ImportError:
     pass
+
+try:
+    PROCESSING_TIMEOUT = int(os.getenv('COMPONENT_MANAGER_JOB_TIMEOUT', 300))
+except TypeError:
+    print(
+        'WARNING: Cannot parse value of COMPONENT_MANAGER_JOB_TIMEOUT.'
+        ' It should be number of seconds to wait for job result.')
+    PROCESSING_TIMEOUT = 300
+
+CHECK_INTERVAL = 3
+MAX_PROGRESS = 100  # Expected progress is in percent
 
 
 class ComponentManager(object):
@@ -107,8 +122,52 @@ class ComponentManager(object):
 
             # Uploading the component
             print('Uploading archive: %s' % archive_file)
-            client.upload_version(component_name=component_name, file_path=archive_file)
-            print('Component was successfully uploaded')
+            job_id = client.upload_version(component_name=component_name, file_path=archive_file)
+
+            # Wait for processing
+            print(
+                'Wait for processing, it is save to press CTRL+C and exit\n'
+                'You can check the state of processing by runnging subcommand '
+                '"upload-component-status --job=%s"' % job_id)
+
+            timeout_at = datetime.now() + timedelta(seconds=PROCESSING_TIMEOUT)
+
+            try:
+                with tqdm(total=MAX_PROGRESS, unit='%') as progress_bar:
+                    while True:
+                        if datetime.now() > timeout_at:
+                            raise TimeoutError()
+                        status = client.task_status(job_id)
+                        progress_bar.set_description(status.message)
+                        progress_bar.update(status.progress)
+
+                        if status.status == 'failure':
+                            raise FatalError("Uploaded version wasn't processed successfully.\n%s" % status.message)
+                        elif status.status == 'success':
+                            return
+
+                        time.sleep(CHECK_INTERVAL)
+
+            except TimeoutError:
+                raise FatalError("Component wasn't processed in seconds. It'")
+
+        except APIClientError as e:
+            raise FatalError(e)
+
+    def upload_component_status(self, args):
+        job_id = args.get('job')
+
+        if not job_id:
+            raise FatalError('Job ID is required')
+
+        client, _ = service_details(None, args.get('service_profile'))
+        try:
+            status = client.task_status(job_id)
+            if status.status == 'failure':
+                raise FatalError("Uploaded version wasn't processed successfully.\n%s" % status.message)
+            else:
+                print('Status: %s. %s' % (status.status, status.message))
+
         except APIClientError as e:
             raise FatalError(e)
 

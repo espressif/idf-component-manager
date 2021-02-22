@@ -1,5 +1,6 @@
 """Classes to work with Espressif Component Web Service"""
 import os
+from collections import namedtuple
 from io import open
 
 import requests
@@ -9,6 +10,8 @@ from tqdm import tqdm
 
 # Import whole module to avoid circular dependencies
 import idf_component_tools as tools
+
+TaskStatus = namedtuple('TaskStatus', ['message', 'status', 'progress'])
 
 
 class APIClientError(Exception):
@@ -142,7 +145,7 @@ class APIClient(object):
 
                 response.raise_for_status()
                 body = response.json()
-                return body['id']
+                return body['job_id']
 
             except requests.exceptions.RequestException as e:
                 raise APIClientError('Cannot upload version:\n%s' % e)
@@ -163,3 +166,15 @@ class APIClient(object):
 
         except requests.exceptions.RequestException as e:
             raise APIClientError('Cannot create new component on the service.\n%s' % e)
+
+    def task_status(self, job_id):  # type: (str) -> TaskStatus
+        endpoint = join_url(self.base_url, 'tasks', job_id)
+
+        try:
+            response = requests.get(endpoint)
+            response.raise_for_status()
+            body = response.json()
+            return TaskStatus(body['message'], body['status'], body['progress'])
+
+        except requests.exceptions.RequestException as e:
+            raise APIClientError('Cannot fetch job status.\n%s' % e)

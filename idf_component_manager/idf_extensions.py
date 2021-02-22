@@ -4,7 +4,20 @@ from idf_component_tools.errors import FatalError
 
 from .core import ComponentManager
 
-SERVICE_OPTIONS = [
+try:
+    from typing import Any, Dict, List
+except ImportError:
+    pass
+
+SERVICE_PROFILE = [
+    {
+        'names': ['--service-profile'],
+        'help': 'Profile for component service to use. By default profile named "default" will be used.',
+        'envvar': 'IDF_COMPONENT_SERVICE_PROFILE',
+    },
+]  # type: List[Dict[str, Any]]
+
+SERVICE_OPTIONS = SERVICE_PROFILE + [
     {
         'names': ['--name'],
         'help': 'Component name',
@@ -15,12 +28,7 @@ SERVICE_OPTIONS = [
         'help': 'Namespace for the component. Can be set in config file.',
         'envvar': 'IDF_COMPONENT_NAMESPACE',
     },
-    {
-        'names': ['--service-profile'],
-        'help': 'Profile for component service to use. By default profile named "default" will be used.',
-        'envvar': 'IDF_COMPONENT_SERVICE_PROFILE',
-    },
-]
+]  # type: List[Dict[str, Any]]
 
 
 def action_extensions(base_actions, project_path):
@@ -50,6 +58,15 @@ def action_extensions(base_actions, project_path):
                 'options': SERVICE_OPTIONS + [{
                     'names': ['--archive'],
                     'help': 'Pass an archive to for upload',
+                }],
+            },
+            'upload-component-status': {
+                'callback': callback,
+                'help': 'Check status of component upload',
+                'options': SERVICE_PROFILE + [{
+                    'names': ['--job'],
+                    'help': 'Job ID',
+                    'required': True,
                 }],
             },
             'pack-component': {

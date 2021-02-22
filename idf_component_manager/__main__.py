@@ -12,6 +12,7 @@ KNOWN_ACTIONS = [
     'create-remote-component',
     'pack-component',
     'upload-component',
+    'upload-component-status',
 ]
 
 
@@ -26,6 +27,7 @@ def main():
         default='default')
     parser.add_argument('--name', help='Component name', required=True)
     parser.add_argument('--archive', help='Archive name for component upload')
+    parser.add_argument('--job', help='Background job ID')
     args = parser.parse_args()
 
     try:
