@@ -15,7 +15,7 @@ from idf_component_tools.api_client import APIClientError
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.errors import FatalError, NothingToDoError
-from idf_component_tools.file_tools import create_directory
+from idf_component_tools.file_tools import DEFAULT_EXCLUDE, DEFAULT_INCLUDE, create_directory, filtered_paths
 from idf_component_tools.manifest import ManifestManager
 from .cmake_component_requirements import CMakeRequirementsManager, ComponentName
 from .dependencies import download_project_dependencies
@@ -75,20 +75,22 @@ class ComponentManager(object):
             shutil.copyfile(example_path, self.main_manifest_path)
 
     def pack_component(self, args):
-        def _filter_files(info):
-            # Ignore dist files
-            if os.path.split(info.path)[-1] == 'dist':
-                return None
-            return info
-
         manifest = ManifestManager(self.path, args['name'], check_required_fields=True).load()
+
+        include = set(manifest.files['include'])
+        include.update(DEFAULT_INCLUDE)
+        exclude = set(manifest.files['exclude'])
+        exclude.update(DEFAULT_EXCLUDE)
+
         archive_file = _archive_name(manifest)
         print('Saving archive to %s' % os.path.join(self.dist_path, archive_file))
+
         pack_archive(
-            source_directory=self.path,
-            destination_directory=self.dist_path,
+            source_paths=filtered_paths(self.path, include=include, exclude=exclude),
+            source_dir=self.path,
+            destination_dir=self.dist_path,
             filename=archive_file,
-            filter=_filter_files)
+        )
 
     def delete_version(self, args):
         client, namespace = service_details(args.get('namespace'), args.get('service_profile'))

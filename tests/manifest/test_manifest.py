@@ -4,7 +4,7 @@ import pytest
 
 from idf_component_tools.errors import ManifestError
 from idf_component_tools.manifest import ComponentVersion, ManifestManager, ManifestValidator
-from idf_component_tools.manifest.validator import SLUG_RE
+from idf_component_tools.manifest.validator import SLUG_RE_COMPILED
 
 
 class TestComponentVersion(object):
@@ -79,8 +79,8 @@ class TestManifestValidator(object):
 
         errors = validator.validate_normalize()
 
-        assert len(errors) == 1
-        assert errors[0].startswith('Unknown keys: test, unknown')
+        assert len(errors) == 2
+        assert errors[1].startswith('Unknown keys: test, unknown')
 
     def test_validate_unknown_root_values(self, valid_manifest):
         valid_manifest['version'] = '1!.3.3'
@@ -88,8 +88,8 @@ class TestManifestValidator(object):
 
         errors = validator.validate_normalize()
 
-        assert len(errors) == 1
-        assert errors[0].startswith('Component version should be valid')
+        assert len(errors) == 2
+        assert errors[1].startswith('Component version should be valid')
 
     def test_validate_component_versions_not_in_manifest(self, valid_manifest):
         valid_manifest.pop('dependencies')
@@ -129,8 +129,8 @@ class TestManifestValidator(object):
 
         errors = validator.validate_normalize()
 
-        assert len(errors) == 1
-        assert errors[0].startswith('List of dependencies should be a dictionary')
+        assert len(errors) == 2
+        assert errors[1].startswith('List of dependencies should be a dictionary')
 
     def test_validate_component_versions_unknown_key(self, valid_manifest):
         valid_manifest['dependencies'] = {'test-component': {'version': '^1.2.3', 'persion': 'asdf'}}
@@ -138,8 +138,8 @@ class TestManifestValidator(object):
 
         errors = validator.validate_normalize()
 
-        assert len(errors) == 1
-        assert errors[0] == 'Unknown attributes for component "test-component": persion'
+        assert len(errors) == 4
+        assert errors[3] == 'Unknown attributes for component "test-component": persion'
 
     def test_validate_component_versions_invalid_name(self, valid_manifest):
         valid_manifest['dependencies'] = {'asdf!fdsa': {'version': '^1.2.3'}}
@@ -147,8 +147,8 @@ class TestManifestValidator(object):
 
         errors = validator.validate_normalize()
 
-        assert len(errors) == 1
-        assert errors[0].startswith('Component\'s name is not valid "asdf!fdsa",')
+        assert len(errors) == 2
+        assert errors[1].startswith('Component\'s name is not valid "asdf!fdsa",')
 
     def test_validate_component_versions_invalid_spec_subkey(self, valid_manifest):
         valid_manifest['dependencies'] = {'test-component': {'version': '^1.2a.3'}}
@@ -174,18 +174,18 @@ class TestManifestValidator(object):
 
         errors = validator.validate_normalize()
 
-        assert len(errors) == 1
-        assert errors[0].startswith('Unknown targets: esp123, asdf')
+        assert len(errors) == 2
+        assert errors[1].startswith('Unknown targets: esp123, asdf')
 
     def test_slug_re(self):
         valid_names = ('asdf-fadsf', '_', '-', '_good', '123', 'asdf-_-fdsa-')
         invalid_names = ('!', 'asdf$f', 'daf411~', 'adf\nadsf')
 
         for name in valid_names:
-            assert SLUG_RE.match(name)
+            assert SLUG_RE_COMPILED.match(name)
 
         for name in invalid_names:
-            assert not SLUG_RE.match(name)
+            assert not SLUG_RE_COMPILED.match(name)
 
     def test_validate_version_list(self, valid_manifest):
         validator = ManifestValidator(valid_manifest)
@@ -204,6 +204,20 @@ class TestManifestValidator(object):
     def test_check_required_keys_empty_manifest(self):
         validator = ManifestValidator({}, check_required_fields=True)
 
+        errors = validator.validate_normalize()
+
+        assert len(errors) == 1
+
+    def test_validate_files_invalid_format(self, valid_manifest):
+        valid_manifest['files']['include'] = 34
+        validator = ManifestValidator(valid_manifest)
+        errors = validator.validate_normalize()
+
+        assert len(errors) == 1
+
+    def test_validate_files_invalid_path(self, valid_manifest):
+        valid_manifest['files']['include'] = 34
+        validator = ManifestValidator(valid_manifest)
         errors = validator.validate_normalize()
 
         assert len(errors) == 1

@@ -36,7 +36,7 @@ def test_validator_broken_deps():
         },
     }
     errors = ManifestValidator(manifest).validate_normalize()
-    assert len(errors) == 2
+    assert len(errors) == 5
 
 
 def test_validator_valid_manifest(valid_manifest):

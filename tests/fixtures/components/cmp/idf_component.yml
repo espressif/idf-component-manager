@@ -5,3 +5,8 @@ maintainers:
   - "Test Tester <test@example.com>"
 dependencies:
   idf: ">=4.0"
+files:
+  exclude:
+    - "*.py"
+    - "**/*.list"
+    - "exclude"

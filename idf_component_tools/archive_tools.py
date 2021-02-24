@@ -2,12 +2,20 @@
 
 import os
 import re
+import tarfile
+from pathlib import Path
 from shutil import get_archive_formats
 
+from .errors import FatalError
 from .file_tools import prepare_empty_directory
 
+try:
+    from typing import Set
+except ImportError:
+    pass
 
-class ArchiveError(RuntimeError):
+
+class ArchiveError(FatalError):
     pass
 
 
@@ -59,8 +67,6 @@ def is_known_format(fmt):
 
 def unpack_tar(file, destination_directory):
     """Unpack .(tar.|t)(xz|gz|bz2) file"""
-    import tarfile
-
     try:
         tar = tarfile.open(file)
         prepare_empty_directory(destination_directory)
@@ -82,23 +88,27 @@ def unpack_zip(file, destination_directory):
 
     prepare_empty_directory(destination_directory)
 
-    with zipfile.ZipFile(file) as zip:
-        for item in zip.infolist():
-            zip.extract(item, destination_directory)
+    with zipfile.ZipFile(file) as archive:
+        for item in archive.infolist():
+            archive.extract(item, destination_directory)
 
 
 def unpack_archive(file, destination_directory):
     prepare_empty_directory(destination_directory)
-    format, ext, handler = get_format_from_path(file)
-    if not is_known_format(format):
+    archive_format, ext, handler = get_format_from_path(file)
+    if not is_known_format(archive_format):
         raise ArchiveError('.%s files are not supported on your system' % ext)
     handler(file, destination_directory)
 
 
-def pack_archive(source_directory, destination_directory, filename, filter=None):
-    # Create tar+gzip archive
-    import tarfile
-    archive_path = os.path.join(destination_directory, filename)
-    prepare_empty_directory(destination_directory)
-    with tarfile.open(archive_path, 'w:gz') as archive:
-        archive.add(source_directory, arcname='.', filter=filter)
+def pack_archive(source_dir, source_paths, destination_dir, filename):  # type: (str, Set[Path], str, str) -> None
+    """Create tar+gzip archive"""
+    archive_path = os.path.join(destination_dir, filename)
+    prepare_empty_directory(destination_dir)
+    try:
+        with tarfile.open(archive_path, 'w:gz') as archive:
+            for path in source_paths:
+                archive.add(path, arcname=path.relative_to(source_dir), recursive=False)
+
+    except tarfile.TarError:
+        raise ArchiveError('%s is not a valid tar archive' % archive_path)

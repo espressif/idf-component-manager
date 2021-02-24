@@ -3,7 +3,7 @@ import pytest
 
 @pytest.fixture()
 def valid_manifest_hash():
-    return '30d1813d79462269249b4697ce76c9dfa6b377b338114dc42bd28408f35f97ad'
+    return '3bd35cb477cc57388ff9798b978289aa971d2e1d51e4137d0fa59503c9e50c97'
 
 
 @pytest.fixture()
@@ -30,4 +30,8 @@ def valid_manifest():
                 'version': '!=1.2.7'
             },
         },
+        'files': {
+            'include': ['**/*'],
+            'exclude': ['.pyc']
+        }
     }

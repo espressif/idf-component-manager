@@ -4,7 +4,7 @@ Component manager for ESP IDF
 
 ## Use with idf.py
 
-To use component manager with `idf.py` install `idf-component-manager` python package to idf's virtual environment. Then `idf-component.yml` manifests will be processed automatically when CMake is running.
+To use component manager with `idf.py` install `idf-component-manager` python package to idf's virtual environment. Then `idf_component.yml` manifests will be processed automatically when CMake is running.
 
 ## Use without IDF
 

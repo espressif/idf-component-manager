@@ -81,6 +81,7 @@ def action_extensions(base_actions, project_path):
             'pack-component': {
                 'callback': callback,
                 'help': 'Create component archive.',
+                'options': SERVICE_OPTIONS,
             },
         },
     }

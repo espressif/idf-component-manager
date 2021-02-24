@@ -34,6 +34,7 @@ class Manifest(object):
     _serialization_properties = [
         'dependencies',
         'description',
+        'files',
         'maintainers',
         'name',
         'targets',
@@ -51,6 +52,8 @@ class Manifest(object):
             name=None,  # type: Optional[str] # Component name
             targets=None,  # type: Optional[List[str]] # List of supported chips
             url=None,  # type: Optional[str] # Url of the repo
+            include_files=None,  # type: Optional[List[str]]
+            exclude_files=None,  # type: Optional[List[str]]
             version=None,  # type: Union[ComponentVersion, None] # Version
     ):
         # type: (...) -> None
@@ -58,15 +61,26 @@ class Manifest(object):
         self.name = name or ''
         self.version = version
         self.maintainers = maintainers
-        if dependencies is None:
-            dependencies = []
-        self._dependencies = dependencies
         self.description = description
         self.download_url = download_url
         self.url = url
+
+        if dependencies is None:
+            dependencies = []
+        self._dependencies = dependencies
+
         if targets is None:
             targets = []
         self.targets = targets
+
+        if include_files is None:
+            include_files = []
+        if exclude_files is None:
+            exclude_files = []
+        self.files = {
+            'include': include_files,
+            'exclude': exclude_files,
+        }
 
         self._manifest_hash = manifest_hash
 
@@ -78,7 +92,10 @@ class Manifest(object):
             maintainers=manifest_tree.get('maintainers'),
             url=manifest_tree.get('url'),
             description=manifest_tree.get('description'),
-            targets=manifest_tree.get('targets', []))
+            targets=manifest_tree.get('targets', []),
+            include_files=manifest_tree.get('files', {}).get('include'),
+            exclude_files=manifest_tree.get('files', {}).get('exclude'),
+        )
 
         version = manifest_tree.get('version')
         if version:
