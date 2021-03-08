@@ -13,6 +13,7 @@ KNOWN_ACTIONS = [
     'pack-component',
     'upload-component',
     'upload-component-status',
+    'delete-version',
 ]
 
 
@@ -28,6 +29,7 @@ def main():
     parser.add_argument('--name', help='Component name', required=True)
     parser.add_argument('--archive', help='Archive name for component upload')
     parser.add_argument('--job', help='Background job ID')
+    parser.add_argument('--version', help='Delete version')
     args = parser.parse_args()
 
     try:

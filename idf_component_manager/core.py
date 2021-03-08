@@ -17,7 +17,6 @@ from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.errors import FatalError, NothingToDoError
 from idf_component_tools.file_tools import create_directory
 from idf_component_tools.manifest import ManifestManager
-
 from .cmake_component_requirements import CMakeRequirementsManager, ComponentName
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
@@ -90,6 +89,28 @@ class ComponentManager(object):
             destination_directory=self.dist_path,
             filename=archive_file,
             filter=_filter_files)
+
+    def delete_version(self, args):
+        client, namespace = service_details(args.get('namespace'), args.get('service_profile'))
+        name = args.get('name')
+        version = args.get('version')
+
+        if not version:
+            raise FatalError('Argument "version" is required')
+
+        component_name = '/'.join([namespace, name])
+        # Checking if current version already uploaded
+        versions = client.versions(component_name, spec='*').versions
+
+        if version not in versions:
+            raise NothingToDoError(
+                'Version {} of the component "{}" is not on the service'.format(version, component_name))
+
+        try:
+            client.delete_version(component_name=component_name, component_version=version)
+            print('Deleted version {} of the component {}'.format(component_name, version))
+        except APIClientError as e:
+            raise FatalError(e)
 
     def upload_component(self, args):
         client, namespace = service_details(args.get('namespace'), args.get('service_profile'))

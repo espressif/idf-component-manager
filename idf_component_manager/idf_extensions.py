@@ -60,6 +60,15 @@ def action_extensions(base_actions, project_path):
                     'help': 'Pass an archive to for upload',
                 }],
             },
+            'delete-version': {
+                'callback': callback,
+                'help': 'Delete version in dist directory from the component service.',
+                'options': SERVICE_OPTIONS + [{
+                    'names': ['--version'],
+                    'help': 'Component version',
+                    'required': True,
+                }],
+            },
             'upload-component-status': {
                 'callback': callback,
                 'help': 'Check status of component upload',

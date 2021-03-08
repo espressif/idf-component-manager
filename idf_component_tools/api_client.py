@@ -152,6 +152,18 @@ class APIClient(object):
             finally:
                 progress_bar.close()
 
+    def delete_version(self, component_name, component_version):
+        endpoint = join_url(self.base_url, 'components', component_name.lower(), component_version)
+
+        if not self.auth_token:
+            raise APIClientError('API token is required')
+
+        try:
+            response = requests.delete(endpoint, headers=self.auth_header)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            raise APIClientError('Cannot delete version on the service.\n%s' % e)
+
     def create_component(self, component_name):
         endpoint = join_url(self.base_url, 'components', component_name.lower())
 
