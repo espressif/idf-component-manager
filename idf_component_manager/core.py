@@ -147,8 +147,8 @@ class ComponentManager(object):
 
             # Wait for processing
             print(
-                'Wait for processing, it is save to press CTRL+C and exit\n'
-                'You can check the state of processing by runnging subcommand '
+                'Wait for processing, it is safe to press CTRL+C and exit\n'
+                'You can check the state of processing by running subcommand '
                 '"upload-component-status --job=%s"' % job_id)
 
             timeout_at = datetime.now() + timedelta(seconds=PROCESSING_TIMEOUT)
