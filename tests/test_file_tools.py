@@ -1,10 +1,42 @@
-from idf_component_tools.file_tools import copytree_ignore_builder
+import os
+from pathlib import Path
+
+from idf_component_tools.file_tools import filtered_paths
+
+assets_path = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)),
+    'fixtures',
+    'hash_examples',
+    'component_4',
+)
 
 
-class TestFileTools(object):
-    def test_hash_object(self):
-        ignore = copytree_ignore_builder()
-        assert ignore('.git', ['a.py', 'b.py', 'c.pyc']) == set([])
+def test_filtered_path_default():
+    assert filtered_paths(assets_path) == set(
+        [
+            Path(assets_path, '1.txt'),
+            Path(assets_path, 'ignore.dir'),
+            Path(assets_path, 'ignore.dir', 'file.txt'),
+            Path(assets_path, 'ignore.me'),
+        ])
 
-        ignore = copytree_ignore_builder()
-        assert ignore('some', ['a.py', 'b.py', 'c.pyc', 'pyc.dir']) == set(['a.py', 'b.py', 'pyc.dir'])
+
+def test_filtered_path_exclude_file():
+    assert filtered_paths(
+        assets_path, exclude=['**/file.txt']) == set(
+            [
+                Path(assets_path, '1.txt'),
+                Path(assets_path, 'ignore.dir'),
+                Path(assets_path, 'ignore.me'),
+            ])
+
+
+def test_filtered_path_exclude_dir():
+    assert filtered_paths(
+        assets_path, exclude=[
+            'ignore.dir/*',
+            'ignore.dir',
+        ]) == set([
+            Path(assets_path, '1.txt'),
+            Path(assets_path, 'ignore.me'),
+        ])

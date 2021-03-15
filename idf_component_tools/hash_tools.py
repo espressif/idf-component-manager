@@ -3,11 +3,12 @@ import json
 import os
 from hashlib import sha256
 from io import open
+from pathlib import Path
 
-from .file_tools import ignored_dirs_re, ignored_files_re
+from .file_tools import DEFAULT_EXCLUDE, filtered_paths
 
 try:
-    from typing import Any, Pattern, Text
+    from typing import Any, Iterable, Optional, Text, Union
 except ImportError:
     pass
 
@@ -22,7 +23,7 @@ def hash_object(obj):  # type: (Any) -> str
     return sha.hexdigest()
 
 
-def hash_file(file_path):  # type: (Text) -> str
+def hash_file(file_path):  # type: (Union[Text, Path]) -> str
     """Calculate sha256 of file"""
     sha = sha256()
 
@@ -38,30 +39,26 @@ def hash_file(file_path):  # type: (Text) -> str
 
 def hash_dir(
         root,  # type: Text
-        ignored_dirs_re=ignored_dirs_re,  # type: Pattern[str]
-        ignored_files_re=ignored_files_re  # type: Pattern[str]
+        exclude=None  # type: Optional[Iterable[str]]
 ):  # type: (...) -> str
-    """Calculate sha256 of sha256 of all files and file names.
-    Simlinks are not followed.
-    """
+    """Calculate sha256 of sha256 of all files and file names."""
     sha = sha256()
 
-    for current_dir, dirs, files in os.walk(root, topdown=True):
-        # ignore dirs
-        dirs[:] = [d for d in dirs if not ignored_dirs_re.match(d)]
+    if exclude is None:
+        exclude = DEFAULT_EXCLUDE
 
-        # ignore files
-        files = [f for f in files if not ignored_files_re.match(f)]
+    paths = sorted(filtered_paths(root, exclude=exclude), key=lambda path: path.relative_to(root).as_posix())
+    for file_path in paths:
+        if os.path.isdir(file_path):
+            continue
 
-        for file_name in files:
+        print(file_path.relative_to(root).as_posix())
 
-            # Add file path
-            file_path = os.path.join(os.path.relpath(current_dir, root), file_name)
-            sha.update(file_path.encode('utf-8'))
+        # Add file path
+        sha.update(file_path.relative_to(root).as_posix().encode('utf-8'))
 
-            # Add content hash
-            full_path = os.path.join(current_dir, file_name)
-            sha.update(hash_file(full_path).encode('utf-8'))
+        # Add content hash
+        sha.update(hash_file(file_path).encode('utf-8'))
 
     return sha.hexdigest()
 
@@ -69,10 +66,9 @@ def hash_dir(
 def validate_dir(
         root,  # type: Text
         dir_hash,  # type: Text
-        ignored_dirs_re=ignored_dirs_re,  # type: Pattern[str]
-        ignored_files_re=ignored_files_re  # type: Pattern[str]
+        exclude=None  # type: Optional[Iterable[str]]
 ):
     # type: (...) -> bool
     """Check if directory hash is the same as provided"""
 
-    return os.path.isdir(root) and hash_dir(root, ignored_dirs_re, ignored_files_re) == dir_hash
+    return os.path.isdir(root) and hash_dir(root, exclude=exclude) == dir_hash

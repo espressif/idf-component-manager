@@ -1,12 +1,10 @@
 """Set of tools and constants to work with files and directories """
-import fnmatch
 import os
-import re
 from pathlib import Path
 from shutil import rmtree
 
 try:
-    from typing import Any, Callable, Iterable, List, Optional, Pattern, Set
+    from typing import Callable, Iterable, Optional, Set
 except ImportError:
     pass
 
@@ -25,12 +23,6 @@ DEFAULT_EXCLUDE = [
     './dist/**/*',
     './build/**/*',
 ]
-
-IGNORED_DIRS = ['.git', '__pycache__']
-IGNORED_FILES = ['*.pyc', '*.pyd', '*.pyo', '.DS_Store']
-
-ignored_dirs_re = re.compile(r'|'.join([fnmatch.translate(x) for x in IGNORED_DIRS]) or r'$.')
-ignored_files_re = re.compile(r'|'.join([fnmatch.translate(x) for x in IGNORED_FILES]) or r'$.')
 
 
 def filtered_paths(path, include=None, exclude=None):
@@ -58,26 +50,6 @@ def filter_builder(paths):  # type: (Iterable[Path]) -> Callable[[Path], bool]
     def filter_path(path):  # type: (Path) -> bool
         '''Returns True if path should be included, False otherwise'''
         return path.resolve() in paths
-
-    return filter_path
-
-
-def copytree_ignore_builder(
-    ignored_dirs_re=ignored_dirs_re,
-    ignored_files_re=ignored_files_re,
-):  # type: (Pattern[str], Pattern[str]) -> Callable[[Any, List[str]], Set[str]]
-    '''Builds a filter function shutil.copytree'''
-    def filter_path(src, names):  # type: (str, List[str]) -> Set[str]
-        '''
-        `src` is a parameter, which is the directory being visited by copytree(),
-        and `names` which is the list of `src` contents, as returned by os.listdir()
-        '''
-        # ignore current dir
-        if ignored_dirs_re.match(src):
-            return set([])
-
-        # ignore files and sub-dirs
-        return set([f for f in names if not ignored_files_re.match(f) and not ignored_dirs_re.match(f)])
 
     return filter_path
 

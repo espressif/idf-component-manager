@@ -1,5 +1,4 @@
 import os
-import re
 
 from idf_component_tools.hash_tools import hash_dir, hash_file, hash_object, validate_dir
 
@@ -27,27 +26,29 @@ class TestHashTools(object):
         assert hash_file(file_path) == expected_sha
 
     def test_hash_dir(self):
-        expected_sha = '2fc3be7897ed4c389941026d8f9e44c67c0b81154827d2578f790739e321670d'
+        expected_sha = '299e78217cd6cb4f6962dde0de8c34a8aa8df7c80d8ac782d1944a4ec5b0ff8e'
         assert hash_dir(fixture_path(1)) == expected_sha
 
     def test_hash_dir_ignore(self):
-        expected_sha = '2fc3be7897ed4c389941026d8f9e44c67c0b81154827d2578f790739e321670d'
+        expected_sha = '299e78217cd6cb4f6962dde0de8c34a8aa8df7c80d8ac782d1944a4ec5b0ff8e'
 
         assert hash_dir(
-            fixture_path(4),
-            ignored_dirs_re=re.compile(r'ignore\.dir'),
-            ignored_files_re=re.compile(r'.*\.me'),
-        ) == expected_sha
+            fixture_path(4), exclude=[
+                '**/ignore.dir/*',
+                '**/*.me',
+            ]) == expected_sha
 
     def test_hash_not_equal(self):
-        expected_sha = '2fc3be7897ed4c389941026d8f9e44c67c0b81154827d2578f790739e321670d'
+        expected_sha = '299e78217cd6cb4f6962dde0de8c34a8aa8df7c80d8ac782d1944a4ec5b0ff8e'
 
         assert validate_dir(fixture_path(1), expected_sha)
         assert validate_dir(
             fixture_path(4),
             expected_sha,
-            ignored_dirs_re=re.compile(r'ignore\.dir'),
-            ignored_files_re=re.compile(r'.*\.me'),
+            exclude=[
+                '**/ignore.dir/*',
+                '**/*.me',
+            ],
         )
         assert not validate_dir(fixture_path(2), expected_sha)
         assert not validate_dir(fixture_path(3), expected_sha)
