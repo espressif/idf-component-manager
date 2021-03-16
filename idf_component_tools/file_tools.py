@@ -4,7 +4,7 @@ from pathlib import Path
 from shutil import rmtree
 
 try:
-    from typing import Callable, Iterable, Optional, Set
+    from typing import Callable, Iterable, Optional, Set, Text, Union
 except ImportError:
     pass
 
@@ -35,7 +35,7 @@ DEFAULT_EXCLUDE = [
 
 
 def filtered_paths(path, include=None, exclude=None):
-    # type: (str, Optional[Iterable[str]], Optional[Iterable[str]]) -> Set[Path]
+    # type: (Union[Text, Path], Optional[Iterable[str]], Optional[Iterable[str]]) -> Set[Path]
     if include is None:
         include = DEFAULT_INCLUDE
 

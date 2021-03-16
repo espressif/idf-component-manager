@@ -10,7 +10,7 @@ from .errors import FatalError
 from .file_tools import prepare_empty_directory
 
 try:
-    from typing import Set
+    from typing import Set, Text, Union
 except ImportError:
     pass
 
@@ -101,10 +101,11 @@ def unpack_archive(file, destination_directory):
     handler(file, destination_directory)
 
 
-def pack_archive(source_dir, source_paths, destination_dir, filename):  # type: (str, Set[Path], str, str) -> None
+def pack_archive(source_dir, source_paths, destination_dir, filename):
+    # type: (Union[Text, Path], Set[Path], Union[Text, Path], Text) -> None
     """Create tar+gzip archive"""
     archive_path = os.path.join(destination_dir, filename)
-    prepare_empty_directory(destination_dir)
+    prepare_empty_directory(Path(destination_dir).as_posix())
     try:
         with tarfile.open(archive_path, 'w:gz') as archive:
             for path in source_paths:

@@ -1,6 +1,5 @@
 """Tools for hashing and hash validation for whole packages"""
 import json
-import os
 from hashlib import sha256
 from io import open
 from pathlib import Path
@@ -27,7 +26,7 @@ def hash_file(file_path):  # type: (Union[Text, Path]) -> str
     """Calculate sha256 of file"""
     sha = sha256()
 
-    with open(file_path, 'rb') as f:
+    with open(Path(file_path).as_posix(), 'rb') as f:
         while True:
             block = f.read(BLOCK_SIZE)
             if not block:
@@ -38,8 +37,8 @@ def hash_file(file_path):  # type: (Union[Text, Path]) -> str
 
 
 def hash_dir(
-        root,  # type: Text
-        exclude=None  # type: Optional[Iterable[str]]
+        root,  # type: Union[Text, Path]
+        exclude=None  # type: Optional[Iterable[Text]]
 ):  # type: (...) -> str
     """Calculate sha256 of sha256 of all files and file names."""
     sha = sha256()
@@ -49,10 +48,8 @@ def hash_dir(
 
     paths = sorted(filtered_paths(root, exclude=exclude), key=lambda path: path.relative_to(root).as_posix())
     for file_path in paths:
-        if os.path.isdir(file_path):
+        if file_path.is_dir():
             continue
-
-        print(file_path.relative_to(root).as_posix())
 
         # Add file path
         sha.update(file_path.relative_to(root).as_posix().encode('utf-8'))
@@ -64,11 +61,11 @@ def hash_dir(
 
 
 def validate_dir(
-        root,  # type: Text
+        root,  # type: Union[Text, Path]
         dir_hash,  # type: Text
-        exclude=None  # type: Optional[Iterable[str]]
+        exclude=None  # type: Optional[Iterable[Text]]
 ):
     # type: (...) -> bool
     """Check if directory hash is the same as provided"""
 
-    return os.path.isdir(root) and hash_dir(root, exclude=exclude) == dir_hash
+    return Path(root).is_dir() and hash_dir(root, exclude=exclude) == dir_hash
