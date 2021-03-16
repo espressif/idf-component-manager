@@ -17,7 +17,8 @@ from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.errors import FatalError, NothingToDoError
 from idf_component_tools.file_tools import DEFAULT_EXCLUDE, DEFAULT_INCLUDE, create_directory, filtered_paths
 from idf_component_tools.manifest import ManifestManager
-from .cmake_component_requirements import CMakeRequirementsManager, ComponentName
+
+from .cmake_component_requirements import ITERABLE_PROPS, CMakeRequirementsManager, ComponentName
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
 from .service_details import service_details
@@ -283,6 +284,32 @@ class ComponentManager(object):
 
                 if dependency_name not in requirements[name_key][requirement_key]:
                     requirements[name_key][requirement_key].append(dependency_name)
+
+        # Handling `unknown` dependencies
+        known_names = [component_name.name for component_name in requirements.keys()]
+        for name, requirement in requirements.items():
+            for prop in ITERABLE_PROPS:
+                if prop not in requirement:
+                    continue
+
+                items = requirement[prop]
+                for index, item in enumerate(items):
+                    # Skip if known
+                    if item in known_names:
+                        continue
+
+                    # Replace requirement for components installed by the manager
+                    prefixed_name = '__{}'.format(item)
+                    for known_name in known_names:
+                        if not known_name.endswith(prefixed_name):
+                            continue
+
+                        if known_name in items:
+                            del items[index]
+                        else:
+                            items[index] = known_name
+
+                requirements[name][prop] = items
 
         requirements_manager.dump(requirements)
 
