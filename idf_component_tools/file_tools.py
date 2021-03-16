@@ -21,7 +21,16 @@ DEFAULT_EXCLUDE = [
     '**/.git',
     # dist and build artefacts
     './dist/**/*',
-    './build/**/*',
+    'build/**/*',
+    # CI files
+    '.github/**/*',
+    '.gitlab-ci.yml',
+    # IDE files
+    '.idea/**/*',
+    '.vscode/**/*',
+    # Configs
+    '.settings/**/*',
+    '**/sdkconfig',
 ]
 
 
