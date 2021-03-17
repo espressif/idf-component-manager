@@ -1,6 +1,7 @@
 """Classes to work with Espressif Component Web Service"""
 import os
 from collections import namedtuple
+from functools import wraps
 from io import open
 
 import requests
@@ -10,6 +11,14 @@ from tqdm import tqdm
 
 # Import whole module to avoid circular dependencies
 import idf_component_tools as tools
+
+try:
+    from typing import TYPE_CHECKING, Optional
+
+    if TYPE_CHECKING:
+        from idf_component_tools.sources import BaseSource
+except ImportError:
+    pass
 
 TaskStatus = namedtuple('TaskStatus', ['message', 'status', 'progress'])
 
@@ -27,12 +36,35 @@ def join_url(*args):  # type: (*str) -> str
     return '/'.join(parts)
 
 
+def auth_required(f):
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        if not self.session.auth.token:
+            raise APIClientError('API token is required')
+        return f(self, *args, **kwargs)
+
+    return wrapper
+
+
+class TokenAuth(requests.auth.AuthBase):
+    def __init__(self, token):  # type: (Optional[str]) -> None
+        self.token = token
+
+    def __call__(self, request):
+        if self.token:
+            request.headers['Authorization'] = 'Bearer %s' % self.token
+        return request
+
+
 class APIClient(object):
     def __init__(self, base_url, source=None, auth_token=None):
+        # type: (str, Optional[BaseSource], Optional[str]) -> None
         self.base_url = base_url
-        self.auth_token = auth_token
-        self.auth_header = {'Authorization': 'Bearer %s' % auth_token}
         self.source = source
+
+        session = requests.Session()
+        session.auth = TokenAuth(auth_token)
+        self.session = session
 
     def _version_dependencies(self, version):
         dependencies = []
@@ -60,7 +92,7 @@ class APIClient(object):
         endpoint = join_url(self.base_url, 'components', component_name)
 
         try:
-            response = requests.get(endpoint)
+            response = self.session.get(endpoint)
             response.raise_for_status()
 
             body = response.json()
@@ -88,7 +120,7 @@ class APIClient(object):
         endpoint = join_url(self.base_url, 'components', component_name.lower())
 
         try:
-            raw_response = requests.get(endpoint)
+            raw_response = self.session.get(endpoint)
             raw_response.raise_for_status()
             response = raw_response.json()
             versions = response['versions']
@@ -115,10 +147,8 @@ class APIClient(object):
         except (ValueError, KeyError, IndexError):
             raise APIClientError('Unexpected component server response')
 
+    @auth_required
     def upload_version(self, component_name, file_path):
-        if not self.auth_token:
-            raise APIClientError('API token is required')
-
         endpoint = join_url(self.base_url, 'components', component_name.lower(), 'versions')
 
         with open(file_path, 'rb') as file:
@@ -126,7 +156,6 @@ class APIClient(object):
 
             encoder = MultipartEncoder({'file': (filename, file, 'application/octet-stream')})
             headers = {'Content-Type': encoder.content_type}
-            headers.update(self.auth_header)
 
             progress_bar = tqdm(total=encoder.len, unit_scale=True, unit='B', disable=None)
 
@@ -137,7 +166,7 @@ class APIClient(object):
             data = MultipartEncoderMonitor(encoder, callback)
 
             try:
-                response = requests.post(
+                response = self.session.post(
                     endpoint,
                     data=data,
                     headers=headers,
@@ -152,26 +181,22 @@ class APIClient(object):
             finally:
                 progress_bar.close()
 
+    @auth_required
     def delete_version(self, component_name, component_version):
         endpoint = join_url(self.base_url, 'components', component_name.lower(), component_version)
 
-        if not self.auth_token:
-            raise APIClientError('API token is required')
-
         try:
-            response = requests.delete(endpoint, headers=self.auth_header)
+            response = self.session.delete(endpoint)
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
             raise APIClientError('Cannot delete version on the service.\n%s' % e)
 
+    @auth_required
     def create_component(self, component_name):
         endpoint = join_url(self.base_url, 'components', component_name.lower())
 
-        if not self.auth_token:
-            raise APIClientError('API token is required')
-
         try:
-            response = requests.post(endpoint, headers=self.auth_header)
+            response = self.session.post(endpoint)
             response.raise_for_status()
             body = response.json()
             return (body['namespace'], body['name'])
@@ -183,7 +208,7 @@ class APIClient(object):
         endpoint = join_url(self.base_url, 'tasks', job_id)
 
         try:
-            response = requests.get(endpoint)
+            response = self.session.get(endpoint)
             response.raise_for_status()
             body = response.json()
             return TaskStatus(body['message'], body['status'], body['progress'])
