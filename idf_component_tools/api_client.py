@@ -6,14 +6,16 @@ from io import open
 
 import requests
 import semantic_version as semver
+from requests.adapters import HTTPAdapter
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
+from schema import Schema, SchemaError
 from tqdm import tqdm
 
 # Import whole module to avoid circular dependencies
 import idf_component_tools as tools
 
 try:
-    from typing import TYPE_CHECKING, Optional
+    from typing import TYPE_CHECKING, Dict, List, Optional
 
     if TYPE_CHECKING:
         from idf_component_tools.sources import BaseSource
@@ -62,8 +64,11 @@ class APIClient(object):
         self.base_url = base_url
         self.source = source
 
+        api_adapter = HTTPAdapter(max_retries=3)
+
         session = requests.Session()
         session.auth = TokenAuth(auth_token)
+        session.mount(base_url, api_adapter)
         self.session = session
 
     def _version_dependencies(self, version):
@@ -85,72 +90,70 @@ class APIClient(object):
 
         return dependencies
 
-    def versions(self, component_name, spec='*'):
-        """List of versions for given component with required spec"""
-        component_name = component_name.lower()
-
-        endpoint = join_url(self.base_url, 'components', component_name)
-
+    def _base_request(self, method, path, data=None, headers=None, schema=None):
+        # type: (str, List[str], Optional[Dict], Optional[Dict], Schema) -> Dict
+        endpoint = join_url(self.base_url, *path)
         try:
-            response = self.session.get(endpoint)
+            response = self.session.request(
+                method,
+                endpoint,
+                data=data,
+                headers=headers,
+            )
             response.raise_for_status()
-
-            body = response.json()
-
-            return tools.manifest.ComponentWithVersions(
-                name=component_name,
-                versions=[
-                    tools.manifest.HashedComponentVersion(
-                        version_string=version['version'],
-                        component_hash=version['component_hash'],
-                        dependencies=self._version_dependencies(version),
-                    ) for version in body['versions']
-                ],
-            )
-
+            json = response.json()
         except requests.exceptions.RequestException:
             raise APIClientError('HTTP request error')
-
-        except KeyError:
-            raise APIClientError('Unexpected component server response')
-
-    def component(self, component_name, version=None):
-        """Manifest for given version of component, if version is None most recent version returned"""
-
-        endpoint = join_url(self.base_url, 'components', component_name.lower())
 
         try:
-            raw_response = self.session.get(endpoint)
-            raw_response.raise_for_status()
-            response = raw_response.json()
-            versions = response['versions']
-
-            if version:
-                requested_version = tools.manifest.ComponentVersion(str(version))
-                best_version = [
-                    v for v in versions if tools.manifest.ComponentVersion(v['version']) == requested_version
-                ][0]
-            else:
-                best_version = max(versions, key=lambda v: semver.Version(v['version']))
-
-            return tools.manifest.Manifest(
-                name=('%s/%s' % (response['namespace'], response['name'])),
-                version=tools.manifest.ComponentVersion(best_version['version']),
-                download_url=best_version['url'],
-                dependencies=self._version_dependencies(best_version),
-                maintainers=None,
-            )
-
-        except requests.exceptions.RequestException:
-            raise APIClientError('HTTP request error')
+            if schema is not None:
+                schema.validate(json)
+        except SchemaError as e:
+            raise APIClientError('API Enpoint "{}: returned unexpected JSON:\n{}'.format(endpoint, str(e)))
 
         except (ValueError, KeyError, IndexError):
             raise APIClientError('Unexpected component server response')
 
+        return response.json()
+
+    def versions(self, component_name, spec='*'):
+        """List of versions for given component with required spec"""
+        component_name = component_name.lower()
+        body = self._base_request('get', ['components', component_name])
+
+        return tools.manifest.ComponentWithVersions(
+            name=component_name,
+            versions=[
+                tools.manifest.HashedComponentVersion(
+                    version_string=version['version'],
+                    component_hash=version['component_hash'],
+                    dependencies=self._version_dependencies(version),
+                ) for version in body['versions']
+            ],
+        )
+
+    def component(self, component_name, version=None):
+        """Manifest for given version of component, if version is None most recent version returned"""
+        response = self._base_request('get', ['components', component_name.lower()])
+        versions = response['versions']
+
+        if version:
+            requested_version = tools.manifest.ComponentVersion(str(version))
+            best_version = [v for v in versions
+                            if tools.manifest.ComponentVersion(v['version']) == requested_version][0]
+        else:
+            best_version = max(versions, key=lambda v: semver.Version(v['version']))
+
+        return tools.manifest.Manifest(
+            name=('%s/%s' % (response['namespace'], response['name'])),
+            version=tools.manifest.ComponentVersion(best_version['version']),
+            download_url=best_version['url'],
+            dependencies=self._version_dependencies(best_version),
+            maintainers=None,
+        )
+
     @auth_required
     def upload_version(self, component_name, file_path):
-        endpoint = join_url(self.base_url, 'components', component_name.lower(), 'versions')
-
         with open(file_path, 'rb') as file:
             filename = os.path.basename(file_path)
 
@@ -166,52 +169,24 @@ class APIClient(object):
             data = MultipartEncoderMonitor(encoder, callback)
 
             try:
-                response = self.session.post(
-                    endpoint,
+                return self._base_request(
+                    'post',
+                    ['components', component_name.lower(), 'versions'],
                     data=data,
                     headers=headers,
-                )
-
-                response.raise_for_status()
-                body = response.json()
-                return body['job_id']
-
-            except requests.exceptions.RequestException as e:
-                raise APIClientError('Cannot upload version:\n%s' % e)
+                )['job_id']
             finally:
                 progress_bar.close()
 
     @auth_required
     def delete_version(self, component_name, component_version):
-        endpoint = join_url(self.base_url, 'components', component_name.lower(), component_version)
-
-        try:
-            response = self.session.delete(endpoint)
-            response.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            raise APIClientError('Cannot delete version on the service.\n%s' % e)
+        self._base_request('delete', ['components', component_name.lower(), component_version])
 
     @auth_required
     def create_component(self, component_name):
-        endpoint = join_url(self.base_url, 'components', component_name.lower())
-
-        try:
-            response = self.session.post(endpoint)
-            response.raise_for_status()
-            body = response.json()
-            return (body['namespace'], body['name'])
-
-        except requests.exceptions.RequestException as e:
-            raise APIClientError('Cannot create new component on the service.\n%s' % e)
+        body = self._base_request('post', ['components', component_name.lower()])
+        return (body['namespace'], body['name'])
 
     def task_status(self, job_id):  # type: (str) -> TaskStatus
-        endpoint = join_url(self.base_url, 'tasks', job_id)
-
-        try:
-            response = self.session.get(endpoint)
-            response.raise_for_status()
-            body = response.json()
-            return TaskStatus(body['message'], body['status'], body['progress'])
-
-        except requests.exceptions.RequestException as e:
-            raise APIClientError('Cannot fetch job status.\n%s' % e)
+        body = self._base_request('get', ['tasks', job_id])
+        return TaskStatus(body['message'], body['status'], body['progress'])
