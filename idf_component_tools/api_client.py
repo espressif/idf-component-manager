@@ -15,7 +15,7 @@ from tqdm import tqdm
 import idf_component_tools as tools
 
 try:
-    from typing import TYPE_CHECKING, Dict, List, Optional
+    from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 
     if TYPE_CHECKING:
         from idf_component_tools.sources import BaseSource
@@ -23,6 +23,11 @@ except ImportError:
     pass
 
 TaskStatus = namedtuple('TaskStatus', ['message', 'status', 'progress'])
+
+DEFAULT_TIMEOUT = (
+    6.05,  # Connect timeout
+    30.1,  # Read timeout
+)
 
 
 class APIClientError(Exception):
@@ -93,12 +98,22 @@ class APIClient(object):
     def _base_request(self, method, path, data=None, headers=None, schema=None):
         # type: (str, List[str], Optional[Dict], Optional[Dict], Schema) -> Dict
         endpoint = join_url(self.base_url, *path)
+
+        timeout = DEFAULT_TIMEOUT  # type: Union[float, Tuple[float, float]]
+        try:
+            timeout = float(os.environ['IDF_COMPONENT_SERVICE_TIMEOUT'])
+        except ValueError:
+            raise APIClientError('Cannot parse IDF_COMPONENT_SERVICE_TIMEOUT. It should be a number in seconds.')
+        except KeyError:
+            pass
+
         try:
             response = self.session.request(
                 method,
                 endpoint,
                 data=data,
                 headers=headers,
+                timeout=timeout,
             )
             response.raise_for_status()
             json = response.json()
