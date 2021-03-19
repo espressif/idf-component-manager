@@ -14,6 +14,8 @@ from tqdm import tqdm
 # Import whole module to avoid circular dependencies
 import idf_component_tools as tools
 
+from .api_schemas import ERROR_SCHEMA
+
 try:
     from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 
@@ -32,6 +34,23 @@ DEFAULT_TIMEOUT = (
 
 class APIClientError(Exception):
     pass
+
+
+def describe_4xx_error(error):  # type: (requests.Response) -> str
+    try:
+        json = ERROR_SCHEMA.validate(error.json())
+    except SchemaError as e:
+        return 'API Endpoint "{}: returned unexpected error description:\n{}'.format(error.url, str(e))
+    except ValueError:
+        return 'Server returned an error in unexpected format'
+
+    name = json['error']
+    messages = json['messages']
+    if isinstance(messages, list):
+        return '\n'.join(messages)
+    else:
+        return 'Error during request:\n{}\nStatus code: {} Error code: {}'.format(
+            str(messages), error.status_code, name)
 
 
 def join_url(*args):  # type: (*str) -> str
@@ -115,7 +134,15 @@ class APIClient(object):
                 headers=headers,
                 timeout=timeout,
             )
-            response.raise_for_status()
+
+            if 400 <= response.status_code < 500:
+                raise APIClientError(describe_4xx_error(response))
+
+            elif 500 <= response.status_code < 600:
+                raise APIClientError(
+                    'Internal server error happended while processing requrest to:\n{}\nStatus code: {}'.format(
+                        endpoint, response.status_code))
+
             json = response.json()
         except requests.exceptions.RequestException:
             raise APIClientError('HTTP request error')
@@ -124,7 +151,7 @@ class APIClient(object):
             if schema is not None:
                 schema.validate(json)
         except SchemaError as e:
-            raise APIClientError('API Enpoint "{}: returned unexpected JSON:\n{}'.format(endpoint, str(e)))
+            raise APIClientError('API Endpoint "{}: returned unexpected JSON:\n{}'.format(endpoint, str(e)))
 
         except (ValueError, KeyError, IndexError):
             raise APIClientError('Unexpected component server response')
