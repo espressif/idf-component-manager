@@ -1,6 +1,7 @@
 import filecmp
 import os
 from io import open
+from pathlib import Path
 
 import pytest
 
@@ -132,3 +133,11 @@ class TestLockManager(object):
 
         with open(lock_path) as f:
             assert f.read() == 'manifest_hash: {}\nversion: 1.0.0\n'.format(solution.manifest_hash)
+
+    def test_empty_lock_file(self, tmp_path):
+        lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
+        Path(lock_path).touch()
+
+        solution = LockManager(lock_path).load()
+
+        assert solution.manifest_hash is None

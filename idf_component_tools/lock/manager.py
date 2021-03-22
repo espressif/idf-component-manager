@@ -69,7 +69,12 @@ class LockManager:
 
         with open(self._path, mode='r', encoding='utf-8') as f:
             try:
-                lock = LOCK_SCHEMA.validate(safe_load(f.read()))
+                content = f.read()
+
+                if not content:
+                    return SolvedManifest.fromdict(EMPTY_LOCK)
+
+                lock = LOCK_SCHEMA.validate(safe_load(content))
 
                 version = lock.pop('version')
                 if version != FORMAT_VERSION:
