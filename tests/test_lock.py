@@ -1,5 +1,6 @@
 import filecmp
 import os
+from io import open
 
 import pytest
 
@@ -115,3 +116,19 @@ class TestLockManager(object):
             parser.load()
 
         assert e.type == LockError
+
+    def test_minimal_lock(self, tmp_path):
+        lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
+        parser = LockManager(lock_path)
+        solution = SolvedManifest.fromdict(dict([
+            ('version', '1.0.0'),
+            ('manifest_hash', MANIFEST_HASH),
+        ]))
+
+        parser.dump(solution)
+        loaded_solution = parser.load()
+
+        assert solution.manifest_hash == loaded_solution.manifest_hash
+
+        with open(lock_path) as f:
+            assert f.read() == 'manifest_hash: {}\nversion: 1.0.0\n'.format(solution.manifest_hash)

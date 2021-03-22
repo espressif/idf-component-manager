@@ -13,16 +13,9 @@ import idf_component_tools as tools
 from ..errors import LockError
 from ..manifest import SolvedManifest
 
-try:
-    from typing import Any, Dict
-except ImportError:
-    pass
-
 FORMAT_VERSION = '1.0.0'
 
-EMPTY_DEPS = dict()  # type: Dict[str, Any]
 EMPTY_LOCK = {
-    'dependencies': EMPTY_DEPS,
     'manifest_hash': None,
     'version': FORMAT_VERSION,
 }
@@ -31,8 +24,8 @@ HASH_SCHEMA = Or(And(Or(*string_types), lambda h: len(h) == 64), None)
 
 LOCK_SCHEMA = Schema(
     {
-        'dependencies': {
-            Or(*string_types): {
+        Optional('dependencies'): {
+            Optional(Or(*string_types)): {
                 'source': Or(*[source.schema() for source in tools.sources.KNOWN_SOURCES]),
                 'version': Or(*string_types),
                 Optional('component_hash'): HASH_SCHEMA,
