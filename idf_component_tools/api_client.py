@@ -14,7 +14,7 @@ from tqdm import tqdm
 # Import whole module to avoid circular dependencies
 import idf_component_tools as tools
 
-from .api_schemas import ERROR_SCHEMA
+from .api_schemas import COMPONENT_SCHEMA, ERROR_SCHEMA, TASK_STATUS_SCHEMA, VERSION_UPLOAD_SCHEMA
 
 try:
     from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
@@ -161,7 +161,11 @@ class APIClient(object):
     def versions(self, component_name, spec='*'):
         """List of versions for given component with required spec"""
         component_name = component_name.lower()
-        body = self._base_request('get', ['components', component_name])
+        body = self._base_request(
+            'get',
+            ['components', component_name],
+            schema=COMPONENT_SCHEMA,
+        )
 
         return tools.manifest.ComponentWithVersions(
             name=component_name,
@@ -176,7 +180,11 @@ class APIClient(object):
 
     def component(self, component_name, version=None):
         """Manifest for given version of component, if version is None most recent version returned"""
-        response = self._base_request('get', ['components', component_name.lower()])
+        response = self._base_request(
+            'get',
+            ['components', component_name.lower()],
+            schema=COMPONENT_SCHEMA,
+        )
         versions = response['versions']
 
         if version:
@@ -216,6 +224,7 @@ class APIClient(object):
                     ['components', component_name.lower(), 'versions'],
                     data=data,
                     headers=headers,
+                    schema=VERSION_UPLOAD_SCHEMA,
                 )['job_id']
             finally:
                 progress_bar.close()
@@ -226,9 +235,13 @@ class APIClient(object):
 
     @auth_required
     def create_component(self, component_name):
-        body = self._base_request('post', ['components', component_name.lower()])
+        body = self._base_request(
+            'post',
+            ['components', component_name.lower()],
+            schema=COMPONENT_SCHEMA,
+        )
         return (body['namespace'], body['name'])
 
     def task_status(self, job_id):  # type: (str) -> TaskStatus
-        body = self._base_request('get', ['tasks', job_id])
+        body = self._base_request('get', ['tasks', job_id], schema=TASK_STATUS_SCHEMA)
         return TaskStatus(body['message'], body['status'], body['progress'])
