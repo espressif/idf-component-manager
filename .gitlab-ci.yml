@@ -1,6 +1,7 @@
 cache:
   paths:
     - .tox
+  key: "$CI_JOB_NAME"
 
 stages:
   - check
@@ -98,4 +99,3 @@ test:py38int:
     - pip install $CI_PROJECT_DIR pytest
   script:
     - py.test -s -c pytest_integration.ini
-

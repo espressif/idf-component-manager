@@ -29,6 +29,9 @@ class IDFSource(BaseSource):
     def meta(self):
         return True
 
+    def normalized_name(self, name):  # type: (str) -> str
+        return self.NAME
+
     def versions(self, name, details=None, spec='*'):
         """Returns current idf version"""
 

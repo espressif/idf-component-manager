@@ -49,7 +49,7 @@ class SolvedComponent(object):
             source_name = source_details.pop('type')
             source = BaseSource.fromdict(source_name, source_details)
             return cls(
-                name=details['name'],
+                name=source.normalized_name(details['name']),
                 version=ComponentVersion(details['version']),
                 source=source,
                 component_hash=details.get('component_hash', None))

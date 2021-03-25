@@ -1,5 +1,3 @@
-from tqdm import tqdm
-
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import ManifestManager, ProjectRequirements
 from idf_component_tools.sources.fetcher import ComponentFetcher
@@ -19,7 +17,6 @@ def download_project_dependencies(manifest_paths, lock_path, managed_components_
     project_requirements = ProjectRequirements(manifests)
     lock_manager = LockManager(lock_path)
     solution = lock_manager.load()
-
     if project_requirements.manifest_hash != solution.manifest_hash:
         print('Solving dependencies requirements')
         solver = VersionSolver(project_requirements, solution)
@@ -32,7 +29,10 @@ def download_project_dependencies(manifest_paths, lock_path, managed_components_
     downloaded_component_paths = set()
 
     if solution.dependencies:
-        for component in tqdm(solution.dependencies):
+        number_of_components = len(solution.dependencies)
+        print('Processing {} dependencies:'.format(number_of_components))
+        for index, component in enumerate(solution.dependencies):
+            print('[{}/{}] {}'.format(index + 1, number_of_components, component.name))
             download_paths = ComponentFetcher(component, managed_components_path).download()
             downloaded_component_paths.update(download_paths)
 
