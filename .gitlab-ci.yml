@@ -1,7 +1,7 @@
 cache:
   paths:
     - .tox
-  key: "$CI_JOB_NAME"
+  key: "$CI_JOB_NAME-cache-1"
 
 stages:
   - check
@@ -9,7 +9,7 @@ stages:
   - deploy
 
 lint:
-  image: python:3.8-buster
+  image: python:3.9-slim-buster
   stage: check
   tags:
     - lint
@@ -26,20 +26,68 @@ lint:
     - bandit --exclude="./tests,./integration_tests,./.tox,./.git" -r -f txt -o bandit_output.txt .
     - flake8 --config=.flake8 --output-file=flake8_output.txt --tee
 
-test:
-  image: quay.io/python-devs/ci-image:master
+.test_template:
   stage: test
   tags:
     - test
     - internet
-  script:
-    - tox
+  before_script:
+    - pip install tox
   artifacts:
     reports:
       cobertura: coverage.xml
 
+test:py2.7:
+  extends: .test_template
+  image: python:2.7-slim-buster
+  script:
+    - tox -e py27
+
+test:py3.5:
+  extends: .test_template
+  # Not using `python:3.5-slim-buster` because gcc is required,
+  # Wheels are not built for py3.5 anymore
+  image: python:3.5-buster
+  script:
+    - tox -e py35
+
+test:py3.9:
+  extends: .test_template
+  image: python:3.9-slim-buster
+  script:
+    - tox -e py39
+
+.integration_test_template:
+  stage: test
+  tags:
+    - test
+    - internet
+  only:
+    refs:
+      - master
+      - schedules
+  before_script:
+    - apt-get update && apt-get install -y -q libusb-1.0 cmake git ninja-build
+    - git clone https://github.com/espressif/esp-idf.git
+    - cd ./esp-idf/
+    - ./install.sh
+    - . ./export.sh
+    - git submodule update --init --recursive
+    - cd ..
+    - pip install $CI_PROJECT_DIR pytest
+  script:
+    - py.test -s -c pytest_integration.ini
+
+integration_test:py2.7:
+  extends: .integration_test_template
+  image: python:2.7-slim-buster
+
+integration_test:py3.5:
+  extends: .integration_test_template
+  image: python:3.5-buster
+
 publish_on_pypi:
-  image: python:3.8-slim-buster
+  image: python:3.9-slim-buster
   stage: deploy
   tags:
     - internet
@@ -55,47 +103,3 @@ publish_on_pypi:
   only:
     refs:
       - master
-
-test:py27int:
-  image: python:2.7-slim-buster
-  stage: test
-  tags:
-    - test
-    - internet
-  only:
-    refs:
-      - master
-      - schedules
-  before_script:
-    - apt-get update && apt-get install -y -q libusb-1.0 cmake git ninja-build
-    - git clone https://github.com/espressif/esp-idf.git
-    - cd ./esp-idf/
-    - ./install.sh
-    - . ./export.sh
-    - git submodule update --init --recursive
-    - cd ..
-    - pip install $CI_PROJECT_DIR pytest
-  script:
-    - py.test -s -c pytest_integration.ini
-
-test:py38int:
-  image: python:3.8-slim-buster
-  stage: test
-  tags:
-    - test
-    - internet
-  only:
-    refs:
-      - master
-      - schedules
-  before_script:
-    - apt-get update && apt-get install -y -q libusb-1.0 cmake git ninja-build
-    - git clone https://github.com/espressif/esp-idf.git
-    - cd ./esp-idf/
-    - ./install.sh
-    - . ./export.sh
-    - git submodule update --init --recursive
-    - cd ..
-    - pip install $CI_PROJECT_DIR pytest
-  script:
-    - py.test -s -c pytest_integration.ini
