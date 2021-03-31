@@ -160,9 +160,6 @@ class ManifestValidator(object):
             if key not in self.manifest_tree:
                 self.add_error('"%s" is required for this manifest' % key)
 
-        if 'name' in self.manifest_tree:
-            self.add_error('Name is not supported for components on the service')
-
     def validate_targets(self):  # type: () -> None
         targets = self.manifest_tree.get('targets', [])
 
