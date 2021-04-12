@@ -62,10 +62,14 @@ test:py3.9:
   tags:
     - test
     - internet
-  only:
-    refs:
-      - master
-      - schedules
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - changes:
+        - integration_tests/**/*
+  artifacts:
+    reports:
+      cobertura: coverage_integration.xml
   before_script:
     - apt-get update && apt-get install -y -q libusb-1.0 cmake git ninja-build
     - git clone https://github.com/espressif/esp-idf.git
@@ -74,9 +78,9 @@ test:py3.9:
     - . ./export.sh
     - git submodule update --init --recursive
     - cd ..
-    - pip install $CI_PROJECT_DIR pytest
+    - pip install $CI_PROJECT_DIR pytest pytest-cov
   script:
-    - py.test -s -c pytest_integration.ini
+    - py.test -s -c pytest_integration.ini --cov=. --cov-report=xml:coverage_integration.xml
 
 integration_test:py2.7:
   extends: .integration_test_template
