@@ -60,8 +60,10 @@ setuptools.setup(
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: Implementation :: CPython',
     ],
-    packages=setuptools.find_packages(exclude=('*.tests', '*.tests.*', 'tests.*', 'tests')),
+    packages=setuptools.find_packages(
+        exclude=('*.tests', '*.tests.*', 'tests.*', 'tests', '*_tests', '*_tests_*', 'tests_*')),
     scripts=[],
     install_requires=REQUIRES,
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
+    include_package_data=True,
 )
