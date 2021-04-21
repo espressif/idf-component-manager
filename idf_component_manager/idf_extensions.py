@@ -56,6 +56,19 @@ def action_extensions(base_actions, project_path):
                 'help': 'Create manifest for specified component.',
                 'options': LOCAL_MANIFEST_OPTIONS,
             },
+            'add-dependency': {
+                'callback': callback,
+                'help': (
+                    'Add dependency to the manifest file. '
+                    'For now we only support adding dependencies on the default service.'),
+                'arguments': [
+                    {
+                        'names': ['dependency'],
+                        'required': True,
+                    },
+                ],
+                'options': LOCAL_MANIFEST_OPTIONS,
+            },
             'create-remote-component': {
                 'callback': callback,
                 'help': ('Register a new component on the component service.\n\n'

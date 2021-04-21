@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 import os
+import re
 import shutil
 import tempfile
 import time
@@ -14,9 +15,10 @@ from tqdm import tqdm
 from idf_component_tools.api_client import APIClientError
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name
-from idf_component_tools.errors import FatalError, NothingToDoError
+from idf_component_tools.errors import FatalError, ManifestError, NothingToDoError
 from idf_component_tools.file_tools import DEFAULT_EXCLUDE, DEFAULT_INCLUDE, create_directory, filtered_paths
 from idf_component_tools.manifest import MANIFEST_FILENAME, ManifestManager
+from idf_component_tools.sources import WebServiceSource
 
 from .cmake_component_requirements import ITERABLE_PROPS, CMakeRequirementsManager, ComponentName
 from .dependencies import download_project_dependencies
@@ -41,6 +43,8 @@ MAX_PROGRESS = 100  # Expected progress is in percent
 
 
 class ComponentManager(object):
+    NAME_VERSION_REGEX = re.compile(r'([a-z-_/]+)(?:([~^<>=]+)(.+))?')
+
     def __init__(self, path, lock_path=None, manifest_path=None):
         # type: (str, Optional[str], Optional[str]) -> None
 
@@ -91,6 +95,62 @@ class ComponentManager(object):
         manifest_filepath, created = self._create_manifest(args.get('component', 'main'))
         if not created:
             print('`{}` already exists, skipping...'.format(manifest_filepath))
+
+    def add_dependency(self, args):
+        manifest_filepath, _ = self._create_manifest(args.get('component', 'main'))
+
+        match = self.NAME_VERSION_REGEX.match(args.get('dependency'))
+        if match:
+            name, op, ver = match.groups()
+            if (not op and not ver) or ver == '*':
+                version = '*'
+            else:
+                version = op + ver
+        else:
+            raise FatalError(
+                'Invalid dependency: {}, should be "name>=version" like string. '
+                'For example: espressif/button>=1.0.0'.format(args.get('dependency')))
+
+        name = WebServiceSource().normalized_name(name)
+        manifest_manager = ManifestManager(manifest_filepath, args.get('component'))
+        if 'dependencies' in manifest_manager.manifest_tree:
+            with_dependencies = True
+            dependencies = manifest_manager.manifest_tree['dependencies']
+
+            if name in dependencies:
+                raise FatalError('ERROR: dependency {} already exists in {}'.format(name, manifest_filepath))
+        else:
+            with_dependencies = False
+
+        with open(manifest_filepath, 'r', encoding='utf-8') as fr:
+            file_lines = [line.rstrip() for line in fr.readlines() if line.strip()]
+
+        new_dependency_str = '  {}: "{}"'.format(name, version)
+        if with_dependencies:
+            index = len(file_lines)
+            for i, line in enumerate(file_lines):
+                if line.startswith('dependencies:'):
+                    index = i + 1
+                    break
+            file_lines.insert(index, new_dependency_str)
+        else:
+            file_lines.extend(['dependencies:', new_dependency_str])
+        file_lines.append('')  # for an extra blank line
+
+        temp_manifest_file = tempfile.NamedTemporaryFile(delete=False)
+        temp_manifest_file.write('\n'.join(file_lines).encode('utf-8'))
+        temp_manifest_file.close()
+
+        try:
+            ManifestManager(temp_manifest_file.name, name).load()
+        except ManifestError:
+            raise ManifestError(
+                'This error could be caused by mixing indentation, we recommend to use 2-space indent.\n'
+                'Please check that\n\t{}\nto ensure the failure reason, and modify\n\t{}\nindentation to 2 spaces'.
+                format(temp_manifest_file.name, manifest_filepath))
+        else:
+            shutil.move(temp_manifest_file.name, manifest_filepath)
+        print('Successfully added dependency `{}` in `{}`'.format(name, manifest_filepath))
 
     def pack_component(self, args):
         manifest = ManifestManager(self.path, args['name'], check_required_fields=True).load()
