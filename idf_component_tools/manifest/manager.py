@@ -4,6 +4,7 @@ from io import open
 import yaml
 
 from ..errors import ManifestError
+from .constant import MANIFEST_FILENAME
 from .manifest import Manifest
 from .validator import ManifestValidator
 
@@ -30,7 +31,7 @@ class ManifestManager(object):
     def check_filename(self):
         """Check manifest's filename"""
         if os.path.isdir(self._path):
-            self._path = os.path.join(self._path, 'idf_component.yml')
+            self._path = os.path.join(self._path, MANIFEST_FILENAME)
         return self
 
     def validate(self):

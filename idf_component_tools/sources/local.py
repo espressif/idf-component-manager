@@ -1,7 +1,7 @@
 import os
 
 from ..errors import SourceError
-from ..manifest import ComponentWithVersions, HashedComponentVersion, ManifestManager
+from ..manifest import MANIFEST_FILENAME, ComponentWithVersions, HashedComponentVersion, ManifestManager
 from .base import BaseSource
 
 try:
@@ -38,7 +38,7 @@ class LocalSource(BaseSource):
 
     def versions(self, name, details=None, spec='*'):
         """For local return version from manifest, or * if manifest not found"""
-        manifest_path = os.path.join(self._path, 'idf_component.yml')
+        manifest_path = os.path.join(self._path, MANIFEST_FILENAME)
         name = os.path.basename(self._path)
         version = HashedComponentVersion('*')
         if os.path.isfile(manifest_path):

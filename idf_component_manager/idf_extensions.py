@@ -30,6 +30,15 @@ SERVICE_OPTIONS = SERVICE_PROFILE + [
     },
 ]  # type: List[Dict[str, Any]]
 
+LOCAL_MANIFEST_OPTIONS = [
+    {
+        'names': ['--component'],
+        'default': 'main',
+        'show_default': True,
+        'help': 'Name of the component in the project.',
+    },
+]
+
 
 def action_extensions(base_actions, project_path):
     def callback(subcommand_name, ctx, args, **kwargs):
@@ -44,7 +53,8 @@ def action_extensions(base_actions, project_path):
         'actions': {
             'create-manifest': {
                 'callback': callback,
-                'help': "Create manifest for project's main component.",
+                'help': 'Create manifest for specified component.',
+                'options': LOCAL_MANIFEST_OPTIONS,
             },
             'create-remote-component': {
                 'callback': callback,
@@ -63,7 +73,8 @@ def action_extensions(base_actions, project_path):
             'delete-version': {
                 'callback': callback,
                 'help': 'Delete version in dist directory from the component service.',
-                'options': SERVICE_OPTIONS + [{
+                'options': SERVICE_OPTIONS +
+                [{
                     'names': ['--version'],
                     'help': 'Component version',
                     'required': True,

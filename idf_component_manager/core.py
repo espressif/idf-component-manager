@@ -16,7 +16,7 @@ from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.errors import FatalError, NothingToDoError
 from idf_component_tools.file_tools import DEFAULT_EXCLUDE, DEFAULT_INCLUDE, create_directory, filtered_paths
-from idf_component_tools.manifest import ManifestManager
+from idf_component_tools.manifest import MANIFEST_FILENAME, ManifestManager
 
 from .cmake_component_requirements import ITERABLE_PROPS, CMakeRequirementsManager, ComponentName
 from .dependencies import download_project_dependencies
@@ -24,7 +24,7 @@ from .local_component_list import parse_component_list
 from .service_details import service_details
 
 try:
-    from typing import Optional
+    from typing import Optional, Tuple
 except ImportError:
     pass
 
@@ -52,7 +52,7 @@ class ComponentManager(object):
 
         # Set path of the manifest file for the project's main component
         self.main_manifest_path = manifest_path or (
-            os.path.join(path, 'main', 'idf_component.yml') if os.path.isdir(path) else path)
+            os.path.join(path, 'main', MANIFEST_FILENAME) if os.path.isdir(path) else path)
 
         # Lock path
         self.lock_path = lock_path or (os.path.join(path, 'dependencies.lock') if os.path.isdir(path) else path)
@@ -64,16 +64,33 @@ class ComponentManager(object):
         # Dist directory
         self.dist_path = os.path.join(self.path, 'dist')
 
-    def create_manifest(self, args):
-        """Create manifest file if it doesn't exist in work directory"""
-        if os.path.exists(self.main_manifest_path):
-            print('`idf_component.yml` already exists in main component directory, skipping...')
+    def _create_manifest(self, component='main'):  # type: (str) -> Tuple[str, bool]
+        if component == 'main':
+            manifest_dir = os.path.join(self.path, component)
         else:
+            manifest_dir = os.path.join(self.components_path, component)
+
+        if not os.path.isdir(manifest_dir):
+            raise FatalError(
+                'Dir {} does not exist! '
+                'Please specify a valid component under {}'.format(manifest_dir, self.path))
+
+        manifest_filepath = os.path.join(manifest_dir, MANIFEST_FILENAME)
+        created = False
+        # Create manifest file if it doesn't exist in work directory
+        if not os.path.exists(manifest_filepath):
             example_path = os.path.join(
                 os.path.dirname(os.path.realpath(__file__)), 'templates', 'idf_component_template.yml')
-            create_directory(self.main_component_path)
-            print('Creating `idf_component.yml` in the main component directory')
-            shutil.copyfile(example_path, self.main_manifest_path)
+            create_directory(manifest_dir)
+            shutil.copyfile(example_path, manifest_filepath)
+            print('Created `{}`'.format(manifest_filepath))
+            created = True
+        return manifest_filepath, created
+
+    def create_manifest(self, args):
+        manifest_filepath, created = self._create_manifest(args.get('component', 'main'))
+        if not created:
+            print('`{}` already exists, skipping...'.format(manifest_filepath))
 
     def pack_component(self, args):
         manifest = ManifestManager(self.path, args['name'], check_required_fields=True).load()
@@ -225,7 +242,7 @@ class ComponentManager(object):
         local_components = [
             component for component in local_components
             if os.path.isfile(os.path.join(component['path'], 'CMakeLists.txt'))
-            and os.path.isfile(os.path.join(component['path'], 'idf_component.yml'))
+            and os.path.isfile(os.path.join(component['path'], MANIFEST_FILENAME))
         ]
 
         downloaded_component_paths = set()
