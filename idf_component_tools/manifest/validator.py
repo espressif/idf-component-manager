@@ -35,9 +35,8 @@ KNOWN_FILES_KEYS = [
     'exclude',
 ]
 
-REQUIRED_KEYS = [
-    'version',
-]
+SLUG_RE = r'^[-a-z0-9_/]+\Z'
+SLUG_RE_COMPILED = re.compile(SLUG_RE)
 
 NONEMPTY_STRING = And(Or(*string_types), len, error='Non-empty string is required here')
 SLUG_REGEX_COMPILED = re.compile(FULL_SLUG_REGEX)
@@ -155,9 +154,8 @@ class ManifestValidator(object):
         if not self.check_required_fields:
             return
 
-        for key in REQUIRED_KEYS:
-            if key not in self.manifest_tree:
-                self.add_error('"%s" is required for this manifest' % key)
+        if 'version' not in self.manifest_tree:
+            self.add_error('Version is required for this manifest')
 
     def validate_targets(self):  # type: () -> None
         targets = self.manifest_tree.get('targets', [])

@@ -203,6 +203,13 @@ class ComponentVersion(object):
     def __str__(self):
         return self._version_string
 
+    @property
+    def semver(self):  # type: () -> semver.Version
+        if self.is_semver:
+            return self._semver
+        else:
+            raise TypeError('Version is not semantic')
+
 
 class ComponentSpec(object):
     def __init__(self, spec_string):  # type: (str) -> None

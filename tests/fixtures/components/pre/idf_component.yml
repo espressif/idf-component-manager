@@ -1,0 +1,7 @@
+version: "1.0.0-aplha"
+targets:
+  - esp32
+maintainers:
+  - "Test Tester <test@example.com>"
+dependencies:
+  idf: ">=4.0"

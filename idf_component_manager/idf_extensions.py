@@ -20,7 +20,7 @@ SERVICE_PROFILE = [
 SERVICE_OPTIONS = SERVICE_PROFILE + [
     {
         'names': ['--name'],
-        'help': 'Component name',
+        'help': 'Component name.',
         'required': True,
     },
     {
@@ -78,10 +78,18 @@ def action_extensions(base_actions, project_path):
             'upload-component': {
                 'callback': callback,
                 'help': 'Upload component in dist directory to the component service.',
-                'options': SERVICE_OPTIONS + [{
-                    'names': ['--archive'],
-                    'help': 'Pass an archive to for upload',
-                }],
+                'options': SERVICE_OPTIONS + [
+                    {
+                        'names': ['--archive'],
+                        'help': 'Path of the archive with component to upload.',
+                    },
+                    {
+                        'names': ['--skip-pre-release'],
+                        'help': 'Do not upload pre-release versions.',
+                        'is_flag': True,
+                        'default': False,
+                    },
+                ],
             },
             'delete-version': {
                 'callback': callback,

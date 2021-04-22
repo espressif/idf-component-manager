@@ -1,0 +1,219 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJSUURGZmQ0M1NNQzcza0FscFlaWDlnPT0iLCJpc3MiOiJpZGYtY29tcG9uZW50LXNlcnZpY2UiLCJpYXQiOjE2MTM0NzgyMjMsInN1YiI6Ik5vbmUiLCJhdWQiOiJ1c2VyIHdyaXRlOmNvbXBvbmVudHMiLCJleHAiOjE2MTM0ODE4MjN9.M3TAx-0aqKXe7r9TNwTG3X01-EJpj3FO7j9EUiixYKY
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.25.1
+    method: GET
+    uri: http://localhost:5000/components/espressif/cmp/
+  response:
+    body:
+      string: "{\n  \"created_at\": \"2021-02-23T20:25:49.507037+00:00\", \n  \"featured\"\
+        : false, \n  \"name\": \"cmp\", \n  \"namespace\": \"espressif\", \n  \"versions\"\
+        : [\n    {\n      \"component_hash\": \"0a38abb60f0fcb67604554284b51a0598d8380a7053444a6ee871f6e044271be\"\
+        , \n      \"created_at\": \"2021-02-23T21:08:31.840475+00:00\", \n      \"\
+        dependencies\": [\n        {\n          \"is_public\": false, \n         \
+        \ \"name\": null, \n          \"namespace\": null, \n          \"source\"\
+        : \"idf\", \n          \"spec\": \">=4.0\"\n        }\n      ], \n      \"\
+        description\": null, \n      \"docs\": {\n        \"changelog\": \"http://localhost:5001/98f83b1b-bb0f-4ee1-be0c-72ac7eedf28d/changelog.md\"\
+        , \n        \"readme\": \"http://localhost:5001/98f83b1b-bb0f-4ee1-be0c-72ac7eedf28d/readme.md\"\
+        \n      }, \n      \"targets\": [\n        \"esp32\"\n      ], \n      \"\
+        url\": \"http://localhost:5001/98f83b1b-bb0f-4ee1-be0c-72ac7eedf28d.tgz\"\
+        , \n      \"version\": \"3.0.15\"\n    }, \n    {\n      \"component_hash\"\
+        : \"79fdc7da82698a4a00b3d3a5ab187ff8a89f7b3e03fab608bb37397aae58a8a4\", \n\
+        \      \"created_at\": \"2021-02-23T20:44:48.698841+00:00\", \n      \"dependencies\"\
+        : [\n        {\n          \"is_public\": false, \n          \"name\": null,\
+        \ \n          \"namespace\": null, \n          \"source\": \"idf\", \n   \
+        \       \"spec\": \">=4.0\"\n        }\n      ], \n      \"description\":\
+        \ null, \n      \"docs\": {\n        \"changelog\": \"http://localhost:5001/ff75aea1-f39a-4809-a577-44a02aebdb57/changelog.md\"\
+        , \n        \"readme\": \"http://localhost:5001/ff75aea1-f39a-4809-a577-44a02aebdb57/readme.md\"\
+        \n      }, \n      \"targets\": [\n        \"esp32\"\n      ], \n      \"\
+        url\": \"http://localhost:5001/ff75aea1-f39a-4809-a577-44a02aebdb57.tgz\"\
+        , \n      \"version\": \"3.0.14\"\n    }, \n    {\n      \"component_hash\"\
+        : \"2ce26c142344f9294fb4f036d7b238ca1e6ad1d044eed677bf93eddd511315d6\", \n\
+        \      \"created_at\": \"2021-02-23T20:42:05.209844+00:00\", \n      \"dependencies\"\
+        : [\n        {\n          \"is_public\": false, \n          \"name\": null,\
+        \ \n          \"namespace\": null, \n          \"source\": \"idf\", \n   \
+        \       \"spec\": \">=4.0\"\n        }\n      ], \n      \"description\":\
+        \ null, \n      \"docs\": {\n        \"changelog\": \"http://localhost:5001/8a52ad04-b75a-4330-8a92-1b82c1b06592/changelog.md\"\
+        , \n        \"readme\": \"http://localhost:5001/8a52ad04-b75a-4330-8a92-1b82c1b06592/readme.md\"\
+        \n      }, \n      \"targets\": [\n        \"esp32\"\n      ], \n      \"\
+        url\": \"http://localhost:5001/8a52ad04-b75a-4330-8a92-1b82c1b06592.tgz\"\
+        , \n      \"version\": \"3.0.12\"\n    }, \n    {\n      \"component_hash\"\
+        : \"43df99840cae4c1833c7fa86f44301b9babe7875b73ab4bdb95d613d6f2b2f9d\", \n\
+        \      \"created_at\": \"2021-02-23T20:40:55.413690+00:00\", \n      \"dependencies\"\
+        : [\n        {\n          \"is_public\": false, \n          \"name\": null,\
+        \ \n          \"namespace\": null, \n          \"source\": \"idf\", \n   \
+        \       \"spec\": \">=4.0\"\n        }\n      ], \n      \"description\":\
+        \ null, \n      \"docs\": {\n        \"changelog\": \"http://localhost:5001/67fd74d2-8a31-456e-b30e-1a38c6268a61/changelog.md\"\
+        , \n        \"readme\": \"http://localhost:5001/67fd74d2-8a31-456e-b30e-1a38c6268a61/readme.md\"\
+        \n      }, \n      \"targets\": [\n        \"esp32\"\n      ], \n      \"\
+        url\": \"http://localhost:5001/67fd74d2-8a31-456e-b30e-1a38c6268a61.tgz\"\
+        , \n      \"version\": \"3.0.11\"\n    }, \n    {\n      \"component_hash\"\
+        : \"5f21951854cd38669fbf372c7fde0f3d8b38f449faf8f503a9ef774e114fb505\", \n\
+        \      \"created_at\": \"2021-02-23T20:36:06.047552+00:00\", \n      \"dependencies\"\
+        : [\n        {\n          \"is_public\": false, \n          \"name\": null,\
+        \ \n          \"namespace\": null, \n          \"source\": \"idf\", \n   \
+        \       \"spec\": \">=4.0\"\n        }\n      ], \n      \"description\":\
+        \ null, \n      \"docs\": {\n        \"changelog\": \"http://localhost:5001/ae0ad016-c41b-4d26-902c-168d51254b8f/changelog.md\"\
+        , \n        \"readme\": \"http://localhost:5001/ae0ad016-c41b-4d26-902c-168d51254b8f/readme.md\"\
+        \n      }, \n      \"targets\": [\n        \"esp32\"\n      ], \n      \"\
+        url\": \"http://localhost:5001/ae0ad016-c41b-4d26-902c-168d51254b8f.tgz\"\
+        , \n      \"version\": \"3.0.10\"\n    }, \n    {\n      \"component_hash\"\
+        : \"63ba247312100eb4313fbdc73e174066cc723511578c215599afdd08860f252f\", \n\
+        \      \"created_at\": \"2021-02-23T20:25:57.103291+00:00\", \n      \"dependencies\"\
+        : [\n        {\n          \"is_public\": false, \n          \"name\": null,\
+        \ \n          \"namespace\": null, \n          \"source\": \"idf\", \n   \
+        \       \"spec\": \">=4.0\"\n        }\n      ], \n      \"description\":\
+        \ null, \n      \"docs\": {\n        \"changelog\": \"http://localhost:5001/46e1f25a-d241-49fb-88fb-e16ee8e354c6/changelog.md\"\
+        , \n        \"readme\": \"http://localhost:5001/46e1f25a-d241-49fb-88fb-e16ee8e354c6/readme.md\"\
+        \n      }, \n      \"targets\": [\n        \"esp32\"\n      ], \n      \"\
+        url\": \"http://localhost:5001/46e1f25a-d241-49fb-88fb-e16ee8e354c6.tgz\"\
+        , \n      \"version\": \"3.0.9\"\n    }\n  ]\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Content-Length:
+      - '4637'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 22 Apr 2021 22:09:09 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.9.0
+    status:
+      code: 200
+      message: OK
+- request:
+    body: !!python/object/new:_io.BytesIO
+      state: !!python/tuple
+      - !!binary |
+        LS0wYWNmMWRmZDZhNmE0MmQ0YjQ3NjJkYjI2ODk1NjZjOQ0KQ29udGVudC1EaXNwb3NpdGlvbjog
+        Zm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImNtcF8xLjAuMC1hcGxoYS50Z3oiDQpD
+        b250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL29jdGV0LXN0cmVhbQ0KDQofiwgIBfSBYAL/Y21wXzEu
+        MC4wLWFwbGhhLnRnegDt2Ftv2jAYBuBc51dY2Q1c1MROQkoPqBMgFakcBN2uJqGImGI1pyWmYpr2
+        32cOUgdT26ukbH0fCYJyIBLk+17btEEbN+NgfSuCUORGKeydl7a27bjPnzf7mc0ZN8jaqMCqUEGu
+        b298TPycxErG4po1WYtx3+U+bdnc8VjLNOC/J8PFbJ7GWZqIRNEfcVRS/TfdbY0z37P/3G4xnx3V
+        P+euZxC7yvp/XL1+3lvH/1FPIi9kmlwQi1Gb2mdBFi0Dy9S/yYNQxYVJyBkRReZwMw5kovRLX7Db
+        bd2LQpHNm8jJldLbG7EO4iwSVD9RbcsMRSaSUCRzKbaX6GdN36d97VLbQnM5DfQk8t/5O/8Z8r+S
+        /PcP8985Z5Qxnf8cFfoRzOOMzku+x5v57/DD+rf9Jmsi/6vwSSbzaBUKclWoUKZ02TbNp1SGRD8Y
+        s6WIorRWN3/q8N7Jcj0IWNSs280RssjTmHQGY7IfRZDtGOJbYtUvzV+oLeQ/8h/5D6esMwgexZ0s
+        VEHVWr1T/vvNo/pnrusg/6sZ/+n/fxbLRMareJaL7yuZi7D2tTeZ9kdD4lDm1E2zEKrWGQ3Go2Fv
+        eD+bTjrd/mRKaP3owOdud9Yfdu6+dHvbE6z94MLSX5GLB7lZKXhebdIDC9Qf8h/5j/yH97Lv0I2y
+        5/++572Y/we9YFf/DucG8ZD/6P/o/+j/UHr/36wDL0vs/6/N/3S1H8//OOZ/1The671ESQAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAJys36PnVRoAUAAADQotLTBhY2YxZGZkNmE2YTQyZDRiNDc2MmRiMjY4
+        OTU2NmM5LS0NCg==
+      - 0
+      - null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJSUURGZmQ0M1NNQzcza0FscFlaWDlnPT0iLCJpc3MiOiJpZGYtY29tcG9uZW50LXNlcnZpY2UiLCJpYXQiOjE2MTM0NzgyMjMsInN1YiI6Ik5vbmUiLCJhdWQiOiJ1c2VyIHdyaXRlOmNvbXBvbmVudHMiLCJleHAiOjE2MTM0ODE4MjN9.M3TAx-0aqKXe7r9TNwTG3X01-EJpj3FO7j9EUiixYKY
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '808'
+      Content-Type:
+      - multipart/form-data; boundary=0acf1dfd6a6a42d4b4762db2689566c9
+      User-Agent:
+      - python-requests/2.25.1
+    method: POST
+    uri: http://localhost:5000/components/espressif/cmp/versions/
+  response:
+    body:
+      string: "{\n  \"job_id\": \"6c520950-09de-4f41-8e28-872077f2a3c2\", \n  \"upload_format\"\
+        : \"tgz\", \n  \"upload_id\": \"b6b83877-a16f-4668-804f-c3c6f4e9a02a\"\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Content-Length:
+      - '138'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 22 Apr 2021 22:09:09 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.9.0
+    status:
+      code: 201
+      message: CREATED
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJSUURGZmQ0M1NNQzcza0FscFlaWDlnPT0iLCJpc3MiOiJpZGYtY29tcG9uZW50LXNlcnZpY2UiLCJpYXQiOjE2MTM0NzgyMjMsInN1YiI6Ik5vbmUiLCJhdWQiOiJ1c2VyIHdyaXRlOmNvbXBvbmVudHMiLCJleHAiOjE2MTM0ODE4MjN9.M3TAx-0aqKXe7r9TNwTG3X01-EJpj3FO7j9EUiixYKY
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.25.1
+    method: GET
+    uri: http://localhost:5000/tasks/6c520950-09de-4f41-8e28-872077f2a3c2/
+  response:
+    body:
+      string: "{\n  \"id\": \"6c520950-09de-4f41-8e28-872077f2a3c2\", \n  \"message\"\
+        : \"Check manifest\", \n  \"progress\": 80.0, \n  \"status\": \"processing\"\
+        \n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Content-Length:
+      - '131'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 22 Apr 2021 22:09:09 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.9.0
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJSUURGZmQ0M1NNQzcza0FscFlaWDlnPT0iLCJpc3MiOiJpZGYtY29tcG9uZW50LXNlcnZpY2UiLCJpYXQiOjE2MTM0NzgyMjMsInN1YiI6Ik5vbmUiLCJhdWQiOiJ1c2VyIHdyaXRlOmNvbXBvbmVudHMiLCJleHAiOjE2MTM0ODE4MjN9.M3TAx-0aqKXe7r9TNwTG3X01-EJpj3FO7j9EUiixYKY
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.25.1
+    method: GET
+    uri: http://localhost:5000/tasks/6c520950-09de-4f41-8e28-872077f2a3c2/
+  response:
+    body:
+      string: "{\n  \"id\": \"6c520950-09de-4f41-8e28-872077f2a3c2\", \n  \"message\"\
+        : \"Uploaded archive successfully processed\", \n  \"progress\": 100.0, \n\
+        \  \"status\": \"success\"\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Content-Length:
+      - '154'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 22 Apr 2021 22:09:12 GMT
+      Server:
+      - Werkzeug/1.0.1 Python/3.9.0
+    status:
+      code: 200
+      message: OK
+version: 1

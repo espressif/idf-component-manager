@@ -20,16 +20,19 @@ KNOWN_ACTIONS = [
 def main():
     parser = argparse.ArgumentParser(description='IDF component manager')
     parser.add_argument('command', choices=KNOWN_ACTIONS, help='Command to execute')
-    parser.add_argument('--path', help='Working directory (default: current directory)', default=os.getcwd())
+    parser.add_argument('--path', help='Working directory (default: current directory).', default=os.getcwd())
     parser.add_argument('--namespace', help='Namespace for the component. Can be set in config file.')
     parser.add_argument(
         '--service-profile',
         help='Profile for component service to use. By default profile named "default" will be used.',
-        default='default')
+        default='default',
+    )
     parser.add_argument('--name', help='Component name', required=True)
-    parser.add_argument('--archive', help='Archive name for component upload')
-    parser.add_argument('--job', help='Background job ID')
-    parser.add_argument('--version', help='Delete version')
+    parser.add_argument('--archive', help='Path of the archive with component to upload.')
+    parser.add_argument('--job', help='Background job ID.')
+    parser.add_argument('--version', help='Version for deletion.')
+    parser.add_argument('--skip-pre-release', help='Do not upload pre-release versions.', action='store_true')
+
     args = parser.parse_args()
 
     try:

@@ -211,6 +211,12 @@ class ComponentManager(object):
             if not os.path.isfile(archive_file):
                 self.pack_component(args)
 
+        if not manifest.version.is_semver:
+            raise FatalError('Only components with semantic versions are allowed on the service')
+
+        if manifest.version.semver.prerelease and args.get('skip_pre_release'):
+            raise NothingToDoError('Skipping pre-release version {}'.format(manifest.version))
+
         try:
             component_name = '/'.join([namespace, manifest.name])
             # Checking if current version already uploaded

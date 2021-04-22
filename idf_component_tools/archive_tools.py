@@ -109,7 +109,7 @@ def pack_archive(source_dir, source_paths, destination_dir, filename):
     try:
         with tarfile.open(archive_path, 'w:gz') as archive:
             for path in source_paths:
-                archive.add(path, arcname=path.relative_to(source_dir), recursive=False)
+                archive.add(str(path), arcname=str(path.relative_to(source_dir)), recursive=False)
 
     except tarfile.TarError:
         raise ArchiveError('%s is not a valid tar archive' % archive_path)
