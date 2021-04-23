@@ -4,7 +4,7 @@ from io import open
 import yaml
 
 from ..errors import ManifestError
-from .constant import MANIFEST_FILENAME
+from .constants import MANIFEST_FILENAME
 from .manifest import Manifest
 from .validator import ManifestValidator
 
@@ -71,10 +71,19 @@ class ManifestManager(object):
 
         with open(self._path, mode='r', encoding='utf-8') as f:
             try:
-                return yaml.safe_load(f.read())
+                manifest_data = yaml.safe_load(f.read())
+
+                if manifest_data is None:
+                    manifest_data = EMPTY_MANIFEST
+
+                if not isinstance(manifest_data, dict):
+                    raise ManifestError('Unknown format of the manifest file: {}'.format(self._path))
+
+                return manifest_data
+
             except yaml.YAMLError:
                 raise ManifestError(
-                    'Cannot parse manifest file. Please check that\n\t%s\nis valid YAML file\n' % self._path)
+                    'Cannot parse the manifest file. Please check that\n\t{}\nis valid YAML file\n'.format(self._path))
 
     def load(self):  # type: () -> Manifest
         self.check_filename().validate()

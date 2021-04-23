@@ -22,17 +22,12 @@ class BaseSource(object):
     NAME = 'base'
 
     def __init__(self, source_details=None):  # type: (dict) -> None
-        source_details = source_details or {}
-        unknown_keys = []
-        for key in source_details.keys():
-            if key not in self.known_keys():
-                unknown_keys.append(key)
+        self._source_details = source_details or {}
+        self._hash_key = None
 
+        unknown_keys = [key for key in self._source_details.keys() if key not in self.known_keys()]
         if unknown_keys:
             raise SourceError('Unknown keys in dependency details: %s' % ', '.join(unknown_keys))
-
-        self._source_details = source_details if source_details else {}
-        self._hash_key = None
 
     def _hash_values(self):
         return (self.name, self.hash_key)

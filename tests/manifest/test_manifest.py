@@ -1,10 +1,10 @@
 import os
+import re
 
 import pytest
 
 from idf_component_tools.errors import ManifestError
-from idf_component_tools.manifest import ComponentVersion, ManifestManager, ManifestValidator
-from idf_component_tools.manifest.validator import SLUG_RE_COMPILED
+from idf_component_tools.manifest import SLUG_REGEX, ComponentVersion, ManifestManager, ManifestValidator
 
 
 class TestComponentVersion(object):
@@ -54,7 +54,7 @@ class TestManifestPipeline(object):
             parser.manifest_tree
 
         assert e.type == ManifestError
-        assert str(e.value).startswith('Cannot parse manifest file')
+        assert str(e.value).startswith('Cannot parse')
 
     def test_parse_valid_yaml(self, capsys):
         manifest_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'fixtures', 'idf_component.yml')
@@ -178,14 +178,14 @@ class TestManifestValidator(object):
         assert errors[1].startswith('Unknown targets: esp123, asdf')
 
     def test_slug_re(self):
-        valid_names = ('asdf-fadsf', '_', '-', '_good', '123', 'asdf-_-fdsa-')
-        invalid_names = ('!', 'asdf$f', 'daf411~', 'adf\nadsf')
+        valid_names = ('asdf-fadsf', '123', 'asdf_erw')
+        invalid_names = ('!', 'asdf$f', 'daf411~', 'adf\nadsf', '_', '-', '_good', 'asdf-_-fdsa-')
 
         for name in valid_names:
-            assert SLUG_RE_COMPILED.match(name)
+            assert re.match(SLUG_REGEX, name)
 
         for name in invalid_names:
-            assert not SLUG_RE_COMPILED.match(name)
+            assert not re.match(SLUG_REGEX, name)
 
     def test_validate_version_list(self, valid_manifest):
         validator = ManifestValidator(valid_manifest)

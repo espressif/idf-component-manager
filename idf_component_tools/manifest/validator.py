@@ -4,6 +4,7 @@ from schema import And, Optional, Or, Regex, Schema, SchemaError, Use
 from semantic_version import Version
 from six import string_types
 
+from .constants import FULL_SLUG_REGEX
 from .manifest import ComponentSpec
 
 try:
@@ -38,10 +39,8 @@ REQUIRED_KEYS = [
     'version',
 ]
 
-SLUG_RE = r'^[-a-z0-9_/]+\Z'
-SLUG_RE_COMPILED = re.compile(SLUG_RE)
-
 NONEMPTY_STRING = And(Or(*string_types), len, error='Non-empty string is required here')
+SLUG_REGEX_COMPILED = re.compile(FULL_SLUG_REGEX)
 
 
 def known_component_keys():
@@ -73,7 +72,7 @@ def manifest_schema():  # type () -> Schema
             Optional('description'): NONEMPTY_STRING,
             Optional('url'): NONEMPTY_STRING,
             Optional('dependencies'): {
-                Optional(Regex(SLUG_RE, error='Invalid dependency name')): dependency_schema()
+                Optional(Regex(FULL_SLUG_REGEX, error='Invalid dependency name')): dependency_schema()
             },
             Optional('files'): {Optional(key): [NONEMPTY_STRING]
                                 for key in KNOWN_FILES_KEYS},
@@ -112,7 +111,7 @@ class ManifestValidator(object):
             self.add_error('Unknown keys: %s' % ', '.join(unknown))
 
     def _check_name(self, component):  # type: (str) -> None
-        if not SLUG_RE_COMPILED.match(component):
+        if not SLUG_REGEX_COMPILED.match(component):
             self.add_error(
                 'Component\'s name is not valid "%s", should contain only lowercase letters, numbers, /, _ and -.' %
                 component)

@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from io import open
 from pathlib import Path
 
+from semantic_version import SimpleSpec
 from tqdm import tqdm
 
 from idf_component_tools.api_client import APIClientError
@@ -17,7 +18,7 @@ from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.errors import FatalError, ManifestError, NothingToDoError
 from idf_component_tools.file_tools import DEFAULT_EXCLUDE, DEFAULT_INCLUDE, create_directory, filtered_paths
-from idf_component_tools.manifest import MANIFEST_FILENAME, ManifestManager
+from idf_component_tools.manifest import MANIFEST_FILENAME, WEB_DEPENDENCY_REGEX, ManifestManager
 from idf_component_tools.sources import WebServiceSource
 
 from .cmake_component_requirements import ITERABLE_PROPS, CMakeRequirementsManager, ComponentName
@@ -43,8 +44,6 @@ MAX_PROGRESS = 100  # Expected progress is in percent
 
 
 class ComponentManager(object):
-    NAME_VERSION_REGEX = re.compile(r'([a-z-_/]+)(?:([~^<>=]+)(.+))?')
-
     def __init__(self, path, lock_path=None, manifest_path=None):
         # type: (str, Optional[str], Optional[str]) -> None
 
@@ -69,14 +68,12 @@ class ComponentManager(object):
         self.dist_path = os.path.join(self.path, 'dist')
 
     def _create_manifest(self, component='main'):  # type: (str) -> Tuple[str, bool]
-        if component == 'main':
-            manifest_dir = os.path.join(self.path, component)
-        else:
-            manifest_dir = os.path.join(self.components_path, component)
+        base_dir = self.path if component == 'main' else self.components_path
+        manifest_dir = os.path.join(base_dir, component)
 
         if not os.path.isdir(manifest_dir):
             raise FatalError(
-                'Dir {} does not exist! '
+                'Directory "{}" does not exist! '
                 'Please specify a valid component under {}'.format(manifest_dir, self.path))
 
         manifest_filepath = os.path.join(manifest_dir, MANIFEST_FILENAME)
@@ -87,70 +84,72 @@ class ComponentManager(object):
                 os.path.dirname(os.path.realpath(__file__)), 'templates', 'idf_component_template.yml')
             create_directory(manifest_dir)
             shutil.copyfile(example_path, manifest_filepath)
-            print('Created `{}`'.format(manifest_filepath))
+            print('Created "{}"'.format(manifest_filepath))
             created = True
         return manifest_filepath, created
 
     def create_manifest(self, args):
         manifest_filepath, created = self._create_manifest(args.get('component', 'main'))
         if not created:
-            print('`{}` already exists, skipping...'.format(manifest_filepath))
+            print('"{}" already exists, skipping...'.format(manifest_filepath))
 
     def add_dependency(self, args):
+        dependency = args.get('dependency')
         manifest_filepath, _ = self._create_manifest(args.get('component', 'main'))
 
-        match = self.NAME_VERSION_REGEX.match(args.get('dependency'))
+        match = re.match(WEB_DEPENDENCY_REGEX, dependency)
         if match:
-            name, op, ver = match.groups()
-            if (not op and not ver) or ver == '*':
-                version = '*'
-            else:
-                version = op + ver
+            name, spec = match.groups()
         else:
+            raise FatalError('Invalid dependency name: {}. Please use format "namespace/name".'.format(dependency))
+
+        if not spec:
+            spec = '*'
+
+        try:
+            SimpleSpec(spec)
+        except ValueError:
             raise FatalError(
-                'Invalid dependency: {}, should be "name>=version" like string. '
-                'For example: espressif/button>=1.0.0'.format(args.get('dependency')))
+                'Invalid dependency version requirement: {}. Please use format like ">=1" or "*".'.format(spec))
 
         name = WebServiceSource().normalized_name(name)
+
         manifest_manager = ManifestManager(manifest_filepath, args.get('component'))
-        if 'dependencies' in manifest_manager.manifest_tree:
-            with_dependencies = True
-            dependencies = manifest_manager.manifest_tree['dependencies']
+        manifest = manifest_manager.load()
 
-            if name in dependencies:
-                raise FatalError('ERROR: dependency {} already exists in {}'.format(name, manifest_filepath))
-        else:
-            with_dependencies = False
+        for dependency in manifest.dependencies:
+            if dependency.name == name:
+                raise FatalError('Dependency "{}" already exists for in manifest "{}"'.format(name, manifest_filepath))
 
-        with open(manifest_filepath, 'r', encoding='utf-8') as fr:
-            file_lines = [line.rstrip() for line in fr.readlines() if line.strip()]
+        with open(manifest_filepath, 'r', encoding='utf-8') as file:
+            file_lines = file.readlines()
 
-        new_dependency_str = '  {}: "{}"'.format(name, version)
-        if with_dependencies:
-            index = len(file_lines)
+        index = 0
+        if 'dependencies' in manifest_manager.manifest_tree.keys():
             for i, line in enumerate(file_lines):
                 if line.startswith('dependencies:'):
                     index = i + 1
                     break
-            file_lines.insert(index, new_dependency_str)
         else:
-            file_lines.extend(['dependencies:', new_dependency_str])
-        file_lines.append('')  # for an extra blank line
+            file_lines.append('\ndependencies:\n')
+            index = len(file_lines) + 1
 
-        temp_manifest_file = tempfile.NamedTemporaryFile(delete=False)
-        temp_manifest_file.write('\n'.join(file_lines).encode('utf-8'))
-        temp_manifest_file.close()
+        file_lines.insert(index, '  {}: "{}"\n'.format(name, spec))
+
+        # Check result for correctness
+        with tempfile.NamedTemporaryFile(delete=False) as temp_manifest_file:
+            temp_manifest_file.writelines(line.encode('utf-8') for line in file_lines)
 
         try:
             ManifestManager(temp_manifest_file.name, name).load()
         except ManifestError:
             raise ManifestError(
-                'This error could be caused by mixing indentation, we recommend to use 2-space indent.\n'
-                'Please check that\n\t{}\nto ensure the failure reason, and modify\n\t{}\nindentation to 2 spaces'.
-                format(temp_manifest_file.name, manifest_filepath))
-        else:
-            shutil.move(temp_manifest_file.name, manifest_filepath)
-        print('Successfully added dependency `{}` in `{}`'.format(name, manifest_filepath))
+                'Cannot update manifest file. '
+                "It's likely due to the 4 spaces used for indentation we recommend using 2 spaces indent. "
+                'Please check the manifest:\n{}'.format(manifest_filepath))
+
+        shutil.move(temp_manifest_file.name, manifest_filepath)
+        print('Successfully added dependency "{}" for component "{}"'.format(name, manifest_manager.name))
 
     def pack_component(self, args):
         manifest = ManifestManager(self.path, args['name'], check_required_fields=True).load()
@@ -362,7 +361,7 @@ class ComponentManager(object):
                 if dependency_name not in requirements[name_key][requirement_key]:
                     requirements[name_key][requirement_key].append(dependency_name)
 
-        # Handling `unknown` dependencies
+        # Handling "unknown" dependencies
         known_names = [component_name.name for component_name in requirements.keys()]
         for name, requirement in requirements.items():
             for prop in ITERABLE_PROPS:
