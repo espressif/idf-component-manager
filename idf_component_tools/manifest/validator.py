@@ -35,9 +35,6 @@ KNOWN_FILES_KEYS = [
     'exclude',
 ]
 
-SLUG_RE = r'^[-a-z0-9_/]+\Z'
-SLUG_RE_COMPILED = re.compile(SLUG_RE)
-
 NONEMPTY_STRING = And(Or(*string_types), len, error='Non-empty string is required here')
 SLUG_REGEX_COMPILED = re.compile(FULL_SLUG_REGEX)
 
@@ -112,8 +109,7 @@ class ManifestValidator(object):
     def _check_name(self, component):  # type: (str) -> None
         if not SLUG_REGEX_COMPILED.match(component):
             self.add_error(
-                'Component\'s name is not valid "%s", should contain only lowercase letters, numbers, /, _ and -.' %
-                component)
+                'Component\'s name is not valid "%s", should contain only letters, numbers, /, _ and -.' % component)
 
         if '__' in component:
             self.add_error('Component\'s name "%s" should not contain two consecutive underscores.' % component)
