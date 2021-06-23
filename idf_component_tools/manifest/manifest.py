@@ -3,6 +3,7 @@ import re
 from functools import total_ordering
 
 import semantic_version as semver
+from semantic_version import SimpleSpec as Spec
 
 import idf_component_tools as tools
 from idf_component_tools.hash_tools import hash_object
@@ -12,11 +13,6 @@ try:
     from collections.abc import Mapping
 except ImportError:
     from collections import Mapping
-
-try:
-    from semantic_version import SimpleSpec as Spec
-except ImportError:
-    from semantic_version import Spec
 
 try:
     from typing import TYPE_CHECKING, List, Optional, Union

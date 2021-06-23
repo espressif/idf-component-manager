@@ -1,3 +1,4 @@
+from idf_component_tools.errors import SolverError
 from idf_component_tools.manifest import ComponentRequirement, ProjectRequirements, SolvedComponent, SolvedManifest
 
 try:
@@ -8,7 +9,12 @@ except ImportError:
 
 def best_version(component):  # type: (ComponentRequirement) -> SolvedComponent
     cmp_with_versions = component.source.versions(name=component.name, spec=component.version_spec)
+
+    if not cmp_with_versions.versions:
+        raise SolverError('Cannot find a satisfiyng version of the component  "{}"'.format(component.name))
+
     version = max(cmp_with_versions.versions)
+
     return SolvedComponent(
         name=component.name,
         source=component.source,

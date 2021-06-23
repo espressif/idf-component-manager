@@ -20,6 +20,10 @@ class NothingToDoError(FatalError):
     exit_code = 144  # NOP
 
 
+class SolverError(FatalError):
+    pass
+
+
 class ProcessingError(FatalError):
     pass
 

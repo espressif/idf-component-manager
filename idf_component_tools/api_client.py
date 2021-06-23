@@ -160,12 +160,16 @@ class APIClient(object):
 
     def versions(self, component_name, spec='*'):
         """List of versions for given component with required spec"""
+        semantic_spec = semver.SimpleSpec(spec or '*')
         component_name = component_name.lower()
         body = self._base_request(
             'get',
             ['components', component_name],
             schema=COMPONENT_SCHEMA,
         )
+
+        # Return only required versions
+        versions = [version for version in body['versions'] if semver.Version(version['version']) in semantic_spec]
 
         return tools.manifest.ComponentWithVersions(
             name=component_name,
@@ -174,7 +178,7 @@ class APIClient(object):
                     version_string=version['version'],
                     component_hash=version['component_hash'],
                     dependencies=self._version_dependencies(version),
-                ) for version in body['versions']
+                ) for version in versions
             ],
         )
 

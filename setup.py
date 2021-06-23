@@ -18,7 +18,7 @@ REQUIRES = [
     'requests',
     'requests-toolbelt',
     'schema',
-    'semantic_version',
+    'semantic_version>="2.8"',
     'six',
     'tqdm',
 ]
