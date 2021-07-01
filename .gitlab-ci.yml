@@ -45,8 +45,6 @@ test:py2.7:
 
 test:py3.5:
   extends: .test_template
-  # Not using `python:3.5-slim-buster` because gcc is required,
-  # Wheels are not built for py3.5 anymore
   image: python:3.5-buster
   script:
     - tox -e py35
@@ -69,7 +67,6 @@ test:py3.9:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
       changes:
         - integration_tests/**/*
-
   artifacts:
     reports:
       cobertura: coverage_integration.xml
@@ -77,21 +74,30 @@ test:py3.9:
     - apt-get update && apt-get install -y -q libusb-1.0 cmake git ninja-build
     - git clone https://github.com/espressif/esp-idf.git
     - cd ./esp-idf/
+    - git checkout ${IDF_VERSION:-master}
     - ./install.sh
     - . ./export.sh
     - git submodule update --init --recursive
     - cd ..
-    - pip install $CI_PROJECT_DIR pytest pytest-cov
+    - pip install $CI_PROJECT_DIR pytest pytest-cov jinja2
   script:
     - py.test -s -c pytest_integration.ini --cov=. --cov-report=xml:coverage_integration.xml
 
-integration_test:py2.7:
+integration_test:py2.7_idf4.3:
   extends: .integration_test_template
   image: python:2.7-slim-buster
+  variables:
+    IDF_VERSION: release/v4.3
 
-integration_test:py3.5:
+integration_test:py3.5_idf4.3:
   extends: .integration_test_template
   image: python:3.5-buster
+  variables:
+    IDF_VERSION: release/v4.3
+
+integration_test:py3.6_idf_master:
+  extends: .integration_test_template
+  image: python:3.6-buster
 
 publish_on_pypi:
   image: python:3.9-slim-buster
