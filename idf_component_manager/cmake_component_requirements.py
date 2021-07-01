@@ -13,7 +13,7 @@ ComponentName = namedtuple('ComponentName', ['prefix', 'name'])
 ComponentProperty = namedtuple('ComponentProperty', ['component', 'prop', 'value'])
 ITERABLE_PROPS = ['REQUIRES', 'PRIV_REQUIRES']
 REQ_RE = re.compile(
-    r'^__component_set_property\(___(?P<prefix>[a-zA-Z\d]+)_(?P<name>[a-zA-Z\d_-]+)\s+(?P<prop>\w+)\s+(?P<value>.*)\)')
+    r'^__component_set_property\(___(?P<prefix>[a-zA-Z\d-]+)_(?P<name>[a-zA-Z\d_-]+)\s+(?P<prop>\w+)\s+(?P<value>.*)\)')
 
 
 class RequirementsProcessingError(FatalError):
