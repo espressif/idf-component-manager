@@ -31,7 +31,7 @@ def service_details(namespace=None, service_profile=None):  # type: (Optional[st
         raise FatalError('Namespace is required to upload component')
 
     # Priorities: IDF_COMPONENT_API_TOKEN env variable > profile value
-    token = os.getenv('IDF_COMPONENT_API_TOKEN', profile.get('api_token'))
+    token = os.getenv('IDF_COMPONENT_API_TOKEN') or profile.get('api_token')
     if not token:
         raise FatalError('API token is required to upload component')
 

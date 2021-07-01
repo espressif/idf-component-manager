@@ -80,7 +80,7 @@ class SystemCachePath(object):
         return dir
 
     def _get_win_folder_with_pywin32(self):
-        from win32com.shell import shellcon, shell
+        from win32com.shell import shell, shellcon
 
         dir = shell.SHGetFolderPath(0, getattr(shellcon, 'CSIDL_LOCAL_APPDATA'), 0, 0)
         # Try to make this a unicode path because SHGetFolderPath does
@@ -130,6 +130,7 @@ class SystemCachePath(object):
 
     def _get_win_folder_with_jna(self):
         import array
+
         from com.sun import jna
         from com.sun.jna.platform import win32
 
@@ -181,4 +182,4 @@ class SystemCachePath(object):
         return os.path.expanduser('~/Library/Caches')
 
     def cache_path_unix(self):
-        return os.getenv('XDG_CACHE_HOME', os.path.expanduser('~/.cache'))
+        return os.getenv('XDG_CACHE_HOME') or os.path.expanduser('~/.cache')

@@ -27,7 +27,7 @@ except ImportError:
 
 
 def default_component_service_url():
-    return os.getenv('DEFAULT_COMPONENT_SERVICE_URL', 'https://api.components.espressif.com/')
+    return os.getenv('DEFAULT_COMPONENT_SERVICE_URL') or 'https://api.components.espressif.com/'
 
 
 DEFAULT_NAMESPACE = 'espressif'
