@@ -65,8 +65,11 @@ test:py3.9:
   rules:
     - if: '$CI_COMMIT_BRANCH == "master"'
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
-    - changes:
+    - if: '$RUN_INTEGRATION_TESTS == "true"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
         - integration_tests/**/*
+
   artifacts:
     reports:
       cobertura: coverage_integration.xml
