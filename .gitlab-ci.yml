@@ -74,7 +74,7 @@ test:py3.9:
     - apt-get update && apt-get install -y -q libusb-1.0 cmake git ninja-build
     - git clone https://github.com/espressif/esp-idf.git
     - cd ./esp-idf/
-    - git checkout ${IDF_VERSION:-master}
+    - git checkout ${IDF_BRANCH:-master}
     - ./install.sh
     - . ./export.sh
     - git submodule update --init --recursive
@@ -88,14 +88,14 @@ integration_test:py2.7:
   image: python:2.7-slim-buster
   parallel:
     matrix:
-      - IDF_VERSION: [ release/v4.1, release/v4.2, release/v4.3 ]
+      - IDF_BRANCH: [ release/v4.1, release/v4.2, release/v4.3 ]
 
 integration_test:py3.5:
   extends: .integration_test_template
   image: python:3.5-slim-buster
   parallel:
     matrix:
-      - IDF_VERSION: [ release/v4.1, release/v4.2, release/v4.3 ]
+      - IDF_BRANCH: [ release/v4.1, release/v4.2, release/v4.3 ]
 
 integration_test:py3.6_idf_master:
   extends: .integration_test_template

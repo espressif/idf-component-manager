@@ -1,7 +1,11 @@
 import logging
+import os
 import subprocess
 
 import pytest
+
+from idf_component_manager.core import ComponentManager
+from idf_component_tools.errors import SolverError
 
 
 def build_project(project_path):
@@ -74,3 +78,48 @@ def build_project(project_path):
     indirect=True)
 def test_single_dependency(project):
     assert build_project(project)
+
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'idf': {
+                            'version': '<4.1',
+                        }
+                    }
+                }
+            }
+        },
+    ], indirect=True)
+def test_idf_version_dependency_failed(project):
+    os.mkdir(os.path.join(project, 'build'))
+    managed_components_list_file = os.path.join(project, 'build', 'managed_components_list.temp.cmake')
+    component_list_file = os.path.join(project, 'build', 'components_with_manifests_list.temp')
+
+    with pytest.raises(SolverError):
+        ComponentManager(project).prepare_dep_dirs(managed_components_list_file, component_list_file)
+
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'idf': {
+                            'version': '^4.1',
+                        }
+                    }
+                }
+            }
+        },
+    ], indirect=True)
+def test_idf_version_dependency_passed(project):
+    os.mkdir(os.path.join(project, 'build'))
+    managed_components_list_file = os.path.join(project, 'build', 'managed_components_list.temp.cmake')
+    component_list_file = os.path.join(project, 'build', 'components_with_manifests_list.temp')
+
+    ComponentManager(project).prepare_dep_dirs(managed_components_list_file, component_list_file)
