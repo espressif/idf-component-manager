@@ -17,11 +17,12 @@ except ImportError:
 IDF_VERSION_REGEX = re.compile(r'v(\d\.\d(?:\.\d)?)')
 
 
-def get_idf_version(idf_py_path):
+def get_idf_version():
     idf_version = os.getenv('IDF_VERSION')
     if idf_version:
         return idf_version
 
+    idf_py_path = os.path.join(get_idf_path(), 'tools', 'idf.py')
     try:
         idf_version = subprocess.check_output([sys.executable, idf_py_path, '--version'])  # nosec
     except subprocess.CalledProcessError:
@@ -46,24 +47,26 @@ def get_idf_version(idf_py_path):
             'Output: {}'.format(idf_version))
 
 
+def get_idf_path():  # type: () -> str
+    try:
+        return os.environ['IDF_PATH']
+    except KeyError:
+        raise FetchingError('Please set IDF_PATH environment variable with a valid path to ESP-IDF')
+
+
 class IDFSource(BaseSource):
     NAME = 'idf'
 
     def __init__(self, source_details):
         super(IDFSource, self).__init__(source_details=source_details)
 
-        try:
-            self.idf_path = os.environ['IDF_PATH']
-        except KeyError:
-            raise FetchingError('Please set IDF_PATH environment variable with a valid path to ESP-IDF')
-
     @staticmethod
     def is_me(name, details):
-        return name == 'idf'
+        return name == IDFSource.NAME
 
     @property
     def hash_key(self):
-        return str(self.idf_path)
+        return self.NAME
 
     @property
     def meta(self):
@@ -73,7 +76,7 @@ class IDFSource(BaseSource):
         return self.NAME
 
     def versions(self, name, details=None, spec='*'):
-        local_idf_version = get_idf_version(os.path.join(self.idf_path, 'tools', 'idf.py'))
+        local_idf_version = get_idf_version()
 
         if semantic_version.match(spec, local_idf_version):
             versions = [HashedComponentVersion(local_idf_version)]
@@ -83,9 +86,7 @@ class IDFSource(BaseSource):
         return ComponentWithVersions(name=name, versions=versions)
 
     def download(self, component, download_path):
-        if 'IDF_PATH' not in os.environ:
-            FetchingError('Please set IDF_PATH environment variable with a valid path to ESP-IDF')
-
+        get_idf_path()
         return []
 
     def serialize(self):  # type: () -> Dict
