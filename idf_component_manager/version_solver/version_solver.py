@@ -11,7 +11,7 @@ def best_version(component):  # type: (ComponentRequirement) -> SolvedComponent
     cmp_with_versions = component.source.versions(name=component.name, spec=component.version_spec)
 
     if not cmp_with_versions.versions:
-        raise SolverError('Cannot find a satisfiyng version of the component  "{}"'.format(component.name))
+        raise SolverError('Cannot find a satisfying version of the component "{}"'.format(component.name))
 
     version = max(cmp_with_versions.versions)
 
