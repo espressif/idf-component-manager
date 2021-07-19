@@ -1,3 +1,4 @@
+from idf_component_tools.build_system_tools import get_env_idf_target
 from idf_component_tools.errors import SolverError
 from idf_component_tools.manifest import ComponentRequirement, ProjectRequirements, SolvedComponent, SolvedManifest
 
@@ -8,7 +9,8 @@ except ImportError:
 
 
 def best_version(component):  # type: (ComponentRequirement) -> SolvedComponent
-    cmp_with_versions = component.source.versions(name=component.name, spec=component.version_spec)
+    target = get_env_idf_target()
+    cmp_with_versions = component.source.versions(name=component.name, spec=component.version_spec, target=target)
 
     if not cmp_with_versions.versions:
         raise SolverError('Cannot find a satisfying version of the component "{}"'.format(component.name))

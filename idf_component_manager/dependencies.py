@@ -1,5 +1,7 @@
+from idf_component_tools.build_system_tools import get_env_idf_target
+from idf_component_tools.errors import FetchingError
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import ManifestManager, ProjectRequirements
+from idf_component_tools.manifest import Manifest, ProjectRequirements
 from idf_component_tools.sources.fetcher import ComponentFetcher
 
 from .version_solver.version_solver import VersionSolver
@@ -10,10 +12,20 @@ except ImportError:
     pass
 
 
-def download_project_dependencies(manifest_paths, lock_path, managed_components_path):
-    # type: (List[dict], str, str) -> Set[str]
+def check_manifests_targets(manifests):  # type: (List[Manifest]) -> None
+    target = get_env_idf_target()
+
+    for manifest in manifests:
+        if not manifest.targets:
+            continue
+
+        if target not in manifest.targets:
+            raise FetchingError('Component "{}" does not support target {}'.format(manifest.name, target))
+
+
+def download_project_dependencies(manifests, lock_path, managed_components_path):
+    # type: (List[Manifest], str, str) -> Set[str]
     '''Solves dependencies and download components'''
-    manifests = [ManifestManager(component['path'], component['name']).load() for component in manifest_paths]
     project_requirements = ProjectRequirements(manifests)
     lock_manager = LockManager(lock_path)
     solution = lock_manager.load()

@@ -9,6 +9,7 @@ from idf_component_tools.manifest import ComponentWithVersions
 from ..errors import SourceError
 
 try:
+    import typing
     from typing import TYPE_CHECKING, Callable, Dict, List, Union
 
     if TYPE_CHECKING:
@@ -126,6 +127,7 @@ class BaseSource(object):
             name,  # type: str
             details=None,  # type: Union[Dict, None]
             spec='*',  # type: str
+            target=None,  # type: typing.Optional[str]
     ):
         # type: (...) -> ComponentWithVersions
         """List of versions for given spec"""

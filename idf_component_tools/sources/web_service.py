@@ -77,8 +77,8 @@ class WebServiceSource(BaseSource):
         # This should be run last
         return True
 
-    def versions(self, name, details=None, spec='*'):
-        cmp_with_versions = self.api_client.versions(name, spec)
+    def versions(self, name, details=None, spec='*', target=None):
+        cmp_with_versions = self.api_client.versions(name, spec, target)
 
         if not cmp_with_versions:
             raise FetchingError('Cannot get versions of "%s"' % name)

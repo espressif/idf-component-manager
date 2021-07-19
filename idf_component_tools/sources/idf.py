@@ -75,7 +75,7 @@ class IDFSource(BaseSource):
     def normalized_name(self, name):  # type: (str) -> str
         return self.NAME
 
-    def versions(self, name, details=None, spec='*'):
+    def versions(self, name, details=None, spec='*', target=None):
         local_idf_version = get_idf_version()
 
         if semantic_version.match(spec, local_idf_version):

@@ -22,7 +22,7 @@ from idf_component_tools.manifest import MANIFEST_FILENAME, WEB_DEPENDENCY_REGEX
 from idf_component_tools.sources import WebServiceSource
 
 from .cmake_component_requirements import ITERABLE_PROPS, CMakeRequirementsManager, ComponentName
-from .dependencies import download_project_dependencies
+from .dependencies import check_manifests_targets, download_project_dependencies
 from .local_component_list import parse_component_list
 from .service_details import service_details
 
@@ -316,8 +316,10 @@ class ComponentManager(object):
 
         downloaded_component_paths = set()
         if local_components:
+            manifests = [ManifestManager(component['path'], component['name']).load() for component in local_components]
+            check_manifests_targets(manifests)
             downloaded_component_paths = download_project_dependencies(
-                local_components, self.lock_path, self.managed_components_path)
+                manifests, self.lock_path, self.managed_components_path)
 
         # Exclude requirements paths
         downloaded_component_paths -= {component['path'] for component in local_components}

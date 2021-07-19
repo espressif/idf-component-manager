@@ -239,10 +239,12 @@ class HashedComponentVersion(ComponentVersion):
     def __init__(self, *args, **kwargs):
         component_hash = kwargs.pop('component_hash', None)
         dependencies = kwargs.pop('dependencies', [])
+        targets = kwargs.pop('targets', [])
         super(HashedComponentVersion, self).__init__(*args, **kwargs)
 
         self.component_hash = component_hash
         self.dependencies = dependencies
+        self.targets = targets
 
 
 class ComponentWithVersions(object):

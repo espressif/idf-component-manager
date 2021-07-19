@@ -2,11 +2,13 @@ import os
 import shutil
 from hashlib import sha256
 
+from ..errors import FetchingError
 from ..file_cache import FileCache
 from ..file_tools import create_directory
 from ..git_client import GitClient
 from ..hash_tools import validate_dir
-from ..manifest import ComponentVersion, ComponentWithVersions, HashedComponentVersion
+from ..manifest import (
+    MANIFEST_FILENAME, ComponentVersion, ComponentWithVersions, HashedComponentVersion, ManifestManager)
 from .base import BaseSource
 
 try:
@@ -33,7 +35,7 @@ class GitSource(BaseSource):
         # Check for git client immediately
         self._client.check_version()
 
-    def _checkout_git_source(self, version):  # type: (Union[str, ComponentVersion, None]) -> None
+    def _checkout_git_source(self, version):  # type: (Union[str, ComponentVersion, None]) -> str
         if version is not None:
             version = str(version)
 
@@ -80,11 +82,26 @@ class GitSource(BaseSource):
         shutil.copytree(source_path, dest_path)
         return [dest_path]
 
-    def versions(self, name, details=None, spec='*'):
+    def versions(self, name, details=None, spec='*', target=None):
         """For git returns hash of locked commit, ignoring manifest"""
         version = None if spec == '*' else spec
         commit_id = self._checkout_git_source(version)
-        return ComponentWithVersions(name=name, versions=[HashedComponentVersion(commit_id)])
+
+        manifest_path = os.path.join(self.cache_path, self.component_path, MANIFEST_FILENAME)
+
+        targets = []
+        if os.path.isfile(manifest_path):
+            manifest = ManifestManager(manifest_path, name=name).load()
+
+            if manifest.targets:  # only check when exists
+                if target and target not in manifest.targets:
+                    raise FetchingError(
+                        'Version "{}" (commit id "{}") of the component "{}" does not support target "{}"'.format(
+                            version, commit_id, name, target))
+
+                targets = manifest.targets
+
+        return ComponentWithVersions(name=name, versions=[HashedComponentVersion(commit_id, targets=targets)])
 
     def serialize(self):  # type: () -> Dict
         source = {

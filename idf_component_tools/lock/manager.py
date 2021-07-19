@@ -2,7 +2,7 @@ import os
 from collections import OrderedDict
 from io import open
 
-from schema import And, Optional, Or, Schema, SchemaError
+from schema import And, Optional, Or, Schema, SchemaError, Use
 from six import string_types
 from yaml import Dumper, YAMLError
 from yaml import dump as dump_yaml
@@ -10,8 +10,10 @@ from yaml import safe_load
 
 import idf_component_tools as tools
 
+from ..build_system_tools import get_env_idf_target
 from ..errors import LockError
 from ..manifest import SolvedManifest
+from ..manifest.validator import KNOWN_TARGETS
 
 FORMAT_VERSION = '1.0.0'
 
@@ -33,6 +35,7 @@ LOCK_SCHEMA = Schema(
         },
         'manifest_hash': HASH_SCHEMA,
         'version': And(Or(*string_types), len),
+        'target': And(Use(str.lower), lambda s: s in KNOWN_TARGETS),
     })
 
 
@@ -58,6 +61,7 @@ class LockManager:
                 # inject format version
                 solution_dict = solution.serialize()
                 solution_dict['version'] = FORMAT_VERSION
+                solution_dict['target'] = get_env_idf_target()
                 lock = LOCK_SCHEMA.validate(solution_dict)
                 dump_yaml(data=lock, stream=f, encoding='utf-8', allow_unicode=True, Dumper=Dumper)
         except SchemaError as e:
