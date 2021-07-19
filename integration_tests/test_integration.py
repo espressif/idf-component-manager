@@ -1,31 +1,38 @@
 import logging
-import os
 import subprocess
 
 import pytest
 
-from idf_component_manager.core import ComponentManager
-from idf_component_tools.errors import SolverError
 
-
-def build_project(project_path):
-    process = subprocess.Popen(
-        ['idf.py', '-C', project_path, 'build'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+def live_print_call(*args, **kwargs):
+    default_kwargs = {
+        'stdout': subprocess.PIPE,
+        'stderr': subprocess.STDOUT,
+    }
+    kwargs.update(default_kwargs)
+    process = subprocess.Popen(*args, **kwargs)
 
     try:
         string_type = basestring  # type: ignore
     except NameError:
         string_type = str
 
+    res = ''
     for line in process.stdout:
         if not isinstance(line, string_type):
             line = line.decode('utf-8')
-        logging.info(str(line.rstrip()))
+        logging.info(line.rstrip())
+        res += line
 
-        if 'Project build complete.' in line:
-            return True
+    return res
 
-    return False
+
+def build_project(project_path):
+    return live_print_call(['idf.py', '-C', project_path, 'build'])
+
+
+def set_target(project_path, target):
+    return live_print_call((['idf.py', '-C', project_path, 'set-target', target]))
 
 
 @pytest.mark.parametrize(
@@ -77,7 +84,8 @@ def build_project(project_path):
     ],
     indirect=True)
 def test_single_dependency(project):
-    assert build_project(project)
+    res = build_project(project)
+    assert 'Project build complete.' in res
 
 
 @pytest.mark.parametrize(
@@ -95,12 +103,8 @@ def test_single_dependency(project):
         },
     ], indirect=True)
 def test_idf_version_dependency_failed(project):
-    os.mkdir(os.path.join(project, 'build'))
-    managed_components_list_file = os.path.join(project, 'build', 'managed_components_list.temp.cmake')
-    component_list_file = os.path.join(project, 'build', 'components_with_manifests_list.temp')
-
-    with pytest.raises(SolverError):
-        ComponentManager(project).prepare_dep_dirs(managed_components_list_file, component_list_file)
+    res = build_project(project)
+    assert 'Cannot find a satisfying version of the component "idf"' in res
 
 
 @pytest.mark.parametrize(
@@ -118,8 +122,69 @@ def test_idf_version_dependency_failed(project):
         },
     ], indirect=True)
 def test_idf_version_dependency_passed(project):
-    os.mkdir(os.path.join(project, 'build'))
-    managed_components_list_file = os.path.join(project, 'build', 'managed_components_list.temp.cmake')
-    component_list_file = os.path.join(project, 'build', 'components_with_manifests_list.temp')
+    res = build_project(project)
+    assert 'Project build complete.' in res
 
-    ComponentManager(project).prepare_dep_dirs(managed_components_list_file, component_list_file)
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'idf': {
+                            'version': '>=4.1.0',
+                        }
+                    },
+                    'targets': ['esp32s2'],
+                }
+            },
+        },
+    ],
+    indirect=True)
+def test_idf_check_target_fail_manifest(project):
+    res = set_target(project, 'esp32')
+    assert 'Component "main" does not support target esp32' in res
+
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'esp32_s2_kaluga_kit': {
+                            'version': '0.0.1-alpha.1',
+                        },
+                    }
+                }
+            }
+        },
+    ],
+    indirect=True)
+def test_idf_check_target_fail_dependency(project):
+    res = set_target(project, 'esp32')
+    assert 'Cannot find a satisfying version of the component "espressif/esp32_s2_kaluga_kit"' in res
+
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'idf': {
+                            'version': '>=4.1.0',
+                        },
+                        'esp32_azure_iot_kit': {
+                            'version': '0.0.5-alpha',
+                        },
+                    }
+                }
+            }
+        },
+    ],
+    indirect=True)
+def test_idf_check_target_pass(project):
+    res = set_target(project, 'esp32')
+    assert 'Build files have been written to:' in res

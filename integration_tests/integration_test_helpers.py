@@ -45,6 +45,8 @@ def create_manifest(project_path, component_dict, libraries, component_name):
         manifest_dict = yaml.safe_load(manifest)
     for library in libraries:
         manifest_dict['dependencies'][library] = component_dict['dependencies'][library]
+        if 'targets' in component_dict:
+            manifest_dict['targets'] = component_dict['targets']
 
     with open(os.path.join(component_path, 'idf_component.yml'), 'w') as new_manifest:
         yaml.dump(manifest_dict, new_manifest, default_flow_style=False, allow_unicode=True)

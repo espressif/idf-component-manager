@@ -51,7 +51,8 @@ class TestLockManager(object):
         test_cmp = [cmp for cmp in lock.dependencies if cmp.name == 'espressif/test_cmp'][0]
         assert (test_cmp.source.service_url == 'https://repo.example.com')
 
-    def test_lock_dump_with_solution(self, tmp_path):
+    def test_lock_dump_with_solution(self, tmp_path, monkeypatch):
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
 
         lock = LockManager(lock_path)
@@ -75,7 +76,8 @@ class TestLockManager(object):
 
         assert filecmp.cmp(lock_path, valid_lock_path, shallow=False)
 
-    def test_lock_dump_with_dictionary(self, tmp_path):
+    def test_lock_dump_with_dictionary(self, tmp_path, monkeypatch):
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
         solution = SolvedManifest.fromdict(
@@ -89,7 +91,8 @@ class TestLockManager(object):
 
         assert filecmp.cmp(lock_path, valid_lock_path, shallow=False)
 
-    def test_lock_dump(self, tmp_path):
+    def test_lock_dump(self, tmp_path, monkeypatch):
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
         solution = parser.load()
@@ -102,7 +105,8 @@ class TestLockManager(object):
 
         assert filecmp.cmp(lock_path, valid_lock_path, shallow=False)
 
-    def test_load_invalid_lock(self, capsys):
+    def test_load_invalid_lock(self, capsys, monkeypatch):
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
         lock_path = os.path.join(
             os.path.dirname(os.path.realpath(__file__)),
             'fixtures',
@@ -118,7 +122,8 @@ class TestLockManager(object):
 
         assert e.type == LockError
 
-    def test_minimal_lock(self, tmp_path):
+    def test_minimal_lock(self, tmp_path, monkeypatch):
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
         solution = SolvedManifest.fromdict(dict([
@@ -132,7 +137,7 @@ class TestLockManager(object):
         assert solution.manifest_hash == loaded_solution.manifest_hash
 
         with open(lock_path) as f:
-            assert f.read() == 'manifest_hash: {}\nversion: 1.0.0\n'.format(solution.manifest_hash)
+            assert f.read() == 'manifest_hash: {}\ntarget: esp32\nversion: 1.0.0\n'.format(solution.manifest_hash)
 
     def test_empty_lock_file(self, tmp_path):
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
