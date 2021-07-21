@@ -1,4 +1,4 @@
-version: "1.0.0-aplha"
+version: "1.0.0-alpha"
 targets:
   - esp32
 maintainers:

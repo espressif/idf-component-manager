@@ -89,6 +89,12 @@ def action_extensions(base_actions, project_path):
                         'is_flag': True,
                         'default': False,
                     },
+                    {
+                        'names': ['--check-only'],
+                        'help': 'Check if given component version is already uploaded and exit.',
+                        'is_flag': True,
+                        'default': False,
+                    },
                 ],
             },
             'delete-version': {

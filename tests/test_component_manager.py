@@ -58,6 +58,19 @@ def test_upload_component(monkeypatch):
     })
 
 
+@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_check_only_component.yaml')
+def test_check_only_upload_component(monkeypatch):
+    monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
+    monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
+    manager = ComponentManager(path=PRE_RELEASE_COMPONENT_PATH)
+
+    manager.upload_component({
+        'name': 'cmp',
+        'namespace': 'espressif',
+        'check_only': True,
+    })
+
+
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_upload_component_skip_pre.yaml')
 def test_upload_component_skip_pre(monkeypatch):
     manager = ComponentManager(path=PRE_RELEASE_COMPONENT_PATH)

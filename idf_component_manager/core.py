@@ -226,6 +226,10 @@ class ComponentManager(object):
                     'Version {} of the component "{}" is already on the service'.format(
                         manifest.version, component_name))
 
+            # Exit if check flag was set
+            if args.get('check_only'):
+                return
+
             # Uploading the component
             print('Uploading archive: %s' % archive_file)
             job_id = client.upload_version(component_name=component_name, file_path=archive_file)
