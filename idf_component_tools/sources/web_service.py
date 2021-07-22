@@ -14,6 +14,9 @@ import idf_component_tools.api_client as api_client
 from ..archive_tools import ArchiveError, get_format_from_path, unpack_archive
 from ..config import ConfigManager
 from ..errors import FetchingError
+from ..file_cache import FileCache
+from ..file_tools import copy_directory
+from ..hash_tools import validate_dir
 from .base import BaseSource
 
 try:
@@ -22,7 +25,10 @@ except ImportError:
     from urlparse import urlparse  # type: ignore
 
 try:
-    from typing import Dict
+    from typing import TYPE_CHECKING, Dict, List
+
+    if TYPE_CHECKING:
+        from ..manifest import SolvedComponent
 except ImportError:
     pass
 
@@ -77,6 +83,21 @@ class WebServiceSource(BaseSource):
         # This should be run last
         return True
 
+    @property
+    def _cache_path(self):
+        path = os.path.join(FileCache.path(), 'web_%s' % self.hash_key)
+        return path
+
+    def component_cache_path(self, component):  # type: (SolvedComponent) -> str
+        component_dir_name = '_'.join(
+            [
+                self.normalized_name(component.name).replace('/', '__'),
+                str(component.version),
+                str(component.component_hash),
+            ])
+        path = os.path.join(self._cache_path, component_dir_name)
+        return path
+
     def versions(self, name, details=None, spec='*', target=None):
         cmp_with_versions = self.api_client.versions(name, spec, target)
 
@@ -84,10 +105,6 @@ class WebServiceSource(BaseSource):
             raise FetchingError('Cannot get versions of "%s"' % name)
 
         return cmp_with_versions
-
-    def unique_path(self, name, version):  # type: (str, str) -> str
-        """Unique identifier for cache"""
-        return '~'.join([name.replace('/', '~~'), str(version), self.hash_key])
 
     @property
     def component_hash_required(self):  # type: () -> bool
@@ -103,17 +120,25 @@ class WebServiceSource(BaseSource):
 
         return name
 
-    def download(self, component, download_path):
+    def download(self, component, download_path):  # type: (SolvedComponent, str) -> List[str]
         # Check for required components
-
         if not component.component_hash:
             raise FetchingError('Component hash is required for componets from web service')
 
         if not component.version:
             raise FetchingError('Version should provided for %s' % component.name)
 
-        component = self.api_client.component(component.name, component.version)
-        url = component.download_url
+        # Check if component is up-to date
+        if validate_dir(download_path, component.component_hash):
+            return [download_path]
+
+        # Check if component is in the cache
+        if validate_dir(self.component_cache_path(component), component.component_hash):
+            copy_directory(self.component_cache_path(component), download_path)
+            return [download_path]
+
+        component_manifest = self.api_client.component(component.name, component.version)
+        url = component_manifest.download_url
 
         if not url:
             raise FetchingError(
@@ -123,7 +148,6 @@ class WebServiceSource(BaseSource):
             )
 
         with requests.get(url, stream=True, allow_redirects=True) as r:
-
             # Trying to get extension from url
             original_filename = url.split('/')[-1]
 
@@ -149,8 +173,7 @@ class WebServiceSource(BaseSource):
             tempdir = tempfile.mkdtemp()
 
             try:
-                unique_path = self.unique_path(component.name, component.version)
-                filename = '%s.%s' % (unique_path, extension)
+                filename = 'component.%s' % extension
                 file_path = os.path.join(tempdir, filename)
 
                 with open(file_path, 'wb') as f:
@@ -158,7 +181,8 @@ class WebServiceSource(BaseSource):
                         if chunk:
                             f.write(chunk)
 
-                unpack_archive(file_path, download_path)
+                unpack_archive(file_path, self.component_cache_path(component))
+                copy_directory(self.component_cache_path(component), download_path)
             finally:
                 shutil.rmtree(tempdir)
 

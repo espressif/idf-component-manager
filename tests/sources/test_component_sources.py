@@ -1,3 +1,4 @@
+import filecmp
 import os
 import shutil
 import tempfile
@@ -17,9 +18,11 @@ class TestComponentWebServiceSource(object):
         assert WebServiceSource.is_me('test', {})
         assert WebServiceSource.is_me('test', {'path': '/'})
 
-    def test_unique_path(self):
+    def test_cache_path(self):
         source = WebServiceSource(source_details={'service_url': 'https://example.com/api'})
-        assert source.unique_path('cmp', '1.0.0') == ('cmp~1.0.0~%s' % self.EXAMPLE_HASH)
+        component = SolvedComponent('cmp', ComponentVersion('1.0.0'), source=source, component_hash='somehash')
+        assert source.component_cache_path(component).endswith(
+            'web_{}/espressif__cmp_1.0.0_somehash'.format(self.EXAMPLE_HASH))
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_fetch_webservice.yaml')
     def test_download(self):
@@ -35,10 +38,15 @@ class TestComponentWebServiceSource(object):
             assert len(local_path) == 1
             assert local_path[0] == download_path
             assert os.path.isdir(local_path[0])
-            assert os.path.isfile(os.path.join(local_path[0], 'idf_component.yml'))
+            downloaded_manifest = os.path.join(local_path[0], 'idf_component.yml')
+            assert os.path.isfile(downloaded_manifest)
+            cached_manifest = os.path.join(source.component_cache_path(cmp), 'idf_component.yml')
+            assert os.path.isfile(cached_manifest)
+            assert filecmp.cmp(downloaded_manifest, cached_manifest)
 
         finally:
             shutil.rmtree(tempdir)
+            shutil.rmtree(source._cache_path)
 
 
 class TestComponentLocalSource(object):

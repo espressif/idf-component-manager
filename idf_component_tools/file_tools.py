@@ -1,7 +1,7 @@
 """Set of tools and constants to work with files and directories """
 import os
 from pathlib import Path
-from shutil import rmtree
+from shutil import copytree, rmtree
 
 try:
     from typing import Callable, Iterable, Optional, Set, Text, Union
@@ -80,3 +80,9 @@ def prepare_empty_directory(directory):  # type: (str) -> None
 
     if not dir_exist:
         os.makedirs(directory)
+
+
+def copy_directory(source_directory, destination_directory):  # type: (str, str) -> None
+    if os.path.exists(destination_directory):
+        rmtree(destination_directory)
+    copytree(source_directory, destination_directory)
