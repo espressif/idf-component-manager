@@ -3,9 +3,10 @@ import re
 from io import open
 
 import yaml
-from idf_component_tools.errors import FatalError
 from schema import And, Optional, Or, Regex, Schema, SchemaError
 from six import string_types
+
+from idf_component_tools.errors import FatalError
 
 DEFAULT_CONFIG_DIR = os.path.join('~', '.espressif')
 CONFIG_DIR = os.environ.get('IDF_TOOLS_PATH') or os.path.expanduser(DEFAULT_CONFIG_DIR)

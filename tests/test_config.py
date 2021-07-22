@@ -4,8 +4,9 @@ import shutil
 import tempfile
 from io import open
 
-from idf_component_manager.config import Config, ConfigError, ConfigManager
 from pytest import raises
+
+from idf_component_tools.config import Config, ConfigError, ConfigManager
 
 
 def test_config_validation():

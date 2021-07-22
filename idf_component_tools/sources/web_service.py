@@ -12,6 +12,7 @@ import requests
 import idf_component_tools.api_client as api_client
 
 from ..archive_tools import ArchiveError, get_format_from_path, unpack_archive
+from ..config import ConfigManager
 from ..errors import FetchingError
 from .base import BaseSource
 
@@ -25,12 +26,26 @@ try:
 except ImportError:
     pass
 
-
-def default_component_service_url():
-    return os.getenv('DEFAULT_COMPONENT_SERVICE_URL') or 'https://api.components.espressif.com/'
-
-
 DEFAULT_NAMESPACE = 'espressif'
+DEFAULT_COMPONENT_SERVICE_URL = 'https://api.components.espressif.com/'
+
+
+def default_component_service_url(service_profile=None):
+    env_service_url = os.getenv('DEFAULT_COMPONENT_SERVICE_URL')
+    if env_service_url:
+        return env_service_url
+
+    env_service_profile_name = os.getenv('IDF_COMPONENT_SERVICE_PROFILE')
+    if env_service_profile_name:
+        service_profile = ConfigManager().load().profiles.get(env_service_profile_name, {})
+    elif service_profile is None:
+        service_profile = {}
+
+    service_url = service_profile.get('url')
+    if service_url and service_url != 'default':
+        return service_url
+
+    return DEFAULT_COMPONENT_SERVICE_URL
 
 
 class WebServiceSource(BaseSource):
@@ -38,6 +53,7 @@ class WebServiceSource(BaseSource):
 
     def __init__(self, source_details=None):
         super(WebServiceSource, self).__init__(source_details=source_details)
+
         self.base_url = str(self.source_details.get('service_url', default_component_service_url()))
         self.api_client = self.source_details.get(
             'api_client', api_client.APIClient(base_url=self.base_url, source=self))
