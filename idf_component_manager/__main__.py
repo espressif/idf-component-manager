@@ -24,7 +24,7 @@ def main():
     parser.add_argument('--namespace', help='Namespace for the component. Can be set in config file.')
     parser.add_argument(
         '--service-profile',
-        help='Profile for component service to use. By default profile named "default" will be used.',
+        help='Profile for component registry to use. By default profile named "default" will be used.',
         default='default',
     )
     parser.add_argument('--name', help='Component name', required=True)
