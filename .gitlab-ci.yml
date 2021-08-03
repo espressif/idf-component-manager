@@ -23,7 +23,8 @@ lint:
   before_script:
     - pip install bandit flake8
   script:
-    - bandit --exclude="./tests,./integration_tests,./.tox,./.git" -r -f txt -o bandit_output.txt .
+    # disable B101: test for use of assert
+    - bandit --exclude="./tests,./integration_tests,./.tox,./.git" -r -f txt -s B101 -o bandit_output.txt .
     - flake8 --config=.flake8 --output-file=flake8_output.txt --tee
 
 .test_template:

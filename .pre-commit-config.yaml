@@ -15,7 +15,8 @@ repos:
     rev: 1.7.0
     hooks:
       - id: bandit
-        exclude: ^tests|integration_tests/.*$
+        exclude: ^tests|integration_tests.*$
+        args: ['-s', 'B101']  # disable B101: test for use of assert
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.812
     hooks:
