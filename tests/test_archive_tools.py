@@ -4,6 +4,7 @@ import tempfile
 from filecmp import dircmp
 
 import pytest
+
 from idf_component_tools.archive_tools import (
     ArchiveError, get_format_from_path, is_known_format, unpack_archive, unpack_tar, unpack_zip)
 

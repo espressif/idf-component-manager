@@ -6,9 +6,9 @@ from numbers import Number
 from six import string_types
 
 try:
-    from collections.abc import Mapping, Iterable
+    from collections.abc import Iterable, Mapping
 except ImportError:
-    from collections import Mapping, Iterable
+    from collections import Iterable, Mapping
 
 BASIC_TYPES = (Number, type(None)) + string_types
 
