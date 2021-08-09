@@ -1,7 +1,11 @@
-from typing import Any, Hashable, Optional
+try:
+    from typing import Any, Optional
+except ImportError:
+    pass
 
 from .constraint import Constraint
 from .incompatibility import Incompatibility
+from .package import Package
 from .range import Range
 from .term import Term
 
@@ -36,7 +40,7 @@ class Assignment(Term):
         return self._cause
 
     @classmethod
-    def decision(cls, package, version, decision_level, index):  # type: (Hashable, Any, int, int) -> Assignment
+    def decision(cls, package, version, decision_level, index):  # type: (Package, Any, int, int) -> Assignment
         return cls(
             Constraint(package, Range(version, version, True, True)),
             True,
@@ -47,7 +51,7 @@ class Assignment(Term):
     @classmethod
     def derivation(
             cls, constraint, is_positive, cause, decision_level,
-            index):  # type: (Any, bool, Incompatibility, int, int) -> Assignment
+            index):  # type: (Constraint, bool, Incompatibility, int, int) -> Assignment
         return cls(constraint, is_positive, decision_level, index, cause)
 
     def is_decision(self):  # type: () -> bool

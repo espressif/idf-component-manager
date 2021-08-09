@@ -182,10 +182,10 @@ class ComponentVersion(object):
             self.is_semver = True
 
     def __eq__(self, other):
-        if self.is_semver and other.is_semver:
+        if hasattr(self, 'is_semver') and hasattr(other, 'is_semver') and self.is_semver and other.is_semver:
             return self._semver == other._semver
         else:
-            return self._version_string == other._version_string
+            return str(self) == str(other)
 
     def __lt__(self, other):
         if not (self.is_semver and other.is_semver):
@@ -243,8 +243,15 @@ class HashedComponentVersion(ComponentVersion):
         super(HashedComponentVersion, self).__init__(*args, **kwargs)
 
         self.component_hash = component_hash
-        self.dependencies = dependencies
+        self.dependencies = dependencies  # type: Optional[List[ComponentRequirement]]
         self.targets = targets
+
+    def __hash__(self):
+        return hash(self.component_hash) if self.component_hash else hash(self._version_string)
+
+    @property
+    def text(self):
+        return self._version_string
 
 
 class ComponentWithVersions(object):

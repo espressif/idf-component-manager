@@ -45,7 +45,6 @@ def serializable(_cls=None, like='dict'):
                 # Use all properties if list is not selected
                 properties = sorted(list(set(getattr(self, '_serialization_properties', []))))
                 return OrderedDict((prop, serialize(getattr(self, prop))) for prop in properties)
-
         elif like == 'str':
 
             def _serialize(self):

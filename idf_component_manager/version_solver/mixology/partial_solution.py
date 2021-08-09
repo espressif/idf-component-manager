@@ -1,6 +1,12 @@
-from typing import Any, Dict, Hashable, List
+try:
+    from typing import Dict, List
+except ImportError:
+    pass
 
-from ._compat import OrderedDict
+from collections import OrderedDict
+
+from idf_component_tools.manifest import HashedComponentVersion
+
 from .assignment import Assignment
 from .constraint import Constraint
 from .incompatibility import Incompatibility
@@ -23,13 +29,13 @@ class PartialSolution:
         self._assignments = []  # type: List[Assignment]
 
         # The decisions made for each package.
-        self._decisions = OrderedDict()  # type: Dict[str, Hashable]
+        self._decisions = OrderedDict()  # type: Dict[Package, HashedComponentVersion]
 
         # The intersection of all positive Assignments for each package, minus any
         # negative Assignments that refer to that package.
         #
         # This is derived from self._assignments.
-        self._positive = OrderedDict()  # type: Dict[Hashable, Term]
+        self._positive = OrderedDict()  # type: Dict[Package, Term]
 
         # The union of all negative Assignments for each package.
         #
@@ -37,7 +43,7 @@ class PartialSolution:
         # map.
         #
         # This is derived from self._assignments.
-        self._negative = OrderedDict()  # type: Dict[Hashable, Dict[Hashable, Term]]
+        self._negative = OrderedDict()  # type: Dict[Package, Dict[Package, Term]]
 
         # The number of distinct solutions that have been attempted so far.
         self._attempted_solutions = 1
@@ -46,7 +52,7 @@ class PartialSolution:
         self._backtracking = False
 
     @property
-    def decisions(self):  # type: () -> Dict[Hashable, Any]
+    def decisions(self):  # type: () -> Dict[Package, HashedComponentVersion]
         return self._decisions
 
     @property
@@ -61,7 +67,7 @@ class PartialSolution:
     def unsatisfied(self):  # type: () -> List[Term]
         return [term for term in self._positive.values() if term.package not in self._decisions]
 
-    def decide(self, package, version):  # type: (Hashable, Any) -> None
+    def decide(self, package, version):  # type: (Package, HashedComponentVersion) -> None
         """
         Adds an assignment of package as a decision
         and increments the decision level.
@@ -165,7 +171,7 @@ class PartialSolution:
             if assignment.package != term.package:
                 continue
 
-            if (assignment.package != Package.root() and not assignment.package == term.package):
+            if assignment.package != Package.root() and not assignment.package == term.package:
                 if not assignment.is_positive():
                     continue
 

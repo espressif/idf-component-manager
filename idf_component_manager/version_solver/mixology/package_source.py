@@ -1,5 +1,10 @@
-from typing import Any, Hashable, List
-from typing import Union as _Union
+from idf_component_tools.manifest import HashedComponentVersion
+
+try:
+    from typing import Any, Hashable, List
+    from typing import Union as _Union
+except ImportError:
+    pass
 
 from .constraint import Constraint
 from .incompatibility import Incompatibility
@@ -57,14 +62,14 @@ class PackageSource(object):
         self._root_package = Package.root()
 
     @property
-    def root(self):  # type: () -> Hashable
+    def root(self):  # type: () -> Package
         return Package.root()
 
     @property
-    def root_version(self):  # type: () -> Any
+    def root_version(self):  # type: () -> HashedComponentVersion
         raise NotImplementedError()
 
-    def versions_for(self, package, constraint=None):  # type: (Hashable, Any) -> List[Hashable]
+    def versions_for(self, package, constraint=None):  # type: (Package, Any) -> List[Hashable]
         """
         Search for the specifications that match the given constraint.
         """
@@ -73,10 +78,10 @@ class PackageSource(object):
 
         return self._versions_for(package, constraint)
 
-    def _versions_for(self, package, constraint=None):  # type: (Hashable, Any) -> List[Hashable]
+    def _versions_for(self, package, constraint=None):  # type: (Package, Any) -> List[HashedComponentVersion]
         raise NotImplementedError()
 
-    def dependencies_for(self, package, version):  # type: (Hashable, Any) -> List[Any]
+    def dependencies_for(self, package, version):  # type: (Package, Any) -> List[Any]
         raise NotImplementedError()
 
     def convert_dependency(self, dependency):  # type: (Any) -> _Union[Constraint, Range, Union]
@@ -86,7 +91,7 @@ class PackageSource(object):
         """
         raise NotImplementedError()
 
-    def incompatibilities_for(self, package, version):  # type: (Hashable, Any) -> List[Incompatibility]
+    def incompatibilities_for(self, package, version):  # type: (Package, Any) -> List[Incompatibility]
         """
         Returns the incompatibilities of a given package and version
         """

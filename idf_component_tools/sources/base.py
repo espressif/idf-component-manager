@@ -5,17 +5,17 @@ from schema import Optional, Or
 from six import string_types
 
 import idf_component_tools as tools
-from idf_component_tools.manifest import ComponentWithVersions
 
 from ..errors import SourceError
 from ..file_cache import FileCache
 
 try:
-    import typing
-    from typing import TYPE_CHECKING, Callable, Dict, List, Union
+    from typing import TYPE_CHECKING, Callable, Dict, List
+    from typing import Optional as _Optional
+    from typing import Union
 
     if TYPE_CHECKING:
-        from ..manifest import SolvedComponent
+        from ..manifest import ComponentWithVersions, SolvedComponent
 except ImportError:
     pass
 
@@ -24,7 +24,7 @@ class BaseSource(object):
     __metaclass__ = ABCMeta
     NAME = 'base'
 
-    def __init__(self, source_details=None, system_cache_path=None):  # type: (dict, Optional[str]) -> None
+    def __init__(self, source_details=None, system_cache_path=None):  # type: (dict, _Optional[str]) -> None
         self._source_details = source_details or {}
         self._hash_key = None
 
@@ -37,24 +37,27 @@ class BaseSource(object):
             raise SourceError('Unknown keys in dependency details: %s' % ', '.join(unknown_keys))
 
     def _hash_values(self):
-        return (self.name, self.hash_key)
+        return self.name, self.hash_key
 
     def cache_path(self):  # type: () -> str
         path = os.path.join(self.system_cache_path, '{}_{}'.format(self.NAME, self.hash_key))
         return path
 
-    def __eq__(self, other):
-        return (self._hash_values() == other._hash_values() and self.name == other.name)
+    def __eq__(self, other):  # type: (object) -> bool
+        if not isinstance(other, BaseSource):
+            return NotImplemented
+
+        return self._hash_values() == other._hash_values() and self.name == other.name
 
     def __hash__(self):
         return hash(self._hash_values())
 
     def __repr__(self):  # type: () -> str
-        return '{}()'.format(type(self).__name__)
+        return '{}({})'.format(type(self).__name__, self.hash_key)
 
     @staticmethod
     def fromdict(name, details):  # type: (str, Dict) -> BaseSource
-        '''Build component source by dct'''
+        '''Build component source by dict'''
         for source_class in tools.sources.KNOWN_SOURCES:
             source = source_class.build_if_me(name, details)
 
@@ -137,7 +140,7 @@ class BaseSource(object):
             name,  # type: str
             details=None,  # type: Union[Dict, None]
             spec='*',  # type: str
-            target=None,  # type: typing.Optional[str]
+            target=None,  # type: _Optional[str]
     ):
         # type: (...) -> ComponentWithVersions
         """List of versions for given spec"""

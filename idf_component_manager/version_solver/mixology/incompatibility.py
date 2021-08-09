@@ -1,4 +1,7 @@
-from typing import Dict, Generator, Hashable, List, Optional
+try:
+    from typing import Dict, Generator, Hashable, List, Optional
+except ImportError:
+    pass
 
 from .incompatibility_cause import (
     ConflictCause, DependencyCause, IncompatibilityCause, NoVersionsCause, PackageNotFoundCause, RootCause)

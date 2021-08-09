@@ -5,10 +5,10 @@ from functools import wraps
 from io import open
 
 import requests
-import semantic_version as semver
 from requests.adapters import HTTPAdapter
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 from schema import Schema, SchemaError
+from semantic_version import SimpleSpec, Version
 from tqdm import tqdm
 
 # Import whole module to avoid circular dependencies
@@ -160,7 +160,7 @@ class APIClient(object):
 
     def versions(self, component_name, spec='*', target=None):
         """List of versions for given component with required spec"""
-        semantic_spec = semver.SimpleSpec(spec or '*')
+        semantic_spec = SimpleSpec(spec or '*')
         component_name = component_name.lower()
         body = self._base_request(
             'get',
@@ -171,11 +171,11 @@ class APIClient(object):
         # Return only required versions
         if target:
             versions = [
-                version for version in body['versions'] if semver.Version(version['version']) in semantic_spec and (
+                version for version in body['versions'] if semantic_spec.match(Version(version['version'])) and (
                     target in version['targets'] or not version['targets'])
             ]
         else:
-            versions = [version for version in body['versions'] if semver.Version(version['version']) in semantic_spec]
+            versions = [version for version in body['versions'] if semantic_spec.match(Version(version['version']))]
 
         return tools.manifest.ComponentWithVersions(
             name=component_name,
@@ -203,7 +203,7 @@ class APIClient(object):
             best_version = [v for v in versions
                             if tools.manifest.ComponentVersion(v['version']) == requested_version][0]
         else:
-            best_version = max(versions, key=lambda v: semver.Version(v['version']))
+            best_version = max(versions, key=lambda v: Version(v['version']))
 
         return tools.manifest.Manifest(
             name=('%s/%s' % (response['namespace'], response['name'])),

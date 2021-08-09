@@ -1,4 +1,7 @@
-from typing import Dict, List, Tuple
+try:
+    from typing import Dict, List, Tuple
+except ImportError:
+    pass
 
 from .incompatibility import Incompatibility
 from .incompatibility_cause import ConflictCause

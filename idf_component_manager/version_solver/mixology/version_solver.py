@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
+
 import logging
 import time
-from typing import Dict, Hashable, List, Optional, Union
+
+try:
+    from typing import Dict, List, Optional, Set, Union
+except ImportError:
+    pass
 
 from .constraint import Constraint
 from .failure import SolverFailure
 from .incompatibility import Incompatibility
 from .incompatibility_cause import ConflictCause, NoVersionsCause, RootCause
+from .package import Package
 from .package_source import PackageSource
 from .partial_solution import PartialSolution
 from .range import Range
@@ -33,7 +39,7 @@ class VersionSolver:
     ):
         self._source = source
 
-        self._incompatibilities = {}  # type: Dict[Hashable, List[Incompatibility]]
+        self._incompatibilities = {}  # type: Dict[Package, List[Incompatibility]]
         self._solution = PartialSolution()
 
     @property
@@ -53,12 +59,9 @@ class VersionSolver:
         self._add_incompatibility(Incompatibility([Term(Constraint(self._source.root, Range()), False)], RootCause()))
         self._propagate(self._source.root)
 
-        i = 0
         while not self.is_solved():
-            if not self._run() or i > 10:
+            if not self._run():
                 break
-
-            i += 1
 
         logger.info('Version solving took {:.3f} seconds.\n'.format(time.time() - start))
         logger.info('Tried {} solutions.'.format(self._solution.attempted_solutions))
@@ -77,17 +80,16 @@ class VersionSolver:
 
         return True
 
-    def _propagate(self, package):  # type: (Hashable) -> None
+    def _propagate(self, package):  # type: (Package) -> None
         """
         Performs unit propagation on incompatibilities transitively
         related to package to derive new assignments for _solution.
         """
-        changed = set()
+        changed = set()  # type: Set[Package]
         changed.add(package)
 
         while changed:
             package = changed.pop()
-
             # Iterate in reverse because conflict resolution tends to produce more
             # general incompatibilities as time goes on. If we look at those first,
             # we can derive stronger assignments sooner and more eagerly find
@@ -109,19 +111,19 @@ class VersionSolver:
                     # decision level, so we clear [changed] and refill it with the
                     # newly-propagated assignment.
                     changed.clear()
-                    changed.add(str(self._propagate_incompatibility(root_cause)))
+                    changed.add(self._propagate_incompatibility(root_cause))
                     break
                 elif result is not None:
                     changed.add(result)
 
-    def _propagate_incompatibility(self, incompatibility):  # type: (Incompatibility) -> Union[str, _conflict, None]
+    def _propagate_incompatibility(self, incompatibility):  # type: (Incompatibility) -> Union[Package, _conflict, None]
         """
         If incompatibility is almost satisfied by _solution, adds the
         negation of the unsatisfied term to _solution.
 
         If incompatibility is satisfied by _solution, returns _conflict. If
         incompatibility is almost satisfied by _solution, returns the
-        unsatisfied term's package name.
+        unsatisfied term's package.
 
         Otherwise, returns None.
         """
@@ -230,7 +232,7 @@ class VersionSolver:
             # than a derivation), then incompatibility is the root cause. We then
             # backjump to previous_satisfier_level, where incompatibility is
             # guaranteed to allow _propagate to produce more assignments.
-            if (previous_satisfier_level < most_recent_satisfier.decision_level or most_recent_satisfier.cause is None):
+            if previous_satisfier_level < most_recent_satisfier.decision_level or most_recent_satisfier.cause is None:
                 self._solution.backtrack(previous_satisfier_level)
                 if new_incompatibility:
                     self._add_incompatibility(incompatibility)
@@ -255,8 +257,8 @@ class VersionSolver:
             # The most_recent_satisfier may not satisfy most_recent_term on its own
             # if there are a collection of constraints on most_recent_term that
             # only satisfy it together. For example, if most_recent_term is
-            # `foo ^1.0.0` and _solution contains `[foo >=1.0.0,
-            # foo <2.0.0]`, then most_recent_satisfier will be `foo <2.0.0` even
+            # `foo ^1.0.0` and _solution contains `[foo >=1.0.0,
+            # foo <2.0.0]`, then most_recent_satisfier will be `foo <2.0.0` even
             # though it doesn't totally satisfy `foo ^1.0.0`.
             #
             # In this case, we add `not (most_recent_satisfier \ most_recent_term)` to
@@ -286,8 +288,8 @@ class VersionSolver:
 
         # Prefer packages with as few remaining versions as possible,
         # so that if a conflict is necessary it's forced quickly.
-        def _get_min(term):
-            return len(self._source.versions_for(term.package, term.constraint.constraint))
+        def _get_min(_term):
+            return len(self._source.versions_for(_term.package, _term.constraint.constraint))
 
         if len(unsatisfied) == 1:
             term = unsatisfied[0]
@@ -296,7 +298,7 @@ class VersionSolver:
 
         return term
 
-    def _choose_package_version(self):  # type: () -> Union[Hashable, None]
+    def _choose_package_version(self):  # type: () -> Optional[Package]
         """
         Tries to select a version of a required package.
 

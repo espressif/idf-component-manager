@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
-from typing import Hashable, Optional
+
+try:
+    from typing import Optional
+except ImportError:
+    pass
 
 from .constraint import Constraint
 from .package import Package
-from .range import EmptyRange
 from .set_relation import SetRelation
 
 
@@ -24,7 +27,7 @@ class Term(object):
         return Term(self.constraint, not self.is_positive())
 
     @property
-    def package(self):  # type: () -> Hashable
+    def package(self):  # type: () -> Package
         return self._package
 
     @property
@@ -45,7 +48,7 @@ class Term(object):
         """
         Returns whether this term satisfies another.
         """
-        return (self._package == other.package and self.relation(other) == SetRelation.SUBSET)
+        return self._package == other.package and self.relation(other) == SetRelation.SUBSET
 
     def relation(self, other):  # type: (Term) -> SetRelation
         """
@@ -107,7 +110,7 @@ class Term(object):
                 # not foo ^1.5.0 is a superset of not foo ^1.0.0
                 return SetRelation.OVERLAPPING
 
-    def intersect(self, other):  # type: (Term) -> Term
+    def intersect(self, other):  # type: (Term) -> Optional[Term]
         """
         Returns a Term that represents the packages
         allowed by both this term and another
@@ -131,7 +134,7 @@ class Term(object):
         elif self.is_positive() != other.is_positive():
             return self if self.is_positive() else other
         else:
-            return Term(Constraint(self.package, EmptyRange()))
+            return
 
     def difference(self, other):  # type: (Term) -> Term
         """
@@ -141,7 +144,7 @@ class Term(object):
         return self.intersect(other.inverse)
 
     def is_compatible_with(self, other):  # type: (Term) -> bool
-        return (self.package == Package.root() or other.package == Package.root() or self.package == other.package)
+        return self.package == Package.root() or other.package == Package.root() or self.package == other.package
 
     def is_empty(self):  # type: () -> bool
         if self._empty is None:

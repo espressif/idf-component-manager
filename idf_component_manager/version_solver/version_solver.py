@@ -1,39 +1,16 @@
 from idf_component_tools.build_system_tools import get_env_idf_target
 from idf_component_tools.errors import SolverError
 from idf_component_tools.manifest import ComponentRequirement, ProjectRequirements, SolvedComponent, SolvedManifest
+from idf_component_tools.sources import WebServiceSource
+
+from .helper import PackageSource
+from .mixology.package import Package
+from .mixology.version_solver import VersionSolver as Solver
 
 try:
-    from typing import Dict, Optional
+    from typing import Optional
 except ImportError:
     pass
-
-
-def best_version(component):  # type: (ComponentRequirement) -> SolvedComponent
-    target = get_env_idf_target()
-    cmp_with_versions = component.source.versions(name=component.name, spec=component.version_spec, target=target)
-
-    if not cmp_with_versions.versions:
-        raise SolverError('Cannot find a satisfying version of the component "{}"'.format(component.name))
-
-    version = max(cmp_with_versions.versions)
-
-    return SolvedComponent(
-        name=component.name,
-        source=component.source,
-        version=version,
-        component_hash=version.component_hash,
-    )
-
-
-def solve_manifest(requirements, solved_components):
-    '''Simple solver, every component processed only once'''
-    for requirement in requirements:
-        if requirement.name in solved_components:
-            continue
-
-        component = best_version(requirement)
-        solved_components[component.name] = component
-        solve_manifest(component.version.dependencies, solved_components)
 
 
 class VersionSolver(object):
@@ -43,13 +20,47 @@ class VersionSolver(object):
     """
     def __init__(
             self, requirements, old_solution=None):  # type: (ProjectRequirements, Optional[SolvedManifest]) -> None
-        """Expects project manifest and optional old solution"""
         self.requirements = requirements
         self.old_solution = old_solution
+        self._source = PackageSource()
+        self._solver = Solver(self._source)
 
     def solve(self):  # type: () -> SolvedManifest
-        solved_components = {}  # type: Dict[str, SolvedComponent]
         for manifest in self.requirements.manifests:
-            solve_manifest(manifest.dependencies, solved_components)
+            self.solve_manifest(manifest)
 
-        return SolvedManifest(list(solved_components.values()), self.requirements.manifest_hash)
+        result = self._solver.solve()
+
+        solved_components = []
+        for package, version in result.decisions.items():
+            if package == Package.root():
+                continue
+            kwargs = {'name': package.name, 'source': package.source, 'version': version}
+            if isinstance(package.source, WebServiceSource):
+                kwargs['component_hash'] = version.component_hash
+            solved_components.append(SolvedComponent(**kwargs))  # type: ignore
+        return SolvedManifest(solved_components, self.requirements.manifest_hash)
+
+    def solve_manifest(self, manifest):
+        for requirement in manifest.dependencies:
+            self._source.root_dep(Package(requirement.name, requirement.source), requirement.version_spec)
+            self.solve_component(requirement)
+
+    def solve_component(self, requirement):  # type: (ComponentRequirement) -> None
+        target = get_env_idf_target()
+        cmp_with_versions = requirement.source.versions(
+            name=requirement.name, spec=requirement.version_spec, target=target)
+
+        if not cmp_with_versions.versions:
+            raise SolverError('Cannot find a satisfying version of the component "{}"'.format(requirement.name))
+
+        for version in cmp_with_versions.versions:
+            self._source.add(
+                Package(requirement.name, requirement.source),
+                version,
+                deps={Package(req.name, req.source): req.version_spec
+                      for req in version.dependencies} if version.dependencies else {})
+
+            if version.dependencies:
+                for requirement in version.dependencies:
+                    self.solve_component(requirement)

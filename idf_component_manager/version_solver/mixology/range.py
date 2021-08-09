@@ -1,7 +1,11 @@
-from typing import Any, NoReturn, Optional
-from typing import Union as _Union
+try:
+    from typing import TYPE_CHECKING, Any, NoReturn, Optional
+    from typing import Union as _Union
 
-from .union import Union
+    if TYPE_CHECKING:
+        from .union import Union
+except ImportError:
+    pass
 
 
 class Range(object):
@@ -68,6 +72,7 @@ class Range(object):
         return self._min is None and self._max is None
 
     def allows_all(self, other):  # type: (Range) -> bool
+        from .union import Union  # fool the interpreter
         if other.is_empty():
             return True
 
@@ -77,6 +82,7 @@ class Range(object):
         return not other.allows_lower(self) and not other.allows_higher(self)
 
     def allows_any(self, other):  # type: (Range) -> bool
+        from .union import Union  # fool the interpreter
         if other.is_empty():
             return False
 
@@ -85,7 +91,8 @@ class Range(object):
 
         return not other.is_strictly_lower(self) and not other.is_strictly_higher(self)
 
-    def intersect(self, other):  # type: (Range) -> Range
+    def intersect(self, other):  # type: (_Union[Range, Union]) -> _Union[Range, Union]
+        from .union import Union  # fool the interpreter
         if other.is_empty():
             return other
 
@@ -133,6 +140,7 @@ class Range(object):
         return Range(intersect_min, intersect_max, intersect_include_min, intersect_include_max)
 
     def union(self, other):  # type: (Range) -> _Union[Range, Union]
+        from .union import Union  # fool the interpreter
         if isinstance(other, Union):
             return other.union(self)
 
@@ -169,6 +177,7 @@ class Range(object):
             or (self.min == other.max and (self.include_min or other.include_max)))
 
     def difference(self, other):  # type: (_Union[Range, Union]) -> _Union[Range, Union]
+        from .union import Union  # fool the interpreter
         if other.is_empty():
             return self
 
@@ -279,10 +288,10 @@ class Range(object):
         if self.max != other.min:
             return False
 
-        return (self.include_max and not other.include_min or not self.include_max and other.include_min)
+        return self.include_max and not other.include_min or not self.include_max and other.include_min
 
     def is_single_version(self):  # type: () -> bool
-        return (self.min is not None and self.min == self.max and self.include_min and self.include_max)
+        return self.min is not None and self.min == self.max and self.include_min and self.include_max
 
     def __eq__(self, other):
         if not isinstance(other, Range):

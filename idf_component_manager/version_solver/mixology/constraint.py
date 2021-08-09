@@ -1,5 +1,7 @@
-from typing import Hashable
-from typing import Union as _Union
+try:
+    from typing import Union as _Union
+except ImportError:
+    pass
 
 from .package import Package
 from .range import Range
@@ -11,12 +13,12 @@ class Constraint(object):
     """
     A term constraint.
     """
-    def __init__(self, package, constraint):  # type: (Hashable, _Union[Range, Union]) -> None
+    def __init__(self, package, constraint):  # type: (Package, _Union[Range, Union]) -> None
         self._package = package
         self._constraint = constraint
 
     @property
-    def package(self):  # type: () -> Hashable
+    def package(self):  # type: () -> Package
         return self._package
 
     @property
@@ -36,17 +38,26 @@ class Constraint(object):
         return self.constraint.allows_any(other.constraint)
 
     def difference(self, other):  # type: (Constraint) -> Constraint
+        if not isinstance(self.package.source, type(other.package.source)):
+            raise ValueError('Cannot tell difference of two different source types')
+
         return self.__class__(self.package, self.constraint.difference(other.constraint))
 
     def intersect(self, other):  # type: (Constraint) -> Constraint
         if other.package != self.package:
             raise ValueError('Cannot intersect two constraints for different packages')
 
+        if not isinstance(self.package.source, type(other.package.source)):
+            raise ValueError('Cannot intersect two different source types')
+
         return self.__class__(self.package, self.constraint.intersect(other.constraint))
 
     def union(self, other):  # type: (Constraint) -> Constraint
         if other.package != self.package:
             raise ValueError('Cannot build an union of two constraints for different packages')
+
+        if not isinstance(self.package.source, type(other.package.source)):
+            raise ValueError('Cannot build an union of two different source types')
 
         return self.__class__(self.package, self.constraint.union(other.constraint))
 

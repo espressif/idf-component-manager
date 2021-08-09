@@ -40,7 +40,7 @@ class SolvedComponent(object):
         self.dependencies = dependencies
 
     def __str__(self):
-        return ('SolvedComponent: %s %s %s' % (self.name, self.version, self.component_hash))
+        return 'SolvedComponent: %s %s %s' % (self.name, self.version, self.component_hash)
 
     @classmethod
     def fromdict(cls, details):
