@@ -1,3 +1,4 @@
+import os
 from abc import ABCMeta, abstractmethod
 
 from schema import Optional, Or
@@ -7,6 +8,7 @@ import idf_component_tools as tools
 from idf_component_tools.manifest import ComponentWithVersions
 
 from ..errors import SourceError
+from ..file_cache import FileCache
 
 try:
     import typing
@@ -22,9 +24,13 @@ class BaseSource(object):
     __metaclass__ = ABCMeta
     NAME = 'base'
 
-    def __init__(self, source_details=None):  # type: (dict) -> None
+    def __init__(self, source_details=None, system_cache_path=None):  # type: (dict, Optional[str]) -> None
         self._source_details = source_details or {}
         self._hash_key = None
+
+        if system_cache_path is None:
+            system_cache_path = FileCache.path()
+        self.system_cache_path = system_cache_path
 
         unknown_keys = [key for key in self._source_details.keys() if key not in self.known_keys()]
         if unknown_keys:
@@ -32,6 +38,10 @@ class BaseSource(object):
 
     def _hash_values(self):
         return (self.name, self.hash_key)
+
+    def cache_path(self):  # type: () -> str
+        path = os.path.join(self.system_cache_path, '{}_{}'.format(self.NAME, self.hash_key))
+        return path
 
     def __eq__(self, other):
         return (self._hash_values() == other._hash_values() and self.name == other.name)

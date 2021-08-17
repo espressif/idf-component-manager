@@ -13,8 +13,8 @@ except ImportError:
 class LocalSource(BaseSource):
     NAME = 'local'
 
-    def __init__(self, source_details):
-        super(LocalSource, self).__init__(source_details=source_details)
+    def __init__(self, source_details, **kwargs):
+        super(LocalSource, self).__init__(source_details=source_details, **kwargs)
 
         self._path = source_details.get('path')
 

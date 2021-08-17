@@ -5,13 +5,25 @@ import tempfile
 
 import vcr
 
+from idf_component_tools.hash_tools import hash_dir
 from idf_component_tools.manifest import ComponentVersion, SolvedComponent
 from idf_component_tools.sources import LocalSource, WebServiceSource
 
+FIXTURE_CMP_PATH = path = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)),
+    '..',
+    'fixtures',
+    'components',
+    'cmp',
+)
+
 
 class TestComponentWebServiceSource(object):
+    FIXTURE_CMP_HASH = hash_dir(FIXTURE_CMP_PATH)
+
     EXAMPLE_HASH = 'ed55692af0eed2feb68f6d7a2ef95a0142b20518a53a0ceb7c699795359d7dc5'
     LOCALHOST_HASH = '02d9269ed8690352e6bfc5f6a6c60e859fa6cbfc56efe75a1199b35bdd6c54c8'
+    CMP_HASH = '3c29b17da1ce6e0626a520ec8d0fa8763807dd1c13672c4c1939950d0dd865ad'
 
     def test_service_is_me(self):
         assert WebServiceSource.is_me('test', None)
@@ -20,19 +32,21 @@ class TestComponentWebServiceSource(object):
 
     def test_cache_path(self):
         source = WebServiceSource(source_details={'service_url': 'https://example.com/api'})
-        component = SolvedComponent('cmp', ComponentVersion('1.0.0'), source=source, component_hash='somehash')
+        component = SolvedComponent('cmp', ComponentVersion('1.0.0'), source=source, component_hash=self.CMP_HASH)
         assert source.component_cache_path(component).endswith(
-            'web_{}/espressif__cmp_1.0.0_somehash'.format(self.EXAMPLE_HASH))
+            'service_{}/espressif__cmp_1.0.0_{}'.format(self.EXAMPLE_HASH, self.CMP_HASH))
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_fetch_webservice.yaml')
     def test_download(self):
         tempdir = tempfile.mkdtemp()
-        source = WebServiceSource(source_details={'service_url': 'https://example.com/api'})
-        cmp = SolvedComponent('test/cmp', '1.0.1', source, component_hash=self.EXAMPLE_HASH)
+        cache_dir = os.path.join(tempdir, 'cache')
+        source = WebServiceSource(
+            source_details={'service_url': 'https://example.com/api'}, system_cache_path=cache_dir)
+        cmp = SolvedComponent('test/cmp', '1.0.1', source, component_hash=self.CMP_HASH)
 
         try:
             source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/'})
-            download_path = os.path.join(tempdir, 'cmp~0.0.1~%s' % self.LOCALHOST_HASH)
+            download_path = os.path.join(tempdir, 'test_download')
             local_path = source.download(cmp, download_path)
 
             assert len(local_path) == 1
@@ -44,9 +58,21 @@ class TestComponentWebServiceSource(object):
             assert os.path.isfile(cached_manifest)
             assert filecmp.cmp(downloaded_manifest, cached_manifest)
 
+            # Download one more time, to check that nothing will happen
+            source.download(cmp, download_path)
+
+            # Check copy from the cache (NO http request)
+            fixture_cmp = SolvedComponent('test/cmp', '1.0.0', source, component_hash=self.FIXTURE_CMP_HASH)
+            download_path = os.path.join(tempdir, 'test_cached')
+            cache_path = source.component_cache_path(fixture_cmp)
+            shutil.copytree(FIXTURE_CMP_PATH, cache_path)
+
+            local_path = source.download(fixture_cmp, download_path)
+
+            assert os.path.isfile(os.path.join(local_path[0], 'idf_component.yml'))
+
         finally:
             shutil.rmtree(tempdir)
-            shutil.rmtree(source._cache_path)
 
 
 class TestComponentLocalSource(object):
@@ -75,14 +101,7 @@ class TestComponentLocalSource(object):
             shutil.rmtree(tempdir)
 
     def test_versions_with_manifest(self):
-        path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            '..',
-            'fixtures',
-            'components',
-            'cmp',
-        )
-        source = LocalSource(source_details={'path': path})
+        source = LocalSource(source_details={'path': FIXTURE_CMP_PATH})
         versions = source.versions('cmp', spec='*')
 
         assert versions.name == 'cmp'

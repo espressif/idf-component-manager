@@ -3,7 +3,6 @@ import shutil
 from hashlib import sha256
 
 from ..errors import FetchingError
-from ..file_cache import FileCache
 from ..git_client import GitClient
 from ..hash_tools import validate_dir
 from ..manifest import (
@@ -24,8 +23,8 @@ except ImportError:
 class GitSource(BaseSource):
     NAME = 'git'
 
-    def __init__(self, source_details=None):
-        super(GitSource, self).__init__(source_details=source_details)
+    def __init__(self, source_details=None, **kwargs):
+        super(GitSource, self).__init__(source_details=source_details, **kwargs)
         self.git_repo = source_details['git']
         self.component_path = source_details.get('path', '')
 
@@ -37,7 +36,7 @@ class GitSource(BaseSource):
         if version is not None:
             version = str(version)
 
-        return self._client.prepare_ref(repo=self.git_repo, path=self._cache_path, ref=version, with_submodules=True)
+        return self._client.prepare_ref(repo=self.git_repo, path=self.cache_path(), ref=version, with_submodules=True)
 
     @staticmethod
     def is_me(name, details):  # type: (str, dict) -> bool
@@ -54,11 +53,6 @@ class GitSource(BaseSource):
     @property
     def downloadable(self):  # type: () -> bool
         return True
-
-    @property
-    def _cache_path(self):
-        path = os.path.join(FileCache.path(), 'git_%s' % self.hash_key)
-        return path
 
     @property
     def hash_key(self):
@@ -78,7 +72,7 @@ class GitSource(BaseSource):
             return download_path
 
         self._checkout_git_source(component.version)
-        source_path = os.path.join(self._cache_path, self.component_path)
+        source_path = os.path.join(self.cache_path(), self.component_path)
 
         if os.path.isdir(download_path):
             shutil.rmtree(download_path)
@@ -90,7 +84,7 @@ class GitSource(BaseSource):
         version = None if spec == '*' else spec
         commit_id = self._checkout_git_source(version)
 
-        manifest_path = os.path.join(self.cache_path, self.component_path, MANIFEST_FILENAME)
+        manifest_path = os.path.join(self.cache_path(), self.component_path, MANIFEST_FILENAME)
 
         targets = []
         if os.path.isfile(manifest_path):

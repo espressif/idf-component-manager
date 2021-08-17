@@ -14,7 +14,6 @@ import idf_component_tools.api_client as api_client
 from ..archive_tools import ArchiveError, get_format_from_path, unpack_archive
 from ..config import ConfigManager
 from ..errors import FetchingError
-from ..file_cache import FileCache
 from ..file_tools import copy_directory
 from ..hash_tools import validate_dir
 from .base import BaseSource
@@ -57,8 +56,8 @@ def default_component_service_url(service_profile=None):
 class WebServiceSource(BaseSource):
     NAME = 'service'
 
-    def __init__(self, source_details=None):
-        super(WebServiceSource, self).__init__(source_details=source_details)
+    def __init__(self, source_details=None, **kwargs):
+        super(WebServiceSource, self).__init__(source_details=source_details, **kwargs)
 
         self.base_url = str(self.source_details.get('service_url', default_component_service_url()))
         self.api_client = self.source_details.get(
@@ -83,11 +82,6 @@ class WebServiceSource(BaseSource):
         # This should be run last
         return True
 
-    @property
-    def _cache_path(self):
-        path = os.path.join(FileCache.path(), 'web_%s' % self.hash_key)
-        return path
-
     def component_cache_path(self, component):  # type: (SolvedComponent) -> str
         component_dir_name = '_'.join(
             [
@@ -95,7 +89,7 @@ class WebServiceSource(BaseSource):
                 str(component.version),
                 str(component.component_hash),
             ])
-        path = os.path.join(self._cache_path, component_dir_name)
+        path = os.path.join(self.cache_path(), component_dir_name)
         return path
 
     def versions(self, name, details=None, spec='*', target=None):

@@ -57,9 +57,6 @@ def get_idf_path():  # type: () -> str
 class IDFSource(BaseSource):
     NAME = 'idf'
 
-    def __init__(self, source_details):
-        super(IDFSource, self).__init__(source_details=source_details)
-
     @staticmethod
     def is_me(name, details):
         return name == IDFSource.NAME
