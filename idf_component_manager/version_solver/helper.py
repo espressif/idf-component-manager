@@ -17,33 +17,39 @@ from .mixology.union import Union
 
 
 def parse_constraint(spec):  # type: (str) -> _Union[Union, Range]
-    clause = SimpleSpec(spec).clause
-
-    if isinstance(clause, SemverRange):  # single range
-        constraint = parse_single_constraint(clause)
-    else:  # multi ranges
-        ranges = [parse_single_constraint(_range) for _range in clause.clauses]
-        constraint = ranges[0]
-        for r in ranges[1:]:
-            constraint = constraint.intersect(r)
+    try:
+        clause = SimpleSpec(spec).clause
+    except ValueError:  # not semver
+        constraint = parse_single_constraint(HashedComponentVersion(spec))
+    else:
+        if isinstance(clause, SemverRange):  # single range
+            constraint = parse_single_constraint(clause)
+        else:  # multi ranges
+            ranges = [parse_single_constraint(_range) for _range in clause.clauses]
+            constraint = ranges[0]
+            for r in ranges[1:]:
+                constraint = constraint.intersect(r)
 
     return constraint
 
 
-def parse_single_constraint(r):  # type: (SemverRange) -> _Union[Union, Range]
-    version = HashedComponentVersion(str(r.target))
-    if r.operator == r.OP_LT:
-        return Range(max=version, string=str(r))
-    elif r.operator == r.OP_LTE:
-        return Range(max=version, include_max=True, string=str(r))
-    elif r.operator == r.OP_GT:
-        return Range(min=version, string=str(r))
-    elif r.operator == r.OP_GTE:
-        return Range(min=version, include_min=True, string=str(r))
-    elif r.operator == r.OP_NEQ:
-        return Union(Range(min=version, string=str(r)), Range(max=version, string=str(r)))
+def parse_single_constraint(_range):  # type: (_Union[SemverRange, HashedComponentVersion]) -> _Union[Union, Range]
+    if isinstance(_range, HashedComponentVersion):  # not semver
+        return Range(_range, _range, True, True, _range.text)
+
+    version = HashedComponentVersion(str(_range.target))
+    if _range.operator == _range.OP_LT:
+        return Range(max=version, string=str(_range))
+    elif _range.operator == _range.OP_LTE:
+        return Range(max=version, include_max=True, string=str(_range))
+    elif _range.operator == _range.OP_GT:
+        return Range(min=version, string=str(_range))
+    elif _range.operator == _range.OP_GTE:
+        return Range(min=version, include_min=True, string=str(_range))
+    elif _range.operator == _range.OP_NEQ:
+        return Union(Range(min=version, string=str(_range)), Range(max=version, string=str(_range)))
     else:
-        return Range(version, version, True, True, str(r))
+        return Range(version, version, True, True, str(_range))
 
 
 class Dependency:

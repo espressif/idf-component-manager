@@ -1,7 +1,7 @@
 from idf_component_tools.manifest import HashedComponentVersion
 
 try:
-    from typing import Any, Hashable, List
+    from typing import Any, List
     from typing import Union as _Union
 except ImportError:
     pass
@@ -69,7 +69,7 @@ class PackageSource(object):
     def root_version(self):  # type: () -> HashedComponentVersion
         raise NotImplementedError()
 
-    def versions_for(self, package, constraint=None):  # type: (Package, Any) -> List[Hashable]
+    def versions_for(self, package, constraint=None):  # type: (Package, Any) -> List[HashedComponentVersion]
         """
         Search for the specifications that match the given constraint.
         """

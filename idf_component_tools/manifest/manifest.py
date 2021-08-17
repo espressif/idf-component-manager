@@ -189,9 +189,15 @@ class ComponentVersion(object):
 
     def __lt__(self, other):
         if not (self.is_semver and other.is_semver):
-            raise ValueError('Can only compare semantic versions')
+            return False  # must be exactly equal for not semver versions (e.g. commit id version)
 
         return self._semver < other._semver
+
+    def __gt__(self, other):
+        if not (self.is_semver and other.is_semver):
+            return False  # must be exactly equal for not semver versions (e.g. commit id version)
+
+        return self._semver > other._semver
 
     def __repr__(self):
         return 'ComponentVersion("{}")'.format(self._version_string)
