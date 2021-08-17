@@ -1,6 +1,6 @@
 import pytest
 
-from .package_source import PackageSource
+from idf_component_manager.version_solver.helper import PackageSource
 
 
 @pytest.fixture()

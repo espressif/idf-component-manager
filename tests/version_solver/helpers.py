@@ -1,6 +1,6 @@
-from mixology.failure import SolverFailure
-from mixology.package import Package
-from mixology.version_solver import VersionSolver
+from idf_component_manager.version_solver.mixology.failure import SolverFailure
+from idf_component_manager.version_solver.mixology.package import Package
+from idf_component_manager.version_solver.mixology.version_solver import VersionSolver
 
 
 def check_solver_result(source, result=None, error=None, tries=None):
