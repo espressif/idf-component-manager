@@ -6,8 +6,9 @@ from six import string_types
 
 import idf_component_tools as tools
 
-from ..errors import SourceError
+from ..errors import FetchingError, SourceError
 from ..file_cache import FileCache
+from ..hash_tools import validate_dir
 
 try:
     from typing import TYPE_CHECKING, Callable, Dict, List
@@ -133,6 +134,19 @@ class BaseSource(object):
 
     def normalized_name(self, name):  # type: (str) -> str
         return name
+
+    def up_to_date(self, component, path):  # type: (SolvedComponent, str) -> bool
+        if self.component_hash_required and not component.component_hash:
+            raise FetchingError('Cannot install component with unknown hash')
+
+        if self.downloadable:
+            if not os.path.isdir(path):
+                return False
+
+            if component.component_hash:
+                return validate_dir(path, component.component_hash)
+
+        return True
 
     @abstractmethod
     def versions(

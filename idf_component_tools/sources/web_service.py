@@ -122,8 +122,7 @@ class WebServiceSource(BaseSource):
         if not component.version:
             raise FetchingError('Version should provided for %s' % component.name)
 
-        # Check if component is up-to date
-        if validate_dir(download_path, component.component_hash):
+        if self.up_to_date(component, download_path):
             return [download_path]
 
         # Check if component is in the cache

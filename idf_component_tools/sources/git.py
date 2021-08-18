@@ -4,7 +4,6 @@ from hashlib import sha256
 
 from ..errors import FetchingError
 from ..git_client import GitClient
-from ..hash_tools import validate_dir
 from ..manifest import (
     MANIFEST_FILENAME, ComponentVersion, ComponentWithVersions, HashedComponentVersion, ManifestManager)
 from .base import BaseSource
@@ -15,7 +14,10 @@ except ImportError:
     from urlparse import urlparse  # type: ignore
 
 try:
-    from typing import Dict, Union
+    from typing import TYPE_CHECKING, Dict, List, Union
+
+    if TYPE_CHECKING:
+        from ..manifest import SolvedComponent
 except ImportError:
     pass
 
@@ -64,13 +66,7 @@ class GitSource(BaseSource):
             self._hash_key = sha256(normalized_path.encode('utf-8')).hexdigest()
         return self._hash_key
 
-    def download(self, component, download_path):
-        component_hash = component.component_hash
-
-        # Check if the component already up to date
-        if component_hash and validate_dir(download_path, component_hash):
-            return download_path
-
+    def download(self, component, download_path):  # type: (SolvedComponent, str) -> List[str]
         self._checkout_git_source(component.version)
         source_path = os.path.join(self.cache_path(), self.component_path)
 
