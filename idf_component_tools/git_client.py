@@ -12,7 +12,7 @@ except ImportError:
     pass
 
 
-# Git error that is suppossed to be handled in the code, non-fatal
+# Git error that is supposed to be handled in the code, non-fatal
 class GitCommandError(Exception):
     pass
 
@@ -32,6 +32,8 @@ class GitClient(object):
         """
         Checkout required branch to desired path. Clones a repo, if necessary
         """
+        if not os.path.exists(path):
+            os.mkdir(path)
 
         # Check if target dir is already a valid repo
         if self.is_git_dir(path):
