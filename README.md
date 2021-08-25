@@ -113,13 +113,7 @@ There is no field in the manifest to put license name, instead, it's possible to
 
 ### Uploading a component to the registry
 
-As a first step, every new component should be registered within the registry. It's possible to do it with a CLI command:
-
-```
-idf.py create-remote-component --namespace=username --name=component
-```
-
-and to upload the component:
+To upload a component run `upload-component` command. If the component doesn't exist in the registry it will be created automatically.
 
 ```
 idf.py upload-component --namespace=username --name=component
@@ -129,7 +123,6 @@ idf.py upload-component --namespace=username --name=component
 
 Some component manager commands commonly used for CI pipelines use are available without IDF.
 
-- `create-remote-component` - Register a new component in the registry
 - `pack-component` - Prepare an archive with the component
 - `upload-component` - Upload component to the registry
 - `upload-component-status` - Check status of the processing of the component
@@ -138,7 +131,7 @@ Some component manager commands commonly used for CI pipelines use are available
 These commands can be executed by running component manager as a python package:
 
 ```
-python -m idf_component_manager create-remote-component --namespace robertpaulson --name mayhem
+python -m idf_component_manager upload-component --namespace robertpaulson --name mayhem
 ```
 
 ### Exit codes

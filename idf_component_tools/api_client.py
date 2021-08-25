@@ -186,14 +186,12 @@ class APIClient(object):
         except ComponentNotFound:
             versions = []
         else:
-            # Return only required versions
-            if target:
-                versions = [
-                    version for version in body['versions'] if semantic_spec.match(Version(version['version'])) and (
-                        target in version['targets'] or not version['targets'])
-                ]
-            else:
-                versions = [version for version in body['versions'] if semantic_spec.match(Version(version['version']))]
+            versions = []
+            for version in body['versions']:
+                if semantic_spec.match(Version(version['version'])):
+                    if target and version['targets'] and target not in version['targets']:
+                        continue
+                    versions.append(version)
 
         return tools.manifest.ComponentWithVersions(
             name=component_name,

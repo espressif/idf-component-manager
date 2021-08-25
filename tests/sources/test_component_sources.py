@@ -65,6 +65,8 @@ class TestComponentWebServiceSource(object):
             fixture_cmp = SolvedComponent('test/cmp', '1.0.0', source, component_hash=self.FIXTURE_CMP_HASH)
             download_path = os.path.join(tempdir, 'test_cached')
             cache_path = source.component_cache_path(fixture_cmp)
+            if os.path.exists(cache_path):
+                shutil.rmtree(cache_path, ignore_errors=True)
             shutil.copytree(FIXTURE_CMP_PATH, cache_path)
 
             local_path = source.download(fixture_cmp, download_path)

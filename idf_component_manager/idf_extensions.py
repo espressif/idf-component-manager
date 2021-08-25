@@ -69,14 +69,10 @@ def action_extensions(base_actions, project_path):
                 ],
                 'options': LOCAL_MANIFEST_OPTIONS,
             },
-            'create-remote-component': {
-                'callback': callback,
-                'help': 'Register a new component on the component registry.',
-                'options': SERVICE_OPTIONS,
-            },
             'upload-component': {
                 'callback': callback,
-                'help': 'Upload component to the component registry.',
+                'help': 'Upload component to the component registry. '
+                'If the component doesn\'t exist in the registry it will be created automatically.',
                 'options': SERVICE_OPTIONS + [
                     {
                         'names': ['--archive'],

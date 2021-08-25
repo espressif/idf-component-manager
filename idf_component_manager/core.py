@@ -281,15 +281,6 @@ class ComponentManager(object):
         except APIClientError as e:
             raise FatalError(e)
 
-    def create_remote_component(self, args):
-        client, namespace = service_details(args.get('namespace'), args.get('service_profile'))
-        name = '/'.join([namespace, args['name']])
-        try:
-            client.create_component(component_name=name)
-            print('Component "%s" was successfully created' % name)
-        except APIClientError as e:
-            raise FatalError(e)
-
     def prepare_dep_dirs(self, managed_components_list_file, component_list_file, local_components_list_file=None):
         '''Process all manifests and download all dependencies'''
         # Find all components

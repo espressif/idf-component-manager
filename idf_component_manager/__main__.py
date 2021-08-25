@@ -9,7 +9,6 @@ from idf_component_tools.errors import FatalError
 from .core import ComponentManager
 
 KNOWN_ACTIONS = [
-    'create-remote-component',
     'pack-component',
     'upload-component',
     'upload-component-status',
