@@ -44,7 +44,7 @@ def download_project_dependencies(manifests, lock_path, managed_components_path)
         number_of_components = len(solution.dependencies)
         print('Processing {} dependencies:'.format(number_of_components))
         for index, component in enumerate(solution.dependencies):
-            print('[{}/{}] {}'.format(index + 1, number_of_components, component.name))
+            print('[{}/{}] {} ({})'.format(index + 1, number_of_components, component.name, component.version))
             download_paths = ComponentFetcher(component, managed_components_path).download()
             downloaded_component_paths.update(download_paths)
 
