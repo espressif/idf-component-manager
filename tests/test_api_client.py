@@ -52,18 +52,3 @@ class TestAPIClient(object):
 
         assert manifest.name == 'test/cmp'
         assert str(manifest.version) == '1.0.1'
-
-    def test_create_component(self, requests_mock, base_url):
-        requests_mock.post(
-            '%s/components/test/new_cmp/' % base_url,
-            json={
-                'created_at': '2020-09-11T15:40:27.590469+00:00',
-                'name': 'new_cmp',
-                'namespace': 'test',
-                'versions': []
-            })
-
-        client = APIClient(base_url=base_url, auth_token='token')
-        name = client.create_component('test/new_cmp')
-
-        assert name == ('test', 'new_cmp')

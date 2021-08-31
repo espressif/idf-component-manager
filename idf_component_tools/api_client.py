@@ -260,15 +260,6 @@ class APIClient(object):
     def delete_version(self, component_name, component_version):
         self._base_request('delete', ['components', component_name.lower(), component_version])
 
-    @auth_required
-    def create_component(self, component_name):
-        body = self._base_request(
-            'post',
-            ['components', component_name.lower()],
-            schema=COMPONENT_SCHEMA,
-        )
-        return (body['namespace'], body['name'])
-
     def task_status(self, job_id):  # type: (str) -> TaskStatus
         body = self._base_request('get', ['tasks', job_id], schema=TASK_STATUS_SCHEMA)
         return TaskStatus(body['message'], body['status'], body['progress'])
