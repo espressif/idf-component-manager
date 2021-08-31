@@ -4,7 +4,7 @@ from io import open
 
 from schema import And, Optional, Or, Schema, SchemaError, Use
 from six import string_types
-from yaml import Dumper, YAMLError
+from yaml import SafeDumper, YAMLError
 from yaml import dump as dump_yaml
 from yaml import safe_load
 
@@ -39,11 +39,16 @@ LOCK_SCHEMA = Schema(
     })
 
 
-def _ordered_dict_representer(dumper, data):  # type: (Dumper, OrderedDict) -> Dumper
+def _ordered_dict_representer(dumper, data):  # type: (SafeDumper, OrderedDict) -> SafeDumper
     return dumper.represent_data(dict(data))
 
 
-Dumper.add_representer(OrderedDict, _ordered_dict_representer)
+def _unicode_representer(dumper, data):  # type: (SafeDumper, str) -> SafeDumper
+    return dumper.represent_str(data.encode('utf-8'))
+
+
+SafeDumper.add_representer(OrderedDict, _ordered_dict_representer)
+SafeDumper.add_representer(string_types, _unicode_representer)
 
 
 class LockManager:
@@ -63,7 +68,7 @@ class LockManager:
                 solution_dict['version'] = FORMAT_VERSION
                 solution_dict['target'] = get_env_idf_target()
                 lock = LOCK_SCHEMA.validate(solution_dict)
-                dump_yaml(data=lock, stream=f, encoding='utf-8', allow_unicode=True, Dumper=Dumper)
+                dump_yaml(data=lock, stream=f, encoding='utf-8', allow_unicode=True, Dumper=SafeDumper)
         except SchemaError as e:
             raise LockError('Lock format is not valid:\n%s' % str(e))
 

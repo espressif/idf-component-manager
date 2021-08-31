@@ -1,5 +1,7 @@
 import logging
+import os
 import subprocess
+from io import open
 
 import pytest
 
@@ -25,6 +27,10 @@ def live_print_call(*args, **kwargs):
         res += line
 
     return res
+
+
+def idf_version():
+    return live_print_call(['idf.py', '--version'])
 
 
 def build_project(project_path):
@@ -188,3 +194,32 @@ def test_idf_check_target_fail_dependency(project):
 def test_idf_check_target_pass(project):
     res = set_target(project, 'esp32')
     assert 'Build files have been written to:' in res
+
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'example/cmp': {
+                            'version': '>=3.3.5',
+                        }
+                    }
+                }
+            }
+        },
+    ], indirect=True)
+def test_changing_target(project):
+    if 'v4.1' in idf_version():
+        return
+
+    lock_path = os.path.join(project, 'dependencies.lock')
+    res = set_target(project, 'esp32s2')
+    assert 'Building ESP-IDF components for target esp32s2' in res
+    with open(lock_path, mode='r', encoding='utf-8') as f:
+        assert 'esp32s2' in f.read()
+    res = set_target(project, 'esp32')
+    assert 'Building ESP-IDF components for target esp32\n' in res
+    with open(lock_path, mode='r', encoding='utf-8') as f:
+        assert 'esp32\n' in f.read()
