@@ -35,7 +35,7 @@ LOCK_SCHEMA = Schema(
         },
         'manifest_hash': HASH_SCHEMA,
         'version': And(Or(*string_types), len),
-        'target': And(Use(str.lower), lambda s: s in KNOWN_TARGETS),
+        Optional('target'): And(Use(str.lower), lambda s: s in KNOWN_TARGETS),
     })
 
 

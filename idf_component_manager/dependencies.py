@@ -1,35 +1,36 @@
-from idf_component_tools.build_system_tools import get_env_idf_target
 from idf_component_tools.errors import FetchingError
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import Manifest, ProjectRequirements
+from idf_component_tools.manifest import ProjectRequirements
 from idf_component_tools.sources.fetcher import ComponentFetcher
 
 from .version_solver.version_solver import VersionSolver
 
 try:
-    from typing import List, Set
+    from typing import Set
 except ImportError:
     pass
 
 
-def check_manifests_targets(manifests):  # type: (List[Manifest]) -> None
-    target = get_env_idf_target()
-
-    for manifest in manifests:
+def check_manifests_targets(project_requirements):  # type: (ProjectRequirements) -> None
+    for manifest in project_requirements.manifests:
         if not manifest.targets:
             continue
 
-        if target not in manifest.targets:
-            raise FetchingError('Component "{}" does not support target {}'.format(manifest.name, target))
+        if project_requirements.target not in manifest.targets:
+            raise FetchingError(
+                'Component "{}" does not support target {}'.format(manifest.name, project_requirements.target))
 
 
-def download_project_dependencies(manifests, lock_path, managed_components_path):
-    # type: (List[Manifest], str, str) -> Set[str]
+def download_project_dependencies(project_requirements, lock_path, managed_components_path):
+    # type: (ProjectRequirements, str, str) -> Set[str]
     '''Solves dependencies and download components'''
-    project_requirements = ProjectRequirements(manifests)
     lock_manager = LockManager(lock_path)
     solution = lock_manager.load()
-    if project_requirements.manifest_hash != solution.manifest_hash:
+    check_manifests_targets(project_requirements)
+
+    if (project_requirements.has_dependencies
+            and (project_requirements.manifest_hash != solution.manifest_hash or
+                 (solution.target and project_requirements.target != solution.target))):
         print('Solving dependencies requirements')
         solver = VersionSolver(project_requirements, solution)
         solution = solver.solve()

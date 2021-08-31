@@ -6,6 +6,7 @@ import semantic_version as semver
 from semantic_version import SimpleSpec as Spec
 
 import idf_component_tools as tools
+from idf_component_tools.build_system_tools import get_env_idf_target
 from idf_component_tools.hash_tools import hash_object
 from idf_component_tools.serialization import serializable
 
@@ -271,6 +272,17 @@ class ProjectRequirements(object):
     def __init__(self, manifests):  # type: (List[Manifest]) -> None
         self.manifests = manifests
         self._manifest_hash = None
+        self._target = None  # type: Optional[str]
+
+    @property
+    def target(self):  # type: () -> str
+        if not self._target:
+            self._target = get_env_idf_target()
+        return self._target
+
+    @property
+    def has_dependencies(self):  # type: () ->  bool
+        return any(manifest.dependencies for manifest in self.manifests)
 
     @property
     def manifest_hash(self):  # type: () -> str

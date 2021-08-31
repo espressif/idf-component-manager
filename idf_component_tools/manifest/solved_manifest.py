@@ -7,12 +7,16 @@ except ImportError:
 
 
 class SolvedManifest(object):
-    def __init__(self, solved_components, manifest_hash):  # type: (Optional[List[SolvedComponent]], str) -> None
+    def __init__(
+            self,
+            solved_components,
+            manifest_hash,
+            target=None):  # type: (Optional[List[SolvedComponent]], str, Optional[str]) -> None
         if solved_components is None:
             solved_components = []
         solved_components.sort(key=lambda c: c.name)
         self.dependencies = solved_components
-
+        self.target = target
         self.manifest_hash = manifest_hash
 
     @classmethod
@@ -25,6 +29,7 @@ class SolvedManifest(object):
         return cls(
             solved_components,
             manifest_hash=lock['manifest_hash'],
+            target=lock.get('target'),
         )
 
     def serialize(self):
@@ -34,7 +39,10 @@ class SolvedManifest(object):
             name = dep_dict.pop('name')
             dependencies[name] = dep_dict
 
-        solution = {'manifest_hash': self.manifest_hash}
+        solution = {
+            'manifest_hash': self.manifest_hash,
+            'target': self.target,
+        }
 
         if dependencies:
             solution['dependencies'] = dependencies
