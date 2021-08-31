@@ -36,21 +36,36 @@ class APIClientError(Exception):
     pass
 
 
-def describe_4xx_error(error):  # type: (requests.Response) -> str
+class ComponentNotFound(APIClientError):
+    pass
+
+
+class NamespaceNotFound(APIClientError):
+    pass
+
+
+KNOWN_API_ERRORS = {
+    'NamespaceNotFoundError': NamespaceNotFound,
+    'ComponentNotFoundError': ComponentNotFound,
+}
+
+
+def handle_4xx_error(error):  # type: (requests.Response) -> str
     try:
         json = ERROR_SCHEMA.validate(error.json())
+        name = json['error']
+        messages = json['messages']
     except SchemaError as e:
-        return 'API Endpoint "{}: returned unexpected error description:\n{}'.format(error.url, str(e))
+        raise APIClientError('API Endpoint "{}: returned unexpected error description:\n{}'.format(error.url, str(e)))
     except ValueError:
-        return 'Server returned an error in unexpected format'
+        raise APIClientError('Server returned an error in unexpected format')
 
-    name = json['error']
-    messages = json['messages']
+    exception = KNOWN_API_ERRORS.get(name, APIClientError)
     if isinstance(messages, list):
-        return '\n'.join(messages)
+        raise exception('\n'.join(messages))
     else:
-        return 'Error during request:\n{}\nStatus code: {} Error code: {}'.format(
-            str(messages), error.status_code, name)
+        raise exception(
+            'Error during request:\n{}\nStatus code: {} Error code: {}'.format(str(messages), error.status_code, name))
 
 
 def join_url(*args):  # type: (*str) -> str
@@ -136,7 +151,7 @@ class APIClient(object):
             )
 
             if 400 <= response.status_code < 500:
-                raise APIClientError(describe_4xx_error(response))
+                handle_4xx_error(response)
 
             elif 500 <= response.status_code < 600:
                 raise APIClientError(
@@ -162,20 +177,23 @@ class APIClient(object):
         """List of versions for given component with required spec"""
         semantic_spec = SimpleSpec(spec or '*')
         component_name = component_name.lower()
-        body = self._base_request(
-            'get',
-            ['components', component_name],
-            schema=COMPONENT_SCHEMA,
-        )
-
-        # Return only required versions
-        if target:
-            versions = [
-                version for version in body['versions'] if semantic_spec.match(Version(version['version'])) and (
-                    target in version['targets'] or not version['targets'])
-            ]
+        try:
+            body = self._base_request(
+                'get',
+                ['components', component_name],
+                schema=COMPONENT_SCHEMA,
+            )
+        except ComponentNotFound:
+            versions = []
         else:
-            versions = [version for version in body['versions'] if semantic_spec.match(Version(version['version']))]
+            # Return only required versions
+            if target:
+                versions = [
+                    version for version in body['versions'] if semantic_spec.match(Version(version['version'])) and (
+                        target in version['targets'] or not version['targets'])
+                ]
+            else:
+                versions = [version for version in body['versions'] if semantic_spec.match(Version(version['version']))]
 
         return tools.manifest.ComponentWithVersions(
             name=component_name,
