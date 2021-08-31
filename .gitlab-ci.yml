@@ -1,12 +1,19 @@
 cache:
   paths:
     - .tox
-  key: "$CI_JOB_NAME-cache-1"
+  key: "$CI_JOB_NAME-cache-2"
 
 stages:
   - check
   - test
   - deploy
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_PIPELINE_SOURCE == "push"
+      when: never
+    - if: "$CI_COMMIT_BRANCH"
 
 lint:
   image: python:3.9-slim-buster
@@ -89,14 +96,14 @@ integration_test:py2.7:
   image: python:2.7-slim-buster
   parallel:
     matrix:
-      - IDF_BRANCH: [ release/v4.1, release/v4.2, release/v4.3 ]
+      - IDF_BRANCH: [release/v4.1, release/v4.2, release/v4.3]
 
 integration_test:py3.5:
   extends: .integration_test_template
   image: python:3.5-slim-buster
   parallel:
     matrix:
-      - IDF_BRANCH: [ release/v4.1, release/v4.2, release/v4.3 ]
+      - IDF_BRANCH: [release/v4.1, release/v4.2, release/v4.3]
 
 integration_test:py3.6_idf_master:
   extends: .integration_test_template
@@ -116,6 +123,5 @@ publish_on_pypi:
     - pip install twine
   script:
     - ./publish.sh
-  only:
-    refs:
-      - master
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
