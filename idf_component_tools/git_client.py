@@ -22,7 +22,17 @@ class GitClient(object):
     def __init__(self, git_command='git'):  # type: (str) -> None
         self.git_command = git_command or 'git'
 
-    def is_git_dir(self, path):
+    def commit_id(self, path):  # type: (str) -> str
+        return self.run(['show', '--format="%H"', '--no-patch'], cwd=path)
+
+    def is_dirty(self, path):  # type: (str) -> bool
+        try:
+            self.run(['diff', '--quiet'], cwd=path)
+            return False
+        except GitCommandError:
+            return True
+
+    def is_git_dir(self, path):  # type: (str) -> bool
         try:
             return self.run(['rev-parse', '--is-inside-work-tree'], cwd=path).strip() == 'true'
         except GitCommandError:
@@ -37,6 +47,13 @@ class GitClient(object):
 
         # Check if target dir is already a valid repo
         if self.is_git_dir(path):
+            # Check if it's up to date
+            try:
+                if ref and self.commit_id(path) == ref and not self.is_dirty(path):
+                    return ref
+            except GitCommandError:
+                pass
+
             self.run(['fetch', 'origin'], cwd=path)
         else:
             # Init empty repo

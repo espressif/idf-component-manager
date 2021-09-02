@@ -72,6 +72,16 @@ class GitSource(BaseSource):
         return self._hash_key
 
     def download(self, component, download_path):  # type: (SolvedComponent, str) -> List[str]
+        # Check for required components
+        if not component.component_hash:
+            raise FetchingError('Component hash is required for componets from git repositories')
+
+        if not component.version:
+            raise FetchingError('Version should provided for %s' % component.name)
+
+        if self.up_to_date(component, download_path):
+            return [download_path]
+
         self._checkout_git_source(component.version)
         source_path = os.path.join(self.cache_path(), self.component_path)
 
