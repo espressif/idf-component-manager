@@ -4,6 +4,7 @@ from hashlib import sha256
 
 from ..errors import FetchingError
 from ..git_client import GitClient
+from ..hash_tools import hash_dir
 from ..manifest import (
     MANIFEST_FILENAME, ComponentVersion, ComponentWithVersions, HashedComponentVersion, ManifestManager)
 from .base import BaseSource
@@ -53,6 +54,10 @@ class GitSource(BaseSource):
         return ['path']
 
     @property
+    def component_hash_required(self):  # type: () -> bool
+        return True
+
+    @property
     def downloadable(self):  # type: () -> bool
         return True
 
@@ -80,7 +85,8 @@ class GitSource(BaseSource):
         version = None if spec == '*' else spec
         commit_id = self._checkout_git_source(version)
 
-        manifest_path = os.path.join(self.cache_path(), self.component_path, MANIFEST_FILENAME)
+        source_path = os.path.join(self.cache_path(), self.component_path)
+        manifest_path = os.path.join(source_path, MANIFEST_FILENAME)
 
         targets = []
         if os.path.isfile(manifest_path):
@@ -94,7 +100,11 @@ class GitSource(BaseSource):
 
                 targets = manifest.targets
 
-        return ComponentWithVersions(name=name, versions=[HashedComponentVersion(commit_id, targets=targets)])
+        component_hash = hash_dir(source_path)
+        return ComponentWithVersions(
+            name=name,
+            versions=[HashedComponentVersion(commit_id, targets=targets, component_hash=component_hash)],
+        )
 
     def serialize(self):  # type: () -> Dict
         source = {

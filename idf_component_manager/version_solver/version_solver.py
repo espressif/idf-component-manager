@@ -1,6 +1,5 @@
 from idf_component_tools.errors import SolverError
 from idf_component_tools.manifest import ComponentRequirement, ProjectRequirements, SolvedComponent, SolvedManifest
-from idf_component_tools.sources import WebServiceSource
 
 from .helper import PackageSource
 from .mixology.package import Package
@@ -36,7 +35,7 @@ class VersionSolver(object):
             if package == Package.root():
                 continue
             kwargs = {'name': package.name, 'source': package.source, 'version': version}
-            if isinstance(package.source, WebServiceSource):
+            if package.source.component_hash_required:
                 kwargs['component_hash'] = version.component_hash
             solved_components.append(SolvedComponent(**kwargs))  # type: ignore
         return SolvedManifest(solved_components, self.requirements.manifest_hash, self.requirements.target)
