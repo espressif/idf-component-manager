@@ -48,11 +48,16 @@ class SolvedComponent(object):
             source_details = dict(details['source'])
             source_name = source_details.pop('type')
             source = BaseSource.fromdict(source_name, source_details)
+            component_hash = details.get('component_hash', None)
+            if source.component_hash_required and not component_hash:
+                raise LockError(
+                    '"component_hash" is required for component "%s" in the "dependencies.lock" file' % details['name'])
+
             return cls(
                 name=source.normalized_name(details['name']),
                 version=ComponentVersion(details['version']),
                 source=source,
-                component_hash=details.get('component_hash', None))
+                component_hash=component_hash)
         except KeyError as e:
             raise LockError(
                 'Cannot parse dependencies lock file. Required field %s is not found for component "%s"' %
