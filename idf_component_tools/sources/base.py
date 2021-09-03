@@ -41,7 +41,7 @@ class BaseSource(object):
         return self.name, self.hash_key
 
     def cache_path(self):  # type: () -> str
-        path = os.path.join(self.system_cache_path, '{}_{}'.format(self.NAME, self.hash_key))
+        path = os.path.join(self.system_cache_path, '{}_{}'.format(self.NAME, self.hash_key[:8]))
         return path
 
     def __eq__(self, other):  # type: (object) -> bool
