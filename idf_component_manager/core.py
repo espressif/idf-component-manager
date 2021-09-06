@@ -17,7 +17,7 @@ from idf_component_tools.api_client import APIClientError
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.errors import FatalError, ManifestError, NothingToDoError
-from idf_component_tools.file_tools import DEFAULT_EXCLUDE, DEFAULT_INCLUDE, create_directory, filtered_paths
+from idf_component_tools.file_tools import create_directory, filtered_paths
 from idf_component_tools.manifest import MANIFEST_FILENAME, WEB_DEPENDENCY_REGEX, ManifestManager, ProjectRequirements
 from idf_component_tools.sources import WebServiceSource
 
@@ -155,9 +155,7 @@ class ComponentManager(object):
         manifest = ManifestManager(self.path, args['name'], check_required_fields=True).load()
 
         include = set(manifest.files['include'])
-        include.update(DEFAULT_INCLUDE)
         exclude = set(manifest.files['exclude'])
-        exclude.update(DEFAULT_EXCLUDE)
 
         archive_file = _archive_name(manifest)
         print('Saving archive to %s' % os.path.join(self.dist_path, archive_file))

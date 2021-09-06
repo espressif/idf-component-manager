@@ -8,7 +8,6 @@ try:
 except ImportError:
     pass
 
-DEFAULT_INCLUDE = ['**/*']
 DEFAULT_EXCLUDE = [
     # Python files
     '**/__pycache__',
@@ -18,7 +17,7 @@ DEFAULT_EXCLUDE = [
     # macOS files
     '**/.DS_Store',
     # Git
-    '**/.git',
+    '**/.git/**/*',
     # dist and build artefacts
     './dist/**/*',
     'build/**/*',
@@ -37,20 +36,36 @@ DEFAULT_EXCLUDE = [
 def filtered_paths(path, include=None, exclude=None):
     # type: (Union[Text, Path], Optional[Iterable[str]], Optional[Iterable[str]]) -> Set[Path]
     if include is None:
-        include = DEFAULT_INCLUDE
+        include = set()
 
     if exclude is None:
-        exclude = DEFAULT_EXCLUDE
+        exclude = set()
 
     base_path = Path(path)
-
     paths = set()  # type: Set[Path]
 
-    for pattern in include:
+    def include_paths(pattern):
         paths.update(base_path.glob(pattern))
 
-    for pattern in exclude:
+    def exclude_paths(pattern):
         paths.difference_update(base_path.glob(pattern))
+
+    # First include everything
+    include_paths('**/*')
+
+    # Exclude all defaults, including directories
+    for pattern in DEFAULT_EXCLUDE:
+        exclude_paths(pattern)
+        if pattern.endswith('/**/*'):
+            exclude_paths(pattern[:pattern.rindex('/**/*')])
+
+    # Exclude user patterns
+    for pattern in exclude:
+        exclude_paths(pattern)
+
+    # Include everything that was explicitly added
+    for pattern in include:
+        include_paths(pattern)
 
     return paths
 
