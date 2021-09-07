@@ -120,7 +120,7 @@ class WebServiceSource(BaseSource):
             raise FetchingError('Component hash is required for componets from web service')
 
         if not component.version:
-            raise FetchingError('Version should provided for %s' % component.name)
+            raise FetchingError('Version should be provided for %s' % component.name)
 
         if self.up_to_date(component, download_path):
             return [download_path]

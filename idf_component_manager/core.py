@@ -177,7 +177,7 @@ class ComponentManager(object):
 
         component_name = '/'.join([namespace, name])
         # Checking if current version already uploaded
-        versions = client.versions(component_name, spec='*').versions
+        versions = client.versions(component_name).versions
 
         if version not in versions:
             raise NothingToDoError(

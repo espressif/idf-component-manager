@@ -150,7 +150,9 @@ class APIClient(object):
                 timeout=timeout,
             )
 
-            if 400 <= response.status_code < 500:
+            if response.status_code == 204:  # NO CONTENT
+                return {}
+            elif 400 <= response.status_code < 500:
                 handle_4xx_error(response)
 
             elif 500 <= response.status_code < 600:
@@ -171,7 +173,7 @@ class APIClient(object):
         except (ValueError, KeyError, IndexError):
             raise APIClientError('Unexpected component server response')
 
-        return response.json()
+        return json
 
     def versions(self, component_name, spec='*', target=None):
         """List of versions for given component with required spec"""
