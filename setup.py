@@ -8,9 +8,9 @@ MAINTAINER = 'Sergei Silnov'
 EMAIL = 'sergei.silnov@esspressif.com'
 
 NAME = 'idf_component_manager'
-SHORT_DESCRIPTION = 'Espressif IDF component manager'
+SHORT_DESCRIPTION = 'The component manager for ESP-IDF'
 LICENSE = 'Apache License 2.0'
-URL = 'https://espressif.com'
+URL = 'https://github.com/espressif/idf-component-manager'
 REQUIRES = [
     'future',
     'pathlib;python_version<"3.4"',
