@@ -69,7 +69,7 @@ test:py3.9:
     - test
     - internet
   rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
     - if: '$RUN_INTEGRATION_TESTS == "true"'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
@@ -124,4 +124,4 @@ publish_on_pypi:
   script:
     - ./publish.sh
   rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
