@@ -1,25 +1,33 @@
-# IDF Component Management
+# IDF Component Manager
 
-IDF Component manager is a tool for managing dependencies for any ESP IDF 4.1+ CMake project. Components can be installed either from [the component registry](https://components.espressif.com) or from a git repository.
+The IDF Component manager is a tool that downloads dependencies for any [ESP-IDF](https://www.espressif.com/en/products/sdks/esp-idf) CMake project. It makes sure that the right versions of all components required for a successful build of your project are in place. The download happens automatically during a run of CMake. It can source components either from [the component registry](https://components.espressif.com/) or from a git repository.
 
-List of components can be found on https://components.espressif.com/
+**A list of components can be found on https://components.espressif.com/**
 
 ## Installing the IDF Component Manager
 
-To use component manager with IDF install `idf-component-manager` [python package](https://pypi.org/project/idf-component-manager/) to virtual environment with IDF environment. For example in BASH:
+IDF component manager can be used with ESP-IDF v4.1 and later.
 
-```
+For ESP-IDF v4.4 the [idf-component-manager](https://pypi.org/project/idf-component-manager/) package is installed by default and no extra action is necessary.
+
+In ESP-IDF v4.1 — v4.3, you need to install the following Python package to use the component manager:
+
+```bash
 source $IDF_PATH/export.sh
 pip install idf-component-manager --upgrade
 ```
 
-No extra steps are required, if CMake is started using `idf.py` or [ESP IDF VSCode Extension](https://marketplace.visualstudio.com/items?itemName=espressif.esp-idf-extension).
-If CMake is used directly or with some CMake-based IDE, like Clion it's necessary to set `IDF_COMPONENT_MANAGER` environment variable to `1` to enable the component manager integration with the build system.
+## Activating the Component Manager
+
+If CMake is started using `idf.py` or [ESP-IDF VSCode Extension](https://marketplace.visualstudio.com/items?itemName=espressif.esp-idf-extension) then the Component manager will be activated by default.
+
+If CMake is used directly or with some CMake-based IDE like CLion, it’s necessary to set the `IDF_COMPONENT_MANAGER` environment variable to 1 to enable the component manager integration with the build system.
 
 ## Using with a project
 
-Dependencies for each component in the project are defined in a separate manifest file named `idf_component.yml` placed in the root of the component.
-It's not necessary to have a manifest for components that don't need any managed dependencies.
+You can add `idf_component.yml` manifest files with the list of dependencies to any component in your project.
+
+IDF Component Manager will download dependencies automatically during the project build process.
 
 When CMake configures the project (e.g. `idf.py reconfigure`) component manager does a few things:
 
@@ -29,7 +37,9 @@ When CMake configures the project (e.g. `idf.py reconfigure`) component manager 
 
 The component manager won't try to regenerate `dependencies.lock` or download any components if manifests, lock file, and content of `managed_component` directory weren't modified since the last successful build.
 
-### Defining dependencies in the manifest
+## Defining dependencies in the manifest
+
+All dependencies are defined in the manifest file.
 
 ```yaml
 dependencies:
@@ -64,114 +74,15 @@ dependencies:
     path: ../../projects/component
 ```
 
-## Creating a component for the registry
+## Contributions Guide
 
-For components to be published in the registry `idf_component.yml` manifest is required.
+We welcome all contributions to the Component Manager project.
 
-Example of a component manifest `idf_component.yml`:
+You can contribute by fixing bugs, adding features, adding documentation, or reporting an [issue](https://github.com/espressif/idf-component-manager/issues). We accept contributions via [Github Pull Requests](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests).
 
-```yaml
-# Version of the component [Required]
-# It should follow https://semver.org/spec/v2.0.0.html spec.
-version: "2.3.1"
+Before reporting an issue, make sure you've searched for a similar one that was already created. If you are reporting a new issue, please follow the Issue Template.
 
-# List of supported targets [Optional]
-# If missing all targets are considered to be supported
-targets:
-  - esp32
+## Resources
 
-# Short description for the project [Recommended]
-description: Test project
-# Github repo or a home  [Recommended]
-url: https://github.com/espressif/esp-idf
-
-# List of dependencies [Optional]
-# All dependencies of the component should be published in the same registry.
-dependencies:
-  # Default namespace is `espressif`
-  # Declaring dependency as `cool_component` is the same as `espressif/cool_component`
-  cool_component: ">1.0.0"
-  some_ns/some_component:
-    version: "~1.2.7"
-```
-
-It's also recommended to include documentation and license information with the component.
-
-### Documenting components
-
-Component registry automatically processes and renders in the Web UI documentation provided in these files:
-
-- `README.md` - General information
-- `CHANGELOG.md` - Version history
-- `API.md` - Programming interface
-
-Only markdown (\*.md) files are supported. Filenames are not case-sensitive.
-
-### Providing a license
-
-There is no field in the manifest to put license name, instead, it's possible to create a file name `license` or `license.txt` (case insensitive) in the root of the component with the full text of the license agreement. Commonly used licenses will be detected automatically and displayed with the component. The original text of the license is always delivered with the component.
-
-### Uploading a component to the registry
-
-To upload a component run `upload-component` command. If the component doesn't exist in the registry it will be created automatically.
-
-```
-idf.py upload-component --namespace=username --name=component
-```
-
-## Using component manager in CI
-
-Some component manager commands commonly used for CI pipelines use are available without IDF.
-
-- `pack-component` - Prepare an archive with the component
-- `upload-component` - Upload component to the registry
-- `upload-component-status` - Check status of the processing of the component
-- `delete-version` - Mark component version as deleted.
-
-These commands can be executed by running component manager as a python package:
-
-```
-python -m idf_component_manager upload-component --namespace robertpaulson --name mayhem
-```
-
-### Exit codes
-
-In case of issues during execution CLI will return a non-zero exit code. Some of these exit codes having a special meaning are listed below:
-
-- **2** - Regular exit code for unsuccessful execution.
-- **144** - Runtime error for situations, when an operation is prematurely aborted due to nothing to do. For example, "upload-component" command returns code 144 when the version already exists in the registry.
-
-### Uploading components with Github Action
-
-Github Action to upload components to the registry is available as part of Espressif's GitHub actions:
-https://github.com/espressif/github-actions/tree/master/upload_components
-
-## Athentication in the registry
-
-To run a command that changes data in the registry authentication token should be provided. The most common way to do it is by setting `IDF_COMPONENT_API_TOKEN` environment variable.
-
-## Configuring multiple profiles
-
-If it's necessary to configure access to a non-default registry or configure more than one profile then the configuration can be placed to the `idf_component_manager.yml` in the directory with IDF toolchain (`~/.espressif` by default, but can be changed by setting `IDF_TOOLS_PATH` environment variable)
-
-Values provided for `default` profile will be used by default.
-
-Configurable options:
-
-- `api_token` - Access token to the registry. Required for all operations modifying data in the registry.
-- `default_namespace` - Namespace used for the creation of component or upload of a new version. Default is not set.
-- `service_url` - URL of the component registry API. Default: `https://api.components.espressif.com`
-
-Example `idf_component_manager.yml`:
-
-```yaml
-profiles:
-  default:
-    api_token: some_token
-    default_namespace: example
-
-  staging:
-    service_url: https://api.example-service.com
-    api_token: my_long_long_token
-    default_namespace: my_namespace
-```
+- The Python Package Index project page https://pypi.org/project/idf-component-manager/
+- The Component Manager section in the [ESP-IDF Programming Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/tools/idf-component-manager.html)
