@@ -91,9 +91,11 @@ class ManifestManager(object):
         if not self.is_valid:
             error_count = len(self.validation_errors)
             if error_count == 1:
-                error_desc = ['A problem was found in manifest file:'] + self.validation_errors
+                error_desc = ['A problem was found in the manifest file %s:' % self._path] + self.validation_errors
             else:
-                error_desc = ['%i problems were found in manifest file:' % error_count] + self.validation_errors
+                error_desc = [
+                    '%i problems were found in the manifest file %s:' % (error_count, self._path)
+                ] + self.validation_errors
 
             raise ManifestError('\n'.join(error_desc))
 
