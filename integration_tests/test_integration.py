@@ -159,18 +159,17 @@ def test_idf_check_target_fail_manifest(project):
             'components': {
                 'main': {
                     'dependencies': {
-                        'esp32_s2_kaluga_kit': {
-                            'version': '0.0.1-alpha.1',
+                        'example/cmp': {
+                            'version': '0.0.1',
                         },
                     }
                 }
             }
         },
-    ],
-    indirect=True)
+    ], indirect=True)
 def test_idf_check_target_fail_dependency(project):
     res = set_target(project, 'esp32')
-    assert 'Cannot find a satisfying version of the component "espressif/esp32_s2_kaluga_kit"' in res
+    assert 'Cannot find a satisfying version of the component "example/cmp"' in res
 
 
 @pytest.mark.parametrize(
@@ -182,8 +181,8 @@ def test_idf_check_target_fail_dependency(project):
                         'idf': {
                             'version': '>=4.1.0',
                         },
-                        'esp32_azure_iot_kit': {
-                            'version': '0.0.5-alpha',
+                        'example/cmp': {
+                            'version': '3.3.3',
                         },
                     }
                 }
