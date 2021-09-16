@@ -33,8 +33,11 @@ def idf_version():
     return live_print_call(['idf.py', '--version'])
 
 
-def build_project(project_path):
-    return live_print_call(['idf.py', '-C', project_path, 'build'])
+def build_project(project_path, fullclean=False):
+    args = ['idf.py', '-C', project_path, 'build']
+    if fullclean:
+        args.append('fullclean')
+    return live_print_call(args)
 
 
 def set_target(project_path, target):
@@ -222,3 +225,86 @@ def test_changing_target(project):
     assert 'Building ESP-IDF components for target esp32\n' in res
     with open(lock_path, mode='r', encoding='utf-8') as f:
         assert 'esp32\n' in f.read()
+
+
+@pytest.fixture  # fake fixture since can't specify `indirect` for only one fixture
+def result(request):
+    return getattr(request, 'param')
+
+
+@pytest.mark.parametrize(
+    'project,result', [
+        (
+            {
+                'components': {
+                    'main': {
+                        'dependencies': {
+                            'test/circular_dependency_a': {
+                                'version': '>=1.0.0',
+                            }
+                        }
+                    }
+                }
+            }, [
+                'test/circular_dependency_a (1.0.0)',
+            ]),
+        (
+            {
+                'components': {
+                    'main': {
+                        'dependencies': {
+                            'test/diamond_dependency_a': {
+                                'version': '*',
+                            },
+                            'test/diamond_dependency_b': {
+                                'version': '*',
+                            }
+                        }
+                    }
+                }
+            }, [
+                'test/diamond_dependency_a (1.0.0)',
+                'test/diamond_dependency_b (2.0.0)',
+                'test/diamond_dependency_c (3.0.0)',
+            ]),
+        (
+            {
+                'components': {
+                    'main': {
+                        'dependencies': {
+                            'test/partial_satisfy_c': {
+                                'version': '*',
+                            },
+                            'test/partial_satisfy_y': {
+                                'version': '^2.0.0',
+                            }
+                        }
+                    }
+                }
+            }, [
+                'test/partial_satisfy_c (1.0.0)',
+                'test/partial_satisfy_y (2.0.0)',
+            ]),
+        (
+            {
+                'components': {
+                    'main': {
+                        'dependencies': {
+                            'test/rollback_sequence_a': {
+                                'version': '*',
+                            }
+                        }
+                    }
+                }
+            }, [
+                'test/rollback_sequence_a (2.0.0)',
+                'test/rollback_sequence_b (1.0.0)',
+                'test/rollback_sequence_c (2.0.0)',
+            ]),
+    ],
+    indirect=True)
+def test_version_solver(project, result):
+    project_path = os.path.join(os.path.dirname(__file__), 'version_solver_projects', project)
+    res = build_project(project_path, fullclean=True)
+    for line in result:
+        assert line in res

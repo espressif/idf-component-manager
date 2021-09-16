@@ -1,0 +1,6 @@
+## IDF Component Manager Manifest File
+version: 2.0.0
+dependencies:
+  idf:
+    version: ">=4.1.0"
+  test/diamond_dependency_c: "^1.0.0"
