@@ -60,5 +60,5 @@ class VersionSolver(object):
                       for req in version.dependencies} if version.dependencies else {})
 
             if version.dependencies:
-                for requirement in version.dependencies:
-                    self.solve_component(requirement)
+                for dep in version.dependencies:
+                    self.solve_component(dep)
