@@ -1,0 +1,7 @@
+## IDF Component Manager Manifest File
+version: 2.0.0
+dependencies:
+  idf:
+    version: ">=4.1.0"
+  test/rollback_sequence_b: "*"
+  test/rollback_sequence_c: "^2.0.0"

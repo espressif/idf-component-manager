@@ -16,12 +16,13 @@ __pycache__
 Pipfile.lock
 
 # Manifest and components
-/dependencies.lock
 /idf_component*.yaml
-/managed_components
 /components
-build
-dist
+managed_components/
+build/
+dist/
+sdkconfig
+dependencies.lock
 
 #Configs
 .env
