@@ -257,7 +257,9 @@ class ComponentManager(object):
                         time.sleep(CHECK_INTERVAL)
 
             except TimeoutError:
-                raise FatalError("Component wasn't processed in seconds. It'")
+                raise FatalError(
+                    "Component wasn't processed in {} seconds. Check processing status later.".format(
+                        PROCESSING_TIMEOUT))
 
         except APIClientError as e:
             raise FatalError(e)
