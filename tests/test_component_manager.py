@@ -18,6 +18,13 @@ PRE_RELEASE_COMPONENT_PATH = os.path.join(
     'pre',
 )
 
+RELEASE_COMPONENT_PATH = os.path.join(
+    os.path.dirname(os.path.realpath(__file__)),
+    'fixtures',
+    'components',
+    'cmp',
+)
+
 
 def test_init_project():
     tempdir = tempfile.mkdtemp()
@@ -68,6 +75,19 @@ def test_check_only_upload_component(monkeypatch):
         'name': 'cmp',
         'namespace': 'espressif',
         'check_only': True,
+    })
+
+
+@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_allow_existing_component.yaml')
+def test_allow_existing_component(monkeypatch):
+    monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
+    monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
+    manager = ComponentManager(path=RELEASE_COMPONENT_PATH)
+
+    manager.upload_component({
+        'name': 'cmp',
+        'namespace': 'espressif',
+        'allow_existing': True,
     })
 
 

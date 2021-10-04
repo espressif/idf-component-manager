@@ -33,6 +33,8 @@ def main():
     parser.add_argument('--skip-pre-release', help='Do not upload pre-release versions.', action='store_true')
     parser.add_argument(
         '--check-only', help='Check if given component version is already uploaded and exit.', action='store_true')
+    parser.add_argument(
+        '--allow-existing', help='Return success if existing version is already uploaded.', action='store_true')
 
     args = parser.parse_args()
 

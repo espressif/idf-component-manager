@@ -91,6 +91,12 @@ def action_extensions(base_actions, project_path):
                         'is_flag': True,
                         'default': False,
                     },
+                    {
+                        'names': ['--allow-existing'],
+                        'help': 'Return success if existing version is already uploaded.',
+                        'is_flag': True,
+                        'default': False,
+                    },
                 ],
             },
             'delete-version': {
