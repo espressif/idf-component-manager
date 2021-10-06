@@ -220,6 +220,9 @@ class ComponentManager(object):
             # Checking if current version already uploaded
             versions = client.versions(component_name, spec='*').versions
             if manifest.version in versions:
+                if args.get('allow_existing'):
+                    return
+
                 raise NothingToDoError(
                     'Version {} of the component "{}" is already on the service'.format(
                         manifest.version, component_name))
@@ -257,7 +260,9 @@ class ComponentManager(object):
                         time.sleep(CHECK_INTERVAL)
 
             except TimeoutError:
-                raise FatalError("Component wasn't processed in seconds. It'")
+                raise FatalError(
+                    "Component wasn't processed in {} seconds. Check processing status later.".format(
+                        PROCESSING_TIMEOUT))
 
         except APIClientError as e:
             raise FatalError(e)
