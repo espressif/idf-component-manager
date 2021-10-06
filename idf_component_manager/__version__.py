@@ -1,3 +1,3 @@
 """Component Manager Version"""
 
-__version__ = '0.3.0-beta'
+__version__ = '0.3.1-beta'
