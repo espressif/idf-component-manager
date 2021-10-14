@@ -1,13 +1,14 @@
 import os
 import re
 import subprocess  # nosec
+from functools import wraps
 
 from semantic_version import Version
 
 from .errors import GitError
 
 try:
-    from typing import List, Union
+    from typing import Any, Callable, List, Union
 except ImportError:
     pass
 
@@ -19,12 +20,28 @@ class GitCommandError(Exception):
 
 class GitClient(object):
     """ Set of tools for working with git repos """
-    def __init__(self, git_command='git'):  # type: (str) -> None
+    def __init__(self, git_command='git', min_supported='2.0.0'):  # type: (str, Union[str, Version]) -> None
         self.git_command = git_command or 'git'
+        self.git_min_supported = min_supported if isinstance(min_supported, Version) else Version(min_supported)
 
+        self._git_checked = False
+
+    def _git_cmd(func):  # type: (Union[GitClient, Callable[..., Any]]) -> Callable
+        @wraps(func)  # type: ignore
+        def wrapper(self, *args, **kwargs):
+            if not self._git_checked:
+                self.check_version()
+                self._git_checked = True
+
+            return func(self, *args, **kwargs)
+
+        return wrapper
+
+    @_git_cmd
     def commit_id(self, path):  # type: (str) -> str
         return self.run(['show', '--format="%H"', '--no-patch'], cwd=path)
 
+    @_git_cmd
     def is_dirty(self, path):  # type: (str) -> bool
         try:
             self.run(['diff', '--quiet'], cwd=path)
@@ -32,12 +49,14 @@ class GitClient(object):
         except GitCommandError:
             return True
 
+    @_git_cmd
     def is_git_dir(self, path):  # type: (str) -> bool
         try:
             return self.run(['rev-parse', '--is-inside-work-tree'], cwd=path).strip() == 'true'
         except GitCommandError:
             return False
 
+    @_git_cmd
     def prepare_ref(self, repo, path, ref=None, with_submodules=True):
         """
         Checkout required branch to desired path. Clones a repo, if necessary
@@ -99,24 +118,26 @@ class GitClient(object):
             raise GitCommandError(
                 "'git %s' failed with exit code %d \n%s" % (' '.join(args), e.returncode, e.output.decode('utf-8')))
 
-    def check_version(self, min_supported='2.0.0'):  # type: (Union[str,Version]) -> bool
-        try:
-            version = self.version()
-            min_supported = min_supported if isinstance(min_supported, Version) else Version(min_supported)
+    def check_version(self):  # type: () -> None
+        version = self.version()
 
-            if version < min_supported:
-                raise GitError('Your git version %s is older than minimally required %s.' % (
+        if version < self.git_min_supported:
+            raise GitError(
+                'Your git version %s is older than minimally required %s.' % (
                     version,
-                    min_supported,
+                    self.git_min_supported,
                 ))
 
-        except GitCommandError:
+    def version(self):  # type: () -> Version
+        try:
+            git_version_str = subprocess.check_output(  # nosec
+                [self.git_command, '--version'],
+                stderr=subprocess.STDOUT
+            ).decode('utf-8')
+        except OSError:
             raise GitError("git command wasn't found")
 
-        return True
-
-    def version(self):  # type: () -> Version
-        ver_match = re.match(r'^git version (\d+\.\d+\.\d+)', self.run(['--version']))
+        ver_match = re.match(r'^git version (\d+\.\d+\.\d+)', git_version_str)
 
         try:
             if ver_match:

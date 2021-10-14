@@ -32,8 +32,6 @@ class GitSource(BaseSource):
         self.component_path = source_details.get('path', '')
 
         self._client = GitClient()
-        # Check for git client immediately
-        self._client.check_version()
 
     def _checkout_git_source(self, version):  # type: (Union[str, ComponentVersion, None]) -> str
         if version is not None:
