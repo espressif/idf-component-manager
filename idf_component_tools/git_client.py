@@ -8,7 +8,7 @@ from semantic_version import Version
 from .errors import GitError
 
 try:
-    from typing import Any, Callable, List, Union
+    from typing import Any, Callable, List, Optional, Union
 except ImportError:
     pass
 
@@ -146,3 +146,18 @@ class GitClient(object):
                 raise GitCommandError()
         except (IndexError, ValueError, GitCommandError):
             raise GitError('Cannot recognize git version')
+
+    @_git_cmd
+    def get_tag_version(self):  # type: () -> Optional[Version]
+        try:
+            tag_str = self.run(['describe', '--exact-match'])
+            if tag_str.startswith('v'):
+                tag_str = tag_str[1:]
+        except GitCommandError:
+            return None
+
+        try:
+            semantic_version = Version(tag_str)
+            return semantic_version
+        except ValueError:
+            return None
