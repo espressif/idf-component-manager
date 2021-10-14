@@ -1,6 +1,5 @@
 """Set of tools to work with archives"""
 
-import os
 import re
 import tarfile
 from pathlib import Path
@@ -10,7 +9,7 @@ from .errors import FatalError
 from .file_tools import prepare_empty_directory
 
 try:
-    from typing import Set, Text, Union
+    from typing import Text, Union
 except ImportError:
     pass
 
@@ -101,15 +100,10 @@ def unpack_archive(file, destination_directory):
     handler(file, destination_directory)
 
 
-def pack_archive(source_dir, source_paths, destination_dir, filename):
-    # type: (Union[Text, Path], Set[Path], Union[Text, Path], Text) -> None
+def pack_archive(source_dir, archive_filepath):  # type: (Union[Text, Path], Text) -> None
     """Create tar+gzip archive"""
-    archive_path = os.path.join(destination_dir, filename)
-    prepare_empty_directory(Path(destination_dir).as_posix())
     try:
-        with tarfile.open(archive_path, 'w:gz') as archive:
-            for path in source_paths:
-                archive.add(str(path), arcname=str(path.relative_to(source_dir)), recursive=False)
-
+        with tarfile.open(archive_filepath, 'w:gz') as archive:
+            archive.add(source_dir, arcname='')
     except tarfile.TarError:
-        raise ArchiveError('%s is not a valid tar archive' % archive_path)
+        raise ArchiveError('%s is not a valid tar archive' % archive_filepath)

@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from io import open
 from pathlib import Path
 
+import yaml
 from semantic_version import SimpleSpec
 from tqdm import tqdm
 
@@ -17,11 +18,12 @@ from idf_component_tools.api_client import APIClientError
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.errors import FatalError, ManifestError, NothingToDoError
-from idf_component_tools.file_tools import create_directory, filtered_paths
+from idf_component_tools.file_tools import copy_filtered_directory, create_directory
 from idf_component_tools.manifest import MANIFEST_FILENAME, WEB_DEPENDENCY_REGEX, ManifestManager, ProjectRequirements
 from idf_component_tools.sources import WebServiceSource
 
 from .cmake_component_requirements import ITERABLE_PROPS, CMakeRequirementsManager, ComponentName
+from .core_utils import archive_filename, dist_name
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
 from .service_details import service_details
@@ -152,20 +154,19 @@ class ComponentManager(object):
         print('Successfully added dependency "{}" for component "{}"'.format(name, manifest_manager.name))
 
     def pack_component(self, args):
-        manifest = ManifestManager(self.path, args['name'], check_required_fields=True).load()
+        manifest_manager = ManifestManager(self.path, args['name'], check_required_fields=True)
+        manifest = manifest_manager.load()
 
-        include = set(manifest.files['include'])
-        exclude = set(manifest.files['exclude'])
+        dist_temp_dir = os.path.join(self.dist_path, dist_name(manifest))
+        copy_filtered_directory(
+            self.path, dist_temp_dir, include=set(manifest.files['include']), exclude=set(manifest.files['exclude']))
 
-        archive_file = _archive_name(manifest)
-        print('Saving archive to %s' % os.path.join(self.dist_path, archive_file))
+        with open(os.path.join(dist_temp_dir, MANIFEST_FILENAME), 'w', encoding='utf-8') as fw:
+            yaml.dump(manifest_manager.manifest_tree, fw)
 
-        pack_archive(
-            source_paths=filtered_paths(self.path, include=include, exclude=exclude),
-            source_dir=self.path,
-            destination_dir=self.dist_path,
-            filename=archive_file,
-        )
+        archive_filepath = os.path.join(self.dist_path, archive_filename(manifest))
+        print('Saving archive to %s' % archive_filepath)
+        pack_archive(dist_temp_dir, archive_filepath)
 
     def delete_version(self, args):
         client, namespace = service_details(args.get('namespace'), args.get('service_profile'))
@@ -205,7 +206,7 @@ class ComponentManager(object):
 
         else:
             manifest = ManifestManager(self.path, args['name'], check_required_fields=True).load()
-            archive_file = os.path.join(self.dist_path, _archive_name(manifest))
+            archive_file = os.path.join(self.dist_path, archive_filename(manifest))
             if not os.path.isfile(archive_file):
                 self.pack_component(args)
 
@@ -394,7 +395,3 @@ class ComponentManager(object):
                 requirements[name][prop] = items
 
         requirements_manager.dump(requirements)
-
-
-def _archive_name(manifest):  # type (Manifest) -> str
-    return '%s_%s.tgz' % (manifest.name, manifest.version)

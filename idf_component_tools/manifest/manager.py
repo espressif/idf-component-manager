@@ -9,7 +9,7 @@ from .manifest import Manifest
 from .validator import ManifestValidator
 
 try:
-    from typing import Any, Dict, List
+    from typing import Any, Dict, List, Optional
 except ImportError:
     pass
 
@@ -22,7 +22,7 @@ class ManifestManager(object):
         # Path of manifest file
         self._path = path
         self.name = name
-        self._manifest_tree = None
+        self._manifest_tree = None  # type: Optional[Dict]
         self._manifest = None
         self._is_valid = None
         self._validation_errors = []  # type: List[str]

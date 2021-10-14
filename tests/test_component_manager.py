@@ -1,14 +1,18 @@
 '''Test Core commands'''
 import os
 import shutil
+import tarfile
 import tempfile
+from distutils.dir_util import copy_tree
 from io import open
 
 import pytest
 import vcr
+import yaml
 
 from idf_component_manager.core import ComponentManager
 from idf_component_tools.errors import NothingToDoError
+from idf_component_tools.git_client import GitClient
 from idf_component_tools.manifest import MANIFEST_FILENAME, ManifestManager
 
 PRE_RELEASE_COMPONENT_PATH = os.path.join(
@@ -105,3 +109,28 @@ def test_upload_component_skip_pre(monkeypatch):
         })
 
     assert str(e.value).startswith('Skipping pre-release')
+
+
+def test_pack_component(monkeypatch, tmp_path):
+    copy_tree(PRE_RELEASE_COMPONENT_PATH, str(tmp_path))
+    component_manager = ComponentManager(path=str(tmp_path))
+
+    # remove the first version line
+    with open(os.path.join(str(tmp_path), MANIFEST_FILENAME)) as fr:
+        lines = fr.readlines()
+    with open(os.path.join(str(tmp_path), MANIFEST_FILENAME), 'w') as fw:
+        fw.writelines(lines[1:])
+
+    def mock_git_tag(self):
+        return '3.0.0'
+
+    monkeypatch.setattr(GitClient, 'get_tag_version', mock_git_tag)
+
+    component_manager.pack_component({
+        'name': 'pre',
+        'namespace': 'test',
+    })
+
+    with tarfile.open(os.path.join(component_manager.dist_path, 'pre_3.0.0.tgz')) as tz:
+        manifest_file = tz.extractfile(tz.getmember(MANIFEST_FILENAME))
+        assert yaml.safe_load(manifest_file.read())['version'] == '3.0.0'

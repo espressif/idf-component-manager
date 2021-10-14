@@ -4,6 +4,8 @@ from schema import And, Optional, Or, Regex, Schema, SchemaError, Use
 from semantic_version import Version
 from six import string_types
 
+from ..errors import GitError
+from ..git_client import GitClient
 from .constants import FULL_SLUG_REGEX
 from .manifest import ComponentSpec
 
@@ -145,13 +147,24 @@ class ManifestValidator(object):
                     component)
                 continue
 
-    def validate_required_keys(self):  # type: () -> None
+    def validate_normalize_required_keys(self):  # type: () -> None
         '''Check for required keys in the manifest, if necessary'''
         if not self.check_required_fields:
             return
 
         if 'version' not in self.manifest_tree:
-            self.add_error('Version is required for this manifest')
+            try:
+                git_tag_version = GitClient().get_tag_version()
+            except GitError as e:
+                self.add_error(str(e))
+                return
+
+            if git_tag_version is None:
+                self.add_error(
+                    'Version is required for this manifest, '
+                    'or could be specified by git tag like "v1.2.3" or "1.2.3"')
+            else:
+                self.manifest_tree['version'] = str(git_tag_version)
 
     def validate_targets(self):  # type: () -> None
         targets = self.manifest_tree.get('targets', [])
@@ -191,6 +204,6 @@ class ManifestValidator(object):
         self.validate_root_keys()
         self.validate_normalize_dependencies()
         self.validate_targets()
-        self.validate_required_keys()
+        self.validate_normalize_required_keys()
         self.validate_files()
         return self._errors

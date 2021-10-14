@@ -1,5 +1,6 @@
 """Set of tools and constants to work with files and directories """
 import os
+import shutil
 from pathlib import Path
 from shutil import copytree, rmtree
 
@@ -101,3 +102,17 @@ def copy_directory(source_directory, destination_directory):  # type: (str, str)
     if os.path.exists(destination_directory):
         rmtree(destination_directory)
     copytree(source_directory, destination_directory)
+
+
+def copy_filtered_directory(source_directory, destination_directory, include=None, exclude=None):
+    # type: (str, str, Optional[Iterable[str]], Optional[Iterable[str]]) -> None
+    paths = filtered_paths(source_directory, include=include, exclude=exclude)
+    prepare_empty_directory(destination_directory)
+
+    for path in paths:
+        path = str(path)  # type: ignore # Path backward compatibility
+        dest_path = os.path.join(destination_directory, os.path.basename(path))
+        if os.path.isfile(path):
+            shutil.copy2(path, dest_path)
+        else:
+            os.makedirs(dest_path)
