@@ -30,6 +30,8 @@ KNOWN_TARGETS = [
     'esp32s2',
     'esp32s3',
     'esp32c3',
+    'esp32h2',
+    'linux',
 ]
 
 KNOWN_FILES_KEYS = [
