@@ -109,9 +109,10 @@ def copy_filtered_directory(source_directory, destination_directory, include=Non
     paths = filtered_paths(source_directory, include=include, exclude=exclude)
     prepare_empty_directory(destination_directory)
 
-    for path in paths:
+    for path in sorted(paths):
         path = str(path)  # type: ignore # Path backward compatibility
-        dest_path = os.path.join(destination_directory, os.path.basename(path))
+        rel_path = os.path.relpath(path, source_directory)
+        dest_path = os.path.join(destination_directory, rel_path)
         if os.path.isfile(path):
             shutil.copy2(path, dest_path)
         else:

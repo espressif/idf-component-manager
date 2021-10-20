@@ -9,4 +9,4 @@ files:
   exclude:
     - "*.py"
     - "**/*.list"
-    - "exclude"
+    - "exclude/**/*"

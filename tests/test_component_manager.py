@@ -1,16 +1,15 @@
 '''Test Core commands'''
 import os
 import shutil
-import tarfile
 import tempfile
 from distutils.dir_util import copy_tree
 from io import open
 
 import pytest
 import vcr
-import yaml
 
 from idf_component_manager.core import ComponentManager
+from idf_component_tools.archive_tools import unpack_archive
 from idf_component_tools.errors import NothingToDoError
 from idf_component_tools.git_client import GitClient
 from idf_component_tools.manifest import MANIFEST_FILENAME, ManifestManager
@@ -28,6 +27,14 @@ RELEASE_COMPONENT_PATH = os.path.join(
     'components',
     'cmp',
 )
+
+
+def list_dir(folder):
+    res = []
+    for root, _, files in os.walk(folder):
+        for file in files:
+            res.append(os.path.join(root, file))
+    return res
 
 
 def test_init_project():
@@ -131,6 +138,14 @@ def test_pack_component(monkeypatch, tmp_path):
         'namespace': 'test',
     })
 
-    with tarfile.open(os.path.join(component_manager.dist_path, 'pre_3.0.0.tgz')) as tz:
-        manifest_file = tz.extractfile(tz.getmember(MANIFEST_FILENAME))
-        assert yaml.safe_load(manifest_file.read())['version'] == '3.0.0'
+    tempdir = os.path.join(tempfile.tempdir, 'cmp_pre')
+    unpack_archive(os.path.join(component_manager.dist_path, 'pre_3.0.0.tgz'), tempdir)
+    manifest = ManifestManager(tempdir, 'pre', check_required_fields=True).load()
+    assert manifest.version == '3.0.0'
+    assert set(list_dir(tempdir)) == set(
+        os.path.join(tempdir, file) for file in [
+            'idf_component.yml',
+            'cmp.c',
+            'CMakeLists.txt',
+            os.path.join('include', 'cmp.h'),
+        ])
