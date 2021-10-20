@@ -13,7 +13,7 @@ import idf_component_tools as tools
 from ..build_system_tools import get_env_idf_target
 from ..errors import LockError
 from ..manifest import SolvedManifest
-from ..manifest.validator import KNOWN_TARGETS
+from ..manifest.validator import known_targets
 
 FORMAT_VERSION = '1.0.0'
 
@@ -35,7 +35,7 @@ LOCK_SCHEMA = Schema(
         },
         'manifest_hash': HASH_SCHEMA,
         'version': And(Or(*string_types), len),
-        Optional('target'): And(Use(str.lower), lambda s: s in KNOWN_TARGETS),
+        Optional('target'): And(Use(str.lower), lambda s: s in known_targets()),
     })
 
 
