@@ -12,6 +12,7 @@ SHORT_DESCRIPTION = 'The component manager for ESP-IDF'
 LICENSE = 'Apache License 2.0'
 URL = 'https://github.com/espressif/idf-component-manager'
 REQUIRES = [
+    'cffi<1.15;python_version<"3.6"',
     'future',
     'pathlib;python_version<"3.4"',
     'pyyaml',
