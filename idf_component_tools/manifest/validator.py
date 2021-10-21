@@ -1,3 +1,4 @@
+import os
 import re
 
 from schema import And, Optional, Or, Regex, Schema, SchemaError, Use
@@ -25,12 +26,7 @@ KNOWN_ROOT_KEYS = [
     'url',
 ]
 
-KNOWN_TARGETS = [
-    'esp32',
-    'esp32s2',
-    'esp32s3',
-    'esp32c3',
-]
+DEFAULT_KNOWN_TARGETS = 'esp32,esp32s2,esp32s3,esp32c3,esp32h2,linux'
 
 KNOWN_FILES_KEYS = [
     'include',
@@ -39,6 +35,10 @@ KNOWN_FILES_KEYS = [
 
 NONEMPTY_STRING = And(Or(*string_types), len, error='Non-empty string is required here')
 SLUG_REGEX_COMPILED = re.compile(FULL_SLUG_REGEX)
+
+
+def known_targets():  # type () -> list[str]
+    return os.getenv('IDF_COMPONENT_MANAGER_KNOWN_TARGETS', DEFAULT_KNOWN_TARGETS).split(',')
 
 
 def known_component_keys():
@@ -65,7 +65,7 @@ def manifest_schema():  # type () -> Schema
         {
             Optional('name'): Or(*string_types),
             Optional('version'): Use(Version.parse, error='Component version should be valid semantic version'),
-            Optional('targets'): KNOWN_TARGETS,
+            Optional('targets'): known_targets(),
             Optional('maintainers'): [NONEMPTY_STRING],
             Optional('description'): NONEMPTY_STRING,
             Optional('url'): NONEMPTY_STRING,
@@ -178,7 +178,7 @@ class ManifestValidator(object):
 
         unknown_targets = []
         for target in targets:
-            if target not in KNOWN_TARGETS:
+            if target not in known_targets():
                 unknown_targets.append(target)
 
         if unknown_targets:
