@@ -178,7 +178,7 @@ class TestManifestValidator(object):
         assert errors[1].startswith('Unknown targets: esp123, asdf')
 
     def test_slug_re(self):
-        valid_names = ('asdf-fadsf', '123', 'asdf_erw')
+        valid_names = ('asdf-fadsf', '123', 'asdf_erw', 'as_df_erw', 'test-stse-sdf_sfd')
         invalid_names = ('!', 'asdf$f', 'daf411~', 'adf\nadsf', '_', '-', '_good', 'asdf-_-fdsa-')
 
         for name in valid_names:

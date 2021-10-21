@@ -69,7 +69,7 @@ class ComponentManager(object):
         # Dist directory
         self.dist_path = os.path.join(self.path, 'dist')
 
-    def _create_manifest(self, component='main'):  # type: (str) -> Tuple[str, bool]
+    def _get_manifest(self, component='main'):  # type: (str) -> Tuple[str, bool]
         base_dir = self.path if component == 'main' else self.components_path
         manifest_dir = os.path.join(base_dir, component)
 
@@ -91,19 +91,19 @@ class ComponentManager(object):
         return manifest_filepath, created
 
     def create_manifest(self, args):
-        manifest_filepath, created = self._create_manifest(args.get('component', 'main'))
+        manifest_filepath, created = self._get_manifest(args.get('component', 'main'))
         if not created:
             print('"{}" already exists, skipping...'.format(manifest_filepath))
 
     def add_dependency(self, args):
         dependency = args.get('dependency')
-        manifest_filepath, _ = self._create_manifest(args.get('component', 'main'))
+        manifest_filepath, _ = self._get_manifest(args.get('component', 'main'))
 
         match = re.match(WEB_DEPENDENCY_REGEX, dependency)
         if match:
             name, spec = match.groups()
         else:
-            raise FatalError('Invalid dependency name: {}. Please use format "namespace/name".'.format(dependency))
+            raise FatalError('Invalid dependency: "{}". Please use format "namespace/name".'.format(dependency))
 
         if not spec:
             spec = '*'
@@ -151,7 +151,7 @@ class ComponentManager(object):
                 'Please check the manifest:\n{}'.format(manifest_filepath))
 
         shutil.move(temp_manifest_file.name, manifest_filepath)
-        print('Successfully added dependency "{}" for component "{}"'.format(name, manifest_manager.name))
+        print('Successfully added dependency "{}{}" for component "{}"'.format(name, spec, manifest_manager.name))
 
     def pack_component(self, args):
         manifest_manager = ManifestManager(self.path, args['name'], check_required_fields=True)
