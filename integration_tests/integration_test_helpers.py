@@ -5,14 +5,9 @@ from jinja2 import Environment, Template
 
 from idf_component_manager.core import ComponentManager
 
-try:
-    from typing import Any  # noqa
-except ImportError:
-    pass
-
 
 def generate_from_template(file_path, template, **kwargs):
-    # type: (str, Template, Any[str]) -> None
+    # type: (str, Template, str | list[str]) -> None
     """
     Generates file according to the template with given arguments
     """

@@ -98,13 +98,6 @@ integration_test:py2.7:
     matrix:
       - IDF_BRANCH: [release/v4.1, release/v4.2, release/v4.3]
 
-integration_test:py3.5:
-  extends: .integration_test_template
-  image: python:3.5-slim-buster
-  parallel:
-    matrix:
-      - IDF_BRANCH: [release/v4.1, release/v4.2, release/v4.3]
-
 integration_test:py3.6_idf_master:
   extends: .integration_test_template
   image: python:3.6-slim-buster
