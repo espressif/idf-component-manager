@@ -40,8 +40,10 @@ class LocalSource(BaseSource):
         """For local return version from manifest, or * if manifest not found"""
         manifest_path = os.path.join(self._path, MANIFEST_FILENAME)
         name = os.path.basename(self._path)
+
         version_str = '*'
         targets = []
+        dependencies = []
 
         if os.path.isfile(manifest_path):
             manifest = ManifestManager(manifest_path, name=name).load()
@@ -54,7 +56,10 @@ class LocalSource(BaseSource):
 
                 targets = manifest.targets
 
-        return ComponentWithVersions(name=name, versions=[HashedComponentVersion(version_str, targets=targets)])
+            dependencies = manifest.dependencies
+
+        return ComponentWithVersions(
+            name=name, versions=[HashedComponentVersion(version_str, targets=targets, dependencies=dependencies)])
 
     def serialize(self):  # type: () -> Dict
         return {
