@@ -89,7 +89,6 @@ class TestComponentLocalSource(object):
         assert source.download(component, '/test/path/')[0].endswith('fixtures')
 
     def test_versions_without_manifest(self):
-
         tempdir = tempfile.mkdtemp()
 
         try:
