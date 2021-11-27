@@ -29,7 +29,7 @@ def main():
     parser.add_argument('--name', help='Component name', required=True)
     parser.add_argument('--archive', help='Path of the archive with component to upload.')
     parser.add_argument('--job', help='Background job ID.')
-    parser.add_argument('--version', help='Version for deletion.')
+    parser.add_argument('--version', help='Version for upload or deletion.')
     parser.add_argument('--skip-pre-release', help='Do not upload pre-release versions.', action='store_true')
     parser.add_argument(
         '--check-only', help='Check if given component version is already uploaded and exit.', action='store_true')

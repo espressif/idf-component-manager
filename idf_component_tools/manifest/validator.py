@@ -5,8 +5,6 @@ from schema import And, Optional, Or, Regex, Schema, SchemaError, Use
 from semantic_version import Version
 from six import string_types
 
-from ..errors import GitError
-from ..git_client import GitClient
 from .constants import FULL_SLUG_REGEX, TAGS_REGEX
 from .manifest import ComponentSpec
 
@@ -88,9 +86,12 @@ def manifest_schema():  # type () -> Schema
 
 class ManifestValidator(object):
     """Validator for manifest object, checks for structure, known fields and valid values"""
-    def __init__(self, parsed_manifest, check_required_fields=False):  # type: (dict, bool) -> None
+    def __init__(
+            self, parsed_manifest, check_required_fields=False, version=None):  # type: (dict, bool, str | None) -> None
         self.manifest_tree = parsed_manifest
+        self.version = version
         self._errors = []  # type: List[str]
+        # Check for required fields when upload to the registry
         self.check_required_fields = check_required_fields
 
     @staticmethod
@@ -156,22 +157,22 @@ class ManifestValidator(object):
 
     def validate_normalize_required_keys(self):  # type: () -> None
         '''Check for required keys in the manifest, if necessary'''
+        if self.version:
+            manifest_version = self.manifest_tree.get('version')
+            if manifest_version and manifest_version != self.version:
+                self.add_error(
+                    'Manifest version ({}) does not match the version specified in the command line ({}). '
+                    'Please either remove `--version` CLI parameter or update verson in the manifest.'.format(
+                        manifest_version, self.version))
+            else:
+                self.manifest_tree['version'] = str(self.version)
+
         if not self.check_required_fields:
             return
 
-        if 'version' not in self.manifest_tree:
-            try:
-                git_tag_version = GitClient().get_tag_version()
-            except GitError as e:
-                self.add_error(str(e))
-                return
-
-            if git_tag_version is None:
-                self.add_error(
-                    'Version is required for this manifest, '
-                    'or could be specified by git tag like "v1.2.3" or "1.2.3"')
-            else:
-                self.manifest_tree['version'] = str(git_tag_version)
+        if not self.manifest_tree.get('version'):
+            self.add_error(
+                '"version" field is required in the "idf_component.yml" manifest when uploading to the registry.')
 
     def validate_targets(self):  # type: () -> None
         targets = self.manifest_tree.get('targets', [])
@@ -180,7 +181,9 @@ class ManifestValidator(object):
             targets = [targets]
 
         if not isinstance(targets, list):
-            self.add_error('Unknown format for list of supported targets')
+            self.add_error(
+                'Unknown format for list of supported targets. '
+                'It should be a list of targets, like [esp32, esp32s2]')
             return
 
         unknown_targets = []

@@ -18,10 +18,12 @@ EMPTY_MANIFEST = dict()  # type: Dict[str, Any]
 
 class ManifestManager(object):
     """Parser for manifest files in the project"""
-    def __init__(self, path, name, check_required_fields=False):  # type: (str, str, bool) -> None
+    def __init__(
+            self, path, name, check_required_fields=False, version=None):  # type: (str, str, bool, str | None) -> None
         # Path of manifest file
         self._path = path
         self.name = name
+        self.version = version
         self._manifest_tree = None  # type: Optional[Dict]
         self._manifest = None
         self._is_valid = None
@@ -35,7 +37,8 @@ class ManifestManager(object):
         return self
 
     def validate(self):
-        validator = ManifestValidator(self.manifest_tree, check_required_fields=self.check_required_fields)
+        validator = ManifestValidator(
+            self.manifest_tree, check_required_fields=self.check_required_fields, version=self.version)
         self._validation_errors = validator.validate_normalize()
         self._is_valid = not self._validation_errors
         return self
@@ -100,3 +103,7 @@ class ManifestManager(object):
             raise ManifestError('\n'.join(error_desc))
 
         return Manifest.fromdict(self.manifest_tree, name=self.name)
+
+    def dump(self, path):  # type: (str) -> None
+        with open(os.path.join(path, MANIFEST_FILENAME), 'w', encoding='utf-8') as fw:
+            yaml.dump(self.manifest_tree, fw)

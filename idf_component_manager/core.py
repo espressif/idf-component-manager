@@ -10,16 +10,17 @@ from datetime import datetime, timedelta
 from io import open
 from pathlib import Path
 
-import yaml
-from semantic_version import SimpleSpec
+from semantic_version import SimpleSpec, Version
 from tqdm import tqdm
 
 from idf_component_tools.api_client import APIClientError
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name
-from idf_component_tools.errors import FatalError, ManifestError, NothingToDoError
+from idf_component_tools.errors import FatalError, GitError, ManifestError, NothingToDoError
 from idf_component_tools.file_tools import copy_filtered_directory, create_directory
-from idf_component_tools.manifest import MANIFEST_FILENAME, WEB_DEPENDENCY_REGEX, ManifestManager, ProjectRequirements
+from idf_component_tools.git_client import GitClient
+from idf_component_tools.manifest import (
+    MANIFEST_FILENAME, WEB_DEPENDENCY_REGEX, Manifest, ManifestManager, ProjectRequirements)
 from idf_component_tools.sources import WebServiceSource
 
 from .cmake_component_requirements import ITERABLE_PROPS, CMakeRequirementsManager, ComponentName
@@ -115,7 +116,6 @@ class ComponentManager(object):
                 'Invalid dependency version requirement: {}. Please use format like ">=1" or "*".'.format(spec))
 
         name = WebServiceSource().normalized_name(name)
-
         manifest_manager = ManifestManager(manifest_filepath, args.get('component'))
         manifest = manifest_manager.load()
 
@@ -148,25 +148,35 @@ class ComponentManager(object):
             raise ManifestError(
                 'Cannot update manifest file. '
                 "It's likely due to the 4 spaces used for indentation we recommend using 2 spaces indent. "
-                'Please check the manifest:\n{}'.format(manifest_filepath))
+                'Please check the manifest file:\n{}'.format(manifest_filepath))
 
         shutil.move(temp_manifest_file.name, manifest_filepath)
         print('Successfully added dependency "{}{}" for component "{}"'.format(name, spec, manifest_manager.name))
 
-    def pack_component(self, args):
-        manifest_manager = ManifestManager(self.path, args['name'], check_required_fields=True)
-        manifest = manifest_manager.load()
+    def pack_component(self, args):  # type: (dict) -> Tuple[str, Manifest]
+        version = args.get('version')
 
+        if version == 'git':
+            try:
+                version = GitClient().get_tag_version()
+            except GitError:
+                raise FatalError('An error happend while getting version from git tag')
+        elif version:
+            try:
+                Version.parse(version)
+            except ValueError:
+                raise FatalError('Version parameter must be either "git" or a valid semantic version')
+
+        manifest_manager = ManifestManager(self.path, args['name'], check_required_fields=True, version=version)
+        manifest = manifest_manager.load()
         dist_temp_dir = os.path.join(self.dist_path, dist_name(manifest))
         copy_filtered_directory(
             self.path, dist_temp_dir, include=set(manifest.files['include']), exclude=set(manifest.files['exclude']))
-
-        with open(os.path.join(dist_temp_dir, MANIFEST_FILENAME), 'w', encoding='utf-8') as fw:
-            yaml.dump(manifest_manager.manifest_tree, fw)
-
+        manifest_manager.dump(dist_temp_dir)
         archive_filepath = os.path.join(self.dist_path, archive_filename(manifest))
-        print('Saving archive to %s' % archive_filepath)
+        print('Saving archive to "{}"'.format(archive_filepath))
         pack_archive(dist_temp_dir, archive_filepath)
+        return archive_filepath, manifest
 
     def delete_version(self, args):
         client, namespace = service_details(args.get('namespace'), args.get('service_profile'))
@@ -192,10 +202,14 @@ class ComponentManager(object):
 
     def upload_component(self, args):
         client, namespace = service_details(args.get('namespace'), args.get('service_profile'))
+        version = args.get('version')
         archive_file = args.get('archive')
         if archive_file:
             if not os.path.isfile(archive_file):
                 raise FatalError('Cannot find archive to upload: {}'.format(archive_file))
+
+            if version:
+                raise FatalError('Parameters "version" and "archive" are not supported at the same time')
 
             tempdir = tempfile.mkdtemp()
             try:
@@ -203,12 +217,8 @@ class ComponentManager(object):
                 manifest = ManifestManager(tempdir, args['name'], check_required_fields=True).load()
             finally:
                 shutil.rmtree(tempdir)
-
         else:
-            manifest = ManifestManager(self.path, args['name'], check_required_fields=True).load()
-            archive_file = os.path.join(self.dist_path, archive_filename(manifest))
-            if not os.path.isfile(archive_file):
-                self.pack_component(args)
+            archive_file, manifest = self.pack_component(args)
 
         if not manifest.version.is_semver:
             raise FatalError('Only components with semantic versions are allowed on the service')
@@ -259,7 +269,6 @@ class ComponentManager(object):
                             return
 
                         time.sleep(CHECK_INTERVAL)
-
             except TimeoutError:
                 raise FatalError(
                     "Component wasn't processed in {} seconds. Check processing status later.".format(
