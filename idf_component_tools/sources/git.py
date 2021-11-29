@@ -3,6 +3,7 @@ import shutil
 from hashlib import sha256
 
 from ..errors import FetchingError
+from ..file_tools import copy_filtered_directory
 from ..git_client import GitClient
 from ..hash_tools import hash_dir
 from ..manifest import (
@@ -72,7 +73,7 @@ class GitSource(BaseSource):
     def download(self, component, download_path):  # type: (SolvedComponent, str) -> List[str]
         # Check for required components
         if not component.component_hash:
-            raise FetchingError('Component hash is required for componets from git repositories')
+            raise FetchingError('Component hash is required for components from git repositories')
 
         if not component.version:
             raise FetchingError('Version should provided for %s' % component.name)
@@ -85,7 +86,16 @@ class GitSource(BaseSource):
 
         if os.path.isdir(download_path):
             shutil.rmtree(download_path)
-        shutil.copytree(source_path, download_path)
+
+        possible_manifest_filepath = os.path.join(source_path, MANIFEST_FILENAME)
+        include, exclude = set(), set()
+        if os.path.isfile(possible_manifest_filepath):
+            manifest = ManifestManager(possible_manifest_filepath, component.name).load()
+            include.update(manifest.files['include'])
+            exclude.update(manifest.files['exclude'])
+
+        copy_filtered_directory(source_path, download_path, include=include, exclude=exclude)
+
         return [download_path]
 
     def versions(self, name, details=None, spec='*', target=None):
