@@ -3,7 +3,7 @@ import pytest
 
 @pytest.fixture()
 def valid_manifest_hash():
-    return '3bd35cb477cc57388ff9798b978289aa971d2e1d51e4137d0fa59503c9e50c97'
+    return '4daaa65faaa56fc0db508e3777072ed8f45feb639d5584c327ce212e94861cc6'
 
 
 @pytest.fixture()
@@ -14,6 +14,11 @@ def valid_manifest():
         'maintainers': ['Test Tester <test@example.com>'],
         'description': 'Test project',
         'url': 'https://github.com/espressif/esp-idf',
+        'tags': [
+            'test_tag',
+            'Example',
+            'one_more-tag123',
+        ],
         'dependencies': {
             'idf': '~4.4.4',
             'test': {

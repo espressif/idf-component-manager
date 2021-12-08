@@ -60,7 +60,7 @@ class TestManifestPipeline(object):
         manifest_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'fixtures', 'idf_component.yml')
         parser = ManifestManager(manifest_path, name='fixtures')
 
-        assert len(parser.manifest_tree.keys()) == 6
+        assert len(parser.manifest_tree.keys()) == 7
 
     def test_prepare(self):
         manifest_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'fixtures', 'idf_component.yml')
@@ -221,3 +221,28 @@ class TestManifestValidator(object):
         errors = validator.validate_normalize()
 
         assert len(errors) == 1
+
+    def test_validate_tags_invalid_length(self, valid_manifest):
+        valid_manifest['tags'].append('sm')
+        validator = ManifestValidator(valid_manifest)
+        errors = validator.validate_normalize()
+
+        assert len(errors) == 2
+        assert errors[1].startswith('Invalid tag')
+
+    def test_validate_tags_invalid_symbols(self, valid_manifest):
+        valid_manifest['tags'].append('wrOng t@g')
+        validator = ManifestValidator(valid_manifest)
+        errors = validator.validate_normalize()
+
+        assert len(errors) == 2
+        assert errors[1].startswith('Invalid tag')
+
+    def test_validate_tags_duplicates(self, valid_manifest):
+        valid_manifest['tags'].append('dup_tag')
+        valid_manifest['tags'].append('duP_TaG')
+        validator = ManifestValidator(valid_manifest)
+        errors = validator.validate_normalize()
+
+        assert len(errors) == 1
+        assert errors[0].startswith('Some tags are more than once in the manifest')

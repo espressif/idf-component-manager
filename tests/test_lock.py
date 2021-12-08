@@ -27,7 +27,7 @@ dependencies = {
     }
 }
 
-MANIFEST_HASH = '74d50180f521118751525cfdad1314a4c072c5ab8f51ed72bf9787ae5f30f9d6'
+MANIFEST_HASH = 'a45a321f81544c74ee678544368c89a2bd0d2b2d4ddc0437bd22a428f8e0f3a7'
 valid_lock_path = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     'fixtures',

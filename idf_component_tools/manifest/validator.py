@@ -7,7 +7,7 @@ from six import string_types
 
 from ..errors import GitError
 from ..git_client import GitClient
-from .constants import FULL_SLUG_REGEX
+from .constants import FULL_SLUG_REGEX, TAGS_REGEX
 from .manifest import ComponentSpec
 
 try:
@@ -24,6 +24,7 @@ KNOWN_ROOT_KEYS = [
     'description',
     'files',
     'url',
+    'tags',
 ]
 
 DEFAULT_KNOWN_TARGETS = 'esp32,esp32s2,esp32s3,esp32c3,esp32h2,linux'
@@ -69,6 +70,12 @@ def manifest_schema():  # type () -> Schema
             Optional('maintainers'): [NONEMPTY_STRING],
             Optional('description'): NONEMPTY_STRING,
             Optional('url'): NONEMPTY_STRING,
+            Optional('tags'): [
+                Regex(
+                    TAGS_REGEX,
+                    error='Invalid tag. Tags may be between 3 and 32 symbols long and may contain '
+                    'letters, numbers, _ and -')
+            ],
             Optional('dependencies'): {
                 Optional(Regex(FULL_SLUG_REGEX, error='Invalid dependency name')): dependency_schema()
             },
@@ -199,6 +206,14 @@ class ManifestValidator(object):
             errors = list(filter(None, e.errors))
             self._errors.extend(sorted(set(errors), key=errors.index))
 
+    def validate_tags(self):
+        '''Validate tags for duplicates'''
+        tags = self.manifest_tree.get('tags', [])
+        tags = [str(tag).lower() for tag in tags]
+        dupes = set([tag for tag in tags if tags.count(tag) > 1])
+        if dupes:
+            self.add_error('Some tags are more than once in the manifest: %s' % ', '.join(dupes))
+
     def validate_normalize(self):
         self.validate_schema()
         self.validate_root_keys()
@@ -206,4 +221,5 @@ class ManifestValidator(object):
         self.validate_targets()
         self.validate_normalize_required_keys()
         self.validate_files()
+        self.validate_tags()
         return self._errors
