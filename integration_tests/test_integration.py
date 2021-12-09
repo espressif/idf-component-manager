@@ -50,11 +50,11 @@ def set_target(project_path, target):
             'components': {
                 'main': {
                     'dependencies': {
-                        'unity': {
-                            'version': '935deb4082676b42c66b1d1acb8278454bc77410',
-                            'git': 'https://github.com/espressif/esp-idf.git',
-                            'path': 'components/unity/',
-                            'include': 'unity.h'
+                        'cmp': {
+                            'version': '*',
+                            'git': 'https://github.com/espressif/example_components.git',
+                            'path': 'cmp',
+                            'include': 'cmp.h'
                         }
                     }
                 }
@@ -123,7 +123,7 @@ def test_idf_version_dependency_failed(project):
                 'main': {
                     'dependencies': {
                         'idf': {
-                            'version': '^4.1',
+                            'version': '>=4.1',
                         }
                     }
                 }
