@@ -123,7 +123,7 @@ def test_idf_version_dependency_failed(project):
                 'main': {
                     'dependencies': {
                         'idf': {
-                            'version': '^4.1',
+                            'version': '>=4.1',
                         }
                     }
                 }
