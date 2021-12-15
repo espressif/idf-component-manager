@@ -107,8 +107,11 @@ class GitSource(BaseSource):
         manifest_path = os.path.join(source_path, MANIFEST_FILENAME)
 
         targets = []
+        dependencies = []
+
         if os.path.isfile(manifest_path):
             manifest = ManifestManager(manifest_path, name=name).load()
+            dependencies = manifest.dependencies
 
             if manifest.targets:  # only check when exists
                 if target and target not in manifest.targets:
@@ -121,7 +124,10 @@ class GitSource(BaseSource):
         component_hash = hash_dir(source_path)
         return ComponentWithVersions(
             name=name,
-            versions=[HashedComponentVersion(commit_id, targets=targets, component_hash=component_hash)],
+            versions=[
+                HashedComponentVersion(
+                    commit_id, targets=targets, component_hash=component_hash, dependencies=dependencies)
+            ],
         )
 
     def serialize(self):  # type: () -> Dict
