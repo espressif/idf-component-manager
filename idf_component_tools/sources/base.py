@@ -2,6 +2,7 @@ import os
 from abc import ABCMeta, abstractmethod
 
 from schema import Optional, Or
+from semantic_version import SimpleSpec
 from six import string_types
 
 import idf_component_tools as tools
@@ -147,6 +148,18 @@ class BaseSource(object):
                 return validate_dir(path, component.component_hash)
 
         return True
+
+    def validate_version_spec(self, spec):  # type: (str) -> bool
+        if not spec or spec == '*':
+            return True
+
+        try:
+            return bool(SimpleSpec(spec))
+        except ValueError:
+            return False
+
+    def normalize_spec(self, spec):  # type: (str) -> str
+        return spec or '*'
 
     @abstractmethod
     def versions(

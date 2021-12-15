@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 from hashlib import sha256
 
@@ -22,6 +23,8 @@ try:
         from ..manifest import SolvedComponent
 except ImportError:
     pass
+
+BRANCH_TAG_RE = re.compile(r'^(?!.*/\.)(?!.*\.\.)(?!/)(?!.*//)(?!.*@\{)(?!.*\\)[^\177\s~^:?*\[]+[^.]$')
 
 
 class GitSource(BaseSource):
@@ -134,3 +137,15 @@ class GitSource(BaseSource):
             source['path'] = self.component_path
 
         return source
+
+    def validate_version_spec(self, spec):  # type: (str) -> bool
+        if not spec:
+            return True
+
+        return bool(BRANCH_TAG_RE.match(spec))
+
+    def normalize_spec(self, spec):  # type: (str) -> str
+        if not spec:
+            return '*'
+
+        return self._checkout_git_source(spec)

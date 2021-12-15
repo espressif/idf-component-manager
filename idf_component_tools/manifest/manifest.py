@@ -3,12 +3,13 @@ import re
 from functools import total_ordering
 
 import semantic_version as semver
-from semantic_version import SimpleSpec as Spec
 
 import idf_component_tools as tools
 from idf_component_tools.build_system_tools import get_env_idf_target
 from idf_component_tools.hash_tools import hash_object
 from idf_component_tools.serialization import serializable
+
+from .constants import COMMIT_ID_RE
 
 try:
     from collections.abc import Mapping
@@ -22,8 +23,6 @@ try:
         from ..sources import BaseSource
 except ImportError:
     pass
-
-COMMIT_ID_RE = re.compile(r'[0-9a-f]{40}')
 
 
 @serializable
@@ -179,7 +178,7 @@ class ComponentVersion(object):
         self._semver = None
 
         # Setting flags:
-        self.is_commit_id = bool(COMMIT_ID_RE.match(self._version_string))
+        self.is_commit_id = bool(re.match(COMMIT_ID_RE, self._version_string))
         self.is_any = self._version_string == '*'
         self.is_semver = False
 
@@ -218,34 +217,6 @@ class ComponentVersion(object):
             return self._semver
         else:
             raise TypeError('Version is not semantic')
-
-
-class ComponentSpec(object):
-    def __init__(self, spec_string):  # type: (str) -> None
-        """
-        spec_string - git commit hash (hex, 160 bit) or valid semantic version spec
-        """
-        self.is_commit_id = bool(COMMIT_ID_RE.match(spec_string))
-        self.is_semspec = False
-
-        if not self.is_commit_id:
-            self._semver = Spec(spec_string)
-            self.is_semspec = True
-
-        self._spec_string = spec_string.strip().lower()
-
-    def match(self, version):  # type: (ComponentVersion) -> bool
-        """Check whether a Version satisfies the Spec."""
-        if version.is_any:
-            return True
-
-        if self.is_commit_id:
-            return self._spec_string == str(version)
-        else:
-            return self._semver.match(version)
-
-    def __str__(self):
-        return self._spec_string
 
 
 class HashedComponentVersion(ComponentVersion):
