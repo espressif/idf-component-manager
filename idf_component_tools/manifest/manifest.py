@@ -36,6 +36,7 @@ class Manifest(object):
         'name',
         'targets',
         'url',
+        'tags',
         'version',
     ]
 
@@ -52,6 +53,7 @@ class Manifest(object):
             include_files=None,  # type: Optional[List[str]]
             exclude_files=None,  # type: Optional[List[str]]
             version=None,  # type: Union[ComponentVersion, None] # Version
+            tags=None,  # type: Optional[List[str]] # List of tags
     ):
         # type: (...) -> None
 
@@ -61,6 +63,9 @@ class Manifest(object):
         self.description = description
         self.download_url = download_url
         self.url = url
+        if tags is None:
+            tags = []
+        self.tags = tags
 
         if dependencies is None:
             dependencies = []
@@ -88,6 +93,7 @@ class Manifest(object):
             name=name,
             maintainers=manifest_tree.get('maintainers'),
             url=manifest_tree.get('url'),
+            tags=manifest_tree.get('tags', []),
             description=manifest_tree.get('description'),
             targets=manifest_tree.get('targets', []),
             include_files=manifest_tree.get('files', {}).get('include'),

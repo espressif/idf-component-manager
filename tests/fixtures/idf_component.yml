@@ -5,6 +5,9 @@ description: Test manifest
 url: https://github.com/espressif/esp-idf
 maintainers:
   - Test Tester <test@example.com>
+tags:
+  - "Example"
+  - "test"
 dependencies:
   idf: "~4.4.4"
   test:
