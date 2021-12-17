@@ -74,20 +74,20 @@ def set_target(project_path, target):
             'components': {
                 'main': {
                     'dependencies': {
-                        'new_component': {
-                            'include': 'new_component.h',
+                        'new+compo.nent': {
+                            'include': 'new+compo.nent.h',
                         },
                         'button': {
                             'version': '^1.0.0',
                             'include': 'button.h'
-                        }
+                        },
                     }
                 },
-                'new_component': {
+                'new+compo.nent': {
                     'cmake_lists': {
                         'priv_requires': 'button',
                     },
-                }
+                },
             },
         }
     ],
