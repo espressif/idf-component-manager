@@ -41,3 +41,9 @@ def test_validator_broken_deps():
 
 def test_validator_valid_manifest(valid_manifest):
     assert not ManifestValidator(valid_manifest).validate_normalize()
+
+
+def test_validator_passed_version(valid_manifest):
+    errors = ManifestValidator(valid_manifest, version='5.0.0').validate_normalize()
+    assert len(errors) == 1
+    assert 'Manifest version (2.3.1) does not match the version specified in the command line (5.0.0).' in errors[0]

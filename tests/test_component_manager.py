@@ -118,15 +118,16 @@ def test_upload_component_skip_pre(monkeypatch):
     assert str(e.value).startswith('Skipping pre-release')
 
 
-def test_pack_component(monkeypatch, tmp_path):
+def test_pack_component_version_from_git(monkeypatch, tmp_path):
     copy_tree(PRE_RELEASE_COMPONENT_PATH, str(tmp_path))
     component_manager = ComponentManager(path=str(tmp_path))
 
     # remove the first version line
-    with open(os.path.join(str(tmp_path), MANIFEST_FILENAME)) as fr:
-        lines = fr.readlines()
-    with open(os.path.join(str(tmp_path), MANIFEST_FILENAME), 'w') as fw:
-        fw.writelines(lines[1:])
+    with open(os.path.join(str(tmp_path), MANIFEST_FILENAME), 'r+') as f:
+        lines = f.readlines()
+        f.seek(0)
+        f.writelines(lines[1:])
+        f.truncate()
 
     def mock_git_tag(self):
         return '3.0.0'
@@ -135,7 +136,7 @@ def test_pack_component(monkeypatch, tmp_path):
 
     component_manager.pack_component({
         'name': 'pre',
-        'namespace': 'test',
+        'version': 'git',
     })
 
     tempdir = os.path.join(tempfile.tempdir, 'cmp_pre')
@@ -149,3 +150,25 @@ def test_pack_component(monkeypatch, tmp_path):
             'CMakeLists.txt',
             os.path.join('include', 'cmp.h'),
         ])
+
+
+def test_pack_component_with_version(tmp_path):
+    copy_tree(RELEASE_COMPONENT_PATH, str(tmp_path))
+    component_manager = ComponentManager(path=str(tmp_path))
+
+    # remove the first version line
+    with open(os.path.join(str(tmp_path), MANIFEST_FILENAME), 'r+') as f:
+        lines = f.readlines()
+        f.seek(0)
+        f.writelines(lines[1:])
+        f.truncate()
+
+    component_manager.pack_component({
+        'name': 'cmp',
+        'version': '2.3.4',
+    })
+
+    tempdir = os.path.join(tempfile.tempdir, 'cmp')
+    unpack_archive(os.path.join(component_manager.dist_path, 'cmp_2.3.4.tgz'), tempdir)
+    manifest = ManifestManager(tempdir, 'cmp', check_required_fields=True).load()
+    assert manifest.version == '2.3.4'
