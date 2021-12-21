@@ -19,7 +19,7 @@ from .mixology.union import Union
 def parse_constraint(spec):  # type: (str) -> _Union[Union, Range]
     try:
         clause = SimpleSpec(spec).clause
-    except ValueError:  # not semver
+    except ValueError:  # if not semspec, expect an exact version
         constraint = parse_single_constraint(HashedComponentVersion(spec))
     else:
         if isinstance(clause, SemverRange):  # single range

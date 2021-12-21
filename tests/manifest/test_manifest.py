@@ -139,7 +139,7 @@ class TestManifestValidator(object):
         errors = validator.validate_normalize()
 
         assert len(errors) == 4
-        assert errors[3] == 'Unknown attributes for component "test-component": persion'
+        assert errors[3] == 'Unknown keys in dependency details: persion'
 
     def test_validate_component_versions_invalid_name(self, valid_manifest):
         valid_manifest['dependencies'] = {'asdf!fdsa': {'version': '^1.2.3'}}

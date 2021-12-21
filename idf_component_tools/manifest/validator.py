@@ -5,8 +5,10 @@ from schema import And, Optional, Or, Regex, Schema, SchemaError, Use
 from semantic_version import Version
 from six import string_types
 
+import idf_component_tools as tools
+
+from ..errors import SourceError
 from .constants import FULL_SLUG_REGEX, TAGS_REGEX
-from .manifest import ComponentSpec
 
 try:
     from typing import Iterable, List
@@ -102,12 +104,6 @@ class ManifestValidator(object):
                 unknown_keys.append(key)
         return unknown_keys
 
-    def _validate_version_spec(self, component, spec):
-        try:
-            ComponentSpec(spec or '*')
-        except ValueError:
-            self.add_error('Version specifications for "%s" are invalid.' % component)
-
     def add_error(self, message):
         self._errors.append(message)
 
@@ -145,10 +141,13 @@ class ManifestValidator(object):
                 dependencies[component] = details = {'version': details}
 
             if isinstance(details, dict):
-                unknown = self._validate_keys(details, known_component_keys())
-                if unknown:
-                    self.add_error('Unknown attributes for component "%s": %s' % (component, ', '.join(unknown)))
-                self._validate_version_spec(component, details.get('version', ''))
+                try:
+                    source = tools.sources.BaseSource.fromdict(component, details)
+
+                    if not source.validate_version_spec(str(details.get('version'))):
+                        self.add_error('Version specifications for "%s" are invalid.' % component)
+                except SourceError as unknown_keys_error:
+                    self.add_error(str(unknown_keys_error))
             else:
                 self.add_error(
                     '"%s" version have unknown format. Should be either version string or dictionary with details' %
