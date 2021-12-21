@@ -50,11 +50,10 @@ def set_target(project_path, target):
             'components': {
                 'main': {
                     'dependencies': {
-                        'cmp': {
-                            'version': '*',
+                        'git-only-cmp': {
                             'git': 'https://github.com/espressif/example_components.git',
-                            'path': 'cmp',
-                            'include': 'cmp.h'
+                            'path': 'git-only-cmp',
+                            'include': 'git-only-cmp.h'
                         }
                     }
                 }
