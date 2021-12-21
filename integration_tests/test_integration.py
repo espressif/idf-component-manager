@@ -307,3 +307,25 @@ def test_version_solver(project, result):
     res = build_project(project_path, fullclean=True)
     for line in result:
         assert line in res
+
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'cmp': {
+                            'version': '*',
+                            'path': '../../tests/fixtures/components/cmp',
+                            'include': 'cmp.h'
+                        },
+                    }
+                }
+            }
+        },
+    ],
+    indirect=True)
+def test_local_dependency_with_relative_path(project):
+    res = build_project(project)
+    assert 'Project build complete.' in res
