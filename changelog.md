@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add version to CLI help
 - Add . and + as allowed chars in component names
 - Add tags block into manifest file
 - Allow passing version during component upload

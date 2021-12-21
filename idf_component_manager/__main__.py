@@ -6,6 +6,7 @@ import sys
 
 from idf_component_tools.errors import FatalError
 
+from . import version
 from .core import ComponentManager
 
 KNOWN_ACTIONS = [
@@ -17,7 +18,7 @@ KNOWN_ACTIONS = [
 
 
 def main():
-    parser = argparse.ArgumentParser(description='IDF component manager')
+    parser = argparse.ArgumentParser(description='IDF component manager v{}'.format(version))
     parser.add_argument('command', choices=KNOWN_ACTIONS, help='Command to execute')
     parser.add_argument('--path', help='Working directory (default: current directory).', default=os.getcwd())
     parser.add_argument('--namespace', help='Namespace for the component. Can be set in config file.')
