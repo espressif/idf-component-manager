@@ -39,7 +39,7 @@ class GitSource(BaseSource):
 
     def _checkout_git_source(self, version):  # type: (Union[str, ComponentVersion, None]) -> str
         if version is not None:
-            version = str(version)
+            version = None if version == '*' else str(version)
 
         return self._client.prepare_ref(repo=self.git_repo, path=self.cache_path(), ref=version, with_submodules=True)
 
@@ -103,8 +103,7 @@ class GitSource(BaseSource):
 
     def versions(self, name, details=None, spec='*', target=None):
         """For git returns hash of locked commit, ignoring manifest"""
-        version = None if spec == '*' else spec
-        commit_id = self._checkout_git_source(version)
+        commit_id = self._checkout_git_source(spec)
 
         source_path = os.path.join(self.cache_path(), self.component_path)
         manifest_path = os.path.join(source_path, MANIFEST_FILENAME)
@@ -120,7 +119,7 @@ class GitSource(BaseSource):
                 if target and target not in manifest.targets:
                     raise FetchingError(
                         'Version "{}" (commit id "{}") of the component "{}" does not support target "{}"'.format(
-                            version, commit_id, name, target))
+                            spec, commit_id, name, target))
 
                 targets = manifest.targets
 
@@ -145,7 +144,7 @@ class GitSource(BaseSource):
         return source
 
     def validate_version_spec(self, spec):  # type: (str) -> bool
-        if not spec:
+        if not spec or spec == '*':
             return True
 
         return bool(BRANCH_TAG_RE.match(spec))
