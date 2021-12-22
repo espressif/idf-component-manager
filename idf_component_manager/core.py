@@ -327,6 +327,8 @@ class ComponentManager(object):
 
         # Exclude requirements paths
         downloaded_component_paths -= {component['path'] for component in local_components}
+        # Change relative paths to absolute paths
+        downloaded_component_paths = {os.path.abspath(path) for path in list(downloaded_component_paths)}
         # Include managed components in project directory
         with open(managed_components_list_file, mode='w', encoding='utf-8') as file:
             for component_path in downloaded_component_paths:
