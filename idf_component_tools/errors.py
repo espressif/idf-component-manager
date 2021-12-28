@@ -46,3 +46,11 @@ class LockError(ProcessingError):
 
 class GitError(ProcessingError):
     pass
+
+
+class ComponentModifiedError(ProcessingError):
+    pass
+
+
+class InvalidComponentHashError(ProcessingError):
+    pass

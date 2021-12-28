@@ -5,3 +5,4 @@ FULL_SLUG_REGEX = r'^((?:{slug}/{slug})|(?:{slug}))$'.format(slug=SLUG_BODY_REGE
 TAGS_REGEX = r'^[A-Za-z0-9\_\-]{3,32}$'
 WEB_DEPENDENCY_REGEX = r'^((?:{slug}/{slug})|(?:{slug}))(.*)$'.format(slug=SLUG_BODY_REGEX)
 COMMIT_ID_RE = r'[0-9a-f]{40}'
+SHA256_RE = r'^[A-Fa-f0-9]{64}$'
