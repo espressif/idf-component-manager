@@ -33,11 +33,12 @@ def idf_version():
     return live_print_call(['idf.py', '--version'])
 
 
-def build_project(project_path, fullclean=False):
-    args = ['idf.py', '-C', project_path, 'build']
-    if fullclean:
-        args.append('fullclean')
-    return live_print_call(args)
+def project_action(project_path, *actions):
+    return live_print_call(['idf.py', '-C', project_path] + list(actions))
+
+
+def build_project(project_path):
+    return project_action(project_path, 'build')
 
 
 def set_target(project_path, target):
@@ -111,8 +112,9 @@ def test_single_dependency(project):
         },
     ], indirect=True)
 def test_idf_version_dependency_failed(project):
-    res = build_project(project)
-    assert 'Cannot find a satisfying version of the component "idf"' in res
+    res = project_action(project, 'reconfigure')
+    assert 'project depends on idf' in res
+    assert 'version solving failed.' in res
 
 
 @pytest.mark.parametrize(
@@ -171,7 +173,7 @@ def test_idf_check_target_fail_manifest(project):
     ], indirect=True)
 def test_idf_check_target_fail_dependency(project):
     res = set_target(project, 'esp32')
-    assert 'Cannot find a satisfying version of the component "example/cmp"' in res
+    assert 'project depends on example/cmp (0.0.1) which doesn\'t match any' in res
 
 
 @pytest.mark.parametrize(
@@ -304,9 +306,9 @@ def result(request):
     indirect=True)
 def test_version_solver(project, result):
     project_path = os.path.join(os.path.dirname(__file__), 'version_solver_projects', project)
-    res = build_project(project_path, fullclean=True)
+    real_result = project_action(project_path, 'fullclean', 'reconfigure')
     for line in result:
-        assert line in res
+        assert line in real_result
 
 
 @pytest.mark.parametrize(

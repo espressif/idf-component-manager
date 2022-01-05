@@ -1,9 +1,7 @@
 from idf_component_manager.version_solver.mixology.package import Package
 
-from .helpers import check_solver_result
 
-
-def test_simple_dependencies(source):
+def test_simple_dependencies(source, check_solver_result):
     source.root_dep(Package('a'), '1.0.0')
     source.root_dep(Package('b'), '1.0.0')
 
@@ -27,7 +25,7 @@ def test_simple_dependencies(source):
     )
 
 
-def test_shared_dependencies_with_overlapping_constraints(source):
+def test_shared_dependencies_with_overlapping_constraints(source, check_solver_result):
     source.root_dep(Package('a'), '1.0.0')
     source.root_dep(Package('b'), '1.0.0')
 
@@ -42,7 +40,7 @@ def test_shared_dependencies_with_overlapping_constraints(source):
     check_solver_result(source, {Package('a'): '1.0.0', Package('b'): '1.0.0', Package('shared'): '3.6.9'})
 
 
-def test_shared_dependency_where_dependent_version_affects_other_dependencies(source):
+def test_shared_dependency_where_dependent_version_affects_other_dependencies(source, check_solver_result):
     source.root_dep(Package('foo'), '<=1.0.2')
     source.root_dep(Package('bar'), '1.0.0')
 
@@ -58,7 +56,7 @@ def test_shared_dependency_where_dependent_version_affects_other_dependencies(so
     check_solver_result(source, {Package('foo'): '1.0.1', Package('bar'): '1.0.0', Package('bang'): '1.0.0'})
 
 
-def test_circular_dependency(source):
+def test_circular_dependency(source, check_solver_result):
     source.root_dep(Package('foo'), '1.0.0')
 
     source.add(Package('foo'), '1.0.0', deps={Package('bar'): '1.0.0'})

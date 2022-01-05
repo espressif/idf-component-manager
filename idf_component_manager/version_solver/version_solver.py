@@ -1,4 +1,3 @@
-from idf_component_tools.errors import SolverError
 from idf_component_tools.manifest import ComponentRequirement, ProjectRequirements, SolvedComponent, SolvedManifest
 
 from .helper import PackageSource
@@ -50,9 +49,6 @@ class VersionSolver(object):
     def solve_component(self, requirement):  # type: (ComponentRequirement) -> None
         cmp_with_versions = requirement.source.versions(
             name=requirement.name, spec=requirement.version_spec, target=self.requirements.target)
-
-        if not cmp_with_versions.versions:
-            raise SolverError('Cannot find a satisfying version of the component "{}"'.format(requirement.name))
 
         for version in cmp_with_versions.versions:
             self._source.add(
