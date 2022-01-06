@@ -95,7 +95,7 @@ class Constraint(object):
 
     def to_string(self, allow_every=False):  # type: (bool) -> str
         if self.package == Package.root():
-            return 'root'
+            return 'project'
         elif allow_every and self.is_any():
             return 'every version of {}'.format(self.package)
 
