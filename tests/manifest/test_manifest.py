@@ -1,10 +1,12 @@
 import os
 import re
+import sys
 
 import pytest
 
 from idf_component_tools.errors import ManifestError
 from idf_component_tools.manifest import SLUG_REGEX, ComponentVersion, ManifestManager, ManifestValidator
+from idf_component_tools.manifest.validator import DEFAULT_KNOWN_TARGETS, known_targets
 
 
 class TestComponentVersion(object):
@@ -246,3 +248,25 @@ class TestManifestValidator(object):
 
         assert len(errors) == 1
         assert errors[0].startswith('Some tags are more than once in the manifest')
+
+    def test_known_targets_env(self, monkeypatch):
+        monkeypatch.setenv(
+            'IDF_COMPONENT_MANAGER_KNOWN_TARGETS', 'esp32,test,esp32s2,esp32s3,esp32c3,esp32h2,linux,esp8684')
+        result = known_targets()
+
+        assert len(result) == 8
+        assert 'test' in result
+
+    def test_known_targets_idf(self, monkeypatch):
+        print(sys.path)
+        monkeypatch.setenv(
+            'IDF_PATH', os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'fixtures', 'fake_idf'))
+        result = known_targets()
+
+        assert len(result) == 8
+        assert 'test' in result
+
+    def test_known_targets_default(self, monkeypatch):
+        result = known_targets()
+
+        assert result == DEFAULT_KNOWN_TARGETS

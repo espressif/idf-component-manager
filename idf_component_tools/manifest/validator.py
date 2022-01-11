@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 
 from schema import And, Optional, Or, Regex, Schema, SchemaError, Use
 from semantic_version import Version
@@ -27,7 +28,7 @@ KNOWN_ROOT_KEYS = [
     'tags',
 ]
 
-DEFAULT_KNOWN_TARGETS = 'esp32,esp32s2,esp32s3,esp32c3,esp32h2,linux'
+DEFAULT_KNOWN_TARGETS = ['esp32', 'esp32s2', 'esp32s3', 'esp32c3', 'esp32h2', 'linux']
 
 KNOWN_FILES_KEYS = [
     'include',
@@ -39,7 +40,24 @@ SLUG_REGEX_COMPILED = re.compile(FULL_SLUG_REGEX)
 
 
 def known_targets():  # type () -> list[str]
-    return os.getenv('IDF_COMPONENT_MANAGER_KNOWN_TARGETS', DEFAULT_KNOWN_TARGETS).split(',')
+    try:
+        targets = os.environ['IDF_COMPONENT_MANAGER_KNOWN_TARGETS'].split(',')
+        if any(targets):
+            return targets
+    except KeyError:
+        pass
+
+    try:
+        idf_path = os.environ['IDF_PATH']
+    except KeyError:
+        return DEFAULT_KNOWN_TARGETS
+
+    try:
+        sys.path.append(os.path.join(idf_path, 'tools'))
+        from idf_py_actions.constants import PREVIEW_TARGETS, SUPPORTED_TARGETS
+        return SUPPORTED_TARGETS + PREVIEW_TARGETS
+    except ImportError:
+        return DEFAULT_KNOWN_TARGETS
 
 
 def known_component_keys():
