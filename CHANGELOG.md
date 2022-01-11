@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix relative path in manifest with a local component
 - Fix the case when some dependencies don't have any versions
+- Fix error message when the directory didn't find in a git repository
+- Get the list of known targets from ESP-IDF, when possible
+
 
 ## [1.0.0] 2021-12-21
 
