@@ -102,7 +102,7 @@ class GitClient(object):
         if with_submodules:
             self.run(['submodule', 'update', '--init', '--recursive'], cwd=path)
 
-        return self.run(['rev-parse', '--verify', 'HEAD'], cwd=path)
+        return self.run(['rev-parse', '--verify', 'HEAD'], cwd=path).strip()
 
     def run(self, args, cwd=None):  # type: (List[str], str) -> str
         if cwd is None:

@@ -87,6 +87,11 @@ class GitSource(BaseSource):
         self._checkout_git_source(component.version)
         source_path = os.path.join(self.cache_path(), self.component_path)
 
+        if not os.path.isdir(source_path):
+            raise FetchingError(
+                'Directory {} wasn\'t found for the commit id "{}" of the git repository "{}"'.format(
+                    self.component_path, component.version, self.git_repo))
+
         if os.path.isdir(download_path):
             shutil.rmtree(download_path)
 
@@ -103,11 +108,20 @@ class GitSource(BaseSource):
 
     def versions(self, name, details=None, spec='*', target=None):
         """For git returns hash of locked commit, ignoring manifest"""
-        commit_id = self._checkout_git_source(spec)
+        version = None if spec == '*' else spec
+        commit_id = self._checkout_git_source(version)
 
         source_path = os.path.join(self.cache_path(), self.component_path)
-        manifest_path = os.path.join(source_path, MANIFEST_FILENAME)
 
+        if not os.path.isdir(source_path):
+            dependency_description = 'commit id "{}"'.format(commit_id)
+            if version:
+                dependency_description = 'version "{}" ({})'.format(version, dependency_description)
+            raise FetchingError(
+                'Directory {} wasn\'t found for the {} of the git repository "{}"'.format(
+                    self.component_path, dependency_description, self.git_repo))
+
+        manifest_path = os.path.join(source_path, MANIFEST_FILENAME)
         targets = []
         dependencies = []
 
@@ -119,7 +133,7 @@ class GitSource(BaseSource):
                 if target and target not in manifest.targets:
                     raise FetchingError(
                         'Version "{}" (commit id "{}") of the component "{}" does not support target "{}"'.format(
-                            spec, commit_id, name, target))
+                            version, commit_id, name, target))
 
                 targets = manifest.targets
 

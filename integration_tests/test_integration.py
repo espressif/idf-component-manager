@@ -317,6 +317,28 @@ def test_version_solver(project, result):
             'components': {
                 'main': {
                     'dependencies': {
+                        'git-only-cmp': {
+                            'git': 'https://github.com/espressif/example_components.git',
+                            'path': 'folder-not-exist',
+                            'include': 'git-only-cmp.h'
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    indirect=True)
+def test_git_folder_does_not_exists(project):
+    res = build_project(project)
+    assert 'Directory folder-not-exist wasn\'t found for the' in res
+
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
                         'cmp': {
                             'version': '*',
                             'path': '../../tests/fixtures/components/cmp',
