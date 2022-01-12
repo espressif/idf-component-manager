@@ -7,7 +7,6 @@ import pytest
 
 from idf_component_manager.dependencies import detect_unused_components
 from idf_component_tools.errors import ManifestError
-from idf_component_tools.hash_tools import hash_dir
 from idf_component_tools.manifest import (
     SLUG_REGEX, ComponentVersion, ManifestManager, ManifestValidator, SolvedComponent)
 from idf_component_tools.manifest.constants import HASH_FILENAME
@@ -293,7 +292,6 @@ class TestManifestValidator(object):
         os.mkdir(managed_components_path)
         os.mkdir(os.path.join(managed_components_path, 'example__cmp'))
         with open(os.path.join(managed_components_path, 'example__cmp', HASH_FILENAME), 'w+') as f:
-            print(hash_dir(os.path.join(managed_components_path, 'example__cmp')))
             f.write('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
         os.mkdir(os.path.join(managed_components_path, 'mag3110'))
         with open(os.path.join(managed_components_path, 'mag3110', HASH_FILENAME), 'w+') as f:
