@@ -70,6 +70,7 @@ test:py3.9:
     - internet
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^release\/v/'
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
     - if: '$RUN_INTEGRATION_TESTS == "true"'
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
