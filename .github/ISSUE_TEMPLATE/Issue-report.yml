@@ -1,0 +1,89 @@
+name: Issue report
+description: Report any problem here
+labels: ["Status: Awaiting triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        * Before reporting a new issue please check and search in [List of existing issues](https://github.com/espressif/idf-component-manager/issues?q=is%3Aissue) 
+        * Please check [IDF Component Manager Online Documentation](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/tools/idf-component-manager.html)
+        * Check the version of the Component manager. Run `python -m idf_component_manager --help` in the same terminal where you run `idf.py` to get the version. The output will have a line like `IDF component manager v1.0.0`. If you don't see a version in the output or the version is less than on stated on the [Component manager PyPI](https://pypi.org/project/idf-component-manager/)it means that your component manager installation is outdated. Please run `pip install -U idf-component-manager` to update to the most recent version and try again before reporting the issue.
+        * Please be aware that this is IDF Component Manager repository and NOT an ESP-IDF repository
+        * If still experiencing the issue, please provide as many details as possible below about your issue
+  - type: input
+    id: component-manager-version
+    attributes:
+      label: The Component Manager version
+      description: What version of Component Manager are you using? Run `python -m idf_component_manager --help` in the same terminal where you run `idf.py` to get the version.
+      placeholder: eg. v1.0.0
+    validations:
+      required: true
+  - type: input
+    id: esp-idf-version
+    attributes:
+      label: ESP-IDF Version
+      description: What version of ESP-IDF are you using?
+      placeholder: eg. v4.4
+    validations:
+      required: true
+  - type: input
+    id: python-version
+    attributes:
+      label: python Version
+      description: What version of python are you using?
+      placeholder: eg. 3.7.1
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating System
+      description: On which OS does this issue occur?
+      placeholder: eg. macOS 12.1, Windows 10...
+    validations:
+      required: true
+  - type: input
+    id: browser 
+    attributes:
+      label: Browser (for https://components.espressif.com  Issues)
+      description: What browser are you using?
+      placeholder: eg. Chrome, Safari, Opera
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of what your issue is (current behavior).
+      placeholder: eg. Missing filter for.../Problem with component dependencies...
+    validations:
+      required: true
+  - type: textarea
+    id: to-reproduce
+    attributes:
+      label: To Reproduce
+      description: Steps to reproduce the behavior (including the full log).
+      placeholder: eg. Related part of the code and needed steps...
+      render: cpp
+    validations:
+     required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behaviour
+      description: A clear and concise description of what you expected to happen.
+      placeholder: eg. I expected this filter will only shows components supported by ESP32-S3..
+    validations:
+      required: true      
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional info 
+      description: More info as Screenshot can be added here.
+      placeholder: eg. Insert screenshots...
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: I have checked existing issues and online Documentation
+      description: You agree to check all the resources above before opening a new issue.
+      options:
+        - label: I confirm I have checked existing issues and online Documentation.
+          required: true
