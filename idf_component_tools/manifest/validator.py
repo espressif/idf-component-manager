@@ -28,7 +28,7 @@ KNOWN_ROOT_KEYS = [
     'tags',
 ]
 
-DEFAULT_KNOWN_TARGETS = ['esp32', 'esp32s2', 'esp32s3', 'esp32c3', 'esp32h2', 'linux']
+DEFAULT_KNOWN_TARGETS = ['esp32', 'esp32s2', 'esp32c3', 'esp32s3', 'linux', 'esp32h2', 'esp32c2']
 
 KNOWN_FILES_KEYS = [
     'include',
