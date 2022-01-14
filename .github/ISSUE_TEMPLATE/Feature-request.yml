@@ -1,0 +1,53 @@
+name: Feature request
+description: Suggest an idea for IDF Component Manager
+labels: ["Type: Feature request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        * We welcome any new ideas/feature requests! It is helpful if you can explain exactly why the feature would be useful.
+        * There are usually some outstanding feature requests in the [existing issues list](https://github.com/espressif/idf-component-manager/issues?q=is%3Aopen+is%3Aissue+label%3A%22Type%3A+Feature+Request%22), feel free to add comments to them.
+  - type: input
+    id: area
+    attributes:
+      label: Related area
+      description: Please briefly explain the area of your Feature Request.
+      placeholder: eg. UI, Components, missing support..
+    validations:
+      required: true
+  - type: textarea
+    id: problem-related
+    attributes:
+      label: Is your feature request related to a problem?
+      description: Please provide a clear and concise description of what the problem is.
+      placeholder: eg. I'm missing the function...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Describe the solution you'd like
+      description: Please provide a clear and concise description of what you want to happen.
+      placeholder: eg. When using this function...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Describe alternatives you've considered
+      description: Please provide a clear and concise description of any alternative solutions or features you've considered.
+      placeholder: eg.  Include suggestions for useful APIs or interfaces if relevant...
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Please add any other context about the feature request here.
+      placeholder: ex. Adding screenshots...
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: I have checked existing list of Feature requests and I have provided enough information.
+      description: You agree to check all the resources above before opening a new Feature request.
+      options:
+        - label: I confirm I have checked existing list of Feature requests and I have provided enough information.
+          required: true

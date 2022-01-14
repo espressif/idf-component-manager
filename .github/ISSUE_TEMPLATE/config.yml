@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: IDF Component Registry
+    url: https://components.espressif.com/
+    about: List of available components
+  - name: IDF Component Manager Documentation
+    url: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/tools/idf-component-manager.html
+    about: Project Documentation in ESP-IDF Programming Guide
