@@ -31,6 +31,8 @@ DEFAULT_EXCLUDE = [
     # Configs
     '.settings/**/*',
     '**/sdkconfig',
+    # Hash file
+    '.component_hash',
 ]
 
 

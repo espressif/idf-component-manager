@@ -1,6 +1,5 @@
 import os
 import re
-import sys
 
 import pytest
 
@@ -258,7 +257,6 @@ class TestManifestValidator(object):
         assert 'test' in result
 
     def test_known_targets_idf(self, monkeypatch):
-        print(sys.path)
         monkeypatch.setenv(
             'IDF_PATH', os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'fixtures', 'fake_idf'))
         result = known_targets()

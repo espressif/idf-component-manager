@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 import subprocess
 from io import open
 
@@ -353,3 +354,42 @@ def test_git_folder_does_not_exists(project):
 def test_local_dependency_with_relative_path(project):
     res = build_project(project)
     assert 'Project build complete.' in res
+
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'example/cmp': {
+                            'version': '>=3.3.5',
+                        },
+                    }
+                }
+            }
+        },
+    ],
+    indirect=True)
+def test_changes_in_component(project):
+    res = project_action(project, 'reconfigure')
+    assert 'Build files have been written to' in res
+
+    with open(os.path.join(project, 'managed_components', 'example__cmp', 'README.md'), 'w') as f:
+        f.write(u'TEST STRING')
+    shutil.rmtree(os.path.join(project, 'build'))
+    res = project_action(project, 'reconfigure')
+
+    assert 'directory were modified on the disk since the last run of the CMake' in res
+
+    shutil.move(
+        os.path.join(project, 'managed_components', 'example__cmp'),
+        os.path.join(project, 'components', 'example__cmp'))
+    res = project_action(project, 'reconfigure')
+
+    assert 'Build files have been written to' in res
+
+    shutil.move(os.path.join(project, 'components', 'example__cmp'), os.path.join(project, 'components', 'cmp'))
+    res = project_action(project, 'reconfigure')
+
+    assert 'Build files have been written to' in res
