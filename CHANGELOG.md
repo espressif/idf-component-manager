@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Tracking modifications of the managed components
 
+### Fixed
+
+- Delete unused components from the `managed_components` directory
+
 ## [1.0.1] 2022-01-12
 
 ### Fixed

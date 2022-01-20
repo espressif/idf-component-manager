@@ -1,10 +1,13 @@
 """Tools for hashing and hash validation for whole packages"""
 import json
+import os
+import re
 from hashlib import sha256
 from io import open
 from pathlib import Path
 
 from .file_tools import DEFAULT_EXCLUDE, filtered_paths
+from .manifest.constants import HASH_FILENAME, SHA256_RE
 
 try:
     from typing import Any, Iterable, Optional, Text, Union
@@ -12,6 +15,22 @@ except ImportError:
     pass
 
 BLOCK_SIZE = 65536
+
+
+class ValidatingHashError(Exception):
+    pass
+
+
+class HashNotEqualError(ValidatingHashError):
+    pass
+
+
+class HashNotSHA256Error(ValidatingHashError):
+    pass
+
+
+class HashDoesNotExistError(ValidatingHashError):
+    pass
 
 
 def hash_object(obj):  # type: (Any) -> str
@@ -69,3 +88,19 @@ def validate_dir(
     """Check if directory hash is the same as provided"""
 
     return Path(root).is_dir() and hash_dir(root, exclude=exclude) == dir_hash
+
+
+def validate_dir_with_hash_file(root, exclude=None):  # type: (str, Optional[list[str]]) -> None
+    hash_file_path = os.path.join(root, HASH_FILENAME)
+
+    if not os.path.isdir(root) or not os.path.exists(hash_file_path):
+        raise HashDoesNotExistError()
+
+    with open(hash_file_path, mode='r', encoding='utf-8') as f:
+        hash_from_file = f.read().strip()
+
+    if not re.match(SHA256_RE, hash_from_file):
+        raise HashNotSHA256Error()
+
+    if not validate_dir(root, hash_from_file, exclude=exclude):
+        raise HashNotEqualError()
