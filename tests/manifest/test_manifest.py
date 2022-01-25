@@ -250,7 +250,7 @@ class TestManifestValidator(object):
 
     def test_known_targets_env(self, monkeypatch):
         monkeypatch.setenv(
-            'IDF_COMPONENT_MANAGER_KNOWN_TARGETS', 'esp32,test,esp32s2,esp32s3,esp32c3,esp32h2,linux,esp8684')
+            'IDF_COMPONENT_MANAGER_KNOWN_TARGETS', 'esp32,test,esp32s2,esp32s3,esp32c3,esp32h2,linux,esp32c2')
         result = known_targets()
 
         assert len(result) == 8

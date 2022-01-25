@@ -2,9 +2,12 @@ import logging
 import os
 import shutil
 import subprocess
+import sys
 from io import open
 
 import pytest
+
+from idf_component_tools.manifest.validator import DEFAULT_KNOWN_TARGETS
 
 
 def live_print_call(*args, **kwargs):
@@ -393,3 +396,12 @@ def test_changes_in_component(project):
     res = project_action(project, 'reconfigure')
 
     assert 'Build files have been written to' in res
+
+
+def test_known_targets():
+    branch = os.getenv('IDF_BRANCH')
+    if not branch or branch == 'master':
+        idf_path = os.environ['IDF_PATH']
+        sys.path.append(os.path.join(idf_path, 'tools'))
+        from idf_py_actions.constants import PREVIEW_TARGETS, SUPPORTED_TARGETS
+        assert SUPPORTED_TARGETS + PREVIEW_TARGETS == DEFAULT_KNOWN_TARGETS
