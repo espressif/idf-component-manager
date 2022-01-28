@@ -32,7 +32,7 @@ DEFAULT_EXCLUDE = [
     '.settings/**/*',
     '**/sdkconfig',
     # Hash file
-    '.component_hash',
+    '.component_hash'
 ]
 
 

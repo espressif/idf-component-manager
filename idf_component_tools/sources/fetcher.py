@@ -1,14 +1,13 @@
 """Small class that manages getting components to right path using system-wide cache"""
 
 import os
-import re
 from io import open
 
 from ..build_system_tools import build_name
 from ..errors import ComponentModifiedError, InvalidComponentHashError
-from ..hash_tools import hash_dir
+from ..hash_tools import HashDoesNotExistError, HashNotEqualError, HashNotSHA256Error, validate_dir_with_hash_file
 from ..manifest import SolvedComponent
-from ..manifest.constants import SHA256_RE
+from ..manifest.constants import HASH_FILENAME
 
 try:
     from typing import TYPE_CHECKING, List
@@ -33,31 +32,27 @@ class ComponentFetcher(object):
 
     def download(self):  # type: () -> List[str]
         """If necessary, it downloads component and returns local path to component directory"""
-        hash_file = os.path.join(self.managed_path, '.component_hash')
-
-        if os.path.isdir(self.managed_path) and os.path.exists(hash_file):
-            with open(hash_file, mode='r', encoding='utf-8') as f:
-                hash_from_file = f.read().strip()
-            hash_directory = hash_dir(self.managed_path)
-
-            if hash_directory != hash_from_file:
-                if re.match(SHA256_RE, hash_from_file):
-                    raise ComponentModifiedError(
-                        'Component directory was modified on the disk since the last run of '
-                        'the CMake')
-                else:
-                    raise InvalidComponentHashError(
-                        'File .component_hash for component "{}" in the managed '
-                        'components directory cannot be parsed. This file is used by the '
-                        'component manager for component integrity checks. If this file '
-                        'exists in the component source, please ask the component '
-                        'maintainer to remove it.'.format(self.component.name))
+        try:
+            validate_dir_with_hash_file(self.managed_path)
+        except HashNotEqualError:
+            raise ComponentModifiedError(
+                'Component directory was modified on the disk since the last run of '
+                'the CMake')
+        except HashNotSHA256Error:
+            raise InvalidComponentHashError(
+                'File .component_hash for component "{}" in the managed '
+                'components directory cannot be parsed. This file is used by the '
+                'component manager for component integrity checks. If this file '
+                'exists in the component source, please ask the component '
+                'maintainer to remove it.'.format(self.component.name))
+        except HashDoesNotExistError:
+            pass
 
         return self.source.download(self.component, self.managed_path)
 
-    def create_hash(self, paths, component_hash):
+    def create_hash(self, paths, component_hash):  # type: (list[str], None | str) -> None
         if self.component.source.downloadable:
-            hash_file = os.path.join(paths[0], '.component_hash')
+            hash_file = os.path.join(paths[0], HASH_FILENAME)
 
             if not os.path.isfile(hash_file):
                 with open(hash_file, mode='w+', encoding='utf-8') as f:

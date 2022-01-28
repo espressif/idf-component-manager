@@ -5,6 +5,7 @@ import pytest
 
 from idf_component_tools.errors import ComponentModifiedError, InvalidComponentHashError
 from idf_component_tools.manifest import ComponentVersion, SolvedComponent
+from idf_component_tools.manifest.constants import HASH_FILENAME
 from idf_component_tools.sources import WebServiceSource
 from idf_component_tools.sources.fetcher import ComponentFetcher
 
@@ -27,7 +28,7 @@ def test_fetcher_download_and_create_hash():
                            'on the disk since the last run of the CMake'):
             fetcher.download()
 
-        hash_file = os.path.join(component_path, '.component_hash')
+        hash_file = os.path.join(component_path, HASH_FILENAME)
         with open(hash_file, mode='w+', encoding='utf-8') as f:
             f.write(u'Wrong hash')
 
@@ -35,4 +36,4 @@ def test_fetcher_download_and_create_hash():
             fetcher.download()
 
     finally:
-        os.remove(os.path.join(component_path, '.component_hash'))
+        os.remove(os.path.join(component_path, HASH_FILENAME))

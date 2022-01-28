@@ -1,18 +1,16 @@
 import os
+import shutil
 from textwrap import dedent
 
 from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.errors import ComponentModifiedError, FetchingError
+from idf_component_tools.hash_tools import ValidatingHashError, validate_dir_with_hash_file
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import ProjectRequirements
+from idf_component_tools.manifest import ProjectRequirements, SolvedComponent
+from idf_component_tools.manifest.constants import HASH_FILENAME
 from idf_component_tools.sources.fetcher import ComponentFetcher
 
 from .version_solver.version_solver import VersionSolver
-
-try:
-    from typing import Set
-except ImportError:
-    pass
 
 
 def check_manifests_targets(project_requirements):  # type: (ProjectRequirements) -> None
@@ -25,8 +23,47 @@ def check_manifests_targets(project_requirements):  # type: (ProjectRequirements
                 'Component "{}" does not support target {}'.format(manifest.name, project_requirements.target))
 
 
+def get_unused_components(unused_files_with_components, managed_components_path):  # type: (set[str], str) -> set[str]
+    unused_components = set()
+
+    for component in unused_files_with_components:
+        try:
+            validate_dir_with_hash_file(os.path.join(managed_components_path, component))
+            unused_components.add(component)
+        except ValidatingHashError:
+            pass
+
+    return unused_components
+
+
+def detect_unused_components(
+        requirement_dependencies, managed_components_path):  # type: (list[SolvedComponent], str) -> None
+    downloaded_components = os.listdir(managed_components_path)
+    unused_files_with_components = set(downloaded_components) - {
+        build_name(component.name)
+        for component in requirement_dependencies
+    }
+    unused_components = get_unused_components(unused_files_with_components, managed_components_path)
+    unused_files = unused_files_with_components - unused_components
+    if unused_components:
+        print('Deleting {} unused components'.format(len(unused_components)))
+        for unused_component_name in unused_components:
+            print(' {}'.format(unused_component_name))
+            shutil.rmtree(os.path.join(managed_components_path, unused_component_name))
+    if unused_files and os.getenv('IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS') != '1':
+        print(
+            'WARNING: {} unexpected files and directories were found in the "managed_components" directory:'.format(
+                len(unused_files)))
+        for unexpected_name in unused_files:
+            print(' {}'.format(unexpected_name))
+        print(
+            'Content of the managed components directory is managed automatically and it\'s not recommended to '
+            'place any files there manually. To suppress this warning set the environment variable: '
+            'IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS=1')
+
+
 def download_project_dependencies(project_requirements, lock_path, managed_components_path):
-    # type: (ProjectRequirements, str, str) -> Set[str]
+    # type: (ProjectRequirements, str, str) -> set[str]
     '''Solves dependencies and download components'''
     lock_manager = LockManager(lock_path)
     solution = lock_manager.load()
@@ -57,6 +94,8 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
     if requirement_dependencies:
         number_of_components = len(requirement_dependencies)
         changed_components = []
+        if os.path.exists(managed_components_path):
+            detect_unused_components(requirement_dependencies, managed_components_path)
         print('Processing {} dependencies:'.format(number_of_components))
 
         for index, component in enumerate(requirement_dependencies):
@@ -74,27 +113,32 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
             component_example_name = changed_components[0].replace('/', '__')
             managed_component_folder = os.path.join(managed_components_path, component_example_name)
             component_folder = os.path.join(project_path, 'components', component_example_name)
-            hash_path = os.path.join(managed_component_folder, '.component_hash')
+            hash_path = os.path.join(managed_component_folder, HASH_FILENAME)
             error = """
-                Some components ({0}) in the
+                Some components ({component_names}) in the
                 "managed_components" directory were modified on the disk since the last run of the CMake. Content of
                 this directory is managed automatically.
 
                 If you want to keep the changes, you can move the directory with the component to the "components"
                 directory of your project.
 
-                I.E. for "{1}" run:
+                I.E. for "{component_example}" run:
 
-                mv {2} {3}
+                mv {managed_component_folder} {component_folder}
 
-                Or, if you want to discard the changes remove the ".component_hash" file from the component's directory.
+                Or, if you want to discard the changes remove the "{hash_filename}" file from the component's
+                directory.
 
-                I.E. for "{1}" run:
+                I.E. for "{component_example}" run:
 
-                rm {4}
+                rm {hash_path}
             """.format(
-                ', '.join(changed_components), component_example_name, managed_component_folder, component_folder,
-                hash_path)
+                component_names=', '.join(changed_components),
+                component_example=component_example_name,
+                managed_component_folder=managed_component_folder,
+                component_folder=component_folder,
+                hash_path=hash_path,
+                hash_filename=HASH_FILENAME)
             raise ComponentModifiedError(dedent(error))
 
     return downloaded_component_paths
