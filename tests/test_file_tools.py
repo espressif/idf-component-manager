@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from idf_component_tools.file_tools import filtered_paths
+from idf_component_tools.file_tools import copy_filtered_directory, filtered_paths
 
 
 @pytest.fixture
@@ -76,3 +76,26 @@ def test_filtered_path_exclude_dir_with_file(assets_path):
                 Path(assets_path, 'ignore.dir', 'extra', 'one_more.txt'),
                 Path(assets_path, 'ignore.me'),
             ])
+
+
+def test_excluded_and_included_files(tmpdir_factory):
+    folders_with_subdirectories = tmpdir_factory.mktemp('folders_with_subdirectories')
+    temp_dir = tmpdir_factory.mktemp('temp_dir')
+
+    folder1 = folders_with_subdirectories.mkdir('folder1')
+    f = folder1.mkdir('folder1_1').mkdir('folder1_1_1').join('test_file')
+    f.write(u'Test file')
+
+    f = folder1.mkdir('folder1_2').join('test_file')
+    f.write(u'Test file')
+
+    f = folders_with_subdirectories.mkdir('folder2').join('test_file')
+    f.write(u'Test file')
+
+    copy_filtered_directory(
+        folders_with_subdirectories.strpath,
+        temp_dir.strpath,
+        include=['folder1/folder1_1/**/*', 'folder1/folder1_2/**/*'],
+        exclude=['**/*'])
+
+    assert os.listdir(temp_dir.strpath) == ['folder1']
