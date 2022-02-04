@@ -11,6 +11,10 @@ import pytest
 from idf_component_tools.manifest.validator import DEFAULT_KNOWN_TARGETS
 
 
+def fixtures_path(*args):
+    return os.path.join(os.path.dirname(__file__), '..', 'tests', 'fixtures', *args)
+
+
 def live_print_call(*args, **kwargs):
     default_kwargs = {
         'stdout': subprocess.PIPE,
@@ -346,9 +350,9 @@ def test_git_folder_does_not_exists(project):
                     'dependencies': {
                         'cmp': {
                             'version': '*',
-                            'path': '../../tests/fixtures/components/cmp',
-                            'include': 'cmp.h'
-                        },
+                            'path': os.path.join('..', 'cmp'),
+                            'include': 'cmp.h',
+                        }
                     }
                 }
             }
@@ -356,6 +360,7 @@ def test_git_folder_does_not_exists(project):
     ],
     indirect=True)
 def test_local_dependency_with_relative_path(project):
+    shutil.copytree(fixtures_path('components', 'cmp'), os.path.join(project, 'cmp'))
     res = build_project(project)
     assert 'Project build complete.' in res
 
