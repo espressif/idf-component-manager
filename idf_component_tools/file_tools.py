@@ -115,7 +115,13 @@ def copy_filtered_directory(source_directory, destination_directory, include=Non
         path = str(path)  # type: ignore # Path backward compatibility
         rel_path = os.path.relpath(path, source_directory)
         dest_path = os.path.join(destination_directory, rel_path)
+
         if os.path.isfile(path):
+            dest_dir = os.path.dirname(dest_path)
+
+            if not os.path.exists(dest_dir):
+                os.makedirs(dest_dir)
+
             shutil.copy2(path, dest_path)
         else:
             os.makedirs(dest_path)
