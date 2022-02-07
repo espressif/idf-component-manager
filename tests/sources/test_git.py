@@ -1,3 +1,5 @@
+import tempfile
+
 from idf_component_tools import sources
 from idf_component_tools.git_client import GitClient
 
@@ -18,7 +20,7 @@ def test_validate_version_spec_git():
 
 def test_normalize_spec(monkeypatch):
     source = sources.GitSource({'git': ''})
-    monkeypatch.setattr(sources.GitSource, '_checkout_git_source', lambda *_: COMMIT_ID)
+    monkeypatch.setattr(GitClient, 'get_commit_id_by_ref', lambda *_: COMMIT_ID)
 
     assert '*' == source.normalize_spec(None)
     assert COMMIT_ID == source.normalize_spec('*')
@@ -27,5 +29,6 @@ def test_normalize_spec(monkeypatch):
 def test_checkout_git_source(monkeypatch):
     source = sources.GitSource({'git': ''})
     monkeypatch.setattr(GitClient, 'prepare_ref', lambda *args, **kwargs: COMMIT_ID)
+    temp_path = tempfile.mkdtemp()
 
-    assert COMMIT_ID == source._checkout_git_source('*')
+    assert COMMIT_ID == source._checkout_git_source('*', temp_path)
