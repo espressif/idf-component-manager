@@ -189,5 +189,6 @@ class GitSource(BaseSource):
     def normalize_spec(self, spec):  # type: (str) -> str
         if not spec:
             return '*'
-        commit_id = self._client.get_commit_id_by_ref(self.git_repo, self.cache_path(), spec)
+        ref = None if spec == '*' else spec
+        commit_id = self._client.get_commit_id_by_ref(self.git_repo, self.cache_path(), ref)
         return commit_id

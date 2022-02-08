@@ -334,7 +334,7 @@ def test_version_solver(project, result):
     indirect=True)
 def test_git_folder_does_not_exists(project):
     res = build_project(project)
-    assert 'Directory folder-not-exist wasn\'t found for the' in res
+    assert 'pathspec \'folder-not-exist\' did not match any file(s) known to git' in res
 
 
 @pytest.mark.parametrize(
