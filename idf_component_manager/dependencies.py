@@ -6,7 +6,7 @@ from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.errors import ComponentModifiedError, FetchingError
 from idf_component_tools.hash_tools import ValidatingHashError, validate_dir_with_hash_file
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import ProjectRequirements, SolvedComponent
+from idf_component_tools.manifest import ProjectRequirements, SolvedComponent, SolvedManifest
 from idf_component_tools.manifest.constants import HASH_FILENAME
 from idf_component_tools.sources.fetcher import ComponentFetcher
 
@@ -62,6 +62,29 @@ def detect_unused_components(
             'IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS=1')
 
 
+def is_solve_required(project_requirements, solution):
+    # type: (ProjectRequirements, SolvedManifest) -> bool
+
+    if (project_requirements.has_dependencies
+            and (project_requirements.manifest_hash != solution.manifest_hash or
+                 (solution.target and project_requirements.target != solution.target))):
+        return True
+
+    for component in solution.dependencies:
+        if not component.source.meta:
+            continue
+
+        try:
+            component_version = component.source.versions(component.name).versions[0]
+
+            if component_version != component.version:
+                return True
+        except IndexError:
+            return True
+
+    return False
+
+
 def download_project_dependencies(project_requirements, lock_path, managed_components_path):
     # type: (ProjectRequirements, str, str) -> set[str]
     '''Solves dependencies and download components'''
@@ -69,9 +92,7 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
     solution = lock_manager.load()
     check_manifests_targets(project_requirements)
 
-    if (project_requirements.has_dependencies
-            and (project_requirements.manifest_hash != solution.manifest_hash or
-                 (solution.target and project_requirements.target != solution.target))):
+    if is_solve_required(project_requirements, solution):
         print('Solving dependencies requirements')
         solver = VersionSolver(project_requirements, solution)
         solution = solver.solve()

@@ -5,9 +5,11 @@ from pathlib import Path
 
 import pytest
 
+from idf_component_manager.dependencies import is_solve_required
 from idf_component_tools.errors import LockError
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import ComponentVersion, ManifestManager, SolvedComponent, SolvedManifest
+from idf_component_tools.manifest import (
+    ComponentVersion, Manifest, ManifestManager, ProjectRequirements, SolvedComponent, SolvedManifest)
 from idf_component_tools.sources import IDFSource, WebServiceSource
 
 dependencies = {
@@ -146,3 +148,32 @@ class TestLockManager(object):
         solution = LockManager(lock_path).load()
 
         assert solution.manifest_hash is None
+
+    def test_change_idf_version_lock_file(self, monkeypatch):
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
+        manifest = Manifest.fromdict({'dependencies': {'idf': '4.4.0'}}, name='test_manifest')
+        project_requirements = ProjectRequirements([manifest])
+        solution = SolvedManifest.fromdict(
+            dict(
+                [
+                    ('version', '1.0.0'),
+                    ('dependencies', {
+                        'idf': {
+                            'component_hash': None,
+                            'source': {
+                                'type': 'idf'
+                            },
+                            'version': '4.2.0'
+                        }
+                    }),
+                    ('manifest_hash', 'bff084ca418bd07bbb3f7b0a6713f45e802be72a006a5f301230ac755639683c'),
+                ]))
+
+        monkeypatch.setenv('IDF_VERSION', '4.4.0')
+        assert is_solve_required(project_requirements, solution)  # Wrong manifest hash
+
+        solution.manifest_hash = 'bff084ca418bd07bbb3f7b0a6713f45e802be72a006a5f30ac70ac755639683c'
+        assert is_solve_required(project_requirements, solution)  # Different idf version
+
+        monkeypatch.setenv('IDF_VERSION', '4.2.0')
+        assert not is_solve_required(project_requirements, solution)
