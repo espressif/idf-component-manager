@@ -7,9 +7,9 @@ import pytest
 
 from idf_component_manager.dependencies import detect_unused_components
 from idf_component_tools.errors import ManifestError
+from idf_component_tools.hash_tools import HASH_FILENAME
 from idf_component_tools.manifest import (
     SLUG_REGEX, ComponentVersion, ManifestManager, ManifestValidator, SolvedComponent)
-from idf_component_tools.manifest.constants import HASH_FILENAME
 from idf_component_tools.manifest.validator import DEFAULT_KNOWN_TARGETS, known_targets
 
 

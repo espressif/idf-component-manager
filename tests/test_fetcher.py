@@ -4,8 +4,8 @@ from io import open
 import pytest
 
 from idf_component_tools.errors import ComponentModifiedError, InvalidComponentHashError
+from idf_component_tools.hash_tools import HASH_FILENAME
 from idf_component_tools.manifest import ComponentVersion, SolvedComponent
-from idf_component_tools.manifest.constants import HASH_FILENAME
 from idf_component_tools.sources import WebServiceSource
 from idf_component_tools.sources.fetcher import ComponentFetcher
 

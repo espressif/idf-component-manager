@@ -5,9 +5,9 @@ from io import open
 
 from ..build_system_tools import build_name
 from ..errors import ComponentModifiedError, InvalidComponentHashError
-from ..hash_tools import HashDoesNotExistError, HashNotEqualError, HashNotSHA256Error, validate_dir_with_hash_file
+from ..hash_tools import (
+    HASH_FILENAME, HashDoesNotExistError, HashNotEqualError, HashNotSHA256Error, validate_dir_with_hash_file)
 from ..manifest import SolvedComponent
-from ..manifest.constants import HASH_FILENAME
 
 try:
     from typing import TYPE_CHECKING, List

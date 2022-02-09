@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Use bare repositories for caching components sourced from git
+- `idf.py fullclean` command also delete unchanged dependency components from `managed_components` folder
 
 ### Fixed
 

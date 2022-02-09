@@ -7,7 +7,6 @@ from io import open
 from pathlib import Path
 
 from .file_tools import DEFAULT_EXCLUDE, filtered_paths
-from .manifest.constants import HASH_FILENAME, SHA256_RE
 
 try:
     from typing import Any, Iterable, Optional, Text, Union
@@ -15,6 +14,8 @@ except ImportError:
     pass
 
 BLOCK_SIZE = 65536
+HASH_FILENAME = '.component_hash'
+SHA256_RE = r'^[A-Fa-f0-9]{64}$'
 
 
 class ValidatingHashError(Exception):
