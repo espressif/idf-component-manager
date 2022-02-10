@@ -25,7 +25,7 @@ from idf_component_tools.manifest import (
     MANIFEST_FILENAME, WEB_DEPENDENCY_REGEX, Manifest, ManifestManager, ProjectRequirements)
 from idf_component_tools.sources import WebServiceSource
 
-from .cmake_component_requirements import ITERABLE_PROPS, CMakeRequirementsManager, ComponentName
+from .cmake_component_requirements import CMakeRequirementsManager, ComponentName, handle_project_requirements
 from .core_utils import archive_filename, dist_name, raise_component_modified_error
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
@@ -382,6 +382,7 @@ class ComponentManager(object):
         except FileNotFoundError:
             raise FatalError('Cannot find component list file. Please make sure this script is executed from CMake')
 
+        add_all_components_to_main = False
         for component in components_with_manifests:
             component = component.strip()
             name = os.path.basename(component)
@@ -389,15 +390,17 @@ class ComponentManager(object):
             name_key = ComponentName('idf', name)
 
             for dependency in manifest.dependencies:
+                # Meta dependencies, like 'idf' are not used directly
                 if dependency.meta:
                     continue
 
                 dependency_name = build_name(dependency.name)
                 requirement_key = 'REQUIRES' if dependency.public else 'PRIV_REQUIRES'
 
-                # Don't add requirements to the main component
-                # to let it be handled specially by the IDF build system
+                # Mark all requirements of `main` as public
                 if name_key == ComponentName('idf', 'main'):
+                    add_all_components_to_main = True
+                    # Handle the case when main dependecy is explicitly marked as private
                     if dependency.public is False:
                         print(
                             'WARNING: Public flag is ignored for the main dependency "{}". '
@@ -407,30 +410,15 @@ class ComponentManager(object):
                 if dependency_name not in requirements[name_key][requirement_key]:
                     requirements[name_key][requirement_key].append(dependency_name)
 
-        # Handling "unknown" dependencies
-        known_names = [component_name.name for component_name in requirements.keys()]
-        for name, requirement in requirements.items():
-            for prop in ITERABLE_PROPS:
-                if prop not in requirement:
-                    continue
+        # If there are any dependencies added to the `main` component,
+        # add every other component to it dependencies
+        # to reproduce convenience behavior for the standard project defined in IDF's `project.cmake`
+        if add_all_components_to_main:
+            main_reqs = requirements[ComponentName('idf', 'main')]['REQUIRES']  # type: list[str]
+            for requirement in requirements.keys():
+                name = requirement.name
+                if name not in main_reqs and name != 'main':
+                    main_reqs.append(name)
 
-                items = requirement[prop]
-                for index, item in enumerate(items):
-                    # Skip if known
-                    if item in known_names:
-                        continue
-
-                    # Replace requirement for components installed by the manager
-                    prefixed_name = '__{}'.format(item)
-                    for known_name in known_names:
-                        if not known_name.endswith(prefixed_name):
-                            continue
-
-                        if known_name in items:
-                            del items[index]
-                        else:
-                            items[index] = known_name
-
-                requirements[name][prop] = items
-
+        handle_project_requirements(requirements)
         requirements_manager.dump(requirements)

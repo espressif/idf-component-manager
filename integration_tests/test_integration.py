@@ -404,6 +404,31 @@ def test_changes_in_component(project):
     assert 'Build files have been written to' in res
 
 
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'cmake_lists': {
+                        'requires': 'efuse',
+                    },
+                    'dependencies': {
+                        'cmp': {
+                            'version': '*',
+                            'path': fixtures_path('components', 'cmp'),
+                            'include': 'cmp.h',
+                        },
+                    }
+                }
+            }
+        },
+    ],
+    indirect=True)
+def test_local_dependency_main_requires(project):
+    res = build_project(project)
+    assert 'Project build complete.' in res
+
+
 def test_known_targets():
     branch = os.getenv('IDF_BRANCH')
     if not branch or branch == 'master':
