@@ -19,12 +19,14 @@ from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.errors import FatalError, GitError, ManifestError, NothingToDoError
 from idf_component_tools.file_tools import copy_filtered_directory, create_directory
 from idf_component_tools.git_client import GitClient
+from idf_component_tools.hash_tools import (
+    HashDoesNotExistError, HashNotEqualError, HashNotSHA256Error, validate_dir_with_hash_file)
 from idf_component_tools.manifest import (
     MANIFEST_FILENAME, WEB_DEPENDENCY_REGEX, Manifest, ManifestManager, ProjectRequirements)
 from idf_component_tools.sources import WebServiceSource
 
 from .cmake_component_requirements import ITERABLE_PROPS, CMakeRequirementsManager, ComponentName
-from .core_utils import archive_filename, dist_name
+from .core_utils import archive_filename, dist_name, raise_component_modified_error
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
 from .service_details import service_details
@@ -199,6 +201,32 @@ class ComponentManager(object):
             print('Deleted version {} of the component {}'.format(component_name, version))
         except APIClientError as e:
             raise FatalError(e)
+
+    def remove_managed_components(self, args):
+        managed_components_dir = Path(self.path, 'managed_components')
+
+        if not managed_components_dir.is_dir():
+            return
+
+        undeleted_components = []
+        for component_dir in managed_components_dir.glob('*/'):
+
+            if not (managed_components_dir / component_dir).is_dir():
+                continue
+
+            try:
+                validate_dir_with_hash_file(str(managed_components_dir / component_dir))
+                shutil.rmtree(str(managed_components_dir / component_dir))
+            except (HashNotEqualError, HashNotSHA256Error):
+                undeleted_components.append(component_dir.name)
+            except HashDoesNotExistError:
+                pass
+
+        if undeleted_components:
+            raise_component_modified_error(str(managed_components_dir), undeleted_components)
+
+        elif any(managed_components_dir.iterdir()) == 0:
+            shutil.rmtree(str(managed_components_dir))
 
     def upload_component(self, args):
         client, namespace = service_details(args.get('namespace'), args.get('service_profile'))

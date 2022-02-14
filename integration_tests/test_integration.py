@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import sys
 from io import open
+from pathlib import Path
 
 import pytest
 
@@ -405,3 +406,30 @@ def test_known_targets():
         sys.path.append(os.path.join(idf_path, 'tools'))
         from idf_py_actions.constants import PREVIEW_TARGETS, SUPPORTED_TARGETS
         assert SUPPORTED_TARGETS + PREVIEW_TARGETS == DEFAULT_KNOWN_TARGETS
+
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'mag3110': {
+                            'version': '^1.0.0',
+                        }
+                    }
+                }
+            }
+        },
+    ], indirect=True)
+def test_fullclean_managed_components(project):
+    project_action(project, 'reconfigure')
+    assert Path(project, 'managed_components').is_dir()
+    project_action(project, 'fullclean')
+    assert not Path(project, 'managed_components').is_dir()
+    project_action(project, 'reconfigure')
+    component_hash = Path(project, 'managed_components', 'espressif__mag3110', '.component_hash')
+    with component_hash.open(mode='wt') as hash_file:
+        hash_file.write(u'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+    project_action(project, 'fullclean')
+    assert Path(project, 'managed_components', 'espressif__mag3110').is_dir()

@@ -1,15 +1,14 @@
 import os
 import shutil
-from textwrap import dedent
 
 from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.errors import ComponentModifiedError, FetchingError
 from idf_component_tools.hash_tools import ValidatingHashError, validate_dir_with_hash_file
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import ProjectRequirements, SolvedComponent, SolvedManifest
-from idf_component_tools.manifest.constants import HASH_FILENAME
 from idf_component_tools.sources.fetcher import ComponentFetcher
 
+from .core_utils import raise_component_modified_error
 from .version_solver.version_solver import VersionSolver
 
 
@@ -130,36 +129,6 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
                 changed_components.append(component.name)
 
         if changed_components:
-            project_path = os.path.split(managed_components_path)[0]
-            component_example_name = changed_components[0].replace('/', '__')
-            managed_component_folder = os.path.join(managed_components_path, component_example_name)
-            component_folder = os.path.join(project_path, 'components', component_example_name)
-            hash_path = os.path.join(managed_component_folder, HASH_FILENAME)
-            error = """
-                Some components ({component_names}) in the
-                "managed_components" directory were modified on the disk since the last run of the CMake. Content of
-                this directory is managed automatically.
-
-                If you want to keep the changes, you can move the directory with the component to the "components"
-                directory of your project.
-
-                I.E. for "{component_example}" run:
-
-                mv {managed_component_folder} {component_folder}
-
-                Or, if you want to discard the changes remove the "{hash_filename}" file from the component's
-                directory.
-
-                I.E. for "{component_example}" run:
-
-                rm {hash_path}
-            """.format(
-                component_names=', '.join(changed_components),
-                component_example=component_example_name,
-                managed_component_folder=managed_component_folder,
-                component_folder=component_folder,
-                hash_path=hash_path,
-                hash_filename=HASH_FILENAME)
-            raise ComponentModifiedError(dedent(error))
+            raise_component_modified_error(managed_components_path, changed_components)
 
     return downloaded_component_paths

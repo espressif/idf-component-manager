@@ -63,7 +63,14 @@ def action_extensions(base_actions, project_path):
             print(e)
             sys.exit(e.exit_code)
 
+    def global_callback(ctx, global_args, tasks):
+        copy_tasks = list(tasks)
+        for index, task in enumerate(copy_tasks):
+            if task.name == 'fullclean':
+                tasks.insert(index + 1, ctx.invoke(ctx.command.get_command(ctx, 'remove_managed_components')))
+
     return {
+        'global_action_callbacks': [global_callback],
         'actions': {
             'create-manifest': {
                 'callback': callback,
@@ -82,6 +89,10 @@ def action_extensions(base_actions, project_path):
                     },
                 ],
                 'options': LOCAL_MANIFEST_OPTIONS,
+            },
+            'remove_managed_components': {
+                'callback': callback,
+                'hidden': True
             },
             'upload-component': {
                 'callback': callback,
