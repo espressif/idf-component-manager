@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix checkout error when depends on git source without `path`
 - Fix solve version error when using local components with git source.
 - Fix solve version error when using caret (`^`) with prerelease version
+- Fix relative path in the manifest for local components
 
 ## [1.0.1] 2022-01-12
 
