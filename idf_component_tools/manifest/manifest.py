@@ -184,8 +184,11 @@ class ComponentVersion(object):
 
         # Checking format
         if not (self.is_any or self.is_commit_id):
-            self._semver = semver.Version(self._version_string)
-            self.is_semver = True
+            try:
+                self._semver = semver.Version(self._version_string)
+                self.is_semver = True
+            except ValueError:
+                pass
 
     def __eq__(self, other):
         if hasattr(self, 'is_semver') and hasattr(other, 'is_semver') and self.is_semver and other.is_semver:

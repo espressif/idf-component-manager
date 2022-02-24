@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Delete unused components from the `managed_components` directory
 - Fix include/exclude filters for nested paths in `idf_component.yml` manifest
 - Update lock file if new version of the idf was detected
+- Fix version check for components sourced from git
 
 ## [1.0.1] 2022-01-12
 
