@@ -15,20 +15,6 @@ from idf_component_tools.errors import FatalError, NothingToDoError
 from idf_component_tools.git_client import GitClient
 from idf_component_tools.manifest import MANIFEST_FILENAME, ManifestManager
 
-PRE_RELEASE_COMPONENT_PATH = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)),
-    'fixtures',
-    'components',
-    'pre',
-)
-
-RELEASE_COMPONENT_PATH = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)),
-    'fixtures',
-    'components',
-    'cmp',
-)
-
 
 def list_dir(folder):
     res = []
@@ -66,10 +52,10 @@ def test_init_project():
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_upload_component.yaml')
-def test_upload_component(monkeypatch):
+def test_upload_component(monkeypatch, pre_release_component_path):
     monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
     monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
-    manager = ComponentManager(path=PRE_RELEASE_COMPONENT_PATH)
+    manager = ComponentManager(path=pre_release_component_path)
 
     manager.upload_component({
         'name': 'cmp',
@@ -78,10 +64,10 @@ def test_upload_component(monkeypatch):
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_check_only_component.yaml')
-def test_check_only_upload_component(monkeypatch):
+def test_check_only_upload_component(monkeypatch, pre_release_component_path):
     monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
     monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
-    manager = ComponentManager(path=PRE_RELEASE_COMPONENT_PATH)
+    manager = ComponentManager(path=pre_release_component_path)
 
     manager.upload_component({
         'name': 'cmp',
@@ -91,10 +77,10 @@ def test_check_only_upload_component(monkeypatch):
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_allow_existing_component.yaml')
-def test_allow_existing_component(monkeypatch):
+def test_allow_existing_component(monkeypatch, release_component_path):
     monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
     monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
-    manager = ComponentManager(path=RELEASE_COMPONENT_PATH)
+    manager = ComponentManager(path=release_component_path)
 
     manager.upload_component({
         'name': 'cmp',
@@ -104,8 +90,8 @@ def test_allow_existing_component(monkeypatch):
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_upload_component_skip_pre.yaml')
-def test_upload_component_skip_pre(monkeypatch):
-    manager = ComponentManager(path=PRE_RELEASE_COMPONENT_PATH)
+def test_upload_component_skip_pre(monkeypatch, pre_release_component_path):
+    manager = ComponentManager(path=pre_release_component_path)
     monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
     monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
 
@@ -119,8 +105,8 @@ def test_upload_component_skip_pre(monkeypatch):
     assert str(e.value).startswith('Skipping pre-release')
 
 
-def test_pack_component_version_from_git(monkeypatch, tmp_path):
-    copy_tree(PRE_RELEASE_COMPONENT_PATH, str(tmp_path))
+def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_component_path):
+    copy_tree(pre_release_component_path, str(tmp_path))
     component_manager = ComponentManager(path=str(tmp_path))
 
     # remove the first version line
@@ -153,8 +139,8 @@ def test_pack_component_version_from_git(monkeypatch, tmp_path):
         ])
 
 
-def test_pack_component_with_version(tmp_path):
-    copy_tree(RELEASE_COMPONENT_PATH, str(tmp_path))
+def test_pack_component_with_version(tmp_path, release_component_path):
+    copy_tree(release_component_path, str(tmp_path))
     component_manager = ComponentManager(path=str(tmp_path))
 
     # remove the first version line

@@ -1,7 +1,7 @@
 import os
 
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import SolvedComponent
+from idf_component_tools.manifest import ManifestManager, SolvedComponent
 from idf_component_tools.sources import WebServiceSource
 
 valid_lock_path = os.path.join(
@@ -25,3 +25,33 @@ class TestSolverResult(object):
         assert isinstance(cmp.source, WebServiceSource)
         assert cmp.source.base_url == 'https://repo.example.com'
         assert str(solution.dependencies[1].version) == '4.4.4'
+
+    def test_solve_optional_dependency(self, monkeypatch, release_component_path):
+        monkeypatch.setenv('IDF_VERSION', '5.0.0')
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
+
+        manifest_manager = ManifestManager(release_component_path, 'test')
+        manifest_manager.manifest_tree['dependencies'] = {
+            'test': '1.2.3',
+            'pest': {
+                'version': '3.2.1'
+            },
+            'foo': {
+                'version': '1.0.0',
+                'rules': [
+                    {
+                        'if': 'idf_version == 5.0.0'
+                    },
+                    {
+                        'if': 'target not in [esp32, esp32c3]'
+                    },
+                ]
+            }
+        }
+        manifest = manifest_manager.load()
+        assert len(manifest.dependencies) == 3
+        for dependency in manifest.dependencies:
+            if dependency.name == 'espressif/foo':
+                assert not dependency.meet_optional_dependencies
+            else:
+                assert dependency.meet_optional_dependencies

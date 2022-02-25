@@ -72,6 +72,12 @@ dependencies:
   # with relative or absolute path
   some_local_component:
     path: ../../projects/component
+  # For optional dependencies
+  optional_component:
+    version: "~1.0.0"
+    rules:  # will add "optional_component" only when all if clauses are True
+      - if: "idf_version >=3.3,<5.0"  # supports all SimpleSpec grammars (https://python-semanticversion.readthedocs.io/en/latest/reference.html#semantic_version.SimpleSpec)
+      - if: "target in [esp32, esp32c3]"  # supports boolean operator ==, !=, in, not in.
 ```
 
 ## Contributions Guide

@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Tracking modifications of the managed components
 - Add CLI method to create a project from a component's example
 - Print a warning when the name of the local component doesn't match the directory name.
+- Optional dependencies for the `idf_component.yml` based on two keywords, `idf_version` and `target`.
+  `idf_version` supports all [`SimpleSpec`](https://python-semanticversion.readthedocs.io/en/latest/reference.html#semantic_version.SimpleSpec) grammar,
+  and `target` supports `==`, `!=`, `in`, `not in`.
 
 ### Changed
 

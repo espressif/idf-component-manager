@@ -10,6 +10,7 @@ import idf_component_tools as tools
 from ..errors import SourceError
 from ..semver import Version
 from .constants import FULL_SLUG_REGEX, TAGS_REGEX
+from .if_parser import parse_if_clause
 
 try:
     from typing import Iterable, List
@@ -34,6 +35,8 @@ KNOWN_FILES_KEYS = [
     'include',
     'exclude',
 ]
+
+KNOWN_IF_CLAUSE_KEYWORDS = ['IDF_TARGET', 'IDF_VERSION']
 
 NONEMPTY_STRING = And(Or(*string_types), len, error='Non-empty string is required here')
 SLUG_REGEX_COMPILED = re.compile(FULL_SLUG_REGEX)
@@ -74,6 +77,9 @@ def dependency_schema():  # type () -> Schema
             Optional('path'): NONEMPTY_STRING,
             Optional('git'): NONEMPTY_STRING,
             Optional('service_url'): NONEMPTY_STRING,
+            Optional('rules'): [{
+                'if': Use(parse_if_clause)
+            }],
         },
         error='Invalid dependency format',
     )
@@ -83,7 +89,7 @@ def manifest_schema():  # type () -> Schema
     return Schema(
         {
             Optional('name'): Or(*string_types),
-            Optional('version'): Use(Version.parse, error='Component version should be valid semantic version'),
+            Optional('version'): Or(Version.parse, error='Component version should be valid semantic version'),
             Optional('targets'): known_targets(),
             Optional('maintainers'): [NONEMPTY_STRING],
             Optional('description'): NONEMPTY_STRING,
@@ -139,7 +145,7 @@ class ManifestValidator(object):
             self.add_error('Component\'s name "%s" should not contain two consecutive underscores.' % component)
 
     def validate_normalize_dependencies(self):  # type: () -> None
-        if ('dependencies' not in self.manifest_tree.keys() or not self.manifest_tree['dependencies']):
+        if 'dependencies' not in self.manifest_tree.keys() or not self.manifest_tree['dependencies']:
             return
 
         dependencies = self.manifest_tree['dependencies']
@@ -218,11 +224,11 @@ class ManifestValidator(object):
             if key not in KNOWN_FILES_KEYS:
                 self.add_error('"files" section contains unknown key: %s' % key)
 
-    def validate_schema(self):
+    def validate_normalize_schema(self):
         try:
-            manifest_schema().validate(self.manifest_tree)
+            self.manifest_tree = manifest_schema().validate(self.manifest_tree)
         except SchemaError as e:
-            # Some format errors may not have detailed description, so avoid dupplications
+            # Some format errors may not have detailed description, so avoid duplications
             errors = list(filter(None, e.errors))
             self._errors.extend(sorted(set(errors), key=errors.index))
 
@@ -235,7 +241,7 @@ class ManifestValidator(object):
             self.add_error('Some tags are more than once in the manifest: %s' % ', '.join(dupes))
 
     def validate_normalize(self):
-        self.validate_schema()
+        self.validate_normalize_schema()
         self.validate_root_keys()
         self.validate_normalize_dependencies()
         self.validate_targets()
