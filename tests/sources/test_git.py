@@ -1,5 +1,7 @@
 import tempfile
 
+import pytest
+
 from idf_component_tools import sources
 from idf_component_tools.git_client import GitClient
 
@@ -32,3 +34,12 @@ def test_checkout_git_source(monkeypatch):
     temp_path = tempfile.mkdtemp()
 
     assert COMMIT_ID == source._checkout_git_source('*', temp_path)
+
+
+@pytest.mark.parametrize('path, component_path', [
+    (None, '.'),
+    ('test', 'test'),
+])
+def test_git_source_component_path(path, component_path):
+    source = sources.GitSource({'git': '', 'path': path})
+    assert source.component_path == component_path

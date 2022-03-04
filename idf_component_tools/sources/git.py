@@ -34,7 +34,7 @@ class GitSource(BaseSource):
     def __init__(self, source_details=None, **kwargs):
         super(GitSource, self).__init__(source_details=source_details, **kwargs)
         self.git_repo = source_details['git']
-        self.component_path = source_details.get('path', '')
+        self.component_path = source_details.get('path') or '.'
 
         self._client = GitClient()
 
