@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix include/exclude filters for nested paths in `idf_component.yml` manifest
 - Update lock file if new version of the idf was detected
 - Fix checkout error when depends on git source without `path`
+- Fix solve version error when using local components with git source.
 
 ## [1.0.1] 2022-01-12
 

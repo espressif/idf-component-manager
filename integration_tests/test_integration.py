@@ -51,7 +51,7 @@ def build_project(project_path):
 
 
 def set_target(project_path, target):
-    return live_print_call((['idf.py', '-C', project_path, 'set-target', target]))
+    return live_print_call(['idf.py', '-C', project_path, 'set-target', target])
 
 
 @pytest.mark.parametrize(
@@ -316,6 +316,46 @@ def result(request):
 def test_version_solver(project, result):
     project_path = os.path.join(os.path.dirname(__file__), 'version_solver_projects', project)
     real_result = project_action(project_path, 'fullclean', 'reconfigure')
+    for line in result:
+        assert line in real_result
+
+
+@pytest.mark.parametrize(
+    'project, result', [
+        (
+            {
+                'components': {
+                    'main': {
+                        'dependencies': {
+                            'component_foo': {
+                                'version': '1.0.0',
+                                'path': '../../component_foo',
+                            }
+                        }
+                    },
+                    'component_foo': {
+                        'version': '1.0.0',
+                        'dependencies': {
+                            'git-only-cmp': {
+                                'version': 'main',
+                                'git': 'https://github.com/espressif/example_components.git',
+                                'path': 'git-only-cmp',
+                            },
+                        },
+                    },
+                }
+            }, [
+                '[1/4] component_foo',
+                '[2/4] example/cmp',
+                '[3/4] git-only-cmp',
+                '[4/4] idf',
+            ]),
+    ],
+    indirect=True)
+def test_version_solver_on_local_components(project, result):
+    # need to move to another folder, not under the default `components/`
+    os.rename(os.path.join(project, 'components', 'component_foo'), os.path.join(project, '..', 'component_foo'))
+    real_result = project_action(project, 'fullclean', 'reconfigure')
     for line in result:
         assert line in real_result
 

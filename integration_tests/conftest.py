@@ -9,7 +9,7 @@ from .integration_test_helpers import create_component, generate_from_template
 @pytest.fixture(scope='function')
 def project(request, tmpdir_factory):
     project_path = str(tmpdir_factory.mktemp('project'))
-    file_loader = FileSystemLoader(os.path.join('integration_tests', 'fixtures', 'templates'))
+    file_loader = FileSystemLoader(os.path.join(os.path.dirname(__file__), 'fixtures', 'templates'))
     env = Environment(loader=file_loader)
     generate_from_template(os.path.join(project_path, 'CMakeLists.txt'), env.get_template('CMakeLists.txt'))
 

@@ -148,7 +148,7 @@ class ComponentRequirement(object):
             public=None,  # type: Optional[bool]
     ):
         # type: (...) -> None
-        self.version_spec = version_spec
+        self._version_spec = version_spec
         self.source = source
         self._name = name
         self.public = public
@@ -160,6 +160,10 @@ class ComponentRequirement(object):
     @property
     def name(self):
         return self.source.normalized_name(self._name)
+
+    @property
+    def version_spec(self):
+        return self.source.normalize_spec(self._version_spec)
 
     def __repr__(self):  # type: () -> str
         return 'ComponentRequirement("{}", {}, version_spec="{}", public={})'.format(
