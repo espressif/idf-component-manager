@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix use of project's components with higher priority than ones delivered by the component manager
 - Delete unused components from the `managed_components` directory
 - Fix include/exclude filters for nested paths in `idf_component.yml` manifest
 - Update lock file if new version of the idf was detected
