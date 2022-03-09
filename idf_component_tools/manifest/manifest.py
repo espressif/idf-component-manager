@@ -42,7 +42,6 @@ class Manifest(object):
             self,
             dependencies=None,  # type: Optional[List[ComponentRequirement]] # Dependencies, list of component
             description=None,  # description type: Optional[str] # Human-readable
-            download_url=None,  # type: Optional[str] # Direct url for tarball download
             maintainers=None,  # type: Optional[str] # List of maintainers
             manifest_hash=None,  # type: Optional[str] # Check-sum of manifest content
             name=None,  # type: Optional[str] # Component name
@@ -59,7 +58,6 @@ class Manifest(object):
         self.version = version
         self.maintainers = maintainers
         self.description = description
-        self.download_url = download_url
         self.url = url
         if tags is None:
             tags = []

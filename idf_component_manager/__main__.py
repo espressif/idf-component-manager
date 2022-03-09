@@ -13,6 +13,7 @@ KNOWN_ACTIONS = [
     'pack-component',
     'upload-component',
     'upload-component-status',
+    'create-project-from-example',
     'delete-version',
 ]
 
@@ -36,6 +37,7 @@ def main():
         '--check-only', help='Check if given component version is already uploaded and exit.', action='store_true')
     parser.add_argument(
         '--allow-existing', help='Return success if existing version is already uploaded.', action='store_true')
+    parser.add_argument('--example', help='Example name')
 
     args = parser.parse_args()
 

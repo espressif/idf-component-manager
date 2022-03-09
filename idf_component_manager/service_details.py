@@ -10,8 +10,50 @@ from idf_component_tools.sources.web_service import default_component_service_ur
 ServiceDetails = namedtuple('ServiceDetails', ['client', 'namespace'])
 
 
+class NamespaceError(FatalError):
+    pass
+
+
+class APITokenError(FatalError):
+    pass
+
+
 class NoSuchProfile(FatalError):
     pass
+
+
+def get_namespace(profile, namespace=None):  # type: (dict[str, str], str | None) -> str
+    namespace = namespace or profile.get('default_namespace')
+
+    if not namespace:
+        raise NamespaceError('Failed to get namespace from the config file')
+
+    return namespace
+
+
+def get_token(profile):  # type: (dict[str, str]) -> str
+    token = os.getenv('IDF_COMPONENT_API_TOKEN') or profile.get('api_token')
+
+    if not token:
+        raise APITokenError('Failed to get API Token from the config file')
+
+    return token
+
+
+def get_profile(config_path=None, profile_name=None):  # type: (str | None, str | None) -> dict[str, str]
+    config = ConfigManager(path=config_path).load()
+    profile = config.profiles.get(profile_name, {})
+    return profile
+
+
+def create_api_client(base_url=None, token=None):  # type: (str | None, str | None) -> APIClient
+    if not base_url:
+        profile = get_profile()
+        base_url = default_component_service_url(service_profile=profile)
+
+    assert base_url is not None
+
+    return APIClient(base_url=base_url, auth_token=token)
 
 
 def service_details(
@@ -19,9 +61,8 @@ def service_details(
         service_profile=None,  # type: str | None
         config_path=None  # type: str | None
 ):  # type: (...) -> ServiceDetails
-    config = ConfigManager(path=config_path).load()
     profile_name = service_profile or 'default'
-    profile = config.profiles.get(profile_name, {})
+    profile = get_profile(config_path, profile_name)
 
     if profile:
         print('Selected profile name from idf_component_manager.yml file: {}'.format(profile_name))
@@ -32,15 +73,11 @@ def service_details(
     service_url = default_component_service_url(service_profile=profile)
 
     # Priorities: idf.py option > IDF_COMPONENT_NAMESPACE env variable > profile value
-    namespace = namespace or profile.get('default_namespace')
-    if not namespace:
-        raise FatalError('Namespace is required to upload component')
+    namespace = get_namespace(profile, namespace)
 
     # Priorities: IDF_COMPONENT_API_TOKEN env variable > profile value
-    token = os.getenv('IDF_COMPONENT_API_TOKEN') or profile.get('api_token')
-    if not token:
-        raise FatalError('API token is required to upload component')
+    token = get_token(profile)
 
-    client = APIClient(base_url=service_url, auth_token=token)
+    client = create_api_client(service_url, token)
 
     return ServiceDetails(client, namespace)
