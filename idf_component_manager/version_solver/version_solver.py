@@ -41,9 +41,7 @@ class VersionSolver(object):
 
     def solve_manifest(self, manifest):
         for requirement in manifest.dependencies:
-            self._source.root_dep(
-                Package(requirement.name, requirement.source),
-                requirement.source.normalize_spec(requirement.version_spec))
+            self._source.root_dep(Package(requirement.name, requirement.source), requirement.version_spec)
             self.solve_component(requirement)
 
     def solve_component(self, requirement):  # type: (ComponentRequirement) -> None
