@@ -1,4 +1,4 @@
-import semantic_version as semver
+from idf_component_tools import semver
 
 from .__version__ import __version__
 

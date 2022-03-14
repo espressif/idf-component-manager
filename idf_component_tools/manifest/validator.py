@@ -3,12 +3,12 @@ import re
 import sys
 
 from schema import And, Optional, Or, Regex, Schema, SchemaError, Use
-from semantic_version import Version
 from six import string_types
 
 import idf_component_tools as tools
 
 from ..errors import SourceError
+from ..semver import Version
 from .constants import FULL_SLUG_REGEX, TAGS_REGEX
 
 try:

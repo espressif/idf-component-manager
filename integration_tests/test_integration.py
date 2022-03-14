@@ -361,6 +361,30 @@ def test_version_solver_on_local_components(project, result):
 
 
 @pytest.mark.parametrize(
+    'project, result', [
+        (
+            {
+                'components': {
+                    'main': {
+                        'dependencies': {
+                            'es8311': {
+                                'version': '^0.0.2-alpha',
+                            }
+                        },
+                    }
+                }
+            },
+            ['[1/2] espressif/es8311', '[2/2] idf'],
+        ),
+    ],
+    indirect=True)
+def test_version_solver_with_caret_and_prerelease(project, result):
+    real_result = project_action(project, 'fullclean', 'reconfigure')
+    for line in result:
+        assert line in real_result
+
+
+@pytest.mark.parametrize(
     'project', [
         {
             'components': {

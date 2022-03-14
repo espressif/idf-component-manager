@@ -8,11 +8,11 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 from schema import Schema, SchemaError
-from semantic_version import SimpleSpec, Version
 from tqdm import tqdm
 
 # Import whole module to avoid circular dependencies
 import idf_component_tools as tools
+from idf_component_tools.semver import SimpleSpec, Version
 
 from .api_schemas import COMPONENT_SCHEMA, ERROR_SCHEMA, TASK_STATUS_SCHEMA, VERSION_UPLOAD_SCHEMA
 

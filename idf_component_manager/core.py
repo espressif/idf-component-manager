@@ -10,7 +10,6 @@ from datetime import datetime, timedelta
 from io import open
 from pathlib import Path
 
-from semantic_version import SimpleSpec, Version
 from tqdm import tqdm
 
 from idf_component_tools.api_client import APIClientError
@@ -23,6 +22,7 @@ from idf_component_tools.hash_tools import (
     HashDoesNotExistError, HashNotEqualError, HashNotSHA256Error, validate_dir_with_hash_file)
 from idf_component_tools.manifest import (
     MANIFEST_FILENAME, WEB_DEPENDENCY_REGEX, Manifest, ManifestManager, ProjectRequirements)
+from idf_component_tools.semver import SimpleSpec, Version
 from idf_component_tools.sources import WebServiceSource
 
 from .cmake_component_requirements import CMakeRequirementsManager, ComponentName, handle_project_requirements

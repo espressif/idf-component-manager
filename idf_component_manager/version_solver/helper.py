@@ -6,8 +6,8 @@ try:
 except ImportError:
     pass
 
-from semantic_version.base import Range as SemverRange
-from semantic_version.base import SimpleSpec
+from idf_component_tools.semver import Range as SemverRange
+from idf_component_tools.semver import SimpleSpec
 
 from .mixology.constraint import Constraint
 from .mixology.package import Package

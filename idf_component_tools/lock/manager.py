@@ -4,7 +4,7 @@ from io import open
 
 from schema import And, Optional, Or, Schema, SchemaError, Use
 from six import string_types
-from yaml import SafeDumper, YAMLError
+from yaml import Node, SafeDumper, YAMLError
 from yaml import dump as dump_yaml
 from yaml import safe_load
 
@@ -39,16 +39,16 @@ LOCK_SCHEMA = Schema(
     })
 
 
-def _ordered_dict_representer(dumper, data):  # type: (SafeDumper, OrderedDict) -> SafeDumper
+def _ordered_dict_representer(dumper, data):  # type: (SafeDumper, OrderedDict) -> Node
     return dumper.represent_data(dict(data))
 
 
-def _unicode_representer(dumper, data):  # type: (SafeDumper, str) -> SafeDumper
-    return dumper.represent_str(data.encode('utf-8'))
+def _unicode_representer(dumper, data):  # type: (SafeDumper, str) -> Node
+    return dumper.represent_str(data.encode('utf-8'))  # type: ignore
 
 
 SafeDumper.add_representer(OrderedDict, _ordered_dict_representer)
-SafeDumper.add_representer(string_types, _unicode_representer)
+SafeDumper.add_representer(string_types, _unicode_representer)  # type: ignore
 
 
 class LockManager:

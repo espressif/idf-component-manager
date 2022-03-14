@@ -8,7 +8,7 @@ from six import string_types
 try:
     from collections.abc import Iterable, Mapping
 except ImportError:
-    from collections import Iterable, Mapping
+    from collections import Iterable, Mapping  # type: ignore
 
 BASIC_TYPES = (Number, type(None)) + string_types
 
