@@ -5,9 +5,8 @@ import time
 from datetime import datetime
 from functools import wraps
 
-from semantic_version import Version
-
 from .errors import GitError
+from .semver import Version
 
 try:
     from typing import Any, Callable, List, Optional, Union

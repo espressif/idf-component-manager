@@ -2,20 +2,18 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) The python-semanticversion project
 # This code is distributed under the two-clause BSD License.
-
 """Test conformance to the specs."""
 
 import unittest
 
-import semantic_version
+from idf_component_tools import semver
 
 # shortcut
-Version = semantic_version.Version
+Version = semver.Version
 
 
 class FormatTests(unittest.TestCase):
     """Tests proper version validation."""
-
     def test_major_minor_patch(self):
         # SPEC:
         # A normal version number MUST take the form X.Y.Z
@@ -66,7 +64,7 @@ class FormatTests(unittest.TestCase):
             Version('1.2.3 -23')
         # Valid
         v = Version('1.2.3-23')
-        self.assertEqual(('23',), v.prerelease)
+        self.assertEqual(('23', ), v.prerelease)
 
         # SPEC:
         # Identifiers MUST comprise only ASCII alphanumerics and hyphen.

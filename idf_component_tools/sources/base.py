@@ -2,7 +2,6 @@ import os
 from abc import ABCMeta, abstractmethod
 
 from schema import Optional, Or
-from semantic_version import SimpleSpec
 from six import string_types
 
 import idf_component_tools as tools
@@ -10,6 +9,7 @@ import idf_component_tools as tools
 from ..errors import FetchingError, SourceError
 from ..file_cache import FileCache
 from ..hash_tools import validate_dir
+from ..semver import SimpleSpec
 
 try:
     from typing import TYPE_CHECKING, Callable, Dict, List

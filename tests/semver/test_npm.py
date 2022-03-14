@@ -2,13 +2,12 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) The python-semanticversion project
 # This code is distributed under the two-clause BSD License.
-
 """Test NPM-style specifications."""
 
-import unittest
 import sys
+import unittest
 
-from semantic_version import base
+from idf_component_tools.semver import base
 
 
 class NpmSpecTests(unittest.TestCase):

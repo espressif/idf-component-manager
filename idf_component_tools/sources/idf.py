@@ -3,8 +3,7 @@ import re
 import subprocess  # nosec
 import sys
 
-import semantic_version
-
+from .. import semver
 from ..errors import FetchingError
 from ..manifest import ComponentWithVersions, HashedComponentVersion
 from .base import BaseSource
@@ -40,7 +39,7 @@ def get_idf_version():
 
     res = IDF_VERSION_REGEX.findall(idf_version)
     if len(res) == 1:
-        return str(semantic_version.Version.coerce(res[0]))
+        return str(semver.Version.coerce(res[0]))
     else:
         raise FetchingError(
             'Could not parse IDF version from calling "idf.py --version".\n'
@@ -75,7 +74,7 @@ class IDFSource(BaseSource):
     def versions(self, name, details=None, spec='*', target=None):
         local_idf_version = get_idf_version()
 
-        if semantic_version.match(spec, local_idf_version):
+        if semver.match(spec, local_idf_version):
             versions = [HashedComponentVersion(local_idf_version)]
         else:
             versions = []

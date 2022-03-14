@@ -2,19 +2,18 @@
 import re
 from functools import total_ordering
 
-import semantic_version as semver
-
 import idf_component_tools as tools
 from idf_component_tools.build_system_tools import get_env_idf_target
 from idf_component_tools.hash_tools import hash_object
 from idf_component_tools.serialization import serializable
 
+from ..semver import Version
 from .constants import COMMIT_ID_RE
 
 try:
     from collections.abc import Mapping
 except ImportError:
-    from collections import Mapping
+    from collections import Mapping  # type: ignore
 
 try:
     from typing import TYPE_CHECKING, List, Optional, Union
@@ -188,7 +187,7 @@ class ComponentVersion(object):
 
         # Checking format
         if not (self.is_any or self.is_commit_id):
-            self._semver = semver.Version(self._version_string)
+            self._semver = Version(self._version_string)
             self.is_semver = True
 
     def __eq__(self, other):
@@ -216,8 +215,8 @@ class ComponentVersion(object):
         return self._version_string
 
     @property
-    def semver(self):  # type: () -> semver.Version
-        if self.is_semver:
+    def semver(self):  # type: () -> Version
+        if self.is_semver and self._semver:
             return self._semver
         else:
             raise TypeError('Version is not semantic')

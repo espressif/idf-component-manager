@@ -4,10 +4,10 @@
 # This code is distributed under the two-clause BSD License.
 
 import itertools
-import unittest
 import sys
+import unittest
 
-import semantic_version
+from idf_component_tools import semver
 
 
 class ParsingTestCase(unittest.TestCase):
@@ -39,7 +39,7 @@ class ParsingTestCase(unittest.TestCase):
     valid_fields = [
         ('0.1.1', [0, 1, 1, (), ()]),
         ('0.1.1', [0, 1, 1, None, None]),
-        ('0.1.2-rc1', [0, 1, 2, ('rc1',), ()]),
+        ('0.1.2-rc1', [0, 1, 2, ('rc1', ), ()]),
         ('0.1.2-rc1.3.4', [0, 1, 2, ('rc1', '3', '4'), ()]),
         ('0.1.2+build42-12.2012-01-01.12h23', [0, 1, 2, (), ('build42-12', '2012-01-01', '12h23')]),
         (
@@ -51,19 +51,19 @@ class ParsingTestCase(unittest.TestCase):
     def test_invalid(self):
         for invalid in self.invalids:
             with self.subTest(version=invalid):
-                self.assertRaises(ValueError, semantic_version.Version, invalid)
+                self.assertRaises(ValueError, semver.Version, invalid)
 
     def test_simple(self):
         for valid in self.valids:
             with self.subTest(version=valid):
-                version = semantic_version.Version(valid)
+                version = semver.Version(valid)
                 self.assertEqual(valid, str(version))
 
     def test_kwargs(self):
         for text, fields in self.valid_fields:
             with self.subTest(version=text):
                 major, minor, patch, prerelease, build = fields
-                version = semantic_version.Version(
+                version = semver.Version(
                     major=major,
                     minor=minor,
                     patch=patch,
@@ -93,9 +93,9 @@ class ComparisonTestCase(unittest.TestCase):
 
     def test_comparisons(self):
         for i, first in enumerate(self.order):
-            first_ver = semantic_version.Version(first)
+            first_ver = semver.Version(first)
             for j, second in enumerate(self.order):
-                second_ver = semantic_version.Version(second)
+                second_ver = semver.Version(second)
                 with self.subTest(first=first, second=second):
                     if i < j:
                         self.assertTrue(first_ver < second_ver, '%r !< %r' % (first_ver, second_ver))
@@ -105,7 +105,7 @@ class ComparisonTestCase(unittest.TestCase):
                         self.assertTrue(first_ver > second_ver, '%r !> %r' % (first_ver, second_ver))
 
                     cmp_res = -1 if i < j else (1 if i > j else 0)
-                    self.assertEqual(cmp_res, semantic_version.compare(first, second))
+                    self.assertEqual(cmp_res, semver.compare(first, second))
 
     unordered = [
         [
@@ -128,16 +128,16 @@ class ComparisonTestCase(unittest.TestCase):
         for group in self.unordered:
             for a, b in itertools.combinations(group, 2):
                 with self.subTest(a=a, b=b):
-                    v1 = semantic_version.Version(a)
-                    v2 = semantic_version.Version(b)
-                    self.assertTrue(v1 == v1, "%r != %r" % (v1, v1))
-                    self.assertFalse(v1 != v1, "%r != %r" % (v1, v1))
-                    self.assertFalse(v1 == v2, "%r == %r" % (v1, v2))
-                    self.assertTrue(v1 != v2, "%r !!= %r" % (v1, v2))
-                    self.assertFalse(v1 < v2, "%r !< %r" % (v1, v2))
-                    self.assertTrue(v1 <= v2, "%r !<= %r" % (v1, v2))
-                    self.assertFalse(v2 > v1, "%r !> %r" % (v2, v1))
-                    self.assertTrue(v2 >= v1, "%r !>= %r" % (v2, v1))
+                    v1 = semver.Version(a)
+                    v2 = semver.Version(b)
+                    self.assertTrue(v1 == v1, '%r != %r' % (v1, v1))
+                    self.assertFalse(v1 != v1, '%r != %r' % (v1, v1))
+                    self.assertFalse(v1 == v2, '%r == %r' % (v1, v2))
+                    self.assertTrue(v1 != v2, '%r !!= %r' % (v1, v2))
+                    self.assertFalse(v1 < v2, '%r !< %r' % (v1, v2))
+                    self.assertTrue(v1 <= v2, '%r !<= %r' % (v1, v2))
+                    self.assertFalse(v2 > v1, '%r !> %r' % (v2, v1))
+                    self.assertTrue(v2 >= v1, '%r !>= %r' % (v2, v1))
 
 
 if __name__ == '__main__':  # pragma: no cover

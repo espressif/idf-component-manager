@@ -3,10 +3,10 @@
 # Copyright (c) The python-semanticversion project
 # This code is distributed under the two-clause BSD License.
 
-import unittest
 import sys
+import unittest
 
-import semantic_version
+from idf_component_tools import semver
 
 
 class MatchTestCase(unittest.TestCase):
@@ -128,48 +128,48 @@ class MatchTestCase(unittest.TestCase):
     def test_invalid(self):
         for invalid in self.invalid_specs:
             with self.subTest(spec=invalid):
-                with self.assertRaises(ValueError, msg="Spec(%r) should be invalid" % invalid):
-                    semantic_version.Spec(invalid)
+                with self.assertRaises(ValueError, msg='Spec(%r) should be invalid' % invalid):
+                    semver.Spec(invalid)
 
     def test_simple(self):
         for valid in self.valid_specs:
             with self.subTest(spec=valid):
-                spec = semantic_version.SpecItem(valid)
+                spec = semver.SpecItem(valid)
                 normalized = str(spec)
-                self.assertEqual(spec, semantic_version.SpecItem(normalized))
+                self.assertEqual(spec, semver.SpecItem(normalized))
 
     def test_match(self):
         for spec_text, versions in self.matches.items():
             for version_text in versions:
                 with self.subTest(spec=spec_text, version=version_text):
-                    spec = semantic_version.Spec(spec_text)
+                    spec = semver.Spec(spec_text)
                     self.assertNotEqual(spec, spec_text)
-                    version = semantic_version.Version(version_text)
+                    version = semver.Version(version_text)
                     self.assertIn(version, spec)
-                    self.assertTrue(spec.match(version), "%r does not match %r" % (version, spec))
-                    self.assertTrue(semantic_version.match(spec_text, version_text))
+                    self.assertTrue(spec.match(version), '%r does not match %r' % (version, spec))
+                    self.assertTrue(semver.match(spec_text, version_text))
 
     def test_contains(self):
-        spec = semantic_version.Spec('<=0.1.1')
-        self.assertFalse('0.1.0' in spec, "0.1.0 should not be in %r" % spec)
+        spec = semver.Spec('<=0.1.1')
+        self.assertFalse('0.1.0' in spec, '0.1.0 should not be in %r' % spec)
 
-        version = semantic_version.Version('0.1.1+4.2')
-        self.assertTrue(version in spec, "%r should be in %r" % (version, spec))
+        version = semver.Version('0.1.1+4.2')
+        self.assertTrue(version in spec, '%r should be in %r' % (version, spec))
 
-        version = semantic_version.Version('0.1.1-rc1+4.2')
-        self.assertTrue(version in spec, "%r should be in %r" % (version, spec))
+        version = semver.Version('0.1.1-rc1+4.2')
+        self.assertTrue(version in spec, '%r should be in %r' % (version, spec))
 
     def test_prerelease_check(self):
-        strict_spec = semantic_version.Spec('>=0.1.1-')
-        lax_spec = semantic_version.Spec('>=0.1.1')
-        version = semantic_version.Version('0.1.1-rc1+4.2')
-        self.assertFalse(version in lax_spec, "%r should not be in %r" % (version, lax_spec))
-        self.assertFalse(version in strict_spec, "%r should not be in %r" % (version, strict_spec))
+        strict_spec = semver.Spec('>=0.1.1-')
+        lax_spec = semver.Spec('>=0.1.1')
+        version = semver.Version('0.1.1-rc1+4.2')
+        self.assertFalse(version in lax_spec, '%r should not be in %r' % (version, lax_spec))
+        self.assertFalse(version in strict_spec, '%r should not be in %r' % (version, strict_spec))
 
     def test_build_check(self):
-        spec = semantic_version.Spec('<=0.1.1-rc1')
-        version = semantic_version.Version('0.1.1-rc1+4.2')
-        self.assertTrue(version in spec, "%r should be in %r" % (version, spec))
+        spec = semver.Spec('<=0.1.1-rc1')
+        version = semver.Version('0.1.1-rc1+4.2')
+        self.assertTrue(version in spec, '%r should be in %r' % (version, spec))
 
 
 if __name__ == '__main__':  # pragma: no cover
