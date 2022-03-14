@@ -15,7 +15,6 @@ six = "*"
 tqdm = '*'
 
 [dev-packages]
-bandit = '*'
 coverage = '*'
 flake8 = '*'
 flake8-quotes = '*'
