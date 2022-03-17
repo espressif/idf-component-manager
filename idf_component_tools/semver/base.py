@@ -74,12 +74,20 @@ class AlphaIdentifier(object):
 
 
 class Version(object):
-
-    version_re = re.compile(r'^(\d+)\.(\d+)\.(\d+)(?:-([0-9a-zA-Z.-]+))?(?:\+([0-9a-zA-Z.-]+))?$')
-    partial_version_re = re.compile(r'^(\d+)(?:\.(\d+)(?:\.(\d+))?)?(?:-([0-9a-zA-Z.-]*))?(?:\+([0-9a-zA-Z.-]*))?$')
+    version_re = re.compile(r'^(\d+)\.(\d+)\.(\d+)(?:~(\d+))?(?:-([0-9a-zA-Z.-]+))?(?:\+([0-9a-zA-Z.-]+))?$')
+    partial_version_re = re.compile(
+        r'^(\d+)(?:\.(\d+)(?:\.(\d+))?)?(?:~(\d+))?(?:-([0-9a-zA-Z.-]*))?(?:\+([0-9a-zA-Z.-]*))?$')
 
     def __init__(
-            self, version_string=None, major=None, minor=None, patch=None, prerelease=None, build=None, partial=False):
+            self,
+            version_string=None,
+            major=None,
+            minor=None,
+            patch=None,
+            revision=None,
+            prerelease=None,
+            build=None,
+            partial=False):
         if partial:
             warnings.warn(
                 "Partial versions will be removed in 3.0; use SimpleSpec('1.x.x') instead.",
@@ -92,17 +100,19 @@ class Version(object):
             raise ValueError("Call either Version('1.2.3') or Version(major=1, ...).")
 
         if has_text:
-            major, minor, patch, prerelease, build = self.parse(version_string, partial)
+            major, minor, patch, revision, prerelease, build = self.parse(version_string, partial)
         else:
+            revision = revision or 1
             # Convenience: allow to omit prerelease/build.
             prerelease = tuple(prerelease or ())
             if not partial:
                 build = tuple(build or ())
-            self._validate_kwargs(major, minor, patch, prerelease, build, partial)
+            self._validate_kwargs(major, minor, patch, revision, prerelease, build, partial)
 
         self.major = major
         self.minor = minor
         self.patch = patch
+        self.revision = revision
         self.prerelease = prerelease
         self.build = build
 
@@ -187,21 +197,29 @@ class Version(object):
 
         Examples:
             >>> Version.coerce('0.1')
-            Version(0, 1, 0)
+            Version(0, 1, 0, 1)
             >>> Version.coerce('0.1.2.3')
-            Version(0, 1, 2, (), ('3',))
+            Version(0, 1, 2, 1, (), ('3',))
             >>> Version.coerce('0.1.2.3+4')
-            Version(0, 1, 2, (), ('3', '4'))
+            Version(0, 1, 2, 1, (), ('3', '4'))
             >>> Version.coerce('0.1+2-3+4_5')
-            Version(0, 1, 0, (), ('2-3', '4-5'))
+            Version(0, 1, 0, 1, (), ('2-3', '4-5'))
+            >>> Version.coerce('0.1~2')
+            Version(0, 1, 0, 2)
         """
-        base_re = re.compile(r'^\d+(?:\.\d+(?:\.\d+)?)?')
+        base_re = re.compile(r'^\d+(?:\.\d+(?:\.\d+)?)?(?:~\d+)?')
 
         match = base_re.match(version_string)
         if not match:
             raise ValueError('Version string lacks a numerical component: %r' % version_string)
 
         version = version_string[:match.end()]
+        if '~' in version:
+            version, revision = version.split('~')
+        else:
+            version, revision = version, '1'
+        revision = int(revision)
+
         if not partial:
             # We need a not-partial version.
             while version.count('.') < 2:
@@ -214,7 +232,7 @@ class Version(object):
             part.lstrip('0') or '0' for part in version.split('.'))
 
         if match.end() == len(version_string):
-            return Version(version, partial=partial)
+            return Version(version, revision=revision, partial=partial)
 
         rest = version_string[match.end():]
 
@@ -247,18 +265,16 @@ class Version(object):
         if build:
             version = '%s+%s' % (version, build)
 
-        return cls(version, partial=partial)
+        return cls(version, revision=revision, partial=partial)
 
     @classmethod
-    def parse(cls, version_string, partial=False, coerce=False):
+    def parse(cls, version_string, partial=False):
         """Parse a version string into a tuple of components:
-           (major, minor, patch, prerelease, build).
+           (major, minor, patch, revision, prerelease, build).
 
         Args:
             version_string (str), the version string to parse
             partial (bool), whether to accept incomplete input
-            coerce (bool), whether to try to map the passed in string into a
-                valid Version.
         """
         if not version_string:
             raise ValueError('Invalid empty version string: %r' % version_string)
@@ -272,7 +288,7 @@ class Version(object):
         if not match:
             raise ValueError('Invalid version string: %r' % version_string)
 
-        major, minor, patch, prerelease, build = match.groups()
+        major, minor, patch, revision, prerelease, build = match.groups()
 
         if _has_leading_zero(major):
             raise ValueError('Invalid leading zero in major: %r' % version_string)
@@ -284,11 +300,14 @@ class Version(object):
         major = int(major)
         minor = cls._coerce(minor, partial)
         patch = cls._coerce(patch, partial)
+        revision = int(revision) if revision else 1
+        if revision < 1:
+            raise ValueError('Invalid revision number, must be an integer greater or equal than 1')
 
         if prerelease is None:
             if partial and (build is None):
                 # No build info, strip here
-                return (major, minor, patch, None, None)
+                return major, minor, patch, revision, None, None
             else:
                 prerelease = ()
         elif prerelease == '':
@@ -308,7 +327,7 @@ class Version(object):
             build = tuple(build.split('.'))
             cls._validate_identifiers(build, allow_leading_zeroes=True)
 
-        return (major, minor, patch, prerelease, build)
+        return major, minor, patch, revision, prerelease, build
 
     @classmethod
     def _validate_identifiers(cls, identifiers, allow_leading_zeroes=False):
@@ -320,19 +339,19 @@ class Version(object):
                 raise ValueError('Invalid leading zero in identifier %r' % item)
 
     @classmethod
-    def _validate_kwargs(cls, major, minor, patch, prerelease, build, partial):
+    def _validate_kwargs(cls, major, minor, patch, revision, prerelease, build, partial):
         if (major != int(major) or minor != cls._coerce(minor, partial) or patch != cls._coerce(patch, partial)
-                or prerelease is None and not partial or build is None and not partial):
+                or revision != int(revision) or prerelease is None and not partial or build is None and not partial):
             raise ValueError(
-                'Invalid kwargs to Version(major=%r, minor=%r, patch=%r, '
-                'prerelease=%r, build=%r, partial=%r' % (major, minor, patch, prerelease, build, partial))
+                'Invalid kwargs to Version(major=%r, minor=%r, patch=%r, revision=%r, '
+                'prerelease=%r, build=%r, partial=%r' % (major, minor, patch, revision, prerelease, build, partial))
         if prerelease is not None:
             cls._validate_identifiers(prerelease, allow_leading_zeroes=False)
         if build is not None:
             cls._validate_identifiers(build, allow_leading_zeroes=True)
 
     def __iter__(self):
-        return iter((self.major, self.minor, self.patch, self.prerelease, self.build))
+        return iter((self.major, self.minor, self.patch, self.revision, self.prerelease, self.build))
 
     def __str__(self):
         version = '%d' % self.major
@@ -340,7 +359,8 @@ class Version(object):
             version = '%s.%d' % (version, self.minor)
         if self.patch is not None:
             version = '%s.%d' % (version, self.patch)
-
+        if self.revision > 1:
+            version = '%s~%d' % (version, self.revision)
         if self.prerelease or (self.partial and self.prerelease == () and self.build is None):
             version = '%s-%s' % (version, '.'.join(self.prerelease))
         if self.build or (self.partial and self.build == ()):
@@ -348,16 +368,17 @@ class Version(object):
         return version
 
     def __repr__(self):
-        return '%s(%r%s)' % (
+        return '%s(%r%s, revision=%d)' % (
             self.__class__.__name__,
             str(self),
             ', partial=True' if self.partial else '',
+            self.revision,
         )
 
     def __hash__(self):
         # We don't include 'partial', since this is strictly equivalent to having
         # at least a field being `None`.
-        return hash((self.major, self.minor, self.patch, self.prerelease, self.build))
+        return hash((self.major, self.minor, self.patch, self.revision, self.prerelease, self.build))
 
     @property
     def precedence_key(self):
@@ -372,6 +393,7 @@ class Version(object):
             self.major,
             self.minor,
             self.patch,
+            self.revision,
             prerelease_key,
         )
 
@@ -392,7 +414,8 @@ class Version(object):
             return NotImplemented
         return (
             self.major == other.major and self.minor == other.minor and self.patch == other.patch
-            and (self.prerelease or ()) == (other.prerelease or ()) and (self.build or ()) == (other.build or ()))
+            and (self.revision == other.revision) and (self.prerelease or ()) == (other.prerelease or ())
+            and (self.build or ()) == (other.build or ()))
 
     def __ne__(self, other):
         if not isinstance(other, self.__class__):
