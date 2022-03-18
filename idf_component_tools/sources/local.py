@@ -27,7 +27,8 @@ class LocalSource(BaseSource):
     def __init__(self, source_details, **kwargs):
         super(LocalSource, self).__init__(source_details=source_details, **kwargs)
 
-        self._raw_path = Path(source_details.get('path'))
+        self.is_overrider = 'override_path' in source_details
+        self._raw_path = Path(source_details.get('override_path' if self.is_overrider else 'path'))
         self._manifest_path = None
         try:
             self._manifest_path = Path(get_ctx('manifest')['manifest_path'])
@@ -57,9 +58,13 @@ class LocalSource(BaseSource):
     def required_keys(cls):
         return ['path']
 
+    @classmethod
+    def optional_keys(cls):
+        return ['override_path']
+
     @staticmethod
     def is_me(name, details):
-        return bool(details.get('path', None))
+        return bool(details.get('path', None)) or 'override_path' in details
 
     @property
     def hash_key(self):

@@ -94,6 +94,18 @@ class PackageSource(BasePackageSource):
 
         self._packages[package][version] = dependencies
 
+    def override_dependencies(self, overriders):  # type: (set[str]) -> None
+        for package in list(self._packages.keys()):
+            if not package.source.is_overrider and package.name in overriders:
+                del self._packages[package]
+
+        for package in self._packages.keys():
+            for version in self._packages[package].keys():
+                self._packages[package][version] = [
+                    elem for elem in self._packages[package][version]
+                    if elem.package.source.is_overrider or elem.package.name not in overriders
+                ]
+
     def root_dep(self, package, spec):  # type: (Package, str) -> None
         self._root_dependencies.append(Dependency(package, spec))
 

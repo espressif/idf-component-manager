@@ -34,6 +34,8 @@ class BaseSource(object):
             system_cache_path = FileCache.path()
         self.system_cache_path = system_cache_path
 
+        self.is_overrider = False
+
         unknown_keys = [key for key in self._source_details.keys() if key not in self.known_keys()]
         if unknown_keys:
             raise SourceError('Unknown keys in dependency details: %s' % ', '.join(unknown_keys))

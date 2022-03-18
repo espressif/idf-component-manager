@@ -1,4 +1,5 @@
 from idf_component_manager.version_solver.mixology.package import Package
+from idf_component_tools.sources import LocalSource, WebServiceSource
 
 
 def test_simple_dependencies(source, check_solver_result):
@@ -63,3 +64,21 @@ def test_circular_dependency(source, check_solver_result):
     source.add(Package('bar'), '1.0.0', deps={Package('foo'): '1.0.0'})
 
     check_solver_result(source, {Package('foo'): '1.0.0', Package('bar'): '1.0.0'})
+
+
+def test_override_dependency(source, check_solver_result):
+    foo = Package('foo', source=WebServiceSource())
+    bar = Package('bar', source=WebServiceSource())
+    # cmp_local was the WebServiceSource (name with namespace), but override_path changed it to the LocalSource.
+    cmp_local = Package('example/cmp', source=LocalSource({'path': 'test', 'override_path': 'test'}))
+    cmp_web = Package('example/cmp', source=WebServiceSource())
+
+    source.root_dep(foo, '1.0.0')
+    source.add(foo, '1.0.0', deps={cmp_local: '1.1.0', bar: '2.0.0'})
+    source.add(cmp_local, '1.1.0')
+    source.add(bar, '2.0.0', deps={cmp_web: '1.3.0'})
+    source.add(cmp_web, '1.3.0')
+
+    source.override_dependencies(['example/cmp'])
+
+    check_solver_result(source, {foo: '1.0.0', bar: '2.0.0', cmp_local: '1.1.0'})

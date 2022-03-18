@@ -80,6 +80,7 @@ def dependency_schema():  # type () -> Schema
             Optional('rules'): [{
                 'if': Use(parse_if_clause)
             }],
+            Optional('override_path'): NONEMPTY_STRING,
         },
         error='Invalid dependency format',
     )

@@ -22,12 +22,15 @@ class VersionSolver(object):
         self._source = PackageSource()
         self._solver = Solver(self._source)
         self._target = None
+        self._overriders = set()  # type: set[str]
 
         self._missing_optional_dependencies = set()  # type: set[str]
 
     def solve(self):  # type: () -> SolvedManifest
         for manifest in self.requirements.manifests:
             self.solve_manifest(manifest)
+
+        self._source.override_dependencies(self._overriders)
 
         result = self._solver.solve()
 
@@ -58,6 +61,9 @@ class VersionSolver(object):
             name=requirement.name, spec=requirement.version_spec, target=self.requirements.target)
 
         for version in cmp_with_versions.versions:
+            if requirement.source.is_overrider:
+                self._overriders.add(requirement.name)
+
             self._source.add(
                 Package(requirement.name, requirement.source),
                 version,

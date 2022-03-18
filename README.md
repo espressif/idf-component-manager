@@ -78,6 +78,10 @@ dependencies:
     rules:  # will add "optional_component" only when all if clauses are True
       - if: "idf_version >=3.3,<5.0"  # supports all SimpleSpec grammars (https://python-semanticversion.readthedocs.io/en/latest/reference.html#semantic_version.SimpleSpec)
       - if: "target in [esp32, esp32c3]"  # supports boolean operator ==, !=, in, not in.
+  # For example of the component
+  namespace/component_with_example:
+    version: "~1.0.0" # if there is no `override_path` field, use component from registry
+    override_path: "../../" # use component in a local directory, not from registry
 ```
 
 ## Contributions Guide

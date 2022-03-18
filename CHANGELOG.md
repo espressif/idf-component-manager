@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `idf_version` supports all [`SimpleSpec`](https://python-semanticversion.readthedocs.io/en/latest/reference.html#semantic_version.SimpleSpec) grammar,
   and `target` supports `==`, `!=`, `in`, `not in`.
 - Revision number support in component manifest file
+- Add `override_path` field for dependencies. Add possibility to change component from component
+  registry to the local one. Can be used for examples of the component to change that component to the local one.
 
 ### Changed
 
