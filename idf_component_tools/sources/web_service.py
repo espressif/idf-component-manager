@@ -16,7 +16,9 @@ from ..config import ConfigManager
 from ..errors import FetchingError
 from ..file_tools import copy_directory
 from ..hash_tools import validate_dir
+from . import utils
 from .base import BaseSource
+from .constants import DEFAULT_COMPONENT_SERVICE_URL
 
 try:
     from urllib.parse import urlparse  # type: ignore
@@ -30,9 +32,6 @@ try:
         from ..manifest import SolvedComponent
 except ImportError:
     pass
-
-DEFAULT_NAMESPACE = 'espressif'
-DEFAULT_COMPONENT_SERVICE_URL = 'https://api.components.espressif.com/'
 
 
 def default_component_service_url(service_profile=None):
@@ -109,10 +108,7 @@ class WebServiceSource(BaseSource):
         return True
 
     def normalized_name(self, name):
-        if '/' not in name:
-            name = '/'.join([DEFAULT_NAMESPACE, name])
-
-        return name
+        return utils.normalized_name(name)
 
     def download(self, component, download_path):  # type: (SolvedComponent, str) -> List[str]
         # Check for required components

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Tracking modifications of the managed components
+- Print a warning when the name of the local component doesn't match the directory name.
 
 ### Changed
 

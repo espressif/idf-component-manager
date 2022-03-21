@@ -36,3 +36,19 @@ class TestComponentLocalSource(object):
 
         assert versions.name == 'cmp'
         assert versions.versions[0] == ComponentVersion('1.0.0')
+
+    def test_local_path_name_warning(self, capsys, cmp_path):
+        source = LocalSource(source_details={'path': cmp_path})
+        component = SolvedComponent('not_cmp', '*', source)
+        source.download(component, 'test')
+
+        captured = capsys.readouterr()
+        assert 'WARNING:  Component name "espressif/not_cmp" doesn\'t match the directory name "cmp"' in captured.out
+
+    def test_local_path_name_no_warning(self, capsys, cmp_path):
+        source = LocalSource(source_details={'path': cmp_path})
+        component = SolvedComponent('cmp', '*', source)
+        source.download(component, 'test')
+
+        captured = capsys.readouterr()
+        assert captured.out == ''
