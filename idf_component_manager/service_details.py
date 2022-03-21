@@ -7,18 +7,26 @@ from idf_component_tools.config import ConfigManager
 from idf_component_tools.errors import FatalError
 from idf_component_tools.sources.web_service import default_component_service_url
 
-try:
-    from typing import Optional
-except ImportError:
-    pass
-
 ServiceDetails = namedtuple('ServiceDetails', ['client', 'namespace'])
 
 
-def service_details(namespace=None, service_profile=None):  # type: (Optional[str], Optional[str]) -> ServiceDetails
-    config = ConfigManager().load()
+class NoSuchProfile(FatalError):
+    pass
+
+
+def service_details(
+        namespace=None,  # type: str | None
+        service_profile=None,  # type: str | None
+        config_path=None  # type: str | None
+):  # type: (...) -> ServiceDetails
+    config = ConfigManager(path=config_path).load()
     profile_name = service_profile or 'default'
     profile = config.profiles.get(profile_name, {})
+
+    if profile:
+        print('Selected profile name from idf_component_manager.yml file: {}'.format(profile_name))
+    elif profile_name != 'default' and not profile:
+        raise NoSuchProfile('"{}" didn\'t find in idf_component_manager.yml file'.format(profile_name))
 
     # Priorities: DEFAULT_COMPONENT_SERVICE_URL env variable > profile value > built-in default
     service_url = default_component_service_url(service_profile=profile)
