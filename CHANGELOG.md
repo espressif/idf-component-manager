@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Use bare repositories for caching components sourced from git
 - `idf.py fullclean` command also delete unchanged dependency components from `managed_components` folder
+- Printing information about selected profile using `--service-profile` flag, error message if profile didn't find in idf_component_manager.yml file
 
 ### Fixed
 
@@ -25,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update lock file if new version of the idf was detected
 - Fix checkout error when depends on git source without `path`
 - Fix solve version error when using local components with git source.
-- Fix solve version error when using caret (`^`) with prerelease version.
+- Fix solve version error when using caret (`^`) with prerelease version
 
 ## [1.0.1] 2022-01-12
 
