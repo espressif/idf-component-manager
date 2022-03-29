@@ -83,7 +83,7 @@ class TestComponentLocalSource(object):
         source.download(component, 'test')
 
         captured = capsys.readouterr()
-        assert 'WARNING:  Component name "espressif/not_cmp" doesn\'t match the directory name "cmp"' in captured.out
+        assert 'WARNING: Component name "not_cmp" doesn\'t match the directory name "cmp"' in captured.out
 
     def test_local_path_name_no_warning(self, capsys, cmp_path):
         source = LocalSource(source_details={'path': cmp_path})
