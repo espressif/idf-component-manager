@@ -221,3 +221,38 @@ class TestLockManager(object):
         manifest = Manifest.fromdict(manifest_dict, name='test_manifest')
         project_requirements = ProjectRequirements([manifest])
         assert is_solve_required(project_requirements, solution)
+
+    def test_change_manifest_file_targets(self, monkeypatch):
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
+        manifest = Manifest.fromdict({'targets': ['esp32']}, name='test_manifest')
+        solution = SolvedManifest.fromdict(
+            dict(
+                [
+                    ('version', '1.0.0'),
+                    ('manifest_hash', 'c9c3b34bbdea9ab2d265d603d459fd4fd9d6d9e26eb454e31fd002d4fc8f49fa'),
+                ]))
+
+        manifest.targets = ['esp32s2', 'esp32s3']
+        project_requirements = ProjectRequirements([manifest])
+        assert is_solve_required(project_requirements, solution)  # Different idf target
+
+        manifest.targets = ['esp32']
+        project_requirements = ProjectRequirements([manifest])
+        assert not is_solve_required(project_requirements, solution)  # change it back
+
+    def test_empty_manifest_file(self, monkeypatch):
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
+        solution = SolvedManifest.fromdict(
+            dict(
+                [
+                    ('version', '1.0.0'),
+                    ('manifest_hash', '12ce0230205ae425485ae16eb90990e01b0582e262c9d72290955fe09cb1adfe'),
+                ]))
+
+        manifest = Manifest.fromdict({'targets': ['esp32']}, name='test_manifest')
+        project_requirements = ProjectRequirements([manifest])
+        assert is_solve_required(project_requirements, solution)  # Different idf target
+
+        manifest = Manifest.fromdict({}, name='test_manifest')
+        project_requirements = ProjectRequirements([manifest])
+        assert not is_solve_required(project_requirements, solution)  # change it back
