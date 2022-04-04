@@ -4,12 +4,14 @@ from __future__ import print_function
 import os
 import re
 import shutil
+import tarfile
 import tempfile
 import time
 from datetime import datetime, timedelta
 from io import open
 from pathlib import Path
 
+import requests
 from tqdm import tqdm
 
 from idf_component_tools.api_client import APIClientError
@@ -30,7 +32,7 @@ from .context_manager import make_ctx
 from .core_utils import archive_filename, dist_name, raise_component_modified_error
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
-from .service_details import service_details
+from .service_details import create_api_client, get_namespace, get_profile, service_details
 
 try:
     from typing import Optional, Tuple
@@ -98,6 +100,48 @@ class ComponentManager(object):
         manifest_filepath, created = self._get_manifest(args.get('component', 'main'))
         if not created:
             print('"{}" already exists, skipping...'.format(manifest_filepath))
+
+    def create_project_from_example(self, args):
+        profile = get_profile(args.get('service_details'))
+        namespace = get_namespace(profile, args.get('namespace') or 'espressif')
+        component_name = '/'.join([namespace, args.get('name')])
+        version = args.get('version') or '*'
+        example_full_name = args.get('example')
+        if not example_full_name:
+            raise FatalError('Failed to get example name. Please use --example flag to select example name')
+        example_name = os.path.basename(example_full_name)
+        project_path = os.path.join(args.get('path'), example_name)
+
+        if os.path.isfile(project_path):
+            raise FatalError(
+                'Your target path is not a directory. Please remove the {} or use different target path.'.format(
+                    os.path.abspath(project_path)),
+                exit_code=4)
+        if os.path.isdir(project_path) and os.listdir(project_path):
+            raise FatalError(
+                'The directory {} is not empty. To create an example you must empty the directory or '
+                'choose a different path.'.format(project_path),
+                exit_code=3)
+
+        client = create_api_client()
+        try:
+            component_details = client.component(component_name, version)
+        except APIClientError:
+            raise FatalError(
+                'Selected component "{}" with selected version "{}" doesn\'t exist.'.format(component_name, version))
+
+        try:
+            example_url = [example for example in component_details.examples
+                           if example_full_name == example['name']][-1]
+        except IndexError:
+            raise FatalError(
+                'Cannot find example "{}" for {} version {}'.format(example_full_name, component_name, version),
+                exit_code=2)
+
+        response = requests.get(example_url['url'], stream=True)
+        with tarfile.open(fileobj=response.raw, mode='r|gz') as tar:
+            tar.extractall(project_path)
+        print('Example {} successfully downloaded to {}'.format(example_full_name, os.path.abspath(project_path)))
 
     def add_dependency(self, args):
         dependency = args.get('dependency')

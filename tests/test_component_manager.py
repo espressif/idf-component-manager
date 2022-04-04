@@ -7,10 +7,11 @@ from io import open
 
 import pytest
 import vcr
+from pytest import raises
 
 from idf_component_manager.core import ComponentManager
 from idf_component_tools.archive_tools import unpack_archive
-from idf_component_tools.errors import NothingToDoError
+from idf_component_tools.errors import FatalError, NothingToDoError
 from idf_component_tools.git_client import GitClient
 from idf_component_tools.manifest import MANIFEST_FILENAME, ManifestManager
 
@@ -172,3 +173,66 @@ def test_pack_component_with_version(tmp_path):
     unpack_archive(os.path.join(component_manager.dist_path, 'cmp_2.3.4.tgz'), tempdir)
     manifest = ManifestManager(tempdir, 'cmp', check_required_fields=True).load()
     assert manifest.version == '2.3.4'
+
+
+def test_create_example_no_example(tmp_path):
+    manager = ComponentManager(path=str(tmp_path))
+    with raises(FatalError, match='Failed to get example name*'):
+        manager.create_project_from_example({'name': 'test', 'path': str(tmp_path)})
+
+
+def test_create_example_project_path_not_a_directory(tmp_path):
+    existing_file = tmp_path / 'example'
+    existing_file.write_text(u'test')
+
+    manager = ComponentManager(path=str(tmp_path))
+
+    with raises(FatalError, match='Your target path is not a directory*'):
+        manager.create_project_from_example({'name': 'test', 'example': 'example', 'path': str(tmp_path)})
+
+
+def test_create_example_project_path_not_empty(tmp_path):
+    example_dir = tmp_path / 'example'
+    example_dir.mkdir()
+    existing_file = example_dir / 'test'
+    existing_file.write_text(u'test')
+
+    manager = ComponentManager(path=str(tmp_path))
+
+    with raises(FatalError, match='To create an example you must*'):
+        manager.create_project_from_example({'name': 'test', 'example': 'example', 'path': str(tmp_path)})
+
+
+def test_create_example_component_not_exist(tmp_path):
+    manager = ComponentManager(path=str(tmp_path))
+    with raises(FatalError, match='Selected component*'):
+        manager.create_project_from_example({'name': 'test', 'example': 'example', 'path': str(tmp_path)})
+
+
+@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_create_example_not_exist.yaml')
+def test_create_example_not_exist(monkeypatch, tmp_path):
+    monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
+    manager = ComponentManager(path=str(tmp_path))
+    with raises(FatalError, match='Cannot find example "example" for test/cmp version 1.0.1'):
+        manager.create_project_from_example(
+            {
+                'namespace': 'test',
+                'name': 'cmp',
+                'version': '1.0.1',
+                'example': 'example',
+                'path': str(tmp_path)
+            })
+
+
+@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_create_example_success.yaml')
+def test_create_example_success(monkeypatch, tmp_path):
+    monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
+    manager = ComponentManager(path=str(tmp_path))
+    manager.create_project_from_example(
+        {
+            'namespace': 'test',
+            'name': 'cmp',
+            'version': '1.0.1',
+            'example': 'sample_project',
+            'path': str(tmp_path)
+        })

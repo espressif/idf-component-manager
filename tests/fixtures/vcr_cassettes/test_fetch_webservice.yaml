@@ -9,29 +9,33 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.23.0
+      - python-requests/2.27.1
     method: GET
     uri: http://localhost:5000/components/test/cmp/
   response:
     body:
-      string: "{\n  \"created_at\": \"2020-05-28T15:50:48.510102+00:00\", \n  \"name\":
-        \"cmp\", \n  \"namespace\": \"test\", \n  \"versions\": [\n    {\n      \"component_hash\":
-        \"02d9269ed8690352e6bfc5f6a6c60e859fa6cbfc56efe75a1199b35bdd6c54c8\", \n      \"created_at\":
-        \"2020-06-01T13:28:35.085856+00:00\", \n      \"description\": null, \n      \"url\":
-        \"http://localhost:5001/c8c68b99-c93d-4aa2-a77d-524fdc671308.tgz\", \n      \"version\":
-        \"1.0.1\"\n    }, \n    {\n      \"component_hash\": \"2ff52f6756d97da66af110122856e0b4027d6986cf74cb857700f6550f7ca730\",
-        \n      \"created_at\": \"2020-05-29T18:30:53.559190+00:00\", \n      \"description\":
-        null, \n      \"url\": \"http://localhost:5001/4ad9c4d5-904f-449c-b057-57025f0bb17f.tgz\",
-        \n      \"version\": \"1.0.0\"\n    }\n  ]\n}\n"
+      string: "{\n  \"created_at\": \"2022-03-16T12:52:44.017420+00:00\", \n  \"featured\"\
+        : false, \n  \"name\": \"cmp\", \n  \"namespace\": \"test\", \n  \"versions\"\
+        : [\n    {\n      \"component_hash\": \"6c3365fc80eb43873bf0a8e3c22dbd6c05a2d773a636ad4eebda2a0fa4b93f37\"\
+        , \n      \"created_at\": \"2022-03-16T12:52:44.218236+00:00\", \n      \"\
+        dependencies\": [], \n      \"description\": null, \n      \"docs\": {}, \n\
+        \      \"examples\": [\n        {\n          \"name\": \"sample_project\"\
+        , \n          \"url\": \"http://localhost:9000/test-public/f8762c4a-1c02-48b5-91c6-1951c4216601/examples/a1cbeade-3768-4628-b425-36bf19614f04.tgz\"\
+        \n        }\n      ], \n      \"homepage\": null, \n      \"license\": null,\
+        \ \n      \"tags\": [], \n      \"targets\": [], \n      \"uploader\": \"\
+        Dmitry Bondarenko\", \n      \"url\": \"http://localhost:9000/test-public/f8762c4a-1c02-48b5-91c6-1951c4216601.tgz\"\
+        , \n      \"version\": \"1.0.1\"\n    }\n  ]\n}\n"
     headers:
+      Access-Control-Allow-Origin:
+      - '*'
       Content-Length:
-      - '711'
+      - '851'
       Content-Type:
       - application/json
       Date:
-      - Thu, 04 Jun 2020 13:02:21 GMT
+      - Wed, 16 Mar 2022 13:13:42 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.8.0
+      - Werkzeug/2.0.3 Python/3.10.0
     status:
       code: 200
       message: OK
@@ -45,32 +49,53 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.23.0
+      - python-requests/2.27.1
     method: GET
-    uri: http://localhost:5001/c8c68b99-c93d-4aa2-a77d-524fdc671308.tgz
+    uri: http://localhost:9000/test-public/f8762c4a-1c02-48b5-91c6-1951c4216601.tgz
   response:
     body:
       string: !!binary |
-        H4sIAFgC1V4AA+2XTWvbMBiAc9avEN4lOUyRLNuCtguDtLBA241k22lgjC03opbs2UrpGPvve+WE
-        dSss2WFOGNMDtpAlW5KlRx9kOr/J7uW16mxH7KMdDQClNIki7EKRxH1Iw228h0UMM54kMRNCsBhT
-        xuOYjzAdojLP2XQ2a6Eq95v9+SBbWe5J3zYF/wj/EXINvZ9qZZTe6LSVnzeqlcX449VytXh7izlh
-        4QQhVZRpXuumNtJYyHUHw0W249VyvsJBrhuSB3hxO7/+cHmVXi6W8FCZvNoUMpicuoGevZBp332D
-        lnHQfx5u/Q8pY0yA/0ywxPt/DF7sRMUXnS1UTdYzhB5qVWAYFulaVlU9nqCvCO9oWmVsOQ7euBRc
-        trXG85t3+EG2naoNZoQS9skEk3P07dQt8/wJZPrL3E6+6Oqvl3HQf/GT/2EC/kc88v4fBZNpedav
-        4QHaWQzR3uMAwZ+5k7Y7A/1fYtk1PEQ6gwkALtlCtveys9jdZIsvLISv5WOmm0oSGFCzABWykaaQ
-        Jley/wgMNXhr9ioiNECnbrnHAf5vF4DpcGU47+P49/47XxgH5QUXCXXrfxhFdITj4ar0xH/u/1P/
-        u33gepAyDs3/NHTnPy54mETQ9e785+f/I/F8r3d+6gp5PB6P5yh8B+GwpxIAFgAA
+        H4sICJzdMWIC/2Y4NzYyYzRhLTFjMDItNDhiNS05MWM2LTE5NTFjNDIxNjYwMS50Z3oA7ZldT9sw
+        FIZ7nV9hwaS1FziJnQ/KPrRpA4G0MbQhbqs0cYhHHGe2A60Q/x2nZTDKmLSLho2c58aJkx5Xbd/3
+        7Ymxi913R8lsnyUZU4O14C15bPQ8Gtwdt/O+R3wyQLNBBzTaJMouP+gnZBsJwwV740dBHNDQDtgf
+        +zGJA2cAPHvcDtZoRR2H4XKMlqNHVjR/X/9xEA5Q2KX+RXLK00QJQn5/n70tz5/f94/B/8H/l/5P
+        t2lExzHFQRBTEkfg/z3gw+fkjH3i2mhsZmZ9+o+C4FH/D8NV/dOAWv17Xeq/p/6/ifakQkIqhniV
+        SyUSw2WFkqlsDJo2vMyQnmvDBNKMOZuoMKbWO66byVRjpmvFtOY5TqVwayW/s9Ro105v8Sx3WeWW
+        iWHauEnNt04bnjHtLmpuLWviwojSFj0uGMplWcoLXp2inJ8zVPKKaSRzNJW8ZKpuC6EisVeMRNP2
+        zaK5bBS6WfSltmXufsvtZVNwjdgsSQ2SymabXUGhVNhb2hIXUp2hVCplX1zOncX8RPCKi0ZMFPvR
+        cMWy4cnu128HXw4RxeHIcXiVlk3Ghi92D08uDz7uTY7eH+9fuUbKUruLCj8/A7w4Gzk3p0OR8Gr0
+        T/op5D/k/y/9HwnCCIfWkcc+5H8fSEU9aS0ap+vt//6U/14cr+ifRPYvAeR/F/l/E2rotTYZl7h4
+        69xObdz+OIoNxzmXPEN5U6XD9mjkXDrOFVgE9P+Q/88o/0M/ongckzEJYhB3D7B92sQ2b7WsWGXw
+        XJRPkf/+av4HhFLI/y44Z0rbhn8H+djDPkge8h/yH/KfhGOPgBn0If+Xvd5at4H/fv+XUN+H/d/e
+        +D+JHvo/Bf/vxP/Jw/1fD5y/d/5/96jvCfo/4j/o/2If+r9O+r/7T3VfgfQBAAAAAAAAAAAAAAAA
+        AAAAAAAAAAAAAAAAAAD+D64BUyRh7QBQAAA=
     headers:
+      Accept-Ranges:
+      - bytes
       Content-Length:
-      - '504'
-      Content-type:
-      - application/octet-stream
+      - '767'
+      Content-Security-Policy:
+      - block-all-mixed-content
+      Content-Type:
+      - binary/octet-stream
       Date:
-      - Thu, 04 Jun 2020 13:02:21 GMT
+      - Wed, 16 Mar 2022 13:13:42 GMT
+      ETag:
+      - '"2231a2b7959275937d904320f1f31b84"'
       Last-Modified:
-      - Mon, 01 Jun 2020 13:28:34 GMT
+      - Wed, 16 Mar 2022 12:52:44 GMT
       Server:
-      - SimpleHTTP/0.6 Python/3.8.0
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      X-Amz-Request-Id:
+      - 16DCDEB2B7ECAAAA
+      X-Content-Type-Options:
+      - nosniff
+      X-Xss-Protection:
+      - 1; mode=block
     status:
       code: 200
       message: OK

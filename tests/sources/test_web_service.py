@@ -13,7 +13,7 @@ from idf_component_tools.sources import WebServiceSource
 class TestComponentWebServiceSource(object):
     EXAMPLE_HASH = 'ed55692af0eed2feb68f6d7a2ef95a0142b20518a53a0ceb7c699795359d7dc5'
     LOCALHOST_HASH = '02d9269ed8690352e6bfc5f6a6c60e859fa6cbfc56efe75a1199b35bdd6c54c8'
-    CMP_HASH = '3c29b17da1ce6e0626a520ec8d0fa8763807dd1c13672c4c1939950d0dd865ad'
+    CMP_HASH = 'b9d411534df3fd6c6c6291d1e66e7b7f28921f76bc118c321651af1be60cc5d3'
 
     def test_service_is_me(self):
         assert WebServiceSource.is_me('test', None)

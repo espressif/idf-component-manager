@@ -15,6 +15,7 @@ import idf_component_tools as tools
 from idf_component_tools.semver import SimpleSpec, Version
 
 from .api_schemas import COMPONENT_SCHEMA, ERROR_SCHEMA, TASK_STATUS_SCHEMA, VERSION_UPLOAD_SCHEMA
+from .manifest import Manifest
 
 try:
     from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
@@ -42,6 +43,22 @@ class ComponentNotFound(APIClientError):
 
 class NamespaceNotFound(APIClientError):
     pass
+
+
+class ComponentDetails(Manifest):
+    def __init__(
+            self,
+            download_url=None,  # type: str | None # Direct url for tarball download
+            documents=None,  # type: list[dict[str, str]] | None # List of documents of the component
+            license=None,  # type: dict[str, str] | None # Information about license
+            examples=None,  # type: list[dict[str, str]] | None # List of examples of the component
+            *args,
+            **kwargs):
+        super(ComponentDetails, self).__init__(*args, **kwargs)
+        self.download_url = download_url
+        self.documents = documents
+        self.license = license
+        self.examples = examples
 
 
 KNOWN_API_ERRORS = {
@@ -223,13 +240,15 @@ class APIClient(object):
         else:
             best_version = max(versions, key=lambda v: Version(v['version']))
 
-        return tools.manifest.Manifest(
+        return ComponentDetails(
             name=('%s/%s' % (response['namespace'], response['name'])),
             version=tools.manifest.ComponentVersion(best_version['version']),
-            download_url=best_version['url'],
             dependencies=self._version_dependencies(best_version),
             maintainers=None,
-        )
+            download_url=best_version['url'],
+            documents=best_version['docs'],
+            license=best_version['license'],
+            examples=best_version['examples'])
 
     @auth_required
     def upload_version(self, component_name, file_path):
