@@ -1,4 +1,7 @@
 import os
+from pathlib import Path
+
+from idf_component_manager.context_manager import get_ctx
 
 from ..errors import SourceError
 from ..manifest import MANIFEST_FILENAME, ComponentWithVersions, HashedComponentVersion, ManifestManager
@@ -11,16 +14,45 @@ except ImportError:
     pass
 
 
+class ManifestContextError(SourceError):
+    pass
+
+
+class SourcePathError(SourceError):
+    pass
+
+
 class LocalSource(BaseSource):
     NAME = 'local'
 
     def __init__(self, source_details, **kwargs):
         super(LocalSource, self).__init__(source_details=source_details, **kwargs)
 
-        self._path = source_details.get('path')
+        self._raw_path = Path(source_details.get('path'))
+        self._manifest_path = None
+        try:
+            self._manifest_path = Path(get_ctx('manifest')['manifest_path'])
+        except TypeError:
+            pass
 
-        if not os.path.isdir(self._path):
-            raise SourceError('Invalid source path, should be a directory: %s' % self._path)
+    @property
+    def _path(self):  # type: () -> Path
+        try:
+            if self._manifest_path:
+                path = (self._manifest_path.parent / self._raw_path).resolve()
+            elif not self._manifest_path and self._raw_path.is_absolute():
+                path = self._raw_path.resolve()
+            else:
+                raise ManifestContextError(
+                    "Can't reliably evaluate relative path without context: {}".format(str(self._raw_path)))
+
+            if path.is_dir():  # for Python > 3.6, where .resolve(strict=False)
+                return path
+            else:
+                raise OSError()
+
+        except OSError:
+            raise SourcePathError('Invalid source path, should be a directory: %s' % str(self._raw_path))
 
     @classmethod
     def required_keys(cls):
@@ -35,7 +67,7 @@ class LocalSource(BaseSource):
         self.source_details.get('path')
 
     def download(self, component, download_path):
-        directory_name = os.path.basename(self._path)
+        directory_name = os.path.basename(str(self._path))
         component_name_with_namespace = self.normalized_name(component.name)
         component_name = component_name_with_namespace.replace('/', '__')
         component_name_without_namespace = component_name.split('__')[1]
@@ -51,19 +83,19 @@ class LocalSource(BaseSource):
                     directory_name=directory_name,
                     component_name=component_name,
                     component_name_without_namespace=component_name_without_namespace))
-        return [self._path]
+        return [str(self._path)]
 
     def versions(self, name, details=None, spec='*', target=None):
         """For local return version from manifest, or * if manifest not found"""
-        manifest_path = os.path.join(self._path, MANIFEST_FILENAME)
-        name = os.path.basename(self._path)
+        manifest_path = self._path / MANIFEST_FILENAME
+        name = self._path.name
 
         version_str = '*'
         targets = []
         dependencies = []
 
-        if os.path.isfile(manifest_path):
-            manifest = ManifestManager(manifest_path, name=name).load()
+        if manifest_path.is_file():
+            manifest = ManifestManager(str(manifest_path), name=name).load()
             if manifest.version:
                 version_str = str(manifest.version)
 
@@ -80,7 +112,7 @@ class LocalSource(BaseSource):
 
     def serialize(self):  # type: () -> Dict
         return {
-            'path': self._path,
+            'path': str(self._path),
             'type': self.name,
         }
 

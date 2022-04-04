@@ -26,6 +26,7 @@ from idf_component_tools.semver import SimpleSpec, Version
 from idf_component_tools.sources import WebServiceSource
 
 from .cmake_component_requirements import CMakeRequirementsManager, ComponentName, handle_project_requirements
+from .context_manager import make_ctx
 from .core_utils import archive_filename, dist_name, raise_component_modified_error
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
@@ -348,7 +349,13 @@ class ComponentManager(object):
 
         downloaded_component_paths = set()
         if local_components:
-            manifests = [ManifestManager(component['path'], component['name']).load() for component in local_components]
+            manifests = []
+
+            for component in local_components:
+                manifest_filepath = os.path.join(component['path'], MANIFEST_FILENAME)
+                with make_ctx('manifest', manifest_path=manifest_filepath):
+                    manifests.append(ManifestManager(component['path'], component['name']).load())
+
             project_requirements = ProjectRequirements(manifests)
             downloaded_component_paths = download_project_dependencies(
                 project_requirements, self.lock_path, self.managed_components_path)
