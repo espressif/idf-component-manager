@@ -5,7 +5,6 @@ from idf_component_manager.context_manager import get_ctx
 
 from ..errors import SourceError
 from ..manifest import MANIFEST_FILENAME, ComponentWithVersions, HashedComponentVersion, ManifestManager
-from . import utils
 from .base import BaseSource
 
 try:
@@ -68,21 +67,22 @@ class LocalSource(BaseSource):
 
     def download(self, component, download_path):
         directory_name = os.path.basename(str(self._path))
-        component_name_with_namespace = self.normalized_name(component.name)
-        component_name = component_name_with_namespace.replace('/', '__')
-        component_name_without_namespace = component_name.split('__')[1]
-        if component_name != directory_name and component_name.split('__')[1] != directory_name:
-            print(
-                'WARNING:  Component name "{component_name_with_namespace}" '
-                'doesn\'t match the directory name "{directory_name}". '
-                'ESP-IDF CMake build system uses directory names as names of components, '
-                'so different names may break requirements resolution. '
-                'To avoid the problem rename the component directory to '
-                '"{component_name}" or "{component_name_without_namespace}"'.format(
-                    component_name_with_namespace=component_name_with_namespace,
+        component_with_namespace = component.name.replace('/', '__')
+        namespace_and_component = component.name.split('/')
+        component_without_namespace = namespace_and_component[-1]
+        if component_without_namespace != directory_name and component_with_namespace != directory_name:
+            alternative_name = ' or "{}"'.format(component_with_namespace) if len(namespace_and_component) == 2 else ''
+            warning = (
+                'WARNING: Component name "{component_name}" doesn\'t match the directory name "{directory_name}".\n'
+                'ESP-IDF CMake build system uses directory names as names of components, so different names may break '
+                'requirements resolution. To avoid the problem rename the component directory to '
+                '"{component_without_namespace}"{alternative_name}').format(
+                    component_name=component.name,
                     directory_name=directory_name,
-                    component_name=component_name,
-                    component_name_without_namespace=component_name_without_namespace))
+                    component_without_namespace=component_without_namespace,
+                    alternative_name=alternative_name)
+            print(warning)
+
         return [str(self._path)]
 
     def versions(self, name, details=None, spec='*', target=None):
@@ -115,6 +115,3 @@ class LocalSource(BaseSource):
             'path': str(self._path),
             'type': self.name,
         }
-
-    def normalized_name(self, name):
-        return utils.normalized_name(name)
