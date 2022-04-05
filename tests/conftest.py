@@ -2,6 +2,8 @@ import subprocess
 
 import pytest
 
+from idf_component_tools.hash_tools import HASH_FILENAME
+
 
 @pytest.fixture()
 def valid_manifest_hash():
@@ -78,3 +80,21 @@ def git_repository_with_two_branches(tmpdir_factory):
         'default_head': main_commit_id.decode('utf-8'),
         'new_branch_head': branch_commit_id.decode('utf-8')
     }
+
+
+@pytest.fixture()
+def tmp_managed_components(tmp_path):
+    managed_components_path = tmp_path / 'managed_components'
+    managed_components_path.mkdir()
+
+    example_cmp_path = managed_components_path / 'example__cmp'
+    example_cmp_path.mkdir()
+    example_cmp_hash = example_cmp_path / HASH_FILENAME
+    example_cmp_hash.write_text(u'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+
+    mag3110_path = managed_components_path / 'mag3110'
+    mag3110_path.mkdir()
+    mag3110_hash = mag3110_path / HASH_FILENAME
+    mag3110_hash.write_text(u'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+
+    return str(managed_components_path)
