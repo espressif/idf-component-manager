@@ -1,16 +1,14 @@
 import os
 import re
-import shutil
-import tempfile
 
 import pytest
 
 from idf_component_manager.dependencies import detect_unused_components
 from idf_component_tools.errors import ManifestError
-from idf_component_tools.hash_tools import HASH_FILENAME
 from idf_component_tools.manifest import (
     SLUG_REGEX, ComponentVersion, ManifestManager, ManifestValidator, SolvedComponent)
 from idf_component_tools.manifest.validator import DEFAULT_KNOWN_TARGETS, known_targets
+from idf_component_tools.sources import LocalSource
 
 
 class TestComponentVersion(object):
@@ -274,33 +272,38 @@ class TestManifestValidator(object):
 
         assert result == DEFAULT_KNOWN_TARGETS
 
-    def test_detect_unused_components(self, valid_manifest):
+    def test_no_unused_components(self, tmp_managed_components):
         project_requirements = [
-            SolvedComponent(**{
-                'name': 'example/cmp',
-                'version': '*',
-                'source': None
-            }),
-            SolvedComponent(**{
-                'name': 'mag3110',
-                'version': '*',
-                'source': None
-            })
+            SolvedComponent(name='example/cmp', version=ComponentVersion('*'), source=LocalSource({'path': 'test'})),
+            SolvedComponent(name='mag3110', version=ComponentVersion('*'), source=LocalSource({'path': 'test'}))
         ]
-        temp_path = tempfile.mkdtemp()
-        managed_components_path = os.path.join(temp_path, 'managed_components')
-        os.mkdir(managed_components_path)
-        os.mkdir(os.path.join(managed_components_path, 'example__cmp'))
-        with open(os.path.join(managed_components_path, 'example__cmp', HASH_FILENAME), 'w+') as f:
-            f.write('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
-        os.mkdir(os.path.join(managed_components_path, 'mag3110'))
-        with open(os.path.join(managed_components_path, 'mag3110', HASH_FILENAME), 'w+') as f:
-            f.write('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
-        try:
-            detect_unused_components(project_requirements, managed_components_path)
-            assert len(os.listdir(managed_components_path)) == 2
-            project_requirements = [SolvedComponent(**{'name': 'mag3110', 'version': '*', 'source': None})]
-            detect_unused_components(project_requirements, managed_components_path)
-            assert len(os.listdir(managed_components_path)) == 1
-        finally:
-            shutil.rmtree(temp_path)
+        detect_unused_components(project_requirements, tmp_managed_components)
+
+        assert len(os.listdir(tmp_managed_components)) == 2
+
+    def test_one_unused_component(self, tmp_managed_components):
+        project_requirements = [
+            SolvedComponent(name='mag3110', version=ComponentVersion('*'), source=LocalSource({'path': 'test'}))
+        ]
+        detect_unused_components(project_requirements, tmp_managed_components)
+
+        assert len(os.listdir(tmp_managed_components)) == 1
+
+    def test_all_unused_components(self, tmp_managed_components):
+        project_requirements = []
+        detect_unused_components(project_requirements, tmp_managed_components)
+
+        assert not os.listdir(tmp_managed_components)
+
+    def test_unused_files_message(self, tmp_path, capsys):
+        managed_components_path = tmp_path / 'managed_components'
+        managed_components_path.mkdir()
+
+        unused_file = managed_components_path / 'unused_file'
+        unused_file.write_text(u'test')
+
+        project_requirements = []
+        detect_unused_components(project_requirements, str(managed_components_path))
+        captured = capsys.readouterr()
+
+        assert 'Content of the managed components directory is managed automatically' in captured.out

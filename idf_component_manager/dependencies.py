@@ -111,11 +111,12 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
                 and component_name not in project_requirements_dependencies:
             requirement_dependencies.append(component)
 
+    if os.path.exists(managed_components_path):
+        detect_unused_components(requirement_dependencies, managed_components_path)
+
     if requirement_dependencies:
         number_of_components = len(requirement_dependencies)
         changed_components = []
-        if os.path.exists(managed_components_path):
-            detect_unused_components(requirement_dependencies, managed_components_path)
         print('Processing {} dependencies:'.format(number_of_components))
 
         for index, component in enumerate(requirement_dependencies):
@@ -130,5 +131,4 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
 
         if changed_components:
             raise_component_modified_error(managed_components_path, changed_components)
-
     return downloaded_component_paths
