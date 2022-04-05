@@ -14,6 +14,7 @@ from pathlib import Path
 import requests
 from tqdm import tqdm
 
+from idf_component_manager.utils import info, warn
 from idf_component_tools.api_client_errors import APIClientError
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name
@@ -42,8 +43,8 @@ except ImportError:
 try:
     PROCESSING_TIMEOUT = int(os.getenv('COMPONENT_MANAGER_JOB_TIMEOUT', 300))
 except TypeError:
-    print(
-        'WARNING: Cannot parse value of COMPONENT_MANAGER_JOB_TIMEOUT.'
+    warn(
+        'Cannot parse value of COMPONENT_MANAGER_JOB_TIMEOUT.'
         ' It should be number of seconds to wait for job result.')
     PROCESSING_TIMEOUT = 300
 
@@ -92,14 +93,14 @@ class ComponentManager(object):
                 os.path.dirname(os.path.realpath(__file__)), 'templates', 'idf_component_template.yml')
             create_directory(manifest_dir)
             shutil.copyfile(example_path, manifest_filepath)
-            print('Created "{}"'.format(manifest_filepath))
+            info('Created "{}"'.format(manifest_filepath))
             created = True
         return manifest_filepath, created
 
     def create_manifest(self, args):
         manifest_filepath, created = self._get_manifest(args.get('component', 'main'))
         if not created:
-            print('"{}" already exists, skipping...'.format(manifest_filepath))
+            info('"{}" already exists, skipping...'.format(manifest_filepath))
 
     def create_project_from_example(self, args):
         profile = get_profile(args.get('service_details'))
@@ -141,7 +142,7 @@ class ComponentManager(object):
         response = requests.get(example_url['url'], stream=True)
         with tarfile.open(fileobj=response.raw, mode='r|gz') as tar:
             tar.extractall(project_path)
-        print('Example {} successfully downloaded to {}'.format(example_full_name, os.path.abspath(project_path)))
+        info('Example {} successfully downloaded to {}'.format(example_full_name, os.path.abspath(project_path)))
 
     def add_dependency(self, args):
         dependency = args.get('dependency')
@@ -198,7 +199,7 @@ class ComponentManager(object):
                 'Please check the manifest file:\n{}'.format(manifest_filepath))
 
         shutil.move(temp_manifest_file.name, manifest_filepath)
-        print('Successfully added dependency "{}{}" for component "{}"'.format(name, spec, manifest_manager.name))
+        info('Successfully added dependency "{}{}" for component "{}"'.format(name, spec, manifest_manager.name))
 
     def pack_component(self, args):  # type: (dict) -> Tuple[str, Manifest]
         version = args.get('version')
@@ -221,7 +222,7 @@ class ComponentManager(object):
             self.path, dist_temp_dir, include=set(manifest.files['include']), exclude=set(manifest.files['exclude']))
         manifest_manager.dump(dist_temp_dir)
         archive_filepath = os.path.join(self.dist_path, archive_filename(manifest))
-        print('Saving archive to "{}"'.format(archive_filepath))
+        info('Saving archive to "{}"'.format(archive_filepath))
         pack_archive(dist_temp_dir, archive_filepath)
         return archive_filepath, manifest
 
@@ -243,7 +244,7 @@ class ComponentManager(object):
 
         try:
             client.delete_version(component_name=component_name, component_version=version)
-            print('Deleted version {} of the component {}'.format(component_name, version))
+            info('Deleted version {} of the component {}'.format(component_name, version))
         except APIClientError as e:
             raise FatalError(e)
 
@@ -316,11 +317,11 @@ class ComponentManager(object):
                 return
 
             # Uploading the component
-            print('Uploading archive: %s' % archive_file)
+            info('Uploading archive: %s' % archive_file)
             job_id = client.upload_version(component_name=component_name, file_path=archive_file)
 
             # Wait for processing
-            print(
+            info(
                 'Wait for processing, it is safe to press CTRL+C and exit\n'
                 'You can check the state of processing by running subcommand '
                 '"upload-component-status --job=%s"' % job_id)
@@ -362,7 +363,7 @@ class ComponentManager(object):
             if status.status == 'failure':
                 raise FatalError("Uploaded version wasn't processed successfully.\n%s" % status.message)
             else:
-                print('Status: %s. %s' % (status.status, status.message))
+                info('Status: %s. %s' % (status.status, status.message))
 
         except APIClientError as e:
             raise FatalError(e)
@@ -453,8 +454,8 @@ class ComponentManager(object):
                     add_all_components_to_main = True
                     # Handle the case when main dependecy is explicitly marked as private
                     if dependency.public is False:
-                        print(
-                            'WARNING: Public flag is ignored for the main dependency "{}". '
+                        warn(
+                            'Public flag is ignored for the main dependency "{}". '
                             'All dependencies of the main component are always public.'.format(dependency.name))
                     continue
 

@@ -341,7 +341,7 @@ class TestManifestValidator(object):
         detect_unused_components(project_requirements, str(managed_components_path))
         captured = capsys.readouterr()
 
-        assert 'Content of the managed components directory is managed automatically' in captured.out
+        assert 'Content of the managed components directory is managed automatically' in captured.err
 
     @pytest.mark.parametrize(
         'if_clause, bool_value', [

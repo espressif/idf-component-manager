@@ -1,5 +1,7 @@
 import sys
+import warnings
 
+from idf_component_manager.utils import error, warn
 from idf_component_tools.errors import FatalError
 
 from .core import ComponentManager
@@ -57,10 +59,13 @@ VERSION_PARAMETER = [
 def action_extensions(base_actions, project_path):
     def callback(subcommand_name, ctx, args, **kwargs):
         try:
-            manager = ComponentManager(args.project_dir)
-            getattr(manager, str(subcommand_name).replace('-', '_'))(kwargs)
+            with warnings.catch_warnings(record=True) as w:
+                manager = ComponentManager(args.project_dir)
+                getattr(manager, str(subcommand_name).replace('-', '_'))(kwargs)
+                for warning in w:
+                    warn(warning.message)
         except FatalError as e:
-            print(e)
+            error(e)
             sys.exit(e.exit_code)
 
     def global_callback(ctx, global_args, tasks):

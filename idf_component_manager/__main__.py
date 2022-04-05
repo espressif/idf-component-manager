@@ -3,7 +3,9 @@
 import argparse
 import os
 import sys
+import warnings
 
+from idf_component_manager.utils import error, warn
 from idf_component_tools.errors import FatalError
 
 from . import version
@@ -42,10 +44,13 @@ def main():
     args = parser.parse_args()
 
     try:
-        manager = ComponentManager(args.path)
-        getattr(manager, str(args.command).replace('-', '_'))(vars(args))
+        with warnings.catch_warnings(record=True) as w:
+            manager = ComponentManager(args.path)
+            getattr(manager, str(args.command).replace('-', '_'))(vars(args))
+            for warning in w:
+                warn(warning.message)
     except FatalError as e:
-        print(e)
+        error(e)
         sys.exit(e.exit_code)
 
 

@@ -1,5 +1,4 @@
 from pathlib import Path
-from textwrap import dedent
 
 from idf_component_tools.errors import ComponentModifiedError
 from idf_component_tools.hash_tools import HASH_FILENAME
@@ -24,22 +23,18 @@ def raise_component_modified_error(managed_components_dir, components):  # type:
     component_dir = project_path / 'components' / component_example_name
     hash_path = managed_component_dir / HASH_FILENAME
     error = """
-        Some components ({component_names}) in the
-        "managed_components" directory were modified on the disk since the last run of the CMake. Content of
-        this directory is managed automatically.
+        Some components ({component_names}) in the "managed_components" directory were modified \
+        on the disk since the last run of the CMake. Content of this directory is managed automatically.
 
-        If you want to keep the changes, you can move the directory with the component to the "components"
+        If you want to keep the changes, you can move the directory with the component to the "components" \
         directory of your project.
 
         I.E. for "{component_example}" run:
-
         mv {managed_component_dir} {component_dir}
 
-        Or, if you want to discard the changes remove the "{hash_filename}" file from the component's
-        directory.
+        Or, if you want to discard the changes remove the "{hash_filename}" file from the component\'s directory.
 
         I.E. for "{component_example}" run:
-
         rm {hash_path}
         """.format(
         component_names=', '.join(components),
@@ -48,4 +43,4 @@ def raise_component_modified_error(managed_components_dir, components):  # type:
         component_dir=component_dir,
         hash_path=hash_path,
         hash_filename=HASH_FILENAME)
-    raise ComponentModifiedError(dedent(error))
+    raise ComponentModifiedError(error)
