@@ -64,9 +64,8 @@ def detect_unused_components(
 def is_solve_required(project_requirements, solution):
     # type: (ProjectRequirements, SolvedManifest) -> bool
 
-    if (project_requirements.has_dependencies
-            and (project_requirements.manifest_hash != solution.manifest_hash or
-                 (solution.target and project_requirements.target != solution.target))):
+    if project_requirements.manifest_hash != solution.manifest_hash\
+            or (solution.target and project_requirements.target != solution.target):
         return True
 
     for component in solution.dependencies:

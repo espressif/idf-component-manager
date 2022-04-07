@@ -1,3 +1,4 @@
+import os
 import subprocess
 
 import pytest
@@ -7,7 +8,7 @@ from idf_component_tools.hash_tools import HASH_FILENAME
 
 @pytest.fixture()
 def valid_manifest_hash():
-    return '4daaa65faaa56fc0db508e3777072ed8f45feb639d5584c327ce212e94861cc6'
+    return '63ec19bec932e322dd695a9d39f66264254cc6a947d44a056f2a23007d5f7b43'
 
 
 @pytest.fixture()
@@ -44,6 +45,25 @@ def valid_manifest():
             'exclude': ['.pyc']
         }
     }
+
+
+@pytest.fixture
+def valid_optional_dependency_manifest(valid_manifest, monkeypatch):
+    monkeypatch.setenv('IDF_VERSION', '5.0.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32')
+
+    valid_manifest['dependencies']['optional'] = {
+        'version': '1.0.0',
+        'rules': [
+            {
+                'if': 'idf_version >= 4.4'
+            },
+            {
+                'if': 'target not in [esp32, esp32s2]'
+            },
+        ]
+    }
+    return valid_manifest
 
 
 @pytest.fixture(scope='session')
@@ -98,3 +118,23 @@ def tmp_managed_components(tmp_path):
     mag3110_hash.write_text(u'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
 
     return str(managed_components_path)
+
+
+@pytest.fixture(scope='session')
+def pre_release_component_path():
+    return os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'fixtures',
+        'components',
+        'pre',
+    )
+
+
+@pytest.fixture(scope='session')
+def release_component_path():
+    return os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'fixtures',
+        'components',
+        'cmp',
+    )

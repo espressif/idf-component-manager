@@ -25,6 +25,7 @@ class ManifestManager(object):
         self.name = name
         self.version = version
         self._manifest_tree = None  # type: Optional[Dict]
+        self._normalized_manifest_tree = None  # type: Optional[Dict]
         self._manifest = None
         self._is_valid = None
         self._validation_errors = []  # type: List[str]
@@ -41,6 +42,7 @@ class ManifestManager(object):
             self.manifest_tree, check_required_fields=self.check_required_fields, version=self.version)
         self._validation_errors = validator.validate_normalize()
         self._is_valid = not self._validation_errors
+        self._normalized_manifest_tree = validator.manifest_tree
         return self
 
     @property
@@ -62,8 +64,17 @@ class ManifestManager(object):
     def manifest_tree(self):
         if not self._manifest_tree:
             self._manifest_tree = self.parse_manifest_file()
+            if self.version:
+                self._manifest_tree['version'] = self.version
 
         return self._manifest_tree
+
+    @property
+    def normalized_manifest_tree(self):
+        if not self._normalized_manifest_tree:
+            self.validate()
+
+        return self._normalized_manifest_tree
 
     def exists(self):
         return os.path.isfile(self._path)
@@ -101,6 +112,10 @@ class ManifestManager(object):
                 ] + self.validation_errors
 
             raise ManifestError('\n'.join(error_desc))
+
+        for name, details in self.normalized_manifest_tree.get('dependencies', {}).items():
+            if 'rules' in details:
+                self.manifest_tree['dependencies'][name]['rules'] = [rule['if'] for rule in details['rules']]
 
         return Manifest.fromdict(self.manifest_tree, name=self.name)
 

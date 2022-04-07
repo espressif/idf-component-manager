@@ -23,6 +23,8 @@ class VersionSolver(object):
         self._solver = Solver(self._source)
         self._target = None
 
+        self._missing_optional_dependencies = set()  # type: set[str]
+
     def solve(self):  # type: () -> SolvedManifest
         for manifest in self.requirements.manifests:
             self.solve_manifest(manifest)
@@ -40,9 +42,16 @@ class VersionSolver(object):
         return SolvedManifest(solved_components, self.requirements.manifest_hash, self.requirements.target)
 
     def solve_manifest(self, manifest):
-        for requirement in manifest.dependencies:
-            self._source.root_dep(Package(requirement.name, requirement.source), requirement.version_spec)
-            self.solve_component(requirement)
+        for requirement in manifest.dependencies:  # type: ComponentRequirement
+            if requirement.name in self._missing_optional_dependencies:
+                continue
+
+            if requirement.meet_optional_dependencies:
+                self._source.root_dep(Package(requirement.name, requirement.source), requirement.version_spec)
+                self.solve_component(requirement)
+            else:
+                print('Skipping optional dependency: {}'.format(requirement.name))
+                self._missing_optional_dependencies.add(requirement.name)
 
     def solve_component(self, requirement):  # type: (ComponentRequirement) -> None
         cmp_with_versions = requirement.source.versions(

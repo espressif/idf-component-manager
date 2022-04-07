@@ -10,6 +10,7 @@ from idf_component_tools.errors import LockError
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import (
     ComponentVersion, Manifest, ManifestManager, ProjectRequirements, SolvedComponent, SolvedManifest)
+from idf_component_tools.manifest.if_parser import parse_if_clause
 from idf_component_tools.sources import IDFSource, WebServiceSource
 
 dependencies = {
@@ -29,7 +30,7 @@ dependencies = {
     }
 }
 
-MANIFEST_HASH = 'a45a321f81544c74ee678544368c89a2bd0d2b2d4ddc0437bd22a428f8e0f3a7'
+MANIFEST_HASH = 'e6790d541ef7d404b4583ee601c9c98a836810cedc486d91660b1e17b59a7498'
 valid_lock_path = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     'fixtures',
@@ -149,7 +150,7 @@ class TestLockManager(object):
 
         assert solution.manifest_hash is None
 
-    def test_change_idf_version_lock_file(self, monkeypatch):
+    def test_change_manifest_file_idf_version(self, monkeypatch):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         manifest = Manifest.fromdict({'dependencies': {'idf': '4.4.0'}}, name='test_manifest')
         project_requirements = ProjectRequirements([manifest])
@@ -166,14 +167,92 @@ class TestLockManager(object):
                             'version': '4.2.0'
                         }
                     }),
-                    ('manifest_hash', 'bff084ca418bd07bbb3f7b0a6713f45e802be72a006a5f301230ac755639683c'),
+                    ('manifest_hash', '3a22a5a1ff0fc96e81492ebedbf1885cb8e5747858a37430a2aa8cde611223df'),
                 ]))
 
         monkeypatch.setenv('IDF_VERSION', '4.4.0')
-        assert is_solve_required(project_requirements, solution)  # Wrong manifest hash
-
-        solution.manifest_hash = 'bff084ca418bd07bbb3f7b0a6713f45e802be72a006a5f30ac70ac755639683c'
         assert is_solve_required(project_requirements, solution)  # Different idf version
 
+        solution.manifest_hash = 'bff084ca418bd07bbb3f7b0a6713f45e802be72a006a5f30ac70ac755639683c'
+        assert is_solve_required(project_requirements, solution)  # Wrong manifest hash
+
         monkeypatch.setenv('IDF_VERSION', '4.2.0')
+        solution.manifest_hash = '3a22a5a1ff0fc96e81492ebedbf1885cb8e5747858a37430a2aa8cde611223df'
         assert not is_solve_required(project_requirements, solution)
+
+    def test_change_manifest_file_dependencies_rules(self, monkeypatch):
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
+        monkeypatch.setenv('IDF_VERSION', '4.4.0')
+        manifest_dict = {
+            'dependencies': {
+                'foo': {
+                    'version': '*',
+                    'rules': [
+                        parse_if_clause('idf_version > 4'),
+                    ]
+                }
+            }
+        }
+        solution = SolvedManifest.fromdict(
+            dict(
+                [
+                    ('version', '1.0.0'),
+                    (
+                        'dependencies', {
+                            'foo': {
+                                'component_hash': 'foo',
+                                'source': {
+                                    'type': 'local'
+                                },
+                                'version': '1.0.0',
+                            }
+                        }),
+                    ('manifest_hash', 'f0b3e4408d768a03a17e09a91019f492fe053daaea11007f79d7cea3636d3945'),
+                ]))
+
+        monkeypatch.setenv('IDF_VERSION', '5.0.0')
+        manifest_dict['dependencies']['foo']['rules'] = [parse_if_clause('idf_version > 4')]
+        manifest = Manifest.fromdict(manifest_dict, name='test_manifest')
+        project_requirements = ProjectRequirements([manifest])
+        assert not is_solve_required(project_requirements, solution)
+
+        monkeypatch.setenv('IDF_VERSION', '3.0.0')
+        manifest_dict['dependencies']['foo']['rules'] = [parse_if_clause('idf_version > 4')]
+        manifest = Manifest.fromdict(manifest_dict, name='test_manifest')
+        project_requirements = ProjectRequirements([manifest])
+        assert is_solve_required(project_requirements, solution)
+
+    def test_change_manifest_file_targets(self, monkeypatch):
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
+        manifest = Manifest.fromdict({'targets': ['esp32']}, name='test_manifest')
+        solution = SolvedManifest.fromdict(
+            dict(
+                [
+                    ('version', '1.0.0'),
+                    ('manifest_hash', 'c9c3b34bbdea9ab2d265d603d459fd4fd9d6d9e26eb454e31fd002d4fc8f49fa'),
+                ]))
+
+        manifest.targets = ['esp32s2', 'esp32s3']
+        project_requirements = ProjectRequirements([manifest])
+        assert is_solve_required(project_requirements, solution)  # Different idf target
+
+        manifest.targets = ['esp32']
+        project_requirements = ProjectRequirements([manifest])
+        assert not is_solve_required(project_requirements, solution)  # change it back
+
+    def test_empty_manifest_file(self, monkeypatch):
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
+        solution = SolvedManifest.fromdict(
+            dict(
+                [
+                    ('version', '1.0.0'),
+                    ('manifest_hash', '12ce0230205ae425485ae16eb90990e01b0582e262c9d72290955fe09cb1adfe'),
+                ]))
+
+        manifest = Manifest.fromdict({'targets': ['esp32']}, name='test_manifest')
+        project_requirements = ProjectRequirements([manifest])
+        assert is_solve_required(project_requirements, solution)  # Different idf target
+
+        manifest = Manifest.fromdict({}, name='test_manifest')
+        project_requirements = ProjectRequirements([manifest])
+        assert not is_solve_required(project_requirements, solution)  # change it back

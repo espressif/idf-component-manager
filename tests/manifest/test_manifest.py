@@ -7,7 +7,7 @@ from idf_component_manager.dependencies import detect_unused_components
 from idf_component_tools.errors import ManifestError
 from idf_component_tools.manifest import (
     SLUG_REGEX, ComponentVersion, ManifestManager, ManifestValidator, SolvedComponent)
-from idf_component_tools.manifest.validator import DEFAULT_KNOWN_TARGETS, known_targets
+from idf_component_tools.manifest.validator import DEFAULT_KNOWN_TARGETS, known_targets, parse_if_clause
 from idf_component_tools.sources import LocalSource
 
 
@@ -251,6 +251,41 @@ class TestManifestValidator(object):
         assert len(errors) == 1
         assert errors[0].startswith('Some tags are more than once in the manifest')
 
+    def test_validate_optional_dependency_success(self, valid_optional_dependency_manifest, monkeypatch):
+        validator = ManifestValidator(valid_optional_dependency_manifest)
+        errors = validator.validate_normalize()
+
+        assert not errors
+
+    @pytest.mark.parametrize(
+        'invalid_str, error_message', [
+            ('foo >= 4.4', 'Invalid if clause'),
+            ('target is esp32', 'Invalid if clause'),
+        ])
+    def test_validate_optional_dependency_invalid_base(
+            self, valid_optional_dependency_manifest, invalid_str, error_message):
+        valid_optional_dependency_manifest['dependencies']['optional']['rules'][0]['if'] = invalid_str
+        validator = ManifestValidator(valid_optional_dependency_manifest)
+        errors = validator.validate_normalize()
+
+        assert len(errors) == 4
+        assert errors[-1].startswith(error_message)
+
+    @pytest.mark.parametrize(
+        'invalid_str, error_message', [
+            ('idf_version >= 4.4!@#', 'Invalid simple block'),
+            ('idf_version >= 4.4, <= "3.3"', 'Invalid simple block'),
+        ])
+    def test_validate_optional_dependency_invalid_derived(
+            self, valid_optional_dependency_manifest, invalid_str, error_message):
+        valid_optional_dependency_manifest['dependencies']['optional']['rules'][0]['if'] = invalid_str
+        validator = ManifestValidator(valid_optional_dependency_manifest)
+        errors = validator.validate_normalize()
+
+        assert len(errors) == 5
+        assert errors[-2].startswith(error_message)
+        assert errors[-1].startswith('Invalid if clause')
+
     def test_known_targets_env(self, monkeypatch):
         monkeypatch.setenv(
             'IDF_COMPONENT_MANAGER_KNOWN_TARGETS', 'esp32,test,esp32s2,esp32s3,esp32c3,esp32h2,linux,esp32c2')
@@ -307,3 +342,24 @@ class TestManifestValidator(object):
         captured = capsys.readouterr()
 
         assert 'Content of the managed components directory is managed automatically' in captured.out
+
+    @pytest.mark.parametrize(
+        'if_clause, bool_value', [
+            ('idf_version > 4.4', True),
+            ('idf_version <= "4.4"', False),
+            ('idf_version >= 3.3, <=2.0', False),
+            ('idf_version == 5.0.0', True),
+            ('target == esp32', True),
+            ('target != "esp32"', False),
+            ('target in esp32', True),
+            ('target in [esp32]', True),
+            ('target in [esp32, "esp32c3"]', True),
+            ('target in ["esp32s2", "esp32c3"]', False),
+            ('target not in ["esp32s2", "esp32c3"]', True),
+            ('target not in [esp32, esp32c3]', False),
+        ])
+    def test_parse_if_clause(self, if_clause, bool_value, monkeypatch):
+        monkeypatch.setenv('IDF_VERSION', '5.0.0')
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
+
+        assert parse_if_clause(if_clause).bool_value == bool_value

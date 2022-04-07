@@ -9,6 +9,7 @@ from idf_component_tools.serialization import serializable
 
 from ..semver import Version
 from .constants import COMMIT_ID_RE
+from .if_parser import IfClause
 
 try:
     from collections.abc import Mapping
@@ -41,7 +42,8 @@ class Manifest(object):
     def __init__(
             self,
             dependencies=None,  # type: Optional[List[ComponentRequirement]] # Dependencies, list of component
-            description=None,  # description type: Optional[str] # Human-readable
+            description=None,  # type: Optional[str] # Human-readable description
+            download_url=None,  # type: Optional[str] # Direct url for tarball download
             maintainers=None,  # type: Optional[str] # List of maintainers
             manifest_hash=None,  # type: Optional[str] # Check-sum of manifest content
             name=None,  # type: Optional[str] # Component name
@@ -110,13 +112,14 @@ class Manifest(object):
                 source,
                 version_spec=details.get('version') or '*',
                 public=details.get('public'),
+                if_clauses=details.get('rules'),
             )
             manifest._dependencies.append(component)
 
         return manifest
 
     @property
-    def dependencies(self):
+    def dependencies(self):  # type: () -> List[ComponentRequirement]
         return sorted(self._dependencies, key=lambda d: d.name)
 
     @property
@@ -135,6 +138,7 @@ class ComponentRequirement(object):
         'public',
         'source',
         'version_spec',
+        'meet_optional_dependencies',
     ]
 
     def __init__(
@@ -143,12 +147,14 @@ class ComponentRequirement(object):
             source,  # type: BaseSource
             version_spec='*',  # type: str
             public=None,  # type: Optional[bool]
+            if_clauses=None,  # type: Optional[List[IfClause]]
     ):
         # type: (...) -> None
         self._version_spec = version_spec
         self.source = source
         self._name = name
         self.public = public
+        self.if_clauses = if_clauses
 
     @property
     def meta(self):
@@ -161,6 +167,13 @@ class ComponentRequirement(object):
     @property
     def version_spec(self):
         return self.source.normalize_spec(self._version_spec)
+
+    @property
+    def meet_optional_dependencies(self):
+        if not self.if_clauses:
+            return True
+
+        return all(if_clause.bool_value for if_clause in self.if_clauses)
 
     def __repr__(self):  # type: () -> str
         return 'ComponentRequirement("{}", {}, version_spec="{}", public={})'.format(
