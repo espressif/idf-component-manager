@@ -421,7 +421,12 @@ class ComponentManager(object):
         with open(component_list_file, mode='w', encoding='utf-8') as file:
             file.write(u'\n'.join(all_components))
 
-    def inject_requirements(self, component_requires_file, component_list_file):
+    def inject_requirements(
+            self,
+            component_requires_file,  # type: Path | str
+            component_list_file,  # type: Path | str
+            no_component_requires_common=False  # type: bool
+    ):
         '''Set build dependencies for components with manifests'''
         requirements_manager = CMakeRequirementsManager(component_requires_file)
         requirements = requirements_manager.load()
@@ -447,28 +452,24 @@ class ComponentManager(object):
 
                 dependency_name = build_name(dependency.name)
                 requirement_key = 'REQUIRES' if dependency.public else 'PRIV_REQUIRES'
+                dep_list = requirements[name_key][requirement_key]
 
-                # Mark all requirements of `main` as public
-                if name_key == ComponentName('idf', 'main'):
+                if isinstance(dep_list, list) and dependency_name not in dep_list:
+                    dep_list.append(dependency_name)
+
+                if not no_component_requires_common and name_key == ComponentName('idf', 'main'):
                     add_all_components_to_main = True
-                    # Handle the case when main dependecy is explicitly marked as private
-                    if dependency.public is False:
-                        warn(
-                            'Public flag is ignored for the main dependency "{}". '
-                            'All dependencies of the main component are always public.'.format(dependency.name))
-                    continue
 
-                if dependency_name not in requirements[name_key][requirement_key]:
-                    requirements[name_key][requirement_key].append(dependency_name)
-
-        # If there are any dependencies added to the `main` component,
-        # add every other component to it dependencies
+        # If there are dependencies added to the `main` component,
+        # and common components were included to the requirements file
+        # then add every other component to it dependencies
         # to reproduce convenience behavior for the standard project defined in IDF's `project.cmake`
+        # For ESP-IDF < 5.0 (Remove after ESP-IDF 4.4 EOL)
         if add_all_components_to_main:
-            main_reqs = requirements[ComponentName('idf', 'main')]['REQUIRES']  # type: list[str]
+            main_reqs = requirements[ComponentName('idf', 'main')]['REQUIRES']
             for requirement in requirements.keys():
                 name = requirement.name
-                if name not in main_reqs and name != 'main':
+                if name not in main_reqs and name != 'main' and isinstance(main_reqs, list):
                     main_reqs.append(name)
 
         handle_project_requirements(requirements)

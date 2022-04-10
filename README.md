@@ -8,7 +8,7 @@ The IDF Component manager is a tool that downloads dependencies for any [ESP-IDF
 
 IDF component manager can be used with ESP-IDF v4.1 and later.
 
-For ESP-IDF v4.4 the [idf-component-manager](https://pypi.org/project/idf-component-manager/) package is installed by default and no extra action is necessary.
+Starting ESP-IDF v4.4 the [idf-component-manager](https://pypi.org/project/idf-component-manager/) package is installed by default and no extra action is necessary.
 
 In ESP-IDF v4.1 — v4.3, you need to install the following Python package to use the component manager:
 
@@ -55,8 +55,6 @@ dependencies:
   username/component:
     version: "~1.0.0"
     # For transient dependencies `public` flag can be set.
-    # `public` flag doesn't have an effect for the `main` component.
-    # All dependencies of `main` are public by default.
     public: true
   anotheruser/component: "<3.2.20"
   # For components hosted on non-default registry:
@@ -75,9 +73,9 @@ dependencies:
   # For optional dependencies
   optional_component:
     version: "~1.0.0"
-    rules:  # will add "optional_component" only when all if clauses are True
-      - if: "idf_version >=3.3,<5.0"  # supports all SimpleSpec grammars (https://python-semanticversion.readthedocs.io/en/latest/reference.html#semantic_version.SimpleSpec)
-      - if: "target in [esp32, esp32c3]"  # supports boolean operator ==, !=, in, not in.
+    rules: # will add "optional_component" only when all if clauses are True
+      - if: "idf_version >=3.3,<5.0" # supports all SimpleSpec grammars (https://python-semanticversion.readthedocs.io/en/latest/reference.html#semantic_version.SimpleSpec)
+      - if: "target in [esp32, esp32c3]" # supports boolean operator ==, !=, in, not in.
   # For example of the component
   namespace/component_with_example:
     version: "~1.0.0" # if there is no `override_path` field, use component from registry

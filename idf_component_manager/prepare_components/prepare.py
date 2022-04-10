@@ -47,6 +47,7 @@ def inject_requirements(args):
     ComponentManager(args.project_dir).inject_requirements(
         component_requires_file=args.component_requires_file,
         component_list_file=_component_list_file(args.build_dir),
+        no_component_requires_common=args.no_component_requires_common,
     )
 
 
@@ -85,7 +86,7 @@ def main():
             'name': 'inject_requirements',
         },
         {
-            'name': 'inject_requrements',  # Workaround for a typo in idf 4.1-4.2
+            'name': 'inject_requrements',  # Workaround for the typo in idf 4.1-4.2 (Remove after ESP-IDF 4.2 EOL)
             'extra_help': ' (alias)',
         }
     ]
@@ -104,6 +105,10 @@ def main():
             help='Working directory for build process',
             required=True,
         )
+        inject_step.add_argument(
+            '--no_component_requires_common',
+            action='store_true',
+            help="Flag to mark that common component requirements weren't included to requires file")
         inject_step.add_argument('--idf_path', help='Path to IDF')
 
     args = parser.parse_args()
