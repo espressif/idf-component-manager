@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optional dependencies for the `idf_component.yml` based on two keywords, `idf_version` and `target`.
   `idf_version` supports all [`SimpleSpec`](https://python-semanticversion.readthedocs.io/en/latest/reference.html#semantic_version.SimpleSpec) grammar,
   and `target` supports `==`, `!=`, `in`, `not in`.
+- Revision number support in component manifest file
 
 ### Changed
 

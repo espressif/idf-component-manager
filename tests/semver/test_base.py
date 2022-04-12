@@ -24,6 +24,10 @@ class TopLevelTestCase(unittest.TestCase):
         ('0.1.0', '0.1.1', -1),
         ('0.1.1', '0.1.1', 0),
         ('0.1.1', '0.1.0', 1),
+        ('0.1.1~1', '0.1.2', -1),
+        ('0.1.1~1', '0.1.0', 1),
+        ('0.1.1~1', '0.1.1~2', -1),
+        ('0.1.0~2-alpha', '0.1.0~1', 1),
         ('0.1.0-alpha', '0.1.0', -1),
         ('0.1.0-alpha+2', '0.1.0-alpha', NotImplemented),
     )
@@ -39,6 +43,7 @@ class TopLevelTestCase(unittest.TestCase):
         ('>=0.1.1', '0.1.2'),
         ('>=0.1.1', '0.1.1'),
         ('>=0.1.1', '0.1.2-alpha'),
+        ('>=0.1.1', '0.1.2~1-alpha'),
         ('>=0.1.1,!=0.2.0', '0.2.1'),
     )
 
@@ -52,9 +57,11 @@ class TopLevelTestCase(unittest.TestCase):
         '1.0.0-alpha.1',
         '1.0.0-beta.2',
         '1.0.0-beta.11',
+        '1.0.0~1-beta+build999',
         '1.0.0-rc.1',
         '1.0.0-rc.1+build.1',
         '1.0.0',
+        '1.0.0~999',
         '1.0.0+0.3.7',
         '1.3.7+build',
         '1.3.7+build.2.b8f12d7',
@@ -62,6 +69,7 @@ class TopLevelTestCase(unittest.TestCase):
         '1.1.1',
         '1.1.2',
         '1.1.3-rc4.5',
+        '1.1.3~20-rc4.5',
         '1.1.3-rc42.3-14-15.24+build.2012-04-13.223',
         '1.1.3+build.2012-04-13.HUY.alpha-12.1',
     )
@@ -75,6 +83,8 @@ class TopLevelTestCase(unittest.TestCase):
         '1',
         'v1',
         '1.2.3.4',
+        '1.2.3~a',
+        '1.2.3~0',
         '1.2',
         '1.2a3',
         '1.2.3a4',
@@ -97,30 +107,33 @@ class VersionTestCase(unittest.TestCase):
             yield
 
     versions = {
-        '1.0.0-alpha': (1, 0, 0, ('alpha', ), ()),
-        '1.0.0-alpha.1': (1, 0, 0, ('alpha', '1'), ()),
-        '1.0.0-beta.2': (1, 0, 0, ('beta', '2'), ()),
-        '1.0.0-beta.11': (1, 0, 0, ('beta', '11'), ()),
-        '1.0.0-rc.1': (1, 0, 0, ('rc', '1'), ()),
-        '1.0.0-rc.1+build.1': (1, 0, 0, ('rc', '1'), ('build', '1')),
-        '1.0.0': (1, 0, 0, (), ()),
-        '1.0.0+0.3.7': (1, 0, 0, (), ('0', '3', '7')),
-        '1.3.7+build': (1, 3, 7, (), ('build', )),
-        '1.3.7+build.2.b8f12d7': (1, 3, 7, (), ('build', '2', 'b8f12d7')),
-        '1.3.7+build.11.e0f985a': (1, 3, 7, (), ('build', '11', 'e0f985a')),
-        '1.1.1': (1, 1, 1, (), ()),
-        '1.1.2': (1, 1, 2, (), ()),
-        '1.1.3-rc4.5': (1, 1, 3, ('rc4', '5'), ()),
+        '1.0.0-alpha': (1, 0, 0, 1, ('alpha', ), ()),
+        '1.0.0-alpha.1': (1, 0, 0, 1, ('alpha', '1'), ()),
+        '1.0.0-beta.2': (1, 0, 0, 1, ('beta', '2'), ()),
+        '1.0.0-beta.11': (1, 0, 0, 1, ('beta', '11'), ()),
+        '1.0.0-rc.1': (1, 0, 0, 1, ('rc', '1'), ()),
+        '1.0.0-rc.1+build.1': (1, 0, 0, 1, ('rc', '1'), ('build', '1')),
+        '1.0.0': (1, 0, 0, 1, (), ()),
+        '1.0.0~99': (1, 0, 0, 99, (), ()),
+        '1.0.0+0.3.7': (1, 0, 0, 1, (), ('0', '3', '7')),
+        '1.3.7+build': (1, 3, 7, 1, (), ('build', )),
+        '1.3.7+build.2.b8f12d7': (1, 3, 7, 1, (), ('build', '2', 'b8f12d7')),
+        '1.3.7+build.11.e0f985a': (1, 3, 7, 1, (), ('build', '11', 'e0f985a')),
+        '1.1.1': (1, 1, 1, 1, (), ()),
+        '1.1.2': (1, 1, 2, 1, (), ()),
+        '1.1.3-rc4.5': (1, 1, 3, 1, ('rc4', '5'), ()),
+        '1.1.3~2-rc4+build99': (1, 1, 3, 2, ('rc4', ), ('build99', )),
         '1.1.3-rc42.3-14-15.24+build.2012-04-13.223': (
-            1, 1, 3, ('rc42', '3-14-15', '24'), ('build', '2012-04-13', '223')),
-        '1.1.3+build.2012-04-13.HUY.alpha-12.1': (1, 1, 3, (), ('build', '2012-04-13', 'HUY', 'alpha-12', '1')),
+            1, 1, 3, 1, ('rc42', '3-14-15', '24'), ('build', '2012-04-13', '223')),
+        '1.1.3+build.2012-04-13.HUY.alpha-12.1': (1, 1, 3, 1, (), ('build', '2012-04-13', 'HUY', 'alpha-12', '1')),
     }
 
     def test_parsing(self):
         for text, expected_fields in self.versions.items():
             with self.subTest(text=text):
                 version = base.Version(text)
-                actual_fields = (version.major, version.minor, version.patch, version.prerelease, version.build)
+                actual_fields = (
+                    version.major, version.minor, version.patch, version.revision, version.prerelease, version.build)
                 self.assertEqual(expected_fields, actual_fields)
 
     def test_str(self):
@@ -128,7 +141,7 @@ class VersionTestCase(unittest.TestCase):
             with self.subTest(text=text):
                 version = base.Version(text)
                 self.assertEqual(text, str(version))
-                self.assertEqual("Version('%s')" % text, repr(version))
+                self.assertEqual("Version('%s', revision=%d)" % (text, version.revision), repr(version))
 
     def test_compare_to_self(self):
         for text in self.versions:
@@ -137,33 +150,39 @@ class VersionTestCase(unittest.TestCase):
                 self.assertNotEqual(text, base.Version(text))
 
     partial_versions = {
-        '1.1': (1, 1, None, None, None),
-        '2': (2, None, None, None, None),
-        '1.0.0-alpha': (1, 0, 0, ('alpha', ), None),
-        '1.0.0-alpha.1': (1, 0, 0, ('alpha', '1'), None),
-        '1.0.0-beta.2': (1, 0, 0, ('beta', '2'), None),
-        '1.0.0-beta.11': (1, 0, 0, ('beta', '11'), None),
-        '1.0.0-rc.1': (1, 0, 0, ('rc', '1'), None),
-        '1.0.0': (1, 0, 0, None, None),
-        '1.1.1': (1, 1, 1, None, None),
-        '1.1.2': (1, 1, 2, None, None),
-        '1.1.3-rc4.5': (1, 1, 3, ('rc4', '5'), None),
-        '1.0.0-': (1, 0, 0, (), None),
-        '1.0.0-rc.1+build.1': (1, 0, 0, ('rc', '1'), ('build', '1')),
-        '1.0.0+0.3.7': (1, 0, 0, (), ('0', '3', '7')),
-        '1.3.7+build': (1, 3, 7, (), ('build', )),
-        '1.3.7+build.2.b8f12d7': (1, 3, 7, (), ('build', '2', 'b8f12d7')),
-        '1.3.7+build.11.e0f985a': (1, 3, 7, (), ('build', '11', 'e0f985a')),
+        '1.1': (1, 1, None, 1, None, None),
+        '1.1~2': (1, 1, None, 2, None, None),
+        '2': (2, None, None, 1, None, None),
+        '2~2': (2, None, None, 2, None, None),
+        '1.0.0-alpha': (1, 0, 0, 1, ('alpha', ), None),
+        '1.0.0~2-alpha': (1, 0, 0, 2, ('alpha', ), None),
+        '1.0.0-alpha.1': (1, 0, 0, 1, ('alpha', '1'), None),
+        '1.0.0-beta.2': (1, 0, 0, 1, ('beta', '2'), None),
+        '1.0.0-beta.11': (1, 0, 0, 1, ('beta', '11'), None),
+        '1.0.0-rc.1': (1, 0, 0, 1, ('rc', '1'), None),
+        '1.0.0': (1, 0, 0, 1, None, None),
+        '1.0.0~2': (1, 0, 0, 2, None, None),
+        '1.1.1': (1, 1, 1, 1, None, None),
+        '1.1.2': (1, 1, 2, 1, None, None),
+        '1.1.3-rc4.5': (1, 1, 3, 1, ('rc4', '5'), None),
+        '1.0.0-': (1, 0, 0, 1, (), None),
+        '1.0.0-rc.1+build.1': (1, 0, 0, 1, ('rc', '1'), ('build', '1')),
+        '1.0.0+0.3.7': (1, 0, 0, 1, (), ('0', '3', '7')),
+        '1.3.7+build': (1, 3, 7, 1, (), ('build', )),
+        '1.3.7+build.2.b8f12d7': (1, 3, 7, 1, (), ('build', '2', 'b8f12d7')),
+        '1.3.7~2+build.2.b8f12d7': (1, 3, 7, 2, (), ('build', '2', 'b8f12d7')),
+        '1.3.7+build.11.e0f985a': (1, 3, 7, 1, (), ('build', '11', 'e0f985a')),
         '1.1.3-rc42.3-14-15.24+build.2012-04-13.223': (
-            1, 1, 3, ('rc42', '3-14-15', '24'), ('build', '2012-04-13', '223')),
-        '1.1.3+build.2012-04-13.HUY.alpha-12.1': (1, 1, 3, (), ('build', '2012-04-13', 'HUY', 'alpha-12', '1')),
+            1, 1, 3, 1, ('rc42', '3-14-15', '24'), ('build', '2012-04-13', '223')),
+        '1.1.3+build.2012-04-13.HUY.alpha-12.1': (1, 1, 3, 1, (), ('build', '2012-04-13', 'HUY', 'alpha-12', '1')),
     }
 
     def test_parsing_partials(self):
         for text, expected_fields in self.partial_versions.items():
             with self.subTest(text=text):
                 version = base.Version(text, partial=True)
-                actual_fields = (version.major, version.minor, version.patch, version.prerelease, version.build)
+                actual_fields = (
+                    version.major, version.minor, version.patch, version.revision, version.prerelease, version.build)
                 self.assertEqual(expected_fields, actual_fields)
                 self.assertTrue(version.partial, '%r should have partial=True' % version)
 
@@ -172,7 +191,7 @@ class VersionTestCase(unittest.TestCase):
             with self.subTest(text=text):
                 version = base.Version(text, partial=True)
                 self.assertEqual(text, str(version))
-                self.assertEqual("Version('%s', partial=True)" % text, repr(version))
+                self.assertEqual("Version('%s', partial=True, revision=%d)" % (text, version.revision), repr(version))
 
     def test_compare_partial_to_self(self):
         for text in self.partial_versions:
@@ -181,12 +200,14 @@ class VersionTestCase(unittest.TestCase):
                 self.assertNotEqual(text, base.Version(text, partial=True))
 
     def test_hash(self):
-        self.assertEqual(1, len(set([base.Version('0.1.0'), base.Version('0.1.0')])))
+        self.assertEqual(1, len({base.Version('0.1.0'), base.Version('0.1.0')}))
+        self.assertEqual(1, len({base.Version('0.1.0'), base.Version('0.1.0~1')}))
+        self.assertEqual(1, len({base.Version('0.1.0~2'), base.Version('0.1.0~2')}))
 
-        self.assertEqual(2, len(set([base.Version('0.1.0'), base.Version('0.1.0', partial=True)])))
+        self.assertEqual(2, len({base.Version('0.1.0'), base.Version('0.1.0', partial=True)}))
 
         # A fully-defined 'partial' version isn't actually partial.
-        self.assertEqual(1, len(set([base.Version('0.1.0-a1+34'), base.Version('0.1.0-a1+34', partial=True)])))
+        self.assertEqual(1, len({base.Version('0.1.0-a1+34'), base.Version('0.1.0-a1+34', partial=True)}))
 
     @unittest.skipIf(sys.version_info[0] <= 2, "Comparisons don't raise TypeError in Python 2")
     def test_invalid_comparisons(self):
@@ -212,6 +233,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 2)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 0)
+        self.assertEqual(v.revision, 1)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -220,6 +242,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 1)
         self.assertEqual(v.patch, 0)
+        self.assertEqual(v.revision, 1)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -228,6 +251,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 1)
+        self.assertEqual(v.revision, 1)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -236,6 +260,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 2)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 0)
+        self.assertEqual(v.revision, 1)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -244,6 +269,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 2)
         self.assertEqual(v.patch, 0)
+        self.assertEqual(v.revision, 1)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -252,6 +278,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 1)
         self.assertEqual(v.patch, 1)
+        self.assertEqual(v.revision, 1)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -260,6 +287,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 2)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 0)
+        self.assertEqual(v.revision, 1)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -268,6 +296,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 1)
         self.assertEqual(v.patch, 0)
+        self.assertEqual(v.revision, 1)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -276,6 +305,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 2)
+        self.assertEqual(v.revision, 1)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -288,6 +318,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 2)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 0)
+        self.assertEqual(v.revision, 1)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -296,6 +327,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 1)
         self.assertEqual(v.patch, 0)
+        self.assertEqual(v.revision, 1)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -304,6 +336,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 1)
+        self.assertEqual(v.revision, 1)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -312,6 +345,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 2)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 0)
+        self.assertEqual(v.revision, 1)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -320,6 +354,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 2)
         self.assertEqual(v.patch, 0)
+        self.assertEqual(v.revision, 1)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -328,6 +363,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 1)
         self.assertEqual(v.patch, 1)
+        self.assertEqual(v.revision, 1)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -336,6 +372,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 2)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 0)
+        self.assertEqual(v.revision, 1)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -344,6 +381,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 1)
         self.assertEqual(v.patch, 0)
+        self.assertEqual(v.revision, 1)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -352,6 +390,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 2)
+        self.assertEqual(v.revision, 1)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -529,7 +568,7 @@ class SpecItemTestCase(unittest.TestCase):
         self.assertEqual(base.SpecItem.KIND_EQUAL, spec.kind)
 
     def test_hash(self):
-        self.assertEqual(1, len(set([base.SpecItem('==0.1.0'), base.SpecItem('==0.1.0')])))
+        self.assertEqual(1, len({base.SpecItem('==0.1.0'), base.SpecItem('==0.1.0')}))
 
 
 class CoerceTestCase(unittest.TestCase):
@@ -542,13 +581,14 @@ class CoerceTestCase(unittest.TestCase):
 
     examples = {
         # Dict of target: [list of equivalents]
-        '0.0.0': ('0', '0.0', '0.0.0', '0.0.0+', '0-'),
-        '0.1.0': ('0.1', '0.1+', '0.1-', '0.1.0', '0.01.0', '000.0001.0000000000'),
-        '0.1.0+2': ('0.1.0+2', '0.1.0.2'),
-        '0.1.0+2.3.4': ('0.1.0+2.3.4', '0.1.0+2+3+4', '0.1.0.2+3+4'),
-        '0.1.0+2-3.4': ('0.1.0+2-3.4', '0.1.0+2-3+4', '0.1.0.2-3+4', '0.1.0.2_3+4'),
-        '0.1.0-a2.3': ('0.1.0-a2.3', '0.1.0a2.3', '0.1.0_a2.3'),
-        '0.1.0-a2.3+4.5-6': ('0.1.0-a2.3+4.5-6', '0.1.0a2.3+4.5-6', '0.1.0a2.3+4.5_6', '0.1.0a2.3+4+5/6'),
+        '0.0.0': ('0', '0.0', '0.0.0', '0.0.0+', '0-', '0~'),
+        '0.1.0': ('0.1', '0.1+', '0.1-', '0.1~', '0.1.0', '0.01.0', '000.0001.0000000000'),
+        '0.1.0+2': ('0.1.0+2', '0.1.0.2', '0.1~1+2'),
+        '0.1.0+2.3.4': ('0.1.0+2.3.4', '0.1.0+2+3+4', '0.1.0~1+2+3+4', '0.1.0.2+3+4'),
+        '0.1.0+2-3.4': ('0.1.0+2-3.4', '0.1.0+2-3+4', '0.1.0~1+2-3+4', '0.1.0.2-3+4', '0.1.0.2_3+4'),
+        '0.1.0-a2.3': ('0.1.0-a2.3', '0.1.0a2.3', '0.1.0~1_a2.3', '0.1.0_a2.3'),
+        '0.1.0-a2.3+4.5-6': (
+            '0.1.0-a2.3+4.5-6', '0.1.0a2.3+4.5-6', '0.1.0a2.3+4.5_6', '0.1.0~1a2.3+4.5_6', '0.1.0a2.3+4+5/6'),
     }
 
     def test_coerce(self):
