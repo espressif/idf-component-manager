@@ -110,7 +110,7 @@ integration_test:py2.7:
   image: python:2.7-slim-buster
   parallel:
     matrix:
-      - IDF_BRANCH: [release/v4.1, release/v4.2, release/v4.3]
+      - IDF_BRANCH: [release/v4.1, release/v4.2]
 
 integration_test:py3.5:
   extends: .integration_test_template

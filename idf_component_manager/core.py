@@ -14,7 +14,7 @@ from pathlib import Path
 import requests
 from tqdm import tqdm
 
-from idf_component_tools.api_client import APIClientError
+from idf_component_tools.api_client_errors import APIClientError
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.errors import FatalError, GitError, ManifestError, NothingToDoError

@@ -14,6 +14,7 @@ from tqdm import tqdm
 import idf_component_tools as tools
 from idf_component_tools.semver import SimpleSpec, Version
 
+from .api_client_errors import KNOWN_API_ERRORS, APIClientError, ComponentNotFound
 from .api_schemas import COMPONENT_SCHEMA, ERROR_SCHEMA, TASK_STATUS_SCHEMA, VERSION_UPLOAD_SCHEMA
 from .manifest import Manifest
 
@@ -33,18 +34,6 @@ DEFAULT_TIMEOUT = (
 )
 
 
-class APIClientError(Exception):
-    pass
-
-
-class ComponentNotFound(APIClientError):
-    pass
-
-
-class NamespaceNotFound(APIClientError):
-    pass
-
-
 class ComponentDetails(Manifest):
     def __init__(
             self,
@@ -59,12 +48,6 @@ class ComponentDetails(Manifest):
         self.documents = documents
         self.license = license
         self.examples = examples
-
-
-KNOWN_API_ERRORS = {
-    'NamespaceNotFoundError': NamespaceNotFound,
-    'ComponentNotFoundError': ComponentNotFound,
-}
 
 
 def handle_4xx_error(error):  # type: (requests.Response) -> str
