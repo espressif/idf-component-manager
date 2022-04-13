@@ -101,7 +101,7 @@ test:py3.9:
     - . ./export.sh
     - git submodule update --init --recursive
     - cd ..
-    - pip install $CI_PROJECT_DIR pytest pytest-cov jinja2
+    - pip install $CI_PROJECT_DIR pytest pytest-cov "jinja2<3.1"
   script:
     - py.test -s -c pytest_integration.ini --cov=. --cov-report=xml:coverage_integration.xml --log-cli-level=INFO
 
