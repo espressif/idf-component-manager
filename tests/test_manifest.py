@@ -17,7 +17,7 @@ def test_project_manifest_builder(valid_manifest):
     assert str(manifest.version) == '2.3.1'
     assert manifest.description == 'Test project'
     assert manifest.url == 'https://github.com/espressif/esp-idf'
-    assert len(manifest.dependencies) == 7
+    assert len(manifest.dependencies) == 8
     assert manifest.targets == ['esp32']
     test1 = dep_by_name(manifest, 'espressif/test-1')
     assert test1.version_spec == '^1.2.7'

@@ -8,7 +8,7 @@ from idf_component_tools.hash_tools import HASH_FILENAME
 
 @pytest.fixture()
 def valid_manifest_hash():
-    return '63ec19bec932e322dd695a9d39f66264254cc6a947d44a056f2a23007d5f7b43'
+    return '64e150aba23e0bdb9bc8a7828db043df4495a6cf36f37d9edaae4fef36950ae4'
 
 
 @pytest.fixture()
@@ -32,6 +32,9 @@ def valid_manifest():
             'test-1': '^1.2.7',
             'test-8': {
                 'version': '',
+                'public': True,
+            },
+            'test-9': {
                 'public': True,
             },
             'test-2': '',

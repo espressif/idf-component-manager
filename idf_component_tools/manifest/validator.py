@@ -80,6 +80,7 @@ def dependency_schema():  # type () -> Schema
             Optional('rules'): [{
                 'if': Use(parse_if_clause)
             }],
+            Optional('override_path'): NONEMPTY_STRING,
         },
         error='Invalid dependency format',
     )
@@ -168,7 +169,7 @@ class ManifestValidator(object):
                 try:
                     source = tools.sources.BaseSource.fromdict(component, details)
 
-                    if not source.validate_version_spec(str(details.get('version'))):
+                    if not source.validate_version_spec(str(details.get('version', ''))):
                         self.add_error('Version specifications for "%s" are invalid.' % component)
                 except SourceError as unknown_keys_error:
                     self.add_error(str(unknown_keys_error))
