@@ -1,4 +1,5 @@
 import os
+import warnings
 from pathlib import Path
 
 from idf_component_manager.context_manager import get_ctx
@@ -78,7 +79,7 @@ class LocalSource(BaseSource):
         if component_without_namespace != directory_name and component_with_namespace != directory_name:
             alternative_name = ' or "{}"'.format(component_with_namespace) if len(namespace_and_component) == 2 else ''
             warning = (
-                'WARNING: Component name "{component_name}" doesn\'t match the directory name "{directory_name}".\n'
+                'Component name "{component_name}" doesn\'t match the directory name "{directory_name}".\n'
                 'ESP-IDF CMake build system uses directory names as names of components, so different names may break '
                 'requirements resolution. To avoid the problem rename the component directory to '
                 '"{component_without_namespace}"{alternative_name}').format(
@@ -86,7 +87,7 @@ class LocalSource(BaseSource):
                     directory_name=directory_name,
                     component_without_namespace=component_without_namespace,
                     alternative_name=alternative_name)
-            print(warning)
+            warnings.warn(warning)
 
         return [str(self._path)]
 

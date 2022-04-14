@@ -13,6 +13,9 @@ LICENSE = 'Apache License 2.0'
 URL = 'https://github.com/espressif/idf-component-manager'
 REQUIRES = [
     'cffi<1.15;python_version<"3.6"',
+    'click<8.0.0;python_version<"3.6"',
+    'click>=8.0.0;python_version>="3.6"',
+    'colorama',
     'contextlib2<=0.6.0;python_version<"3.6"',
     'contextlib2>0.6.0;python_version>="3.6"',
     'future',

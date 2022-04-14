@@ -1,6 +1,7 @@
 import os
 import shutil
 import tempfile
+import warnings
 
 from pytest import raises
 
@@ -77,13 +78,14 @@ class TestComponentLocalSource(object):
             assert source.download(cmp, str(main_component_path))
             assert source._path.name == sub_component_path.name  # Path.name for Python <3.6 compatibility
 
-    def test_local_path_name_warning(self, capsys, cmp_path):
+    def test_local_path_name_warning(self, cmp_path):
+        warnings.simplefilter('always')
         source = LocalSource(source_details={'path': cmp_path})
         component = SolvedComponent('not_cmp', '*', source)
-        source.download(component, 'test')
 
-        captured = capsys.readouterr()
-        assert 'WARNING: Component name "not_cmp" doesn\'t match the directory name "cmp"' in captured.out
+        with warnings.catch_warnings(record=True) as w:
+            source.download(component, 'test')
+            assert 'Component name "not_cmp" doesn\'t match the directory name "cmp"' in str(w[-1].message)
 
     def test_local_path_name_no_warning(self, capsys, cmp_path):
         source = LocalSource(source_details={'path': cmp_path})

@@ -5,6 +5,8 @@ verify_ssl = true
 
 [packages]
 cffi = {version = "<1.15", markers = "python_version<'3.6'"}
+click = '*'
+colorama = '*'
 future = '*'
 pathlib = {version = "*", markers = "python_version<'3.4'"}
 pyyaml = "<5.3" # Last version with Python 3.4 support is 5.2

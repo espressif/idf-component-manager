@@ -22,7 +22,9 @@
 import argparse
 import os
 import sys
+import warnings
 
+from idf_component_manager.utils import error, warn
 from idf_component_tools.errors import FatalError
 
 from ..core import ComponentManager
@@ -107,7 +109,10 @@ def main():
     args = parser.parse_args()
 
     try:
-        args.func(args)
+        with warnings.catch_warnings(record=True) as w:
+            args.func(args)
+            for warning in w:
+                warn(warning.message)
     except FatalError as e:
-        print(e)
+        error(e)
         sys.exit(e.exit_code)

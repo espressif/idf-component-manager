@@ -1,6 +1,7 @@
 import os
 import shutil
 
+from idf_component_manager.utils import info, warn
 from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.errors import ComponentModifiedError, FetchingError
 from idf_component_tools.hash_tools import ValidatingHashError, validate_dir_with_hash_file
@@ -45,20 +46,22 @@ def detect_unused_components(
     unused_components = get_unused_components(unused_files_with_components, managed_components_path)
     unused_files = unused_files_with_components - unused_components
     if unused_components:
-        print('Deleting {} unused components'.format(len(unused_components)))
+        info('Deleting {} unused components'.format(len(unused_components)))
         for unused_component_name in unused_components:
-            print(' {}'.format(unused_component_name))
+            info(' {}'.format(unused_component_name))
             shutil.rmtree(os.path.join(managed_components_path, unused_component_name))
     if unused_files and os.getenv('IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS') != '1':
-        print(
-            'WARNING: {} unexpected files and directories were found in the "managed_components" directory:'.format(
-                len(unused_files)))
+        warning = '{} unexpected files and directories were found in the "managed_components" directory:'.format(
+            len(unused_files))
+
         for unexpected_name in unused_files:
-            print(' {}'.format(unexpected_name))
-        print(
-            'Content of the managed components directory is managed automatically and it\'s not recommended to '
+            warning += ' {}'.format(unexpected_name)
+
+        warning += (
+            '\nContent of the managed components directory is managed automatically and it\'s not recommended to '
             'place any files there manually. To suppress this warning set the environment variable: '
             'IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS=1')
+        warn(warning)
 
 
 def is_solve_required(project_requirements, solution):
@@ -91,11 +94,11 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
     check_manifests_targets(project_requirements)
 
     if is_solve_required(project_requirements, solution):
-        print('Solving dependencies requirements')
+        info('Solving dependencies requirements')
         solver = VersionSolver(project_requirements, solution)
         solution = solver.solve()
 
-        print('Updating lock file at %s' % lock_path)
+        info('Updating lock file at %s' % lock_path)
         lock_manager.dump(solution)
 
     # Download components
@@ -116,10 +119,10 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
     if requirement_dependencies:
         number_of_components = len(requirement_dependencies)
         changed_components = []
-        print('Processing {} dependencies:'.format(number_of_components))
+        info('Processing {} dependencies:'.format(number_of_components))
 
         for index, component in enumerate(requirement_dependencies):
-            print('[{}/{}] {} ({})'.format(index + 1, number_of_components, component.name, component.version))
+            info('[{}/{}] {} ({})'.format(index + 1, number_of_components, component.name, component.version))
             fetcher = ComponentFetcher(component, managed_components_path)
             try:
                 download_paths = fetcher.download()
@@ -130,4 +133,5 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
 
         if changed_components:
             raise_component_modified_error(managed_components_path, changed_components)
+
     return downloaded_component_paths

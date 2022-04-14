@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use bare repositories for caching components sourced from git
 - `idf.py fullclean` command also delete unchanged dependency components from `managed_components` folder
 - Printing information about selected profile using `--service-profile` flag, error message if profile didn't find in idf_component_manager.yml file
+- Printing warnings and errors to stderr
 
 ### Fixed
 

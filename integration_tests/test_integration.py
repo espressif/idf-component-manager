@@ -453,7 +453,7 @@ def test_changes_in_component(project):
     shutil.rmtree(os.path.join(project, 'build'))
     res = project_action(project, 'reconfigure')
 
-    assert 'directory were modified on the disk since the last run of the CMake' in res
+    assert 'in the "managed_components" directory were modified' in res
 
     shutil.move(
         os.path.join(project, 'managed_components', 'example__cmp'),

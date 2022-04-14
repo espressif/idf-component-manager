@@ -2,6 +2,7 @@
 import os
 from collections import namedtuple
 
+from idf_component_manager.utils import info
 from idf_component_tools.api_client import APIClient
 from idf_component_tools.config import ConfigManager
 from idf_component_tools.errors import FatalError
@@ -65,7 +66,7 @@ def service_details(
     profile = get_profile(config_path, profile_name)
 
     if profile:
-        print('Selected profile name from idf_component_manager.yml file: {}'.format(profile_name))
+        info('Selected profile name from idf_component_manager.yml file: {}'.format(profile_name))
     elif profile_name != 'default' and not profile:
         raise NoSuchProfile('"{}" didn\'t find in idf_component_manager.yml file'.format(profile_name))
 
