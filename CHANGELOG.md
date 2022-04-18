@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Revision number support in component manifest file
 - Add `override_path` field for dependencies. Add possibility to change component from component
   registry to the local one. Can be used for examples of the component to change that component to the local one.
+- Support environment variables in `idf_component.yml` yaml values.
+  Substrings of the form `$name` or `${name}` are replaced by the value of environment variable name.
 
 ### Changed
 
