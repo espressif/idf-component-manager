@@ -1,8 +1,16 @@
 from pathlib import Path
 
+from tqdm import tqdm
+
 from idf_component_tools.errors import ComponentModifiedError
 from idf_component_tools.hash_tools import HASH_FILENAME
 from idf_component_tools.manifest import Manifest
+
+
+class ProgressBar(tqdm):
+    """Wrapper for tqdm for updating progress bar status"""
+    def update_to(self, count):  # type: (int) -> bool | None
+        return self.update(count - self.n)
 
 
 def dist_name(manifest):  # type: (Manifest) -> str

@@ -12,7 +12,6 @@ from io import open
 from pathlib import Path
 
 import requests
-from tqdm import tqdm
 
 from idf_component_manager.utils import info, warn
 from idf_component_tools.api_client_errors import APIClientError
@@ -30,7 +29,7 @@ from idf_component_tools.sources import WebServiceSource
 
 from .cmake_component_requirements import CMakeRequirementsManager, ComponentName, handle_project_requirements
 from .context_manager import make_ctx
-from .core_utils import archive_filename, dist_name, raise_component_modified_error
+from .core_utils import ProgressBar, archive_filename, dist_name, raise_component_modified_error
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
 from .service_details import create_api_client, get_namespace, get_profile, service_details
@@ -329,13 +328,13 @@ class ComponentManager(object):
             timeout_at = datetime.now() + timedelta(seconds=PROCESSING_TIMEOUT)
 
             try:
-                with tqdm(total=MAX_PROGRESS, unit='%') as progress_bar:
+                with ProgressBar(total=MAX_PROGRESS, unit='%') as progress_bar:
                     while True:
                         if datetime.now() > timeout_at:
                             raise TimeoutError()
                         status = client.task_status(job_id)
                         progress_bar.set_description(status.message)
-                        progress_bar.update(status.progress)
+                        progress_bar.update_to(status.progress)
 
                         if status.status == 'failure':
                             raise FatalError("Uploaded version wasn't processed successfully.\n%s" % status.message)
