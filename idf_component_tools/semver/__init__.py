@@ -2,7 +2,7 @@
 # Copyright (c) The python-semanticversion project
 # This code is distributed under the two-clause BSD License.
 
-from .base import NpmSpec, Range, SimpleSpec, Spec, SpecItem, Version, compare, match, validate
+from .base import NpmSpec, Range, SimpleSpec, Version, compare, match, validate
 
 __author__ = 'Raphaël Barrois <raphael.barrois+semver@polytechnique.org>'
 
@@ -13,7 +13,5 @@ __all__ = [
     'SimpleSpec',
     'NpmSpec',
     'Range',
-    'Spec',
-    'SpecItem',
     'Version',
 ]

@@ -4,11 +4,10 @@
 
 import functools
 import re
-import warnings
 
 
 def _has_leading_zero(value):
-    return (value and value[0] == '0' and value.isdigit() and value != '0')
+    return value and value[0] == '0' and value.isdigit() and value != '0'
 
 
 class MaxIdentifier(object):
@@ -75,39 +74,22 @@ class AlphaIdentifier(object):
 
 class Version(object):
     version_re = re.compile(r'^(\d+)\.(\d+)\.(\d+)(?:~(\d+))?(?:-([0-9a-zA-Z.-]+))?(?:\+([0-9a-zA-Z.-]+))?$')
-    partial_version_re = re.compile(
-        r'^(\d+)(?:\.(\d+)(?:\.(\d+))?)?(?:~(\d+))?(?:-([0-9a-zA-Z.-]*))?(?:\+([0-9a-zA-Z.-]*))?$')
 
     def __init__(
-            self,
-            version_string=None,
-            major=None,
-            minor=None,
-            patch=None,
-            revision=None,
-            prerelease=None,
-            build=None,
-            partial=False):
-        if partial:
-            warnings.warn(
-                "Partial versions will be removed in 3.0; use SimpleSpec('1.x.x') instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
+            self, version_string=None, major=None, minor=None, patch=None, revision=None, prerelease=None, build=None):
         has_text = version_string is not None
         has_parts = not (major is minor is patch is prerelease is build is None)
         if not has_text ^ has_parts:
             raise ValueError("Call either Version('1.2.3') or Version(major=1, ...).")
 
         if has_text:
-            major, minor, patch, revision, prerelease, build = self.parse(version_string, partial)
+            major, minor, patch, revision, prerelease, build = self.parse(version_string)
         else:
             revision = revision or 1
             # Convenience: allow to omit prerelease/build.
             prerelease = tuple(prerelease or ())
-            if not partial:
-                build = tuple(build or ())
-            self._validate_kwargs(major, minor, patch, revision, prerelease, build, partial)
+            build = tuple(build or ())
+            self._validate_kwargs(major, minor, patch, revision, prerelease, build)
 
         self.major = major
         self.minor = minor
@@ -115,8 +97,6 @@ class Version(object):
         self.revision = revision
         self.prerelease = prerelease
         self.build = build
-
-        self.partial = partial
 
     @classmethod
     def _coerce(cls, value, allow_none=False):
@@ -129,7 +109,6 @@ class Version(object):
             major=self.major + 1,
             minor=0,
             patch=0,
-            partial=self.partial,
         )
 
     def next_minor(self):
@@ -137,7 +116,6 @@ class Version(object):
             major=self.major,
             minor=self.minor + 1,
             patch=0,
-            partial=self.partial,
         )
 
     def next_patch(self):
@@ -145,7 +123,6 @@ class Version(object):
             major=self.major,
             minor=self.minor,
             patch=self.patch + 1,
-            partial=self.partial,
         )
 
     def truncate(self, level='patch'):
@@ -158,39 +135,34 @@ class Version(object):
                 minor=self.minor,
                 patch=self.patch,
                 prerelease=self.prerelease,
-                partial=self.partial,
             )
         elif level == 'patch':
             return Version(
                 major=self.major,
                 minor=self.minor,
                 patch=self.patch,
-                partial=self.partial,
             )
         elif level == 'minor':
             return Version(
                 major=self.major,
                 minor=self.minor,
-                patch=None if self.partial else 0,
-                partial=self.partial,
+                patch=0,
             )
         elif level == 'major':
             return Version(
                 major=self.major,
-                minor=None if self.partial else 0,
-                patch=None if self.partial else 0,
-                partial=self.partial,
+                minor=0,
+                patch=0,
             )
         else:
             raise ValueError('Invalid truncation level `%s`.' % level)
 
     @classmethod
-    def coerce(cls, version_string, partial=False):
+    def coerce(cls, version_string):
         """Coerce an arbitrary version string into a semver-compatible one.
 
         The rule is:
-        - If not enough components, fill minor/patch with zeroes; unless
-          partial=True
+        - If not enough components, fill minor/patch with zeroes
         - If more than 3 dot-separated components, extra components are "build"
           data. If some "build" data already appeared, append it to the
           extra components
@@ -220,10 +192,8 @@ class Version(object):
             version, revision = version, '1'
         revision = int(revision)
 
-        if not partial:
-            # We need a not-partial version.
-            while version.count('.') < 2:
-                version += '.0'
+        while version.count('.') < 2:
+            version += '.0'
 
         # Strip leading zeros in components
         # Version is of the form nn, nn.pp or nn.pp.qq
@@ -232,7 +202,7 @@ class Version(object):
             part.lstrip('0') or '0' for part in version.split('.'))
 
         if match.end() == len(version_string):
-            return Version(version, revision=revision, partial=partial)
+            return Version(version, revision=revision)
 
         rest = version_string[match.end():]
 
@@ -265,24 +235,20 @@ class Version(object):
         if build:
             version = '%s+%s' % (version, build)
 
-        return cls(version, revision=revision, partial=partial)
+        return cls(version, revision=revision)
 
     @classmethod
-    def parse(cls, version_string, partial=False):
+    def parse(cls, version_string):
         """Parse a version string into a tuple of components:
            (major, minor, patch, revision, prerelease, build).
 
         Args:
             version_string (str), the version string to parse
-            partial (bool), whether to accept incomplete input
         """
         if not version_string:
             raise ValueError('Invalid empty version string: %r' % version_string)
 
-        if partial:
-            version_re = cls.partial_version_re
-        else:
-            version_re = cls.version_re
+        version_re = cls.version_re
 
         match = version_re.match(version_string)
         if not match:
@@ -298,30 +264,19 @@ class Version(object):
             raise ValueError('Invalid leading zero in patch: %r' % version_string)
 
         major = int(major)
-        minor = cls._coerce(minor, partial)
-        patch = cls._coerce(patch, partial)
+        minor = cls._coerce(minor)
+        patch = cls._coerce(patch)
         revision = int(revision) if revision else 1
         if revision < 1:
             raise ValueError('Invalid revision number, must be an integer greater or equal than 1')
 
-        if prerelease is None:
-            if partial and (build is None):
-                # No build info, strip here
-                return major, minor, patch, revision, None, None
-            else:
-                prerelease = ()
-        elif prerelease == '':
+        if not prerelease:
             prerelease = ()
         else:
             prerelease = tuple(prerelease.split('.'))
             cls._validate_identifiers(prerelease, allow_leading_zeroes=False)
 
-        if build is None:
-            if partial:
-                build = None
-            else:
-                build = ()
-        elif build == '':
+        if not build:
             build = ()
         else:
             build = tuple(build.split('.'))
@@ -339,12 +294,12 @@ class Version(object):
                 raise ValueError('Invalid leading zero in identifier %r' % item)
 
     @classmethod
-    def _validate_kwargs(cls, major, minor, patch, revision, prerelease, build, partial):
-        if (major != int(major) or minor != cls._coerce(minor, partial) or patch != cls._coerce(patch, partial)
-                or revision != int(revision) or prerelease is None and not partial or build is None and not partial):
+    def _validate_kwargs(cls, major, minor, patch, revision, prerelease, build):
+        if (major != int(major) or minor != cls._coerce(minor) or patch != cls._coerce(patch)
+                or revision != int(revision)):
             raise ValueError(
                 'Invalid kwargs to Version(major=%r, minor=%r, patch=%r, revision=%r, '
-                'prerelease=%r, build=%r, partial=%r' % (major, minor, patch, revision, prerelease, build, partial))
+                'prerelease=%r, build=%r' % (major, minor, patch, revision, prerelease, build))
         if prerelease is not None:
             cls._validate_identifiers(prerelease, allow_leading_zeroes=False)
         if build is not None:
@@ -361,23 +316,20 @@ class Version(object):
             version = '%s.%d' % (version, self.patch)
         if self.revision > 1:
             version = '%s~%d' % (version, self.revision)
-        if self.prerelease or (self.partial and self.prerelease == () and self.build is None):
+        if self.prerelease:
             version = '%s-%s' % (version, '.'.join(self.prerelease))
-        if self.build or (self.partial and self.build == ()):
+        if self.build:
             version = '%s+%s' % (version, '.'.join(self.build))
         return version
 
     def __repr__(self):
-        return '%s(%r%s, revision=%d)' % (
+        return '%s(%r, revision=%d)' % (
             self.__class__.__name__,
             str(self),
-            ', partial=True' if self.partial else '',
             self.revision,
         )
 
     def __hash__(self):
-        # We don't include 'partial', since this is strictly equivalent to having
-        # at least a field being `None`.
         return hash((self.major, self.minor, self.patch, self.revision, self.prerelease, self.build))
 
     @property
@@ -443,98 +395,12 @@ class Version(object):
         return self.precedence_key >= other.precedence_key
 
 
-class SpecItem(object):
-    """A requirement specification."""
-
-    KIND_ANY = '*'
-    KIND_LT = '<'
-    KIND_LTE = '<='
-    KIND_EQUAL = '=='
-    KIND_SHORTEQ = '='
-    KIND_EMPTY = ''
-    KIND_GTE = '>='
-    KIND_GT = '>'
-    KIND_NEQ = '!='
-    KIND_CARET = '^'
-    KIND_TILDE = '~'
-    KIND_COMPATIBLE = '~='
-
-    # Map a kind alias to its full version
-    KIND_ALIASES = {
-        KIND_SHORTEQ: KIND_EQUAL,
-        KIND_EMPTY: KIND_EQUAL,
-    }
-
-    re_spec = re.compile(r'^(<|<=||=|==|>=|>|!=|\^|~|~=)(\d.*)$')
-
-    def __init__(self, requirement_string, _warn=True):
-        if _warn:
-            warnings.warn(
-                'The `SpecItem` class will be removed in 3.0.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-        kind, spec = self.parse(requirement_string)
-        self.kind = kind
-        self.spec = spec
-        self._clause = Spec(requirement_string).clause
-
-    @classmethod
-    def parse(cls, requirement_string):
-        if not requirement_string:
-            raise ValueError('Invalid empty requirement specification: %r' % requirement_string)
-
-        # Special case: the 'any' version spec.
-        if requirement_string == '*':
-            return (cls.KIND_ANY, '')
-
-        match = cls.re_spec.match(requirement_string)
-        if not match:
-            raise ValueError('Invalid requirement specification: %r' % requirement_string)
-
-        kind, version = match.groups()
-        if kind in cls.KIND_ALIASES:
-            kind = cls.KIND_ALIASES[kind]
-
-        spec = Version(version, partial=True)
-        if spec.build is not None and kind not in (cls.KIND_EQUAL, cls.KIND_NEQ):
-            raise ValueError(
-                'Invalid requirement specification %r: build numbers have no ordering.' % requirement_string)
-        return (kind, spec)
-
-    @classmethod
-    def from_matcher(cls, matcher):
-        if matcher == Always():
-            return cls('*', _warn=False)
-        elif matcher == Never():
-            return cls('<0.0.0-', _warn=False)
-        elif isinstance(matcher, Range):
-            return cls('%s%s' % (matcher.operator, matcher.target), _warn=False)
-
-    def match(self, version):
-        return self._clause.match(version)
-
-    def __str__(self):
-        return '%s%s' % (self.kind, self.spec)
-
-    def __repr__(self):
-        return '<SpecItem: %s %r>' % (self.kind, self.spec)
-
-    def __eq__(self, other):
-        if not isinstance(other, SpecItem):
-            return NotImplemented
-        return self.kind == other.kind and self.spec == other.spec
-
-    def __hash__(self):
-        return hash((self.kind, self.spec))
-
-
 def compare(v1, v2):
     return Version(v1).__cmp__(Version(v2))
 
 
 def match(spec, version):
-    return Spec(spec).match(Version(version))
+    return SimpleSpec(spec).match(Version(version))
 
 
 def validate(version_string):
@@ -1046,7 +912,6 @@ class SimpleSpec(BaseSpec):
             elif prefix == cls.PREFIX_TILDE:
                 assert major is not None
                 # Accept any higher patch in the same minor
-                # Might go higher if the initial version was a partial
                 if minor is None:
                     high = target.next_major()
                 else:
@@ -1057,7 +922,6 @@ class SimpleSpec(BaseSpec):
                 assert major is not None
                 # ~1 is 1.0.0..2.0.0; ~=2.2 is 2.2.0..3.0.0; ~=1.4.5 is 1.4.5..1.5.0
                 if minor is None or patch is None:
-                    # We got a partial version
                     high = target.next_major()
                 else:
                     high = target.next_minor()
@@ -1122,44 +986,6 @@ class SimpleSpec(BaseSpec):
                     return Range(Range.OP_LT, target.next_minor())
                 else:
                     return Range(Range.OP_LTE, target)
-
-
-class LegacySpec(SimpleSpec):
-    def __init__(self, *expressions):
-        warnings.warn(
-            'The Spec() class will be removed in 3.1; use SimpleSpec() instead.',
-            PendingDeprecationWarning,
-            stacklevel=2,
-        )
-
-        if len(expressions) > 1:
-            warnings.warn(
-                "Passing 2+ arguments to SimpleSpec will be removed in 3.0; concatenate them with ',' instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
-        expression = ','.join(expressions)
-        super(LegacySpec, self).__init__(expression)
-
-    @property
-    def specs(self):
-        return list(self)
-
-    def __iter__(self):
-        warnings.warn(
-            'Iterating over the components of a SimpleSpec object will be removed in 3.0.',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        try:
-            clauses = list(self.clause)
-        except TypeError:  # Not an iterable
-            clauses = [self.clause]
-        for clause in clauses:
-            yield SpecItem.from_matcher(clause)
-
-
-Spec = LegacySpec
 
 
 @BaseSpec.register_syntax
