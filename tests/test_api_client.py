@@ -1,6 +1,7 @@
 import pytest
 import vcr
 
+from idf_component_manager import version
 from idf_component_tools.api_client import APIClient, join_url
 
 
@@ -52,3 +53,7 @@ class TestAPIClient(object):
 
         assert manifest.name == 'test/cmp'
         assert str(manifest.version) == '1.0.1'
+
+    def test_user_agent(self, base_url):
+        user_agent = APIClient(base_url=base_url).session.headers['user-agent']
+        assert user_agent.endswith(str(version))

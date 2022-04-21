@@ -12,6 +12,7 @@ from tqdm import tqdm
 
 # Import whole module to avoid circular dependencies
 import idf_component_tools as tools
+from idf_component_tools.__version__ import __version__
 from idf_component_tools.semver import SimpleSpec, Version
 
 from .api_client_errors import KNOWN_API_ERRORS, APIClientError, ComponentNotFound
@@ -32,6 +33,8 @@ DEFAULT_TIMEOUT = (
     6.05,  # Connect timeout
     30.1,  # Read timeout
 )
+
+USER_AGENT = 'idf-component-manager/{}'.format(__version__)
 
 
 class ComponentDetails(Manifest):
@@ -106,6 +109,7 @@ class APIClient(object):
         api_adapter = HTTPAdapter(max_retries=3)
 
         session = requests.Session()
+        session.headers['User-Agent'] = USER_AGENT
         session.auth = TokenAuth(auth_token)
         session.mount(base_url, api_adapter)
         self.session = session
