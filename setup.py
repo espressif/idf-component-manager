@@ -5,7 +5,7 @@ import setuptools
 
 AUTHOR = 'Sergei Silnov'
 MAINTAINER = 'Sergei Silnov'
-EMAIL = 'sergei.silnov@esspressif.com'
+EMAIL = 'sergei.silnov@espressif.com'
 
 NAME = 'idf_component_manager'
 SHORT_DESCRIPTION = 'The component manager for ESP-IDF'
@@ -34,7 +34,7 @@ path = os.path.abspath(os.path.dirname(__file__))
 with io.open('README.md', mode='r', encoding='utf-8') as readme:
     LONG_DESCRIPTION = readme.read()
 
-with io.open(os.path.join(path, 'idf_component_manager', '__version__.py'), mode='r', encoding='utf-8') as f:
+with io.open(os.path.join(path, 'idf_component_tools', '__version__.py'), mode='r', encoding='utf-8') as f:
     exec(f.read(), info)  # nosec
 
 setuptools.setup(
