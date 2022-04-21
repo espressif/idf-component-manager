@@ -527,3 +527,28 @@ def test_fullclean_managed_components(project):
         hash_file.write(u'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
     project_action(project, 'fullclean')
     assert Path(project, 'managed_components', 'espressif__mag3110').is_dir()
+
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'example/cmp': {
+                            'version': '==$CMP_VERSION',
+                        },
+                    }
+                }
+            }
+        },
+    ],
+    indirect=True)
+def test_env_var(project, monkeypatch):
+    monkeypatch.setenv('CMP_VERSION', '3.0.3')
+    real_result = project_action(project, 'reconfigure')
+    assert 'example/cmp (3.0.3)' in real_result
+
+    monkeypatch.setenv('CMP_VERSION', '3.3.3')
+    real_result = project_action(project, 'reconfigure')
+    assert 'example/cmp (3.3.3)' in real_result

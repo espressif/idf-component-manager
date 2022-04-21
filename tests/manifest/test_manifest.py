@@ -2,6 +2,7 @@ import os
 import re
 
 import pytest
+import yaml
 
 from idf_component_manager.dependencies import detect_unused_components
 from idf_component_tools.errors import ManifestError
@@ -73,6 +74,32 @@ class TestManifestPipeline(object):
         parser.load()
 
         assert parser.is_valid
+
+    def test_env_var(self, valid_manifest, monkeypatch, tmp_path):
+        monkeypatch.setenv('SUPPORT_TARGET', 'esp32s2')
+        valid_manifest['targets'] = ['$SUPPORT_TARGET']
+
+        manifest_path = os.path.join(str(tmp_path), 'idf_component.yml')
+        with open(manifest_path, 'w') as fw:
+            yaml.dump(valid_manifest, fw)
+
+        parser = ManifestManager(manifest_path, name='test')
+        parser.load()
+
+        assert parser.manifest_tree['targets'] == ['esp32s2']
+
+    def test_env_var_not_specified(self, valid_manifest, monkeypatch, tmp_path):
+        valid_manifest['targets'] = ['$SUPPORT_TARGET']
+
+        manifest_path = os.path.join(str(tmp_path), 'idf_component.yml')
+        with open(manifest_path, 'w') as fw:
+            yaml.dump(valid_manifest, fw)
+
+        parser = ManifestManager(manifest_path, name='test')
+        with pytest.raises(
+                ManifestError,
+                match='Using environment variable "SUPPORT_TARGET" in the manifest file but not specifying it'):
+            parser.load()
 
 
 class TestManifestValidator(object):
