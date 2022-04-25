@@ -1,5 +1,6 @@
 """Classes to work with Espressif Component Web Service"""
 import os
+import platform
 from collections import namedtuple
 from functools import wraps
 from io import open
@@ -33,8 +34,6 @@ DEFAULT_TIMEOUT = (
     6.05,  # Connect timeout
     30.1,  # Read timeout
 )
-
-USER_AGENT = 'idf-component-manager/{}'.format(__version__)
 
 
 class ComponentDetails(Manifest):
@@ -100,6 +99,16 @@ class TokenAuth(requests.auth.AuthBase):
         return request
 
 
+def user_agent():  # type: () -> str
+    return 'idf-component-manager/{version} ({os}/{release} {arch}; python/{py_version})'.format(
+        version=__version__,
+        os=platform.system(),
+        release=platform.release(),
+        arch=platform.machine(),
+        py_version=platform.python_version(),
+    )
+
+
 class APIClient(object):
     def __init__(self, base_url, source=None, auth_token=None):
         # type: (str, Optional[BaseSource], Optional[str]) -> None
@@ -109,7 +118,7 @@ class APIClient(object):
         api_adapter = HTTPAdapter(max_retries=3)
 
         session = requests.Session()
-        session.headers['User-Agent'] = USER_AGENT
+        session.headers['User-Agent'] = user_agent()
         session.auth = TokenAuth(auth_token)
         session.mount(base_url, api_adapter)
         self.session = session

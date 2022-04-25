@@ -2,7 +2,7 @@ import pytest
 import vcr
 
 from idf_component_manager import version
-from idf_component_tools.api_client import APIClient, join_url
+from idf_component_tools.api_client import APIClient, join_url, user_agent
 
 
 @pytest.fixture
@@ -55,5 +55,5 @@ class TestAPIClient(object):
         assert str(manifest.version) == '1.0.1'
 
     def test_user_agent(self, base_url):
-        user_agent = APIClient(base_url=base_url).session.headers['user-agent']
-        assert user_agent.endswith(str(version))
+        ua = user_agent()
+        assert str(version) in ua
