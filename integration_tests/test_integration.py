@@ -54,6 +54,16 @@ def set_target(project_path, target):
     return live_print_call(['idf.py', '-C', project_path, 'set-target', target])
 
 
+def skip_for_idf_versions(*versions):
+    current_version = idf_version()
+    for version in versions:
+        if version in current_version:
+            logging.info('Skipping the test for %s', current_version)
+            return True
+
+    return False
+
+
 @pytest.mark.parametrize(
     'project', [
         {
@@ -223,7 +233,7 @@ def test_idf_check_target_pass(project):
         },
     ], indirect=True)
 def test_changing_target(project):
-    if 'v4.1' in idf_version():
+    if skip_for_idf_versions('v4.1'):
         return
 
     lock_path = os.path.join(project, 'dependencies.lock')
@@ -552,3 +562,30 @@ def test_env_var(project, monkeypatch):
     monkeypatch.setenv('CMP_VERSION', '3.3.3')
     real_result = project_action(project, 'reconfigure')
     assert 'example/cmp (3.3.3)' in real_result
+
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'example/cmp': {
+                            'version': '*',
+                            'include': 'cmp.h',
+                        },
+                    }
+                }
+            }
+        },
+    ],
+    indirect=True)
+def test_build_pure_cmake(project):
+    if skip_for_idf_versions('v4.1', 'v4.2', 'v4.3'):
+        return
+
+    build_dir = os.path.join(project, 'build')
+    res = live_print_call(['cmake', '-S', project, '-B', build_dir, '-G', 'Ninja'])
+    assert 'Generating done' in res
+    res = live_print_call(['cmake', '--build', build_dir])
+    assert 'FAILED' not in res
