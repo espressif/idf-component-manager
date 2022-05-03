@@ -35,11 +35,12 @@ class TestAPIClient(object):
             assert join_url(*test['in']) == test['out']
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_component_versions.yaml')
-    def test_version(self, base_url):
+    def test_version(self, base_url, monkeypatch):
+        monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '0')
         client = APIClient(base_url=base_url)
 
         # Also check case normalisation
-        component = client.versions('Test/Cmp', spec='>=1.0.0')
+        component = client.versions(component_name='Test/Cmp', spec='>=1.0.0')
 
         assert component.name == 'test/cmp'
         assert len(list(component.versions)) == 2
@@ -49,7 +50,7 @@ class TestAPIClient(object):
         client = APIClient(base_url=base_url)
 
         # Also check case normalisation
-        manifest = client.component('tesT/CMP')
+        manifest = client.component(component_name='tesT/CMP')
 
         assert manifest.name == 'test/cmp'
         assert str(manifest.version) == '1.0.1'
@@ -57,3 +58,20 @@ class TestAPIClient(object):
     def test_user_agent(self, base_url):
         ua = user_agent()
         assert str(version) in ua
+
+    @vcr.use_cassette(
+        'tests/fixtures/vcr_cassettes/test_api_cache.yaml',
+        record_mode='none',
+    )
+    def test_api_cache(self, base_url, monkeypatch):
+        """
+        This test is checking api caching with using the same requests 2 times.
+        In test_api_cache.yaml we have just one request, so if test is passed,
+        one request was from the cassette, and one from the cache.
+        WARNING: Don't overwrite the test_api_cache.yaml file. It can break the test.
+        """
+        monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '180')
+        client = APIClient(base_url=base_url)
+
+        client.component(component_name='test/cmp')
+        client.component(component_name='test/cmp')

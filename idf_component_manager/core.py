@@ -125,7 +125,7 @@ class ComponentManager(object):
 
         client = create_api_client()
         try:
-            component_details = client.component(component_name, version)
+            component_details = client.component(component_name=component_name, version=version)
         except APIClientError:
             raise FatalError(
                 'Selected component "{}" with selected version "{}" doesn\'t exist.'.format(component_name, version))
@@ -235,7 +235,7 @@ class ComponentManager(object):
 
         component_name = '/'.join([namespace, name])
         # Checking if current version already uploaded
-        versions = client.versions(component_name).versions
+        versions = client.versions(component_name=component_name).versions
 
         if version not in versions:
             raise NothingToDoError(
@@ -302,7 +302,7 @@ class ComponentManager(object):
         try:
             component_name = '/'.join([namespace, manifest.name])
             # Checking if current version already uploaded
-            versions = client.versions(component_name, spec='*').versions
+            versions = client.versions(component_name=component_name, spec='*').versions
             if manifest.version in versions:
                 if args.get('allow_existing'):
                     return
@@ -332,7 +332,7 @@ class ComponentManager(object):
                     while True:
                         if datetime.now() > timeout_at:
                             raise TimeoutError()
-                        status = client.task_status(job_id)
+                        status = client.task_status(job_id=job_id)
                         progress_bar.set_description(status.message)
                         progress_bar.update_to(status.progress)
 
@@ -358,7 +358,7 @@ class ComponentManager(object):
 
         client, _ = service_details(None, args.get('service_profile'))
         try:
-            status = client.task_status(job_id)
+            status = client.task_status(job_id=job_id)
             if status.status == 'failure':
                 raise FatalError("Uploaded version wasn't processed successfully.\n%s" % status.message)
             else:

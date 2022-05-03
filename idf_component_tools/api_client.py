@@ -6,6 +6,9 @@ from functools import wraps
 from io import open
 
 import requests
+from cachecontrol import CacheControlAdapter
+from cachecontrol.caches import FileCache
+from cachecontrol.heuristics import ExpiresAfter
 from requests.adapters import HTTPAdapter
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 from schema import Schema, SchemaError
@@ -13,6 +16,8 @@ from tqdm import tqdm
 
 # Import whole module to avoid circular dependencies
 import idf_component_tools as tools
+from idf_component_manager.utils import warn
+from idf_component_tools import file_cache
 from idf_component_tools.__version__ import __version__
 from idf_component_tools.semver import SimpleSpec, Version
 
@@ -21,7 +26,7 @@ from .api_schemas import COMPONENT_SCHEMA, ERROR_SCHEMA, TASK_STATUS_SCHEMA, VER
 from .manifest import Manifest
 
 try:
-    from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
+    from typing import TYPE_CHECKING, Any, Callable, Tuple
 
     if TYPE_CHECKING:
         from idf_component_tools.sources import BaseSource
@@ -34,6 +39,9 @@ DEFAULT_TIMEOUT = (
     6.05,  # Connect timeout
     30.1,  # Read timeout
 )
+
+DEFAULT_API_CACHE_EXPIRATION = 180
+MAX_RETRIES = 3
 
 
 class ComponentDetails(Manifest):
@@ -82,7 +90,7 @@ def join_url(*args):  # type: (*str) -> str
 def auth_required(f):
     @wraps(f)
     def wrapper(self, *args, **kwargs):
-        if not self.session.auth.token:
+        if not self.auth_token:
             raise APIClientError('API token is required')
         return f(self, *args, **kwargs)
 
@@ -90,7 +98,7 @@ def auth_required(f):
 
 
 class TokenAuth(requests.auth.AuthBase):
-    def __init__(self, token):  # type: (Optional[str]) -> None
+    def __init__(self, token):  # type: (str | None) -> None
         self.token = token
 
     def __call__(self, request):
@@ -111,17 +119,19 @@ def user_agent():  # type: () -> str
 
 class APIClient(object):
     def __init__(self, base_url, source=None, auth_token=None):
-        # type: (str, Optional[BaseSource], Optional[str]) -> None
+        # type: (str, BaseSource | None, str | None) -> None
         self.base_url = base_url
         self.source = source
-
-        api_adapter = HTTPAdapter(max_retries=3)
-
-        session = requests.Session()
-        session.headers['User-Agent'] = user_agent()
-        session.auth = TokenAuth(auth_token)
-        session.mount(base_url, api_adapter)
-        self.session = session
+        self.auth_token = auth_token
+        try:
+            self.cache_time = int(
+                os.environ.get('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', DEFAULT_API_CACHE_EXPIRATION))
+        except ValueError:
+            warn(
+                'IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES is set to a non-numeric value. '
+                'Please set the variable to the number of minutes. '
+                'Using the default value of {} minutes.'.format(DEFAULT_API_CACHE_EXPIRATION))
+            self.cache_time = DEFAULT_API_CACHE_EXPIRATION
 
     def _version_dependencies(self, version):
         dependencies = []
@@ -142,11 +152,11 @@ class APIClient(object):
 
         return dependencies
 
-    def _base_request(self, method, path, data=None, headers=None, schema=None):
-        # type: (str, List[str], Optional[Dict], Optional[Dict], Schema) -> Dict
+    def _base_request(self, session, method, path, data=None, headers=None, schema=None):
+        # type: (requests.Session, str, list[str], dict | None, dict | None, Schema | None) -> dict
         endpoint = join_url(self.base_url, *path)
 
-        timeout = DEFAULT_TIMEOUT  # type: Union[float, Tuple[float, float]]
+        timeout = DEFAULT_TIMEOUT  # type: float | Tuple[float, float]
         try:
             timeout = float(os.environ['IDF_COMPONENT_SERVICE_TIMEOUT'])
         except ValueError:
@@ -155,7 +165,7 @@ class APIClient(object):
             pass
 
         try:
-            response = self.session.request(
+            response = session.request(
                 method,
                 endpoint,
                 data=data,
@@ -188,12 +198,49 @@ class APIClient(object):
 
         return json
 
-    def versions(self, component_name, spec='*', target=None):
+    def _create_session(
+            self,
+            cache=False,  # type: bool
+            cache_path=file_cache.FileCache.path()  # type: str
+    ):  # type: (...) -> requests.Session
+        if cache:
+            api_adapter = CacheControlAdapter(
+                max_retries=MAX_RETRIES,
+                heuristic=ExpiresAfter(minutes=self.cache_time),
+                cache=FileCache(os.path.join(cache_path, '.api_client')))
+        else:
+            api_adapter = HTTPAdapter(max_retries=MAX_RETRIES)
+
+        session = requests.Session()
+        session.headers['User-Agent'] = user_agent()
+        session.auth = TokenAuth(self.auth_token)
+        session.mount(self.base_url, api_adapter)
+
+        return session
+
+    def _request(cache=False):  # type: ignore
+        def decorator(f):  # type: (APIClient | Callable[..., Any]) -> Callable
+            @wraps(f)  # type: ignore
+            def wrapper(self, *args, **kwargs):
+                cache_status = cache and bool(self.cache_time)
+                session = self._create_session(cache=cache_status)
+
+                def request(method, path, data=None, headers=None, schema=None):
+                    return self._base_request(session, method, path, data=data, headers=headers, schema=schema)
+
+                return f(self, request=request, *args, **kwargs)
+
+            return wrapper
+
+        return decorator
+
+    @_request(cache=True)  # type: ignore
+    def versions(self, request, component_name, spec='*', target=None):
         """List of versions for given component with required spec"""
         semantic_spec = SimpleSpec(spec or '*')
         component_name = component_name.lower()
         try:
-            body = self._base_request(
+            body = request(
                 'get',
                 ['components', component_name],
                 schema=COMPONENT_SCHEMA,
@@ -220,9 +267,10 @@ class APIClient(object):
             ],
         )
 
-    def component(self, component_name, version=None):
+    @_request(cache=True)  # type: ignore
+    def component(self, request, component_name, version=None):
         """Manifest for given version of component, if version is None most recent version returned"""
-        response = self._base_request(
+        response = request(
             'get',
             ['components', component_name.lower()],
             schema=COMPONENT_SCHEMA,
@@ -247,7 +295,8 @@ class APIClient(object):
             examples=best_version['examples'])
 
     @auth_required
-    def upload_version(self, component_name, file_path):
+    @_request(cache=False)  # type: ignore
+    def upload_version(self, request, component_name, file_path):
         with open(file_path, 'rb') as file:
             filename = os.path.basename(file_path)
 
@@ -263,7 +312,7 @@ class APIClient(object):
             data = MultipartEncoderMonitor(encoder, callback)
 
             try:
-                return self._base_request(
+                return request(
                     'post',
                     ['components', component_name.lower(), 'versions'],
                     data=data,
@@ -274,9 +323,11 @@ class APIClient(object):
                 progress_bar.close()
 
     @auth_required
-    def delete_version(self, component_name, component_version):
-        self._base_request('delete', ['components', component_name.lower(), component_version])
+    @_request(cache=False)  # type: ignore
+    def delete_version(self, request, component_name, component_version):
+        request('delete', ['components', component_name.lower(), component_version])
 
-    def task_status(self, job_id):  # type: (str) -> TaskStatus
-        body = self._base_request('get', ['tasks', job_id], schema=TASK_STATUS_SCHEMA)
+    @_request(cache=False)  # type: ignore
+    def task_status(self, request, job_id):  # type: (Callable, str) -> TaskStatus
+        body = request('get', ['tasks', job_id], schema=TASK_STATUS_SCHEMA)
         return TaskStatus(body['message'], body['status'], body['progress'])
