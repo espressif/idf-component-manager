@@ -1,0 +1,36 @@
+stages:
+  - test
+  - integration_test
+
+workflow:
+  rules:
+    - when: always
+
+.test_template:
+  stage: test
+  tags:
+    - test
+    - internet
+  before_script:
+    - pip install tox
+  artifacts:
+    reports:
+      cobertura: coverage.xml
+
+test:py2.7:
+  extends: .test_template
+  image: python:2.7-buster
+  script:
+    - tox -e py27
+
+test:py3.5:
+  extends: .test_template
+  image: python:3.5-buster
+  script:
+    - tox -e py35
+
+test:py3.9:
+  extends: .test_template
+  image: python:3.9-buster
+  script:
+    - tox -e py39
