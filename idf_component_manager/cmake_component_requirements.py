@@ -10,7 +10,7 @@ except ImportError:
     pass
 
 ComponentProperty = namedtuple('ComponentProperty', ['component', 'prop', 'value'])
-ITERABLE_PROPS = ['REQUIRES', 'PRIV_REQUIRES']
+ITERABLE_PROPS = ['REQUIRES', 'PRIV_REQUIRES', 'MANAGED_REQUIRES', 'MANAGED_PRIV_REQUIRES']
 REQ_RE = re.compile(
     r'^__component_set_property\(___(?P<prefix>[a-zA-Z\d\-]+)_(?P<name>[a-zA-Z\d_\-\.\+]+)'
     r'\s+(?P<prop>\w+)\s+(?P<value>.*)\)')
@@ -156,7 +156,7 @@ def _handle_component_reqs(components, known_components):  # type: (list[str], l
     return updated_items
 
 
-def handle_project_requirements(requirements):  # type: (OrderedDict[ComponentName, dict[str, list | str]]) -> None
+def handle_project_requirements(requirements):  # type: (OrderedDict[ComponentName, dict[str, list[str] | str]]) -> None
     '''
     Use local components with higher priority.
     For example if in some manifest has a dependency `namespace/component`,
@@ -169,9 +169,8 @@ def handle_project_requirements(requirements):  # type: (OrderedDict[ComponentNa
     known_components = [component_name.name for component_name in requirements.keys()]
     for component, requirement in requirements.items():
         for prop in ITERABLE_PROPS:
-            components = requirement[prop]
-
-            if prop not in requirement or not isinstance(components, list):
+            if prop not in requirement:
                 continue
 
-            requirements[component][prop] = _handle_component_reqs(components, known_components)
+            requirements[component][prop] = _handle_component_reqs(
+                requirement[prop], known_components)  # type: ignore # these props are always lists

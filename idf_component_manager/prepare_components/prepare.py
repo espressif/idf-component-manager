@@ -86,7 +86,7 @@ def main():
             'name': 'inject_requirements',
         },
         {
-            'name': 'inject_requrements',  # Workaround for the typo in idf 4.1-4.2 (Remove after ESP-IDF 4.2 EOL)
+            'name': 'inject_requrements',  # Workaround for the typo in idf 4.1-4.2 (Remove after ESP-IDF 4.3 EOL)
             'extra_help': ' (alias)',
         }
     ]

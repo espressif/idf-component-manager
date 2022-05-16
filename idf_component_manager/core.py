@@ -452,10 +452,19 @@ class ComponentManager(object):
 
                 dependency_name = build_name(dependency.name)
                 requirement_key = 'REQUIRES' if dependency.public else 'PRIV_REQUIRES'
-                dep_list = requirements[name_key][requirement_key]
 
-                if isinstance(dep_list, list) and dependency_name not in dep_list:
-                    dep_list.append(dependency_name)
+                def add_req(key):  # type: (str) -> None
+                    if key not in requirements[name_key]:
+                        requirements[name_key][key] = []
+
+                    req = requirements[name_key][key]
+                    if isinstance(req, list) and dependency_name not in req:
+                        req.append(dependency_name)
+
+                add_req(requirement_key)
+
+                managed_requirement_key = 'MANAGED_{}'.format(requirement_key)
+                add_req(managed_requirement_key)
 
                 if not no_component_requires_common and name_key == ComponentName('idf', 'main'):
                     add_all_components_to_main = True
