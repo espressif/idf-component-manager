@@ -9,8 +9,6 @@ class RootCause(IncompatibilityCause):
     The incompatibility represents the requirement that the root package exists.
     """
 
-    pass
-
 
 class NoVersionsCause(IncompatibilityCause):
     """
@@ -18,15 +16,11 @@ class NoVersionsCause(IncompatibilityCause):
     the given constraint.
     """
 
-    pass
-
 
 class DependencyCause(IncompatibilityCause):
     """
     The incompatibility represents a package's dependency.
     """
-
-    pass
 
 
 class ConflictCause(IncompatibilityCause):
@@ -61,3 +55,9 @@ class PackageNotFoundCause(IncompatibilityCause):
     @property
     def error(self):
         return self._error
+
+
+class SelfDependentCause(IncompatibilityCause):
+    """
+    This incompatibility represents a package that depends on itself.
+    """

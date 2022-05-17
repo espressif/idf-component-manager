@@ -8,7 +8,7 @@ except ImportError:
 
 from .constraint import Constraint
 from .incompatibility import Incompatibility
-from .incompatibility_cause import DependencyCause
+from .incompatibility_cause import DependencyCause, SelfDependentCause
 from .package import Package
 from .range import Range
 from .term import Term
@@ -105,9 +105,14 @@ class PackageSource(object):
             if not isinstance(constraint, Constraint):
                 constraint = Constraint(package, constraint)
 
+            if package_constraint.package == constraint.package:
+                cause = SelfDependentCause()
+            else:
+                cause = DependencyCause()
+
             incompatibility = Incompatibility(
                 [Term(package_constraint, True), Term(constraint, False)],
-                cause=DependencyCause(),
+                cause=cause,
             )
             incompatibilities.append(incompatibility)
 
