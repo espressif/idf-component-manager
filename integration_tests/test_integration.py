@@ -72,9 +72,9 @@ def set_target(project_path, target):
             'components': {
                 'main': {
                     'dependencies': {
-                        'mag3110': {
-                            'version': '^1.0.0',
-                            'include': 'mag3110.h'
+                        'example/cmp': {
+                            'version': '^3.3.0',
+                            'include': 'cmp.h'
                         }
                     }
                 }
@@ -86,15 +86,15 @@ def set_target(project_path, target):
                         'new+compo.nent': {
                             'include': 'new+compo.nent.h',
                         },
-                        'button': {
-                            'version': '^1.0.0',
-                            'include': 'button.h'
+                        'example/cmp': {
+                            'version': '^3.3.0',
+                            'include': 'cmp.h'
                         },
                     }
                 },
                 'new+compo.nent': {
                     'cmake_lists': {
-                        'priv_requires': 'button',
+                        'priv_requires': 'cmp',
                     },
                 },
             },
@@ -499,7 +499,7 @@ def test_known_targets():
         idf_path = os.environ['IDF_PATH']
         sys.path.append(os.path.join(idf_path, 'tools'))
         from idf_py_actions.constants import PREVIEW_TARGETS, SUPPORTED_TARGETS
-        assert SUPPORTED_TARGETS + PREVIEW_TARGETS == DEFAULT_KNOWN_TARGETS
+        assert set(SUPPORTED_TARGETS + PREVIEW_TARGETS) == set(DEFAULT_KNOWN_TARGETS)
 
 
 @pytest.mark.parametrize(
@@ -508,8 +508,8 @@ def test_known_targets():
             'components': {
                 'main': {
                     'dependencies': {
-                        'mag3110': {
-                            'version': '^1.0.0',
+                        'example/cmp': {
+                            'version': '^3.3.0',
                         }
                     }
                 }
@@ -522,11 +522,11 @@ def test_fullclean_managed_components(project):
     project_action(project, 'fullclean')
     assert not Path(project, 'managed_components').is_dir()
     project_action(project, 'reconfigure')
-    component_hash = Path(project, 'managed_components', 'espressif__mag3110', '.component_hash')
+    component_hash = Path(project, 'managed_components', 'example__cmp', '.component_hash')
     with component_hash.open(mode='wt') as hash_file:
         hash_file.write(u'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
     project_action(project, 'fullclean')
-    assert Path(project, 'managed_components', 'espressif__mag3110').is_dir()
+    assert Path(project, 'managed_components', 'example__cmp').is_dir()
 
 
 @pytest.mark.parametrize(
