@@ -10,14 +10,14 @@ SKIP_INTEGRATION_TESTS_RE = re.compile(r'^(.*,)*skip_integration_tests(,.*)*$')
 
 def should_run_integration_tests() -> bool:
     # Check if integration tests are forcefully disabled:
-    if getenv('RUN_INTEGRATION_TESTS') == '0' or SKIP_INTEGRATION_TESTS_RE.match(environ['CI_MERGE_REQUEST_LABELS']):
+    if getenv('RUN_INTEGRATION_TESTS') == '0' or SKIP_INTEGRATION_TESTS_RE.match(getenv('CI_MERGE_REQUEST_LABELS', '')):
         return False
 
     basic_conditions = [
         # Check if current branch is main
         getenv('CI_COMMIT_BRANCH') == getenv('CI_DEFAULT_BRANCH', 'main'),
         # run_integration_tests label
-        INTEGRATION_TESTS_RE.match(environ['CI_MERGE_REQUEST_LABELS']),
+        INTEGRATION_TESTS_RE.match(getenv('CI_MERGE_REQUEST_LABELS', '')),
         # Check env-variable triggers
         getenv('RUN_INTEGRATION_TESTS') == 'true',
         getenv('CI_PIPELINE_SOURCE') == 'schedule',
