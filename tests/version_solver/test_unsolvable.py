@@ -83,3 +83,16 @@ def test_no_valid_solution(source, check_solver_result):
     So, because project depends on b (*), version solving failed."""
 
     check_solver_result(source, error=dedent(error), tries=2)
+
+
+def test_dependency_on_package_itself(source, check_solver_result):
+    source.root_dep(Package('foo'), '~=2.0')
+
+    source.add(Package('foo'), '2.3.1', deps={Package('foo'): '1.0.0'})
+    source.add(Package('foo'), '1.0.0')
+
+    error = """\
+    Because no versions of foo match >=2.0.0,<2.3.1 || >2.3.1,<3.0.0
+     and foo (2.3.1) self depends on foo (1.0.0), foo is forbidden.
+    So, because project depends on foo (~=2.0), version solving failed."""
+    check_solver_result(source, error=dedent(error), tries=1)

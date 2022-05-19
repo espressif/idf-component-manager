@@ -41,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix solve version error when using caret (`^`) with prerelease version
 - Fix relative path in the manifest for local components
 - Fix bug with the progress bar during uploading components
+- Fix error messages when there's self-dependent package during version solving
+
 
 ## [1.0.1] 2022-01-12
 

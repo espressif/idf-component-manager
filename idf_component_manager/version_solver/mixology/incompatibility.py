@@ -4,7 +4,8 @@ except ImportError:
     pass
 
 from .incompatibility_cause import (
-    ConflictCause, DependencyCause, IncompatibilityCause, NoVersionsCause, PackageNotFoundCause, RootCause)
+    ConflictCause, DependencyCause, IncompatibilityCause, NoVersionsCause, PackageNotFoundCause, RootCause,
+    SelfDependentCause)
 from .package import Package
 from .term import Term
 
@@ -23,6 +24,9 @@ class Incompatibility:
                 # two different packages (for example, a dependency).
                 or len(terms) == 2 and terms[0].package != terms[-1].package):
             pass
+        elif isinstance(cause, SelfDependentCause):
+            # If one package depends on itself, don't coalesce these two terms.
+            terms = terms
         else:
             # Coalesce multiple terms about the same package if possible.
             by_name = {}  # type: Dict[Hashable, Dict[Hashable, Term]]
@@ -88,7 +92,7 @@ class Incompatibility:
             len(self._terms) == 1 and self._terms[0].package == Package.root() and self._terms[0].is_positive())
 
     def handle_cause(self):  # type: () -> Optional[str]
-        if isinstance(self._cause, DependencyCause):
+        if isinstance(self._cause, (DependencyCause, SelfDependentCause)):
             assert len(self._terms) == 2
 
             depender = self._terms[0]
@@ -96,7 +100,10 @@ class Incompatibility:
             assert depender.is_positive()
             assert not dependee.is_positive()
 
-            return '{} depends on {}'.format(depender.to_string(allow_every=True), dependee.inverse)
+            if isinstance(self._cause, SelfDependentCause):
+                return '{} self depends on {}'.format(depender.to_string(allow_every=True), dependee.inverse)
+            else:
+                return '{} depends on {}'.format(depender.to_string(allow_every=True), dependee.inverse)
         elif isinstance(self._cause, NoVersionsCause):
             assert len(self._terms) == 1
             assert self._terms[0].is_positive()
