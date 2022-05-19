@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Substrings of the form `$name` or `${name}` are replaced by the value of environment variable name.
 - Send custom User-Agent with client version to registry API
 - Add OS, platform and python version to API client user agent
+- Provide list of managed components to ESP-IDF build system
 
 ### Changed
 
@@ -42,7 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix relative path in the manifest for local components
 - Fix bug with the progress bar during uploading components
 - Fix error messages when there's self-dependent package during version solving
-
+- Fix support of REQUIRES by the project's main component
+- Allow transient dependencies for the main component
 
 ## [1.0.1] 2022-01-12
 
