@@ -17,11 +17,9 @@ source $IDF_PATH/export.sh
 pip install idf-component-manager --upgrade
 ```
 
-## Activating the Component Manager
+## Disabling the Component Manager
 
-If CMake is started using `idf.py` or [ESP-IDF VSCode Extension](https://marketplace.visualstudio.com/items?itemName=espressif.esp-idf-extension) then the Component manager will be activated by default.
-
-If CMake is used directly or with some CMake-based IDE like CLion, it’s necessary to set the `IDF_COMPONENT_MANAGER` environment variable to 1 to enable the component manager integration with the build system.
+The component manager can be explicitly disabled by setting `IDF_COMPONENT_MANAGER` environment variable to `0`.
 
 ## Using with a project
 
