@@ -45,9 +45,9 @@ def prepare_dep_dirs(args):
 
 def inject_requirements(args):
     ComponentManager(args.project_dir).inject_requirements(
+        interface_version=args.interface_version,
         component_requires_file=args.component_requires_file,
         component_list_file=_component_list_file(args.build_dir),
-        no_component_requires_common=args.no_component_requires_common,
     )
 
 
@@ -56,6 +56,18 @@ def main():
         description='Tool to be used by CMake build system to prepare components from package manager.')
 
     parser.add_argument('--project_dir', help='Project directory')
+
+    # Interface versions support:
+    # *0* supports ESP-IDF <=4.4
+    # *1* starting ESP-IDF 5.0
+
+    parser.add_argument(
+        '--interface_version',
+        help='Version of ESP-IDF build system integration',
+        default=0,
+        type=int,
+        choices=[0, 1],
+    )
 
     subparsers = parser.add_subparsers(dest='step')
     subparsers.required = True
@@ -105,10 +117,6 @@ def main():
             help='Working directory for build process',
             required=True,
         )
-        inject_step.add_argument(
-            '--no_component_requires_common',
-            action='store_true',
-            help="Flag to mark that common component requirements weren't included to requires file")
         inject_step.add_argument('--idf_path', help='Path to IDF')
 
     args = parser.parse_args()

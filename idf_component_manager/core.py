@@ -423,9 +423,9 @@ class ComponentManager(object):
 
     def inject_requirements(
             self,
+            interface_version,  # type: int
             component_requires_file,  # type: Path | str
             component_list_file,  # type: Path | str
-            no_component_requires_common=False  # type: bool
     ):
         '''Set build dependencies for components with manifests'''
         requirements_manager = CMakeRequirementsManager(component_requires_file)
@@ -466,7 +466,8 @@ class ComponentManager(object):
                 managed_requirement_key = 'MANAGED_{}'.format(requirement_key)
                 add_req(managed_requirement_key)
 
-                if not no_component_requires_common and name_key == ComponentName('idf', 'main'):
+                # In interface v0, component_requires_file contains also common requirements
+                if interface_version == 0 and name_key == ComponentName('idf', 'main'):
                     add_all_components_to_main = True
 
         # If there are dependencies added to the `main` component,
