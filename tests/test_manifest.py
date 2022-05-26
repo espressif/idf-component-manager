@@ -16,7 +16,6 @@ def test_project_manifest_builder(valid_manifest):
     manifest = Manifest.fromdict(valid_manifest, name='test')
     assert str(manifest.version) == '2.3.1'
     assert manifest.description == 'Test project'
-    assert manifest.url == 'https://github.com/espressif/esp-idf'
     assert len(manifest.dependencies) == 8
     assert manifest.targets == ['esp32']
     test1 = dep_by_name(manifest, 'espressif/test-1')
@@ -26,6 +25,11 @@ def test_project_manifest_builder(valid_manifest):
     assert test8.public
     assert dep_by_name(manifest, 'espressif/test-2').version_spec == '*'
     assert dep_by_name(manifest, 'espressif/test-4').version_spec == '*'
+    assert manifest.links.url == 'https://test.com/homepage'
+    assert manifest.links.documentation == 'https://test.com/documentation'
+    assert manifest.links.repository == 'git@github.com:test_project/test.git'
+    assert manifest.links.issues == 'https://test.com/tracker'
+    assert manifest.links.discussion == 'https://discuss.com/discuss'
 
 
 def test_validator_broken_deps():

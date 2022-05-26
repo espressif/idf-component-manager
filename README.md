@@ -84,6 +84,20 @@ dependencies:
 
 By default information about available versions of components is cached for 3 hours. You can adjust caching period by setting the duration in minutes to `IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES` environment variable or disable the cache entirely by setting it to 0.
 
+## External links
+
+You can add links to the `idf_component.yml` file to the root of the manifest:
+
+```yaml
+url: "https://example.com/homepage" # URL of the component homepage
+repository: "https://gitexample.com/test_project" # URL of the public repository with component source code, i.e GitHub, GitLab, etc.
+documentation: "https://example.com/documentation" # URL of the component documentation
+issues: "https://git.example.com/test_project/tracker" # URL of the issue tracker
+discussion: "https://discord.example.com/test_project" # URL of the component discussion, i.e. Discord, Gitter, forum, etc.
+```
+
+A link should be a correct HTTP(S) URL like `https://example.com/path` except the `repository` field,
+it is expected to be a valid [Git remote](https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes) URL.
 
 ## Contributions Guide
 

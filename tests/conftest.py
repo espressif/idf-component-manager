@@ -8,7 +8,7 @@ from idf_component_tools.hash_tools import HASH_FILENAME
 
 @pytest.fixture()
 def valid_manifest_hash():
-    return '64e150aba23e0bdb9bc8a7828db043df4495a6cf36f37d9edaae4fef36950ae4'
+    return '0f65559235d5ed5f9ab883549323b38e627f767cdfb5247f72988efb456bce67'
 
 
 @pytest.fixture()
@@ -18,7 +18,6 @@ def valid_manifest():
         'targets': ['esp32'],
         'maintainers': ['Test Tester <test@example.com>'],
         'description': 'Test project',
-        'url': 'https://github.com/espressif/esp-idf',
         'tags': [
             'test_tag',
             'Example',
@@ -46,7 +45,12 @@ def valid_manifest():
         'files': {
             'include': ['**/*'],
             'exclude': ['.pyc']
-        }
+        },
+        'url': 'https://test.com/homepage',
+        'documentation': 'https://test.com/documentation',
+        'repository': 'git@github.com:test_project/test.git',
+        'issues': 'https://test.com/tracker',
+        'discussion': 'https://discuss.com/discuss',
     }
 
 

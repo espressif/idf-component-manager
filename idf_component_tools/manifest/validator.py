@@ -7,9 +7,10 @@ from six import string_types
 
 import idf_component_tools as tools
 
+from ..constants import COMPILED_GIT_URL_RE, COMPILED_URL_RE
 from ..errors import SourceError
 from ..semver import Version
-from .constants import FULL_SLUG_REGEX, TAGS_REGEX
+from .constants import FULL_SLUG_REGEX, LINKS, TAGS_REGEX
 from .if_parser import parse_if_clause
 
 try:
@@ -25,9 +26,8 @@ KNOWN_ROOT_KEYS = [
     'version',
     'description',
     'files',
-    'url',
     'tags',
-]
+] + LINKS
 
 DEFAULT_KNOWN_TARGETS = ['esp32', 'esp32s2', 'esp32c3', 'esp32s3', 'linux', 'esp32h2', 'esp32c2']
 
@@ -41,8 +41,11 @@ KNOWN_IF_CLAUSE_KEYWORDS = ['IDF_TARGET', 'IDF_VERSION']
 NONEMPTY_STRING = And(Or(*string_types), len, error='Non-empty string is required here')
 SLUG_REGEX_COMPILED = re.compile(FULL_SLUG_REGEX)
 
+LINKS_URL_ERROR = 'Invalid URL in the "{}" field. Check that link is a correct HTTP(S) URL. '
+LINKS_GIT_ERROR = 'Invalid URL in the "{}" field. Check that link is a valid Git remote URL'
 
-def known_targets():  # type () -> list[str]
+
+def known_targets():  # type: () -> list[str]
     try:
         targets = os.environ['IDF_COMPONENT_MANAGER_KNOWN_TARGETS'].split(',')
         if any(targets):
@@ -68,7 +71,7 @@ def known_component_keys():
     return set(key for source in KNOWN_SOURCES for key in source.known_keys())
 
 
-def dependency_schema():  # type () -> Schema
+def dependency_schema():  # type: () -> Or
     return Or(
         Or(None, *string_types, error='Dependency version spec format is invalid'),
         {
@@ -86,7 +89,7 @@ def dependency_schema():  # type () -> Schema
     )
 
 
-def manifest_schema():  # type () -> Schema
+def manifest_schema():  # type: () -> Schema
     return Schema(
         {
             Optional('name'): Or(*string_types),
@@ -94,7 +97,6 @@ def manifest_schema():  # type () -> Schema
             Optional('targets'): known_targets(),
             Optional('maintainers'): [NONEMPTY_STRING],
             Optional('description'): NONEMPTY_STRING,
-            Optional('url'): NONEMPTY_STRING,
             Optional('tags'): [
                 Regex(
                     TAGS_REGEX,
@@ -106,6 +108,12 @@ def manifest_schema():  # type () -> Schema
             },
             Optional('files'): {Optional(key): [NONEMPTY_STRING]
                                 for key in KNOWN_FILES_KEYS},
+            # Links of the project
+            Optional('url'): Regex(COMPILED_URL_RE, error=LINKS_URL_ERROR.format('url')),
+            Optional('repository'): Regex(COMPILED_GIT_URL_RE, error=LINKS_GIT_ERROR.format('repository')),
+            Optional('documentation'): Regex(COMPILED_URL_RE, error=LINKS_URL_ERROR.format('documentation')),
+            Optional('issues'): Regex(COMPILED_URL_RE, error=LINKS_URL_ERROR.format('issues')),
+            Optional('discussion'): Regex(COMPILED_URL_RE, error=LINKS_URL_ERROR.format('discussion')),
         },
         error='Invalid manifest format',
     )

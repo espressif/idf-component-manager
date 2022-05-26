@@ -1,5 +1,6 @@
 """Classes to work with manifest file"""
 import re
+from collections import namedtuple
 from functools import total_ordering
 
 import idf_component_tools as tools
@@ -8,7 +9,7 @@ from idf_component_tools.hash_tools import hash_object
 from idf_component_tools.serialization import serializable
 
 from ..semver import Version
-from .constants import COMMIT_ID_RE
+from .constants import COMMIT_ID_RE, LINKS
 from .if_parser import IfClause
 
 try:
@@ -24,6 +25,9 @@ try:
 except ImportError:
     pass
 
+# Ignore error with using variable in namedtuple
+ComponentLinks = namedtuple('ComponentLinks', LINKS)  # type: ignore
+
 
 @serializable
 class Manifest(object):
@@ -34,9 +38,9 @@ class Manifest(object):
         'maintainers',
         'name',
         'targets',
-        'url',
         'tags',
         'version',
+        'links',
     ]
 
     def __init__(
@@ -48,11 +52,11 @@ class Manifest(object):
             manifest_hash=None,  # type: str | None # Check-sum of manifest content
             name=None,  # type: str | None # Component name
             targets=None,  # type: list[str] | None # List of supported chips
-            url=None,  # type: str | None # Url of the repo
             include_files=None,  # type: list[str] | None
             exclude_files=None,  # type: list[str] | None
             version=None,  # type: ComponentVersion | None # Version
             tags=None,  # type: list[str] | None # List of tags
+            links=None,  # type: ComponentLinks | None # Links of the component
     ):
         # type: (...) -> None
 
@@ -60,7 +64,6 @@ class Manifest(object):
         self.version = version
         self.maintainers = maintainers
         self.description = description
-        self.url = url
         if tags is None:
             tags = []
         self.tags = tags
@@ -83,6 +86,7 @@ class Manifest(object):
         }
 
         self._manifest_hash = manifest_hash
+        self.links = links
 
     @classmethod
     def fromdict(cls, manifest_tree, name):  # type: (dict, str) -> Manifest
@@ -90,7 +94,6 @@ class Manifest(object):
         manifest = cls(
             name=name,
             maintainers=manifest_tree.get('maintainers'),
-            url=manifest_tree.get('url'),
             tags=manifest_tree.get('tags', []),
             description=manifest_tree.get('description'),
             targets=manifest_tree.get('targets', []),
@@ -118,6 +121,9 @@ class Manifest(object):
                 manifest._dependencies.append(component)
             else:
                 print('Skipping optional dependency: {}'.format(name))
+
+        links = {link: manifest_tree.get(link, '') for link in LINKS}
+        manifest.links = ComponentLinks(**links)
 
         return manifest
 
