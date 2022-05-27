@@ -1,11 +1,11 @@
 import os
 from io import open
-from string import Template
 
 import yaml
 
 from ..errors import ManifestError
 from .constants import MANIFEST_FILENAME
+from .env_expander import expand_env_vars
 from .manifest import Manifest
 from .validator import ManifestValidator
 
@@ -15,31 +15,6 @@ except ImportError:
     pass
 
 EMPTY_MANIFEST = dict()  # type: Dict[str, Any]
-
-
-def _convert_env_vars_in_str(s):  # type: (str) -> str
-    try:
-        return Template(s).substitute(os.environ)
-    except KeyError as e:
-        raise ManifestError(
-            'Using environment variable "{}" in the manifest file but not specifying it'.format(e.args[0]))
-
-
-def _convert_env_vars_in_yaml_dict(d):  # type: (dict[str, Any]) -> dict[str, Any]
-    if not isinstance(d, dict):
-        return d
-
-    for k, v in d.items():
-        # we only support env var in values.
-        if isinstance(v, dict):
-            d[k] = _convert_env_vars_in_yaml_dict(v)
-        elif isinstance(v, str):
-            d[k] = _convert_env_vars_in_str(v)
-        elif isinstance(v, list):  # yaml dict won't have other iterable data types like set or tuple
-            d[k] = [_convert_env_vars_in_str(i) for i in v]
-        # we don't care other data types, like numbers
-
-    return d
 
 
 class ManifestManager(object):
@@ -116,10 +91,12 @@ class ManifestManager(object):
                 if manifest_data is None:
                     manifest_data = EMPTY_MANIFEST
 
-                if not isinstance(manifest_data, dict):
+                expanded_manifest_data = expand_env_vars(manifest_data)
+
+                if not isinstance(expanded_manifest_data, dict):
                     raise ManifestError('Unknown format of the manifest file: {}'.format(self._path))
 
-                return _convert_env_vars_in_yaml_dict(manifest_data)
+                return expanded_manifest_data
 
             except yaml.YAMLError:
                 raise ManifestError(
