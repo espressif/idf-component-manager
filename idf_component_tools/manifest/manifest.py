@@ -114,7 +114,10 @@ class Manifest(object):
                 public=details.get('public'),
                 if_clauses=details.get('rules'),
             )
-            manifest._dependencies.append(component)
+            if component.meet_optional_dependencies:
+                manifest._dependencies.append(component)
+            else:
+                print('Skipping optional dependency: {}'.format(name))
 
         return manifest
 

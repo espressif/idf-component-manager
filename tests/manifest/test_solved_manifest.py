@@ -49,9 +49,6 @@ class TestSolverResult(object):
             }
         }
         manifest = manifest_manager.load()
-        assert len(manifest.dependencies) == 3
-        for dependency in manifest.dependencies:
-            if dependency.name == 'espressif/foo':
-                assert not dependency.meet_optional_dependencies
-            else:
-                assert dependency.meet_optional_dependencies
+        assert len(manifest.dependencies) == 2
+        assert manifest.dependencies[0].name == 'espressif/pest'
+        assert manifest.dependencies[1].name == 'espressif/test'
