@@ -1,4 +1,5 @@
 import os
+import sys
 from io import open
 
 import yaml
@@ -15,6 +16,12 @@ except ImportError:
     pass
 
 EMPTY_MANIFEST = dict()  # type: Dict[str, Any]
+
+UPDATE_SUGGESTION = """
+SUGGESTION: This component may be using a newer version of the component manager.
+You can try to update the component manager by running:
+    {} -m pip install --upgrade idf-component-manager
+""".format(sys.executable)
 
 
 class ManifestManager(object):
@@ -108,11 +115,13 @@ class ManifestManager(object):
         if not self.is_valid:
             error_count = len(self.validation_errors)
             if error_count == 1:
-                error_desc = ['A problem was found in the manifest file %s:' % self._path] + self.validation_errors
+                error_desc = ['A problem was found in the manifest file %s:' % self._path]
             else:
-                error_desc = [
-                    '%i problems were found in the manifest file %s:' % (error_count, self._path)
-                ] + self.validation_errors
+                error_desc = ['%i problems were found in the manifest file %s:' % (error_count, self._path)]
+
+            error_desc.extend(self.validation_errors)
+
+            error_desc.append(UPDATE_SUGGESTION)
 
             raise ManifestError('\n'.join(error_desc))
 
