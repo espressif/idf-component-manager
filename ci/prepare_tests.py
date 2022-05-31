@@ -27,14 +27,15 @@ def should_run_integration_tests() -> bool:
         return True
 
     # Check for changed files
-    result = subprocess.check_output(  # nosec
-        [
-            'git', 'diff-tree', '-r', '--name-only', '--no-commit-id',
-            f'origin/{getenv("CI_MERGE_REQUEST_TARGET_BRANCH_NAME")}', environ['CI_COMMIT_SHA']
-        ]).decode('utf-8')
+    if mr := getenv('CI_MERGE_REQUEST_TARGET_BRANCH_NAME'):
+        result = subprocess.check_output(  # nosec
+            [
+                'git', 'diff-tree', '-r', '--name-only', '--no-commit-id',
+                f'origin/{mr}', environ['CI_COMMIT_SHA']
+            ]).decode('utf-8')
 
-    if 'integration_tests' in result:
-        return True
+        if 'integration_tests' in result:
+            return True
 
     return False
 
