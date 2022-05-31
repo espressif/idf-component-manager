@@ -20,12 +20,13 @@ REQUIRES = [
     'contextlib2>0.6.0;python_version>="3.6"',
     'future',
     'pathlib;python_version<"3.4"',
-    'pyyaml',
-    'requests',
+    'pyyaml<6;python_version<"3.6"',
+    'pyyaml>=5.3;python_version>="3.6"',
+    'requests<3',
     'requests-toolbelt',
     'schema',
     'six',
-    'tqdm',
+    'tqdm<5',
 ]
 
 info = {}  # type: ignore

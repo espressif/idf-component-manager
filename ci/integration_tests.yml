@@ -11,11 +11,16 @@
     - git clone https://github.com/espressif/esp-idf.git
     - cd ./esp-idf/
     - git checkout ${IDF_BRANCH:-master}
+    - ORIGINAL_REQ=$(grep idf-component-manager ${REQ_FILE:-requirements.txt})
+    # Replace component manager in the requirements file with local copy
+    - sed -i "\+${ORIGINAL_REQ}+c${CI_PROJECT_DIR}" ${REQ_FILE:-requirements.txt}
     - ./install.sh
+    # And replace it back to avoid export.sh check dependecies error
+    - sed -i "\+${CI_PROJECT_DIR}+c${ORIGINAL_REQ}" ${REQ_FILE:-requirements.txt}
     - . ./export.sh
     - git submodule update --init --recursive
     - cd ..
-    - pip install $CI_PROJECT_DIR pytest pytest-cov "jinja2<3.1"
+    - pip install pytest pytest-cov "jinja2<3.1"
   script:
     - py.test -s -c pytest_integration.ini --cov=. --cov-report=xml:coverage_integration.xml --log-cli-level=INFO
 
@@ -46,3 +51,4 @@ integration_test:py3.7:
   parallel:
     matrix:
       - IDF_BRANCH: [master]
+        REQ_FILE: ["tools/requirements/requirements.core.txt"]
