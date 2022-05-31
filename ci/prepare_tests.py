@@ -16,6 +16,8 @@ def should_run_integration_tests() -> bool:
     basic_conditions = [
         # Check if current branch is main
         getenv('CI_COMMIT_BRANCH') == getenv('CI_DEFAULT_BRANCH', 'main'),
+        # Check if current branch is release one
+        getenv('CI_COMMIT_BRANCH', '').startswith('release/v'),
         # run_integration_tests label
         INTEGRATION_TESTS_RE.match(getenv('CI_MERGE_REQUEST_LABELS', '')),
         # Check env-variable triggers
