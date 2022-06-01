@@ -16,6 +16,8 @@ def should_run_integration_tests() -> bool:
     basic_conditions = [
         # Check if current branch is main
         getenv('CI_COMMIT_BRANCH') == getenv('CI_DEFAULT_BRANCH', 'main'),
+        # Check if current branch is release one
+        getenv('CI_COMMIT_BRANCH', '').startswith('release/v'),
         # run_integration_tests label
         INTEGRATION_TESTS_RE.match(getenv('CI_MERGE_REQUEST_LABELS', '')),
         # Check env-variable triggers
@@ -27,14 +29,15 @@ def should_run_integration_tests() -> bool:
         return True
 
     # Check for changed files
-    result = subprocess.check_output(  # nosec
-        [
-            'git', 'diff-tree', '-r', '--name-only', '--no-commit-id',
-            f'origin/{getenv("CI_MERGE_REQUEST_TARGET_BRANCH_NAME")}', environ['CI_COMMIT_SHA']
-        ]).decode('utf-8')
+    if mr := getenv('CI_MERGE_REQUEST_TARGET_BRANCH_NAME'):
+        result = subprocess.check_output(  # nosec
+            [
+                'git', 'diff-tree', '-r', '--name-only', '--no-commit-id',
+                f'origin/{mr}', environ['CI_COMMIT_SHA']
+            ]).decode('utf-8')
 
-    if 'integration_tests' in result:
-        return True
+        if 'integration_tests' in result:
+            return True
 
     return False
 
