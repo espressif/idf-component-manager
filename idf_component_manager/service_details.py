@@ -60,7 +60,7 @@ def create_api_client(base_url=None, token=None):  # type: (str | None, str | No
 def service_details(
         namespace=None,  # type: str | None
         service_profile=None,  # type: str | None
-        config_path=None  # type: str | None
+        config_path=None,  # type: str | None
 ):  # type: (...) -> ServiceDetails
     profile_name = service_profile or 'default'
     profile = get_profile(config_path, profile_name)

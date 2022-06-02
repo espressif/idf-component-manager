@@ -80,6 +80,7 @@ def test_check_only_upload_component(monkeypatch, pre_release_component_path):
 def test_allow_existing_component(monkeypatch, release_component_path):
     monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
     monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
+    monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '0')
     manager = ComponentManager(path=release_component_path)
 
     manager.upload_component({
@@ -213,6 +214,7 @@ def test_create_example_not_exist(monkeypatch, tmp_path):
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_create_example_success.yaml')
 def test_create_example_success(monkeypatch, tmp_path):
     monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
+    monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '0')
     manager = ComponentManager(path=str(tmp_path))
     manager.create_project_from_example(
         {

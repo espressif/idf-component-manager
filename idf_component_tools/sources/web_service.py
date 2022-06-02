@@ -92,7 +92,7 @@ class WebServiceSource(BaseSource):
         return path
 
     def versions(self, name, details=None, spec='*', target=None):
-        cmp_with_versions = self.api_client.versions(name, spec, target)
+        cmp_with_versions = self.api_client.versions(component_name=name, spec=spec, target=target)
 
         if not cmp_with_versions:
             raise FetchingError('Cannot get versions of "%s"' % name)
@@ -126,7 +126,7 @@ class WebServiceSource(BaseSource):
             copy_directory(self.component_cache_path(component), download_path)
             return [download_path]
 
-        component_manifest = self.api_client.component(component.name, component.version)
+        component_manifest = self.api_client.component(component_name=component.name, version=component.version)
         url = component_manifest.download_url
 
         if not url:

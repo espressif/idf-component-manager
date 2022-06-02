@@ -27,7 +27,8 @@ class TestComponentWebServiceSource(object):
             'service_{}/espressif__cmp_1.0.0_{}'.format(self.EXAMPLE_HASH[:8], self.CMP_HASH))
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_fetch_webservice.yaml')
-    def test_download(self, cmp_path):
+    def test_download(self, cmp_path, monkeypatch):
+        monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '0')
         tempdir = tempfile.mkdtemp()
         cache_dir = os.path.join(tempdir, 'cache')
         source = WebServiceSource(

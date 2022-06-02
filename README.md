@@ -80,6 +80,11 @@ dependencies:
     override_path: "../../" # use component in a local directory, not from registry
 ```
 
+## Component metadata caching
+
+By default information about available versions of components is cached for 3 hours. You can adjust caching period by setting the duration in minutes to `IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES` environment variable or disable the cache entirely by setting it to 0.
+
+
 ## Contributions Guide
 
 We welcome all contributions to the Component Manager project.

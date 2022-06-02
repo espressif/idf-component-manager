@@ -4,6 +4,7 @@ url = 'https://pypi.org/simple'
 verify_ssl = true
 
 [packages]
+cachecontrol = {version = '*', extras = ["filecache"]}
 cffi = {version = "<1.15", markers = "python_version<'3.6'"}
 click = '*'
 colorama = '*'
