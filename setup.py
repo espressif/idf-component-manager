@@ -20,12 +20,13 @@ REQUIRES = [
     'contextlib2>0.6.0;python_version>="3.6"',
     'future',
     'pathlib;python_version<"3.4"',
-    'pyyaml',
-    'requests',
+    'pyyaml<6;python_version<"3.6"',
+    'pyyaml>=5.3;python_version>="3.6"',
+    'requests<3',
     'requests-toolbelt',
     'schema',
     'six',
-    'tqdm',
+    'tqdm<5',
 ]
 
 info = {}  # type: ignore
@@ -49,7 +50,7 @@ setuptools.setup(
     author_email=EMAIL,
     url=URL,
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'License :: OSI Approved :: Apache Software License',
@@ -63,6 +64,7 @@ setuptools.setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: Implementation :: CPython',
     ],
     packages=setuptools.find_packages(
