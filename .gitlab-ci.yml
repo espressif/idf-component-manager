@@ -10,7 +10,7 @@ stages:
 
 workflow:
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS && $CI_PIPELINE_SOURCE == "push"
       when: never
     - if: "$CI_COMMIT_BRANCH"
@@ -80,4 +80,5 @@ publish_on_pypi:
   script:
     - ./publish.sh
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v.*/
