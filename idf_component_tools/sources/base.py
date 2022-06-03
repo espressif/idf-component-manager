@@ -90,7 +90,7 @@ class BaseSource(object):
     @classmethod
     def known_keys(cls):  # type: () -> List[str]
         """List of known details key"""
-        return ['version', 'public', 'rules'] + cls.required_keys() + cls.optional_keys()
+        return ['version', 'public', 'rules', 'require'] + cls.required_keys() + cls.optional_keys()
 
     @classmethod
     def schema(cls):  # type: () -> Dict

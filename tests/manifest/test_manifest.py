@@ -395,6 +395,15 @@ class TestManifestValidator(object):
 
         assert parse_if_clause(if_clause).bool_value == bool_value
 
+    def test_validate_require_public_fields(self, valid_manifest):
+        valid_manifest['dependencies']['test-8']['require'] = 'public'
+        validator = ManifestValidator(valid_manifest)
+
+        errors = validator.validate_normalize()
+
+        assert len(errors) == 1
+        assert 'require' in errors[0]
+
     def test_validate_links_wrong_url(self, valid_manifest):
         valid_manifest['issues'] = 'test.com/tracker'
 

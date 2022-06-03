@@ -118,6 +118,7 @@ class Manifest(object):
                 version_spec=details.get('version') or '*',
                 public=details.get('public'),
                 if_clauses=details.get('rules'),
+                require=details.get('require', None),
             )
             if component.meet_optional_dependencies:
                 manifest._dependencies.append(component)
@@ -150,6 +151,7 @@ class ComponentRequirement(object):
         'source',
         'version_spec',
         'meet_optional_dependencies',
+        'require',
     ]
 
     def __init__(
@@ -159,13 +161,19 @@ class ComponentRequirement(object):
             version_spec='*',  # type: str
             public=None,  # type: bool | None
             if_clauses=None,  # type: list[IfClause] | None
+            require=None,  # type: str | bool | None
     ):
         # type: (...) -> None
         self._version_spec = version_spec
         self.source = source
         self._name = name
-        self.public = public
+        self.public = None  # type: bool | None
+        if require == 'public' or public:
+            self.public = True
+        elif public is False or require == 'private':
+            self.public = False
         self.if_clauses = if_clauses
+        self.require = True if require in ['private', 'public', None] else False
 
     @property
     def meta(self):
