@@ -14,7 +14,7 @@ def test_manifest_hash(valid_manifest, valid_manifest_hash):
 
 def test_project_manifest_builder(valid_manifest):
     manifest = Manifest.fromdict(valid_manifest, name='test')
-    assert str(manifest.version) == '2.3.1'
+    assert str(manifest.version) == '2.3.1~2'
     assert manifest.description == 'Test project'
     assert manifest.url == 'https://github.com/espressif/esp-idf'
     assert len(manifest.dependencies) == 8
@@ -46,4 +46,4 @@ def test_validator_valid_manifest(valid_manifest):
 def test_validator_passed_version(valid_manifest):
     errors = ManifestValidator(valid_manifest, version='5.0.0').validate_normalize()
     assert len(errors) == 1
-    assert 'Manifest version (2.3.1) does not match the version specified in the command line (5.0.0).' in errors[0]
+    assert 'Manifest version (2.3.1~2) does not match the version specified in the command line (5.0.0).' in errors[0]
