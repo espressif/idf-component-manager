@@ -134,6 +134,7 @@ class Version(object):
                 major=self.major,
                 minor=self.minor,
                 patch=self.patch,
+                revision=self.revision,
                 prerelease=self.prerelease,
             )
         elif level == 'patch':
@@ -814,6 +815,7 @@ class SimpleSpec(BaseSpec):
             r"""^
             (?P<op><|<=||=|==|>=|>|!=|\^|~|~=)
             (?P<major>{nb})(?:\.(?P<minor>{nb})(?:\.(?P<patch>{nb}))?)?
+            (?:~(?P<revision>\d+))?
             (?:-(?P<prerel>[a-z0-9A-Z.-]*))?
             (?:\+(?P<build>[a-z0-9A-Z.-]*))?
             $
@@ -853,12 +855,19 @@ class SimpleSpec(BaseSpec):
         def parse_block(cls, expr):
             if not cls.NAIVE_SPEC.match(expr):
                 raise ValueError('Invalid simple spec component: %r' % expr)
-            prefix, major_t, minor_t, patch_t, prerel, build = cls.NAIVE_SPEC.match(expr).groups()
+            prefix, major_t, minor_t, patch_t, revision, prerel, build = cls.NAIVE_SPEC.match(expr).groups()
             prefix = cls.PREFIX_ALIASES.get(prefix, prefix)
 
             major = None if major_t in cls.EMPTY_VALUES else int(major_t)
             minor = None if minor_t in cls.EMPTY_VALUES else int(minor_t)
             patch = None if patch_t in cls.EMPTY_VALUES else int(patch_t)
+            revision = None if revision in cls.EMPTY_VALUES else int(revision)
+
+            if (major is None or minor is None or patch is None) and (revision or prerel or build):
+                raise ValueError('Invalid simple spec: %r' % expr)
+
+            if build is not None and prefix not in (cls.PREFIX_EQ, cls.PREFIX_NEQ):
+                raise ValueError('Invalid simple spec: %r' % expr)
 
             if major is None:  # '*'
                 target = Version(major=0, minor=0, patch=0)
@@ -873,15 +882,10 @@ class SimpleSpec(BaseSpec):
                     major=major,
                     minor=minor,
                     patch=patch,
+                    revision=revision,
                     prerelease=prerel.split('.') if prerel else (),
                     build=build.split('.') if build else (),
                 )
-
-            if (major is None or minor is None or patch is None) and (prerel or build):
-                raise ValueError('Invalid simple spec: %r' % expr)
-
-            if build is not None and prefix not in (cls.PREFIX_EQ, cls.PREFIX_NEQ):
-                raise ValueError('Invalid simple spec: %r' % expr)
 
             if prefix == cls.PREFIX_CARET:
                 # Accept anything with the same most-significant digit
