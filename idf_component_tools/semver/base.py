@@ -85,7 +85,7 @@ class Version(object):
         if has_text:
             major, minor, patch, revision, prerelease, build = self.parse(version_string)
         else:
-            revision = revision or 1
+            revision = revision or 0
             # Convenience: allow to omit prerelease/build.
             prerelease = tuple(prerelease or ())
             build = tuple(build or ())
@@ -189,7 +189,7 @@ class Version(object):
         if '~' in version:
             version, revision = version.split('~')
         else:
-            version, revision = version, '1'
+            version, revision = version, '0'
         revision = int(revision)
 
         while version.count('.') < 2:
@@ -266,9 +266,9 @@ class Version(object):
         major = int(major)
         minor = cls._coerce(minor)
         patch = cls._coerce(patch)
-        revision = int(revision) if revision else 1
-        if revision < 1:
-            raise ValueError('Invalid revision number, must be an integer greater or equal than 1')
+        revision = int(revision) if revision else 0
+        if revision < 0:
+            raise ValueError('Invalid revision number, must be an integer greater than or equal to 0')
 
         if not prerelease:
             prerelease = ()
