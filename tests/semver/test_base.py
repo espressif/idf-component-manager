@@ -84,7 +84,7 @@ class TopLevelTestCase(unittest.TestCase):
         'v1',
         '1.2.3.4',
         '1.2.3~a',
-        '1.2.3~0',
+        '1.2.3~-0',
         '1.2',
         '1.2a3',
         '1.2.3a4',
@@ -107,25 +107,25 @@ class VersionTestCase(unittest.TestCase):
             yield
 
     versions = {
-        '1.0.0-alpha': (1, 0, 0, 1, ('alpha', ), ()),
-        '1.0.0-alpha.1': (1, 0, 0, 1, ('alpha', '1'), ()),
-        '1.0.0-beta.2': (1, 0, 0, 1, ('beta', '2'), ()),
-        '1.0.0-beta.11': (1, 0, 0, 1, ('beta', '11'), ()),
-        '1.0.0-rc.1': (1, 0, 0, 1, ('rc', '1'), ()),
-        '1.0.0-rc.1+build.1': (1, 0, 0, 1, ('rc', '1'), ('build', '1')),
-        '1.0.0': (1, 0, 0, 1, (), ()),
+        '1.0.0-alpha': (1, 0, 0, 0, ('alpha', ), ()),
+        '1.0.0-alpha.1': (1, 0, 0, 0, ('alpha', '1'), ()),
+        '1.0.0-beta.2': (1, 0, 0, 0, ('beta', '2'), ()),
+        '1.0.0-beta.11': (1, 0, 0, 0, ('beta', '11'), ()),
+        '1.0.0-rc.1': (1, 0, 0, 0, ('rc', '1'), ()),
+        '1.0.0-rc.1+build.1': (1, 0, 0, 0, ('rc', '1'), ('build', '1')),
+        '1.0.0': (1, 0, 0, 0, (), ()),
         '1.0.0~99': (1, 0, 0, 99, (), ()),
-        '1.0.0+0.3.7': (1, 0, 0, 1, (), ('0', '3', '7')),
-        '1.3.7+build': (1, 3, 7, 1, (), ('build', )),
-        '1.3.7+build.2.b8f12d7': (1, 3, 7, 1, (), ('build', '2', 'b8f12d7')),
-        '1.3.7+build.11.e0f985a': (1, 3, 7, 1, (), ('build', '11', 'e0f985a')),
-        '1.1.1': (1, 1, 1, 1, (), ()),
-        '1.1.2': (1, 1, 2, 1, (), ()),
-        '1.1.3-rc4.5': (1, 1, 3, 1, ('rc4', '5'), ()),
+        '1.0.0+0.3.7': (1, 0, 0, 0, (), ('0', '3', '7')),
+        '1.3.7+build': (1, 3, 7, 0, (), ('build', )),
+        '1.3.7+build.2.b8f12d7': (1, 3, 7, 0, (), ('build', '2', 'b8f12d7')),
+        '1.3.7+build.11.e0f985a': (1, 3, 7, 0, (), ('build', '11', 'e0f985a')),
+        '1.1.1': (1, 1, 1, 0, (), ()),
+        '1.1.2': (1, 1, 2, 0, (), ()),
+        '1.1.3-rc4.5': (1, 1, 3, 0, ('rc4', '5'), ()),
         '1.1.3~2-rc4+build99': (1, 1, 3, 2, ('rc4', ), ('build99', )),
         '1.1.3-rc42.3-14-15.24+build.2012-04-13.223': (
-            1, 1, 3, 1, ('rc42', '3-14-15', '24'), ('build', '2012-04-13', '223')),
-        '1.1.3+build.2012-04-13.HUY.alpha-12.1': (1, 1, 3, 1, (), ('build', '2012-04-13', 'HUY', 'alpha-12', '1')),
+            1, 1, 3, 0, ('rc42', '3-14-15', '24'), ('build', '2012-04-13', '223')),
+        '1.1.3+build.2012-04-13.HUY.alpha-12.1': (1, 1, 3, 0, (), ('build', '2012-04-13', 'HUY', 'alpha-12', '1')),
     }
 
     def test_parsing(self):
@@ -151,7 +151,7 @@ class VersionTestCase(unittest.TestCase):
 
     def test_hash(self):
         self.assertEqual(1, len({base.Version('0.1.0'), base.Version('0.1.0')}))
-        self.assertEqual(1, len({base.Version('0.1.0'), base.Version('0.1.0~1')}))
+        self.assertEqual(1, len({base.Version('0.1.0'), base.Version('0.1.0~0')}))
         self.assertEqual(1, len({base.Version('0.1.0~2'), base.Version('0.1.0~2')}))
 
     @unittest.skipIf(sys.version_info[0] <= 2, "Comparisons don't raise TypeError in Python 2")
@@ -178,7 +178,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 2)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 0)
-        self.assertEqual(v.revision, 1)
+        self.assertEqual(v.revision, 0)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -187,7 +187,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 1)
         self.assertEqual(v.patch, 0)
-        self.assertEqual(v.revision, 1)
+        self.assertEqual(v.revision, 0)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -196,7 +196,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 1)
-        self.assertEqual(v.revision, 1)
+        self.assertEqual(v.revision, 0)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -205,7 +205,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 2)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 0)
-        self.assertEqual(v.revision, 1)
+        self.assertEqual(v.revision, 0)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -214,7 +214,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 2)
         self.assertEqual(v.patch, 0)
-        self.assertEqual(v.revision, 1)
+        self.assertEqual(v.revision, 0)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -223,7 +223,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 1)
         self.assertEqual(v.patch, 1)
-        self.assertEqual(v.revision, 1)
+        self.assertEqual(v.revision, 0)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -232,7 +232,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 2)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 0)
-        self.assertEqual(v.revision, 1)
+        self.assertEqual(v.revision, 0)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -241,7 +241,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 1)
         self.assertEqual(v.patch, 0)
-        self.assertEqual(v.revision, 1)
+        self.assertEqual(v.revision, 0)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -250,7 +250,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 2)
-        self.assertEqual(v.revision, 1)
+        self.assertEqual(v.revision, 0)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -263,7 +263,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 2)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 0)
-        self.assertEqual(v.revision, 1)
+        self.assertEqual(v.revision, 0)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -272,7 +272,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 1)
         self.assertEqual(v.patch, 0)
-        self.assertEqual(v.revision, 1)
+        self.assertEqual(v.revision, 0)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -281,7 +281,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 1)
-        self.assertEqual(v.revision, 1)
+        self.assertEqual(v.revision, 0)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -290,7 +290,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 2)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 0)
-        self.assertEqual(v.revision, 1)
+        self.assertEqual(v.revision, 0)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -299,7 +299,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 2)
         self.assertEqual(v.patch, 0)
-        self.assertEqual(v.revision, 1)
+        self.assertEqual(v.revision, 0)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -308,7 +308,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 1)
         self.assertEqual(v.patch, 1)
-        self.assertEqual(v.revision, 1)
+        self.assertEqual(v.revision, 0)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -317,7 +317,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 2)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 0)
-        self.assertEqual(v.revision, 1)
+        self.assertEqual(v.revision, 0)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -326,7 +326,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 1)
         self.assertEqual(v.patch, 0)
-        self.assertEqual(v.revision, 1)
+        self.assertEqual(v.revision, 0)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
@@ -335,7 +335,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(v.major, 1)
         self.assertEqual(v.minor, 0)
         self.assertEqual(v.patch, 2)
-        self.assertEqual(v.revision, 1)
+        self.assertEqual(v.revision, 0)
         self.assertEqual(v.prerelease, ())
         self.assertEqual(v.build, ())
 
