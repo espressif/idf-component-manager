@@ -393,3 +393,19 @@ class TestManifestValidator(object):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
 
         assert parse_if_clause(if_clause).bool_value == bool_value
+
+    def test_validate_links_wrong_url(self, valid_manifest):
+        valid_manifest['issues'] = 'test.com/tracker'
+
+        validator = ManifestValidator(valid_manifest)
+        validator.validate_normalize()
+
+        assert len(validator._errors) == 2
+
+    def test_validate_links_wrong_git(self, valid_manifest):
+        valid_manifest['repository'] = 'nogit@github.com:test_project/test.git'
+
+        validator = ManifestValidator(valid_manifest)
+        validator.validate_normalize()
+
+        assert len(validator._errors) == 2

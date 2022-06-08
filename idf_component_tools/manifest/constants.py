@@ -7,3 +7,4 @@ WEB_DEPENDENCY_REGEX = r'^((?:{slug}/{slug})|(?:{slug}))(.*)$'.format(slug=SLUG_
 COMMIT_ID_RE = r'[0-9a-f]{40}'
 IF_IDF_VERSION_REGEX = r'^(?P<keyword>idf_version) *(?P<comparison>[\^=~<>!]+)(?P<spec>.+)$'
 IF_TARGET_REGEX = r'^(?P<keyword>target) *(?P<comparison>!=|==|not in|in)(?P<versions>.+)$'
+LINKS = ['repository', 'documentation', 'issues', 'discussion', 'url']

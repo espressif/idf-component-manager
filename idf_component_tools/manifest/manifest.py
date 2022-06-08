@@ -1,5 +1,6 @@
 """Classes to work with manifest file"""
 import re
+from collections import namedtuple
 from functools import total_ordering
 
 import idf_component_tools as tools
@@ -8,7 +9,7 @@ from idf_component_tools.hash_tools import hash_object
 from idf_component_tools.serialization import serializable
 
 from ..semver import Version
-from .constants import COMMIT_ID_RE
+from .constants import COMMIT_ID_RE, LINKS
 from .if_parser import IfClause
 
 try:
@@ -17,12 +18,15 @@ except ImportError:
     from collections import Mapping  # type: ignore
 
 try:
-    from typing import TYPE_CHECKING, List, Optional, Union
+    from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
         from ..sources import BaseSource
 except ImportError:
     pass
+
+# Ignore error with using variable in namedtuple
+ComponentLinks = namedtuple('ComponentLinks', LINKS)  # type: ignore
 
 
 @serializable
@@ -34,25 +38,25 @@ class Manifest(object):
         'maintainers',
         'name',
         'targets',
-        'url',
         'tags',
         'version',
+        'links',
     ]
 
     def __init__(
             self,
-            dependencies=None,  # type: Optional[List[ComponentRequirement]] # Dependencies, list of component
-            description=None,  # type: Optional[str] # Human-readable description
-            download_url=None,  # type: Optional[str] # Direct url for tarball download
-            maintainers=None,  # type: Optional[str] # List of maintainers
-            manifest_hash=None,  # type: Optional[str] # Check-sum of manifest content
-            name=None,  # type: Optional[str] # Component name
-            targets=None,  # type: Optional[List[str]] # List of supported chips
-            url=None,  # type: Optional[str] # Url of the repo
-            include_files=None,  # type: Optional[List[str]]
-            exclude_files=None,  # type: Optional[List[str]]
-            version=None,  # type: Union[ComponentVersion, None] # Version
-            tags=None,  # type: Optional[List[str]] # List of tags
+            dependencies=None,  # type: list[ComponentRequirement] | None # Dependencies, list of component
+            description=None,  # type: str | None # Human-readable description
+            download_url=None,  # type: str | None # Direct url for tarball download
+            maintainers=None,  # type: str | None # List of maintainers
+            manifest_hash=None,  # type: str | None # Check-sum of manifest content
+            name=None,  # type: str | None # Component name
+            targets=None,  # type: list[str] | None # List of supported chips
+            include_files=None,  # type: list[str] | None
+            exclude_files=None,  # type: list[str] | None
+            version=None,  # type: ComponentVersion | None # Version
+            tags=None,  # type: list[str] | None # List of tags
+            links=None,  # type: ComponentLinks | None # Links of the component
     ):
         # type: (...) -> None
 
@@ -60,7 +64,6 @@ class Manifest(object):
         self.version = version
         self.maintainers = maintainers
         self.description = description
-        self.url = url
         if tags is None:
             tags = []
         self.tags = tags
@@ -83,6 +86,7 @@ class Manifest(object):
         }
 
         self._manifest_hash = manifest_hash
+        self.links = links
 
     @classmethod
     def fromdict(cls, manifest_tree, name):  # type: (dict, str) -> Manifest
@@ -90,7 +94,6 @@ class Manifest(object):
         manifest = cls(
             name=name,
             maintainers=manifest_tree.get('maintainers'),
-            url=manifest_tree.get('url'),
             tags=manifest_tree.get('tags', []),
             description=manifest_tree.get('description'),
             targets=manifest_tree.get('targets', []),
@@ -119,10 +122,13 @@ class Manifest(object):
             else:
                 print('Skipping optional dependency: {}'.format(name))
 
+        links = {link: manifest_tree.get(link, '') for link in LINKS}
+        manifest.links = ComponentLinks(**links)
+
         return manifest
 
     @property
-    def dependencies(self):  # type: () -> List[ComponentRequirement]
+    def dependencies(self):  # type: () -> list[ComponentRequirement]
         return sorted(self._dependencies, key=lambda d: d.name)
 
     @property
@@ -149,8 +155,8 @@ class ComponentRequirement(object):
             name,  # type: str
             source,  # type: BaseSource
             version_spec='*',  # type: str
-            public=None,  # type: Optional[bool]
-            if_clauses=None,  # type: Optional[List[IfClause]]
+            public=None,  # type: bool | None
+            if_clauses=None,  # type: list[IfClause] | None
     ):
         # type: (...) -> None
         self._version_spec = version_spec
@@ -186,7 +192,7 @@ class ComponentRequirement(object):
 @total_ordering
 @serializable(like='str')
 class ComponentVersion(object):
-    def __init__(self, version_string, dependencies=None):  # type: (str, Optional[List[ComponentRequirement]]) -> None
+    def __init__(self, version_string, dependencies=None):  # type: (str, list[ComponentRequirement] | None) -> None
         """
         version_string - can be `*`, git commit hash (hex, 160 bit) or valid semantic version string
         """
@@ -244,7 +250,7 @@ class HashedComponentVersion(ComponentVersion):
         super(HashedComponentVersion, self).__init__(*args, **kwargs)
 
         self.component_hash = component_hash
-        self.dependencies = dependencies  # type: Optional[List[ComponentRequirement]]
+        self.dependencies = dependencies  # type: list[ComponentRequirement] | None
         self.targets = targets
 
     def __hash__(self):
@@ -256,17 +262,17 @@ class HashedComponentVersion(ComponentVersion):
 
 
 class ComponentWithVersions(object):
-    def __init__(self, name, versions):  # type: (str, List[HashedComponentVersion]) -> None
+    def __init__(self, name, versions):  # type: (str, list[HashedComponentVersion]) -> None
         self.versions = versions
         self.name = name
 
 
 class ProjectRequirements(object):
     '''Representation of all manifests required by project'''
-    def __init__(self, manifests):  # type: (List[Manifest]) -> None
+    def __init__(self, manifests):  # type: (list[Manifest]) -> None
         self.manifests = manifests
         self._manifest_hash = None
-        self._target = None  # type: Optional[str]
+        self._target = None  # type: str | None
 
     @property
     def target(self):  # type: () -> str

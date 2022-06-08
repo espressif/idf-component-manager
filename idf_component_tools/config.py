@@ -1,30 +1,21 @@
 import os
-import re
 from io import open
 
 import yaml
 from schema import And, Optional, Or, Regex, Schema, SchemaError
 from six import string_types
 
+from idf_component_tools.constants import COMPILED_URL_RE
 from idf_component_tools.errors import FatalError
 
 DEFAULT_CONFIG_DIR = os.path.join('~', '.espressif')
 CONFIG_DIR = os.environ.get('IDF_TOOLS_PATH') or os.path.expanduser(DEFAULT_CONFIG_DIR)
 
-URL_RE = re.compile(
-    r'^https?://'  # http:// or https://
-    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain
-    r'localhost|'  # or localhost
-    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # or ip
-    r'(?::\d+)?'  # optional port
-    r'(?:/?|[/?]\S+)$',
-    re.IGNORECASE)
-
 CONFIG_SCHEMA = Schema(
     {
         Optional('profiles'): {
             Or(*string_types): {
-                Optional('service_url'): Or('default', Regex(URL_RE)),
+                Optional('service_url'): Or('default', Regex(COMPILED_URL_RE)),
                 Optional('default_namespace'): And(Or(*string_types), len),
                 Optional('api_token'): And(Or(*string_types), len)
             }

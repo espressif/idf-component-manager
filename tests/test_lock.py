@@ -30,7 +30,7 @@ dependencies = {
     }
 }
 
-MANIFEST_HASH = 'e6790d541ef7d404b4583ee601c9c98a836810cedc486d91660b1e17b59a7498'
+MANIFEST_HASH = 'f149f1bd032c8b1aa9ffc0f32db8525c73f1f35910dc73645ee5b1d0eb110c8a'
 valid_lock_path = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     'fixtures',
@@ -167,7 +167,7 @@ class TestLockManager(object):
                             'version': '4.2.0'
                         }
                     }),
-                    ('manifest_hash', '3a22a5a1ff0fc96e81492ebedbf1885cb8e5747858a37430a2aa8cde611223df'),
+                    ('manifest_hash', '21320534fd3bcad301fbb124c9c13a7e90f1cc79973f3cb1937d30c3edee8f1d'),
                 ]))
 
         monkeypatch.setenv('IDF_VERSION', '4.4.0')
@@ -177,7 +177,7 @@ class TestLockManager(object):
         assert is_solve_required(project_requirements, solution)  # Wrong manifest hash
 
         monkeypatch.setenv('IDF_VERSION', '4.2.0')
-        solution.manifest_hash = '3a22a5a1ff0fc96e81492ebedbf1885cb8e5747858a37430a2aa8cde611223df'
+        solution.manifest_hash = '1c97a887068943d87050f7b553361967d1f0af2ddbd61400869e060fceffa704'
         assert not is_solve_required(project_requirements, solution)
 
     def test_change_manifest_file_dependencies_rules(self, monkeypatch):
@@ -207,7 +207,7 @@ class TestLockManager(object):
                                 'version': '1.0.0',
                             }
                         }),
-                    ('manifest_hash', 'f0b3e4408d768a03a17e09a91019f492fe053daaea11007f79d7cea3636d3945'),
+                    ('manifest_hash', '4bd383d5c18605f77b0fc984da9a131faeb2a40392e167a10a7aa298028112fa'),
                 ]))
 
         monkeypatch.setenv('IDF_VERSION', '5.0.0')
@@ -229,7 +229,7 @@ class TestLockManager(object):
             dict(
                 [
                     ('version', '1.0.0'),
-                    ('manifest_hash', 'c9c3b34bbdea9ab2d265d603d459fd4fd9d6d9e26eb454e31fd002d4fc8f49fa'),
+                    ('manifest_hash', 'ab2a358655efaa744089844e6dc66b2a6488db87b2a4a7584dbfbbac008d6462'),
                 ]))
 
         manifest.targets = ['esp32s2', 'esp32s3']
@@ -246,7 +246,7 @@ class TestLockManager(object):
             dict(
                 [
                     ('version', '1.0.0'),
-                    ('manifest_hash', '12ce0230205ae425485ae16eb90990e01b0582e262c9d72290955fe09cb1adfe'),
+                    ('manifest_hash', 'aeb0e6cb6f6673bcaa61b78fe7ee506902ff00062d2f44e53c8797fc8551b4b3'),
                 ]))
 
         manifest = Manifest.fromdict({'targets': ['esp32']}, name='test_manifest')

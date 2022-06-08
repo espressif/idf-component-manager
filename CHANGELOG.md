@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add the `repository`, `documentation`, `issues`, and `discussion` fields for the URLs in the root of the manifest
 - Add constraints for dependencies in setup.py
 - Cache request to the API component registry
 
