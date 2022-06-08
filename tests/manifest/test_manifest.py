@@ -96,9 +96,7 @@ class TestManifestPipeline(object):
             yaml.dump(valid_manifest, fw)
 
         parser = ManifestManager(manifest_path, name='test')
-        with pytest.raises(
-                ManifestError,
-                match='Using environment variable "SUPPORT_TARGET" in the manifest file but not specifying it'):
+        with pytest.raises(ManifestError, match='"SUPPORT_TARGET".*not set'):
             parser.load()
 
 
