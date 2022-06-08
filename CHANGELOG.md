@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add constraints for dependencies in setup.py
 - Cache request to the API component registry
 
+### Fixed
+
+- Crash on malformed env variables
+
 ## [1.1.1] 2022-05-31
 
 ### Added
