@@ -47,6 +47,13 @@ check_changelog:
         [[ "${CI_MERGE_REQUEST_LABELS}" =~ ^(.*,)*no_changelog(,.*)*$ ]] || \
         (echo "Please either update CHANGELOG.md file or add 'no_chagelog' label" && exit 1)
 
+check_copyright:
+  extends: .check
+  before_script:
+    - pip install comment-parser thefuzz[speedup]
+  script:
+    - python ci/check_copyright.py --verbose --check-only .
+
 prepare_tests:
   extends: .check
   script:

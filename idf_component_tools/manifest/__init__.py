@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-License-Identifier: Apache-2.0
+
 from .constants import FULL_SLUG_REGEX, MANIFEST_FILENAME, SLUG_REGEX, WEB_DEPENDENCY_REGEX
 from .manager import ManifestManager
 from .manifest import (

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-License-Identifier: Apache-2.0
+
 import os
 
 from idf_component_tools.hash_tools import hash_dir, hash_file, hash_object, validate_dir
