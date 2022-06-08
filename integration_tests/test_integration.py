@@ -83,7 +83,7 @@ def skip_for_idf_versions(*versions):
                 'main': {
                     'dependencies': {
                         'example/cmp': {
-                            'version': '^3.3.0',
+                            'version': '^3.3.0~0',
                             'include': 'cmp.h'
                         }
                     }

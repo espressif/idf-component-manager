@@ -8,13 +8,13 @@ from idf_component_tools.hash_tools import HASH_FILENAME
 
 @pytest.fixture()
 def valid_manifest_hash():
-    return '0f65559235d5ed5f9ab883549323b38e627f767cdfb5247f72988efb456bce67'
+    return '07c20149ed1f85db5660358da9aaf8b12715197f8373cca6e2f28b6ebc9eb2c8'
 
 
 @pytest.fixture()
 def valid_manifest():
     return {
-        'version': '2.3.1',
+        'version': '2.3.1~2',
         'targets': ['esp32'],
         'maintainers': ['Test Tester <test@example.com>'],
         'description': 'Test project',
@@ -26,7 +26,7 @@ def valid_manifest():
         'dependencies': {
             'idf': '~4.4.4',
             'test': {
-                'version': '>=8.2.0,<9.0.0'
+                'version': '>=8.2.0~1,<9.0.0'
             },
             'test-1': '^1.2.7',
             'test-8': {
