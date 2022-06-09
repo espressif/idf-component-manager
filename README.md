@@ -80,6 +80,20 @@ dependencies:
     override_path: "../../" # use component in a local directory, not from registry
 ```
 
+## Environment variables in manifest
+
+You can use environment variables in values in `idf_component.yml` manifests. `$VAR` or `${VAR}` is replaced with the value of the `VAR` environment variable. If the environment variable is not defined, the component manager will raise an error.
+
+Variable name should be ASCII alphanumeric string (including underscores) and start with an underscore or ASCII letter. The first non-identifier character after the `$` terminates this placeholder specification. You can escape `$` with one more`$` character, i.e., `$$` is replaced with `$`.
+
+One possible use-case is providing authentication to git repositories accessed through HTTPS:
+
+```yaml
+dependencies:
+  my_component:
+    git: https://git:${ACCESS_TOKEN}@git.my_git.com/my_component.git
+```
+
 ## Contributions Guide
 
 We welcome all contributions to the Component Manager project.
