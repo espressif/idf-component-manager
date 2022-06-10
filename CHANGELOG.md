@@ -10,17 +10,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add the `repository`, `documentation`, `issues`, and `discussion` fields for the URLs in the root of the manifest
-- Add constraints for dependencies in setup.py
 - Cache request to the API component registry
 - Default revision number change from 1 to 0
 
+## [1.1.2] 2022-06-10
+
+### Added
+
+- Add constraints for dependencies in setup.py
+
 ### Fixed
 
-- Support revision number in `dependencies` `version`
-
-### Fixed
-
-- Crash on malformed env variables
+- Fix crash on malformed env variables
+- Support revision numbers in `version` and `dependencies` -> `version`
 
 ## [1.1.1] 2022-05-31
 
