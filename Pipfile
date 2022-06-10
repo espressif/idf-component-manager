@@ -36,6 +36,8 @@ vcrpy = '<5'
 wheel = "*"
 yapf = '*'
 jinja2 = "*"
+comment-parser = "*"
+thefuzz = "*"
 
 [pipenv]
 allow_prereleases = false

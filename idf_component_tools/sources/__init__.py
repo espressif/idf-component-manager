@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-License-Identifier: Apache-2.0
+
 from .base import BaseSource
 from .git import GitSource
 from .idf import IDFSource
