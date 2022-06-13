@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cache request to the API component registry
 - Default revision number change from 1 to 0
 
+### Fixed
+
+- error when revision number equals to 1
+
 ## [1.1.2] 2022-06-10
 
 ### Added

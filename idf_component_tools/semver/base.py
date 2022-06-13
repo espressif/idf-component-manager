@@ -315,7 +315,7 @@ class Version(object):
             version = '%s.%d' % (version, self.minor)
         if self.patch is not None:
             version = '%s.%d' % (version, self.patch)
-        if self.revision > 1:
+        if self.revision:
             version = '%s~%d' % (version, self.revision)
         if self.prerelease:
             version = '%s-%s' % (version, '.'.join(self.prerelease))
