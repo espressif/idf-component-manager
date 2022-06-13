@@ -50,13 +50,17 @@ class LocalSource(BaseSource):
                 raise ManifestContextError(
                     "Can't reliably evaluate relative path without context: {}".format(str(self._raw_path)))
 
-            if path.is_dir():  # for Python > 3.6, where .resolve(strict=False)
-                return path
-            else:
+            if not path.is_dir():  # for Python > 3.6, where .resolve(strict=False)
                 raise OSError()
 
         except OSError:
             raise SourcePathError('Invalid source path, should be a directory: %s' % str(self._raw_path))
+
+        if self.is_overrider and path / 'CMakeLists.txt' not in path.iterdir():
+            raise SourcePathError(
+                'The override_path you\'re using is pointing to directory "%s" that is not a component.' % str(path))
+
+        return path
 
     @classmethod
     def required_keys(cls):
