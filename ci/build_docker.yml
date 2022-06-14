@@ -1,0 +1,32 @@
+build:
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  stage: .pre
+  tags:
+    - internet
+    - amd64
+  timeout: 2h
+  parallel:
+    matrix:
+      - IDF_BRANCH: [release/v4.1, release/v4.2]
+        PYTHON_IMAGE_TAG: [2.7-buster, 3.4-stretch, 3.10-bullseye]
+      - IDF_BRANCH: [release/v4.3, release/v4.4]
+        PYTHON_IMAGE_TAG: [3.6-bullseye, 3.10-bullseye]
+      - IDF_BRANCH: [release/v5.0, master]
+        PYTHON_IMAGE_TAG: [3.7-bullseye, 3.10-bullseye]
+  script:
+    - ESCAPED_IDF_BRANCH=$(echo $IDF_BRANCH | sed -e "s/\//-/g")
+    - IMAGE_TAG="$CI_REGISTRY_IMAGE:${PYTHON_IMAGE_TAG}-${ESCAPED_IDF_BRANCH}"
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor
+      --dockerfile "ci/Dockerfile"
+      --destination "${IMAGE_TAG}"
+      --build-arg IDF_FILE_API_URL=https://${GITLAB_HTTPS_SERVER}/api/v4/projects/${IDF_PROJ_ID}/repository/files
+      --build-arg API_TOKEN="${IDF_API_TOKEN}"
+      --build-arg PYTHON_IMAGE_TAG="${PYTHON_IMAGE_TAG}"
+      --build-arg IDF_BRANCH="${IDF_BRANCH}"
+      --cache=true
+      --cache-copy-layers=true
+      --cache-ttl=720h
