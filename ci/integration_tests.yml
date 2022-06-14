@@ -1,16 +1,26 @@
-.integration_test_template:
+integration_test:
+  image: ${CI_REGISTRY_IMAGE}:${PYTHON_IMAGE_TAG}-${IDF_BRANCH}
   stage: integration_test
   tags:
     - test
     - internet
+  timeout: 2h
   artifacts:
     reports:
       cobertura: coverage_integration.xml
+  parallel:
+    matrix:
+      - IDF_BRANCH: [ release-v4.1, release-v4.2 ]
+        PYTHON_IMAGE_TAG: [ 2.7-buster, 3.4-stretch, 3.10-bullseye ]
+      - IDF_BRANCH: [ release-v4.3, release-v4.4 ]
+        PYTHON_IMAGE_TAG: [ 3.6-bullseye, 3.10-bullseye ]
+      - IDF_BRANCH: [ release-v5.0, master ]
+        PYTHON_IMAGE_TAG: [ 3.7-bullseye, 3.10-bullseye ]
+        REQ_FILE: [ "tools/requirements/requirements.core.txt" ]
   before_script:
-    - apt-get update && apt-get install -y -q libusb-1.0 cmake git ninja-build
-    - git clone https://github.com/espressif/esp-idf.git
+    - UNESCAPED_IDF_BRANCH=$(echo $IDF_BRANCH | sed -e "s/release-v/release\/v/g")
+    - git clone ${IDF_REPO:-https://github.com/espressif/esp-idf.git} --recursive -b $UNESCAPED_IDF_BRANCH --depth 1
     - cd ./esp-idf/
-    - git checkout ${IDF_BRANCH:-master}
     - ORIGINAL_REQ=$(grep idf-component-manager ${REQ_FILE:-requirements.txt})
     # Replace component manager in the requirements file with local copy
     - sed -i "\+${ORIGINAL_REQ}+c${CI_PROJECT_DIR}" ${REQ_FILE:-requirements.txt}
@@ -18,37 +28,7 @@
     # And replace it back to avoid export.sh check dependecies error
     - sed -i "\+${CI_PROJECT_DIR}+c${ORIGINAL_REQ}" ${REQ_FILE:-requirements.txt}
     - . ./export.sh
-    - git submodule update --init --recursive
     - cd ..
     - pip install pytest pytest-cov "jinja2<3.1"
   script:
-    - py.test -s -c pytest_integration.ini --cov=. --cov-report=xml:coverage_integration.xml --log-cli-level=INFO
-
-integration_test:py2.7:
-  extends: .integration_test_template
-  image: python:2.7-slim-buster
-  parallel:
-    matrix:
-      - IDF_BRANCH: [release/v4.1, release/v4.2, release/v4.3]
-
-integration_test:py3.5:
-  extends: .integration_test_template
-  image: python:3.5-slim-buster
-  parallel:
-    matrix:
-      - IDF_BRANCH: [release/v4.1, release/v4.2, release/v4.3]
-
-integration_test:py3.6:
-  extends: .integration_test_template
-  image: python:3.6-slim-buster
-  parallel:
-    matrix:
-      - IDF_BRANCH: [release/v4.4]
-
-integration_test:py3.7:
-  extends: .integration_test_template
-  image: python:3.7-slim-bullseye
-  parallel:
-    matrix:
-      - IDF_BRANCH: [release/v5.0, master]
-        REQ_FILE: ["tools/requirements/requirements.core.txt"]
+    - pytest -s -c pytest_integration.ini --cov=. --cov-report=xml:coverage_integration.xml --log-cli-level=INFO
