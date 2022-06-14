@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixes
 
 - colorama version incompatible with python 3.4
+- pyyaml version incompatible with python 3.4
 
 ## [1.1.2] 2022-06-10
 
