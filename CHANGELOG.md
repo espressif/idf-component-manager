@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - error when revision number equals to 1
 
+### Fixes
+
+- colorama version incompatible with python 3.4
+
 ## [1.1.2] 2022-06-10
 
 ### Added
