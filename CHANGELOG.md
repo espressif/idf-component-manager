@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add the `repository`, `documentation`, `issues`, and `discussion` fields for the URLs in the root of the manifest
 - Cache request to the API component registry
 - Default revision number change from 1 to 0
+- Warn users when the `override_path` point to a non-component directory
+
+### Fixed
+
+- error when revision number equals to 1
 
 ## [1.1.2] 2022-06-10
 

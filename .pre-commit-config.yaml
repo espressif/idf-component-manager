@@ -53,4 +53,5 @@ repos:
           - thefuzz[speedup] == 0.19.0
         language: python
         files: \.(py|c|h)$
+        exclude: ^idf_component_tools/semver/.*|^tests/semver/.*
         require_serial: true
