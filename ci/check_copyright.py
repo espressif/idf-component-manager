@@ -456,7 +456,7 @@ def main() -> None:
     all_paths = args.filenames
     for path in all_paths:
         if os.path.isfile(path):
-            files.add(path)
+            files.add(path.lstrip('./'))
         else:
             all_paths += glob.glob(path + '/*')
 
