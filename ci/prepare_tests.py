@@ -4,8 +4,40 @@ import subprocess  # nosec
 from os import environ, getenv
 from pathlib import Path
 
+# integration tests
 INTEGRATION_TESTS_RE = re.compile(r'^(.*,)*run_integration_tests(,.*)*$')
 SKIP_INTEGRATION_TESTS_RE = re.compile(r'^(.*,)*skip_integration_tests(,.*)*$')
+
+# dockerfiles
+BUILD_DOCKER_RE = re.compile(r'^(.*,)*build_docker(,.*)*$')
+
+
+def _modified_files(branch: str) -> str:
+    return subprocess.check_output(  # nosec
+        [
+            'git', 'diff-tree', '-r', '--name-only', '--no-commit-id',
+            f'origin/{branch}', environ['CI_COMMIT_SHA']
+        ]).decode('utf-8')
+
+
+def should_run_build_docker_files() -> bool:
+    basic_conditions = [
+        BUILD_DOCKER_RE.match(getenv('CI_MERGE_REQUEST_LABELS', '')),
+    ]
+
+    if any(basic_conditions):
+        return True
+
+    # Check for changed files
+    if target_branch := getenv('CI_MERGE_REQUEST_TARGET_BRANCH_NAME'):
+        changed_files = _modified_files(target_branch)
+        if 'Dockerfile' in changed_files:
+            return True
+
+        if 'setup.py' in changed_files:
+            return True
+
+    return False
 
 
 def should_run_integration_tests() -> bool:
@@ -29,14 +61,8 @@ def should_run_integration_tests() -> bool:
         return True
 
     # Check for changed files
-    if mr := getenv('CI_MERGE_REQUEST_TARGET_BRANCH_NAME'):
-        result = subprocess.check_output(  # nosec
-            [
-                'git', 'diff-tree', '-r', '--name-only', '--no-commit-id',
-                f'origin/{mr}', environ['CI_COMMIT_SHA']
-            ]).decode('utf-8')
-
-        if 'integration_tests' in result:
+    if target_branch := getenv('CI_MERGE_REQUEST_TARGET_BRANCH_NAME'):
+        if 'integration_tests' in _modified_files(target_branch):
             return True
 
     return False
@@ -47,6 +73,10 @@ def main():
     if should_run_integration_tests():
         print('Adding integration tests')
         with open(ci_dir / 'tests.yml', 'a') as out, open(ci_dir / 'integration_tests.yml') as inp:
+            shutil.copyfileobj(inp, out)
+    if should_run_build_docker_files():
+        print('Adding build docker files')
+        with open(ci_dir / 'tests.yml', 'a') as out, open(ci_dir / 'build_docker.yml') as inp:
             shutil.copyfileobj(inp, out)
 
 
