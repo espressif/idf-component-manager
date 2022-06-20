@@ -47,8 +47,8 @@ integration_test:py3.6:
 
 integration_test:py3.7:
   extends: .integration_test_template
-  image: python:3.7-slim-buster
+  image: python:3.7-slim-bullseye
   parallel:
     matrix:
-      - IDF_BRANCH: [master]
+      - IDF_BRANCH: [release/v5.0, master]
         REQ_FILE: ["tools/requirements/requirements.core.txt"]
