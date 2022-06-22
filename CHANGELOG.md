@@ -14,12 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Default revision number change from 1 to 0
 - Warn users when the `override_path` point to a non-component directory
 
+## [1.1.3] 2022-06-21
+
 ### Fixed
 
 - error when revision number equals to 1
-
-### Fixes
-
 - colorama version incompatible with python 3.4
 - pyyaml version incompatible with python 3.4
 
