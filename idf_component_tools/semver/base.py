@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) The python-semanticversion project
-# This code is distributed under the two-clause BSD License.
+# SPDX-FileCopyrightText: 2016 Python-SemanticVersion project
+# SPDX-License-Identifier: BSD 2-Clause License
+# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
 
 import functools
 import re

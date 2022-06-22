@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-License-Identifier: Apache-2.0
 import pytest
 
 from idf_component_manager.version_solver.helper import PackageSource
