@@ -139,7 +139,7 @@ class Manifest(object):
         if self._manifest_hash:
             return self.manifest_hash
 
-        serialized = self.serialize()  # type: ignore
+        serialized = self.serialize(serialize_default=False)  # type: ignore
         return hash_object(serialized)
 
 
@@ -151,7 +151,11 @@ class ComponentRequirement(object):
         'source',
         'version_spec',
         'meet_optional_dependencies',
-        'require',
+        {
+            'name': 'require',
+            'default': True,
+            'serialize_default': False
+        },
     ]
 
     def __init__(
