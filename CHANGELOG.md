@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Default revision number change from 1 to 0
 - Warn users when the `override_path` point to a non-component directory
 
+## [1.1.4] 2022-07-04
+
 ### Fixed
 
 - Loose the restrictions for pyyaml on python 2.7 and 3.4
