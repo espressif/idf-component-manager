@@ -19,18 +19,21 @@ def _by_key(item):
     return item[0]
 
 
-def serialize(value):
+def serialize(value, serialize_default=True):
     '''Serialize value'''
     if isinstance(value, BASIC_TYPES):
         return value
 
     if isinstance(value, Mapping):
-        return OrderedDict((k, serialize(v)) for (k, v) in sorted(value.items(), key=_by_key))
+        return OrderedDict((k, serialize(v, serialize_default)) for (k, v) in sorted(value.items(), key=_by_key))
 
     if isinstance(value, Iterable):
-        return [serialize(v) for v in value]
+        return [serialize(v, serialize_default) for v in value]
 
-    return value.serialize()
+    try:
+        return value.serialize(serialize_default)
+    except TypeError:
+        return value.serialize()
 
 
 def serializable(_cls=None, like='dict'):
@@ -43,13 +46,25 @@ def serializable(_cls=None, like='dict'):
 
         if like == 'dict':
 
-            def _serialize(self):
+            def _serialize(self, serialize_default=True):
                 # Use all properties if list is not selected
-                properties = sorted(list(set(getattr(self, '_serialization_properties', []))))
-                return OrderedDict((prop, serialize(getattr(self, prop))) for prop in properties)
+                properties = getattr(self, '_serialization_properties', [])
+                serialization_properties = OrderedDict()
+                for prop in properties:
+                    if isinstance(prop, dict):
+                        property_name = prop['name']
+                        if not serialize_default and not prop.get('serialize_default', True) and getattr(
+                                self, property_name) == prop.get('default', None):
+                            continue
+
+                        serialization_properties[property_name] = serialize(
+                            getattr(self, property_name), serialize_default)
+                    else:
+                        serialization_properties[prop] = serialize(getattr(self, prop), serialize_default)
+                return OrderedDict(sorted(serialization_properties.items()))
         elif like == 'str':
 
-            def _serialize(self):
+            def _serialize(self, serialize_default=True):
                 return str(self)
         else:
             raise TypeError("'%s' is not known type for serialization" % like)

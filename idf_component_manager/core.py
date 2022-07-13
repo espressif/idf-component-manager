@@ -452,6 +452,10 @@ class ComponentManager(object):
                 if dependency.meta:
                     continue
 
+                # No required dependencies shouldn't be added to the build system
+                if not dependency.require:
+                    continue
+
                 dependency_name = build_name(dependency.name)
                 requirement_key = 'REQUIRES' if dependency.public else 'PRIV_REQUIRES'
 

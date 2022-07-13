@@ -87,6 +87,13 @@ def dependency_schema():  # type: () -> Or
                 'if': Use(parse_if_clause)
             }],
             Optional('override_path'): NONEMPTY_STRING,
+            Optional('require'): Or(
+                'public',
+                'private',
+                'no',
+                False,
+                error='Invalid format of dependency require field format. '
+                'Should be "public", "private" or "no"')
         },
         error='Invalid dependency format',
     )
@@ -182,6 +189,9 @@ class ManifestValidator(object):
 
                     if not source.validate_version_spec(str(details.get('version', ''))):
                         self.add_error('Version specifications for "%s" are invalid.' % component)
+
+                    if 'public' in details and 'require' in details:
+                        self.add_error('Don\'t use "public" and "require" fields at the same time.')
                 except SourceError as unknown_keys_error:
                     self.add_error(str(unknown_keys_error))
             else:

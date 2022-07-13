@@ -78,6 +78,9 @@ dependencies:
   namespace/component_with_example:
     version: "~1.0.0" # if there is no `override_path` field, use component from registry
     override_path: "../../" # use component in a local directory, not from registry
+  namespace/no_required_component:
+    version: "*"
+    require: no  # Download component but don't add it as a requirement
 ```
 
 ## Environment variables in manifest
