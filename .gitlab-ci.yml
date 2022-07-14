@@ -34,6 +34,8 @@ check_changelog:
 
 check_pre_commit:
   extends: .check
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
   before_script:
     - pip install pre-commit
   script:
