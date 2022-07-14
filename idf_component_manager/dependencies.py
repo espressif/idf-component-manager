@@ -6,13 +6,14 @@ import shutil
 
 from idf_component_manager.utils import info, warn
 from idf_component_tools.build_system_tools import build_name
-from idf_component_tools.errors import ComponentModifiedError, FetchingError
+from idf_component_tools.errors import ComponentModifiedError, FetchingError, SolverError
 from idf_component_tools.hash_tools import ValidatingHashError, validate_dir_with_hash_file
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import ProjectRequirements, SolvedComponent, SolvedManifest
 from idf_component_tools.sources.fetcher import ComponentFetcher
 
 from .core_utils import raise_component_modified_error
+from .version_solver.mixology.failure import SolverFailure
 from .version_solver.version_solver import VersionSolver
 
 
@@ -99,7 +100,11 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
     if is_solve_required(project_requirements, solution):
         info('Solving dependencies requirements')
         solver = VersionSolver(project_requirements, solution)
-        solution = solver.solve()
+
+        try:
+            solution = solver.solve()
+        except SolverFailure as e:
+            raise SolverError(str(e))
 
         info('Updating lock file at %s' % lock_path)
         lock_manager.dump(solution)
