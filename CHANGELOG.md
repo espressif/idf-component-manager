@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Default revision number change from 1 to 0
 - Warn users when the `override_path` point to a non-component directory
 
+### Fixed
+
+- Hide stack trace after solver dependency error
+
 ## [1.1.4] 2022-07-04
 
 ### Fixed
