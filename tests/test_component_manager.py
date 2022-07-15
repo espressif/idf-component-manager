@@ -16,6 +16,7 @@ from idf_component_tools.archive_tools import unpack_archive
 from idf_component_tools.errors import FatalError, NothingToDoError
 from idf_component_tools.git_client import GitClient
 from idf_component_tools.manifest import MANIFEST_FILENAME, ManifestManager
+from idf_component_tools.semver import Version
 
 
 def list_dir(folder):
@@ -120,7 +121,7 @@ def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_comp
         f.truncate()
 
     def mock_git_tag(self):
-        return '3.0.0'
+        return Version('3.0.0')
 
     monkeypatch.setattr(GitClient, 'get_tag_version', mock_git_tag)
 

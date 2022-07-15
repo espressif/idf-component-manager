@@ -207,7 +207,7 @@ class ComponentManager(object):
 
         if version == 'git':
             try:
-                version = GitClient().get_tag_version()
+                version = str(GitClient().get_tag_version())
             except GitError:
                 raise FatalError('An error happend while getting version from git tag')
         elif version:
