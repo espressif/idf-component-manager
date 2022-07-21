@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cache request to the API component registry
 - Default revision number change from 1 to 0
 - Warn users when the `override_path` point to a non-component directory
+- Load component details from pre-rendered JSON files from the static endpoint
 
 ## [1.1.4] 2022-07-04
 

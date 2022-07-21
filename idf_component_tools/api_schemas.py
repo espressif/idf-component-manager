@@ -60,3 +60,13 @@ TASK_STATUS_SCHEMA = Schema(
         Optional('progress'): Or(Use(float), None),
         Optional(STRING): object
     })
+
+API_INFORMATION_SCHEMA = Schema(
+    {
+        'components_base_url': STRING,
+        'info': STRING,
+        'status': STRING,
+        'version': STRING
+    },
+    error='Unexpected response to API information',
+)

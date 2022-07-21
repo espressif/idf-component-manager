@@ -8,7 +8,7 @@ from idf_component_manager.utils import info
 from idf_component_tools.api_client import APIClient
 from idf_component_tools.config import ConfigManager
 from idf_component_tools.errors import FatalError
-from idf_component_tools.sources.web_service import default_component_service_url
+from idf_component_tools.sources.web_service import default_component_registry_storage_url
 
 ServiceDetails = namedtuple('ServiceDetails', ['client', 'namespace'])
 
@@ -49,14 +49,13 @@ def get_profile(config_path=None, profile_name=None):  # type: (str | None, str 
     return profile
 
 
-def create_api_client(base_url=None, token=None):  # type: (str | None, str | None) -> APIClient
-    if not base_url:
+def create_api_client(
+        registry_url=None, storage_url=None, token=None):  # type: (str | None, str | None, str | None) -> APIClient
+    if not registry_url:
         profile = get_profile()
-        base_url = default_component_service_url(service_profile=profile)
+        registry_url, storage_url = default_component_registry_storage_url(registry_profile=profile)
 
-    assert base_url is not None
-
-    return APIClient(base_url=base_url, auth_token=token)
+    return APIClient(base_url=registry_url, storage_url=storage_url, auth_token=token)
 
 
 def service_details(
@@ -73,7 +72,7 @@ def service_details(
         raise NoSuchProfile('"{}" didn\'t find in idf_component_manager.yml file'.format(profile_name))
 
     # Priorities: DEFAULT_COMPONENT_SERVICE_URL env variable > profile value > built-in default
-    service_url = default_component_service_url(service_profile=profile)
+    registry_url, storage_url = default_component_registry_storage_url(registry_profile=profile)
 
     # Priorities: idf.py option > IDF_COMPONENT_NAMESPACE env variable > profile value
     namespace = get_namespace(profile, namespace)
@@ -81,6 +80,6 @@ def service_details(
     # Priorities: IDF_COMPONENT_API_TOKEN env variable > profile value
     token = get_token(profile)
 
-    client = create_api_client(service_url, token)
+    client = create_api_client(registry_url, storage_url, token)
 
     return ServiceDetails(client, namespace)

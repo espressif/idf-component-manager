@@ -18,19 +18,19 @@ class TestAPIClient(object):
         tests = [
             {
                 'in': ['http://', 'test.com', 'asdfasdf'],
-                'out': 'http://test.com/asdfasdf/',
+                'out': 'http://test.com/asdfasdf',
             },
             {
                 'in': ['https://test.com:4323/api', 'a/a'],
-                'out': 'https://test.com:4323/api/a/a/',
+                'out': 'https://test.com:4323/api/a/a',
             },
             {
                 'in': ['https://test.com:4323/api/', 'a/a/'],
-                'out': 'https://test.com:4323/api/a/a/',
+                'out': 'https://test.com:4323/api/a/a',
             },
             {
                 'in': ['', 'a/a/'],
-                'out': '/a/a/'
+                'out': '/a/a'
             },
         ]
 

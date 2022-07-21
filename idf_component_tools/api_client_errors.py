@@ -14,6 +14,10 @@ class NamespaceNotFound(APIClientError):
     pass
 
 
+class StorageFileNotFound(APIClientError):
+    pass
+
+
 KNOWN_API_ERRORS = {
     'NamespaceNotFoundError': NamespaceNotFound,
     'ComponentNotFoundError': ComponentNotFound,

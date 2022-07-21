@@ -23,8 +23,9 @@ from idf_component_tools import file_cache
 from idf_component_tools.__version__ import __version__
 from idf_component_tools.semver import SimpleSpec, Version
 
-from .api_client_errors import KNOWN_API_ERRORS, APIClientError, ComponentNotFound
-from .api_schemas import COMPONENT_SCHEMA, ERROR_SCHEMA, TASK_STATUS_SCHEMA, VERSION_UPLOAD_SCHEMA
+from .api_client_errors import KNOWN_API_ERRORS, APIClientError, ComponentNotFound, StorageFileNotFound
+from .api_schemas import (
+    API_INFORMATION_SCHEMA, COMPONENT_SCHEMA, ERROR_SCHEMA, TASK_STATUS_SCHEMA, VERSION_UPLOAD_SCHEMA)
 from .manifest import Manifest
 
 try:
@@ -85,7 +86,6 @@ def join_url(*args):  # type: (*str) -> str
     Joins given arguments into an url and add trailing slash
     """
     parts = [part[:-1] if part and part[-1] == '/' else part for part in args]
-    parts.append('')
     return '/'.join(parts)
 
 
@@ -120,9 +120,10 @@ def user_agent():  # type: () -> str
 
 
 class APIClient(object):
-    def __init__(self, base_url, source=None, auth_token=None):
-        # type: (str, BaseSource | None, str | None) -> None
+    def __init__(self, base_url, storage_url=None, source=None, auth_token=None):
+        # type: (str, str | None, BaseSource | None, str | None) -> None
         self.base_url = base_url
+        self._storage_url = storage_url
         self.source = source
         self.auth_token = auth_token
         try:
@@ -154,9 +155,9 @@ class APIClient(object):
 
         return dependencies
 
-    def _base_request(self, session, method, path, data=None, headers=None, schema=None):
-        # type: (requests.Session, str, list[str], dict | None, dict | None, Schema | None) -> dict
-        endpoint = join_url(self.base_url, *path)
+    def _base_request(self, url, session, method, path, data=None, headers=None, schema=None, use_storage=False):
+        # type: (str, requests.Session, str, list[str], dict | None, dict | None, Schema | None, bool) -> dict
+        endpoint = join_url(url, *path)
 
         timeout = DEFAULT_TIMEOUT  # type: float | Tuple[float, float]
         try:
@@ -178,6 +179,11 @@ class APIClient(object):
             if response.status_code == 204:  # NO CONTENT
                 return {}
             elif 400 <= response.status_code < 500:
+                if use_storage:
+                    if response.status_code == 404:
+                        raise StorageFileNotFound()
+                    raise APIClientError('Error during request.\nStatus code: {}'.format(response.status_code))
+
                 handle_4xx_error(response)
 
             elif 500 <= response.status_code < 600:
@@ -202,6 +208,7 @@ class APIClient(object):
 
     def _create_session(
             self,
+            base_url='',  # type: str
             cache=False,  # type: bool
             cache_path=file_cache.FileCache.path()  # type: str
     ):  # type: (...) -> requests.Session
@@ -216,19 +223,32 @@ class APIClient(object):
         session = requests.Session()
         session.headers['User-Agent'] = user_agent()
         session.auth = TokenAuth(self.auth_token)
-        session.mount(self.base_url, api_adapter)
+        session.mount(base_url, api_adapter)
 
         return session
 
-    def _request(cache=False):  # type: ignore
+    @property
+    def storage_url(self):
+        if not self._storage_url:
+            self._storage_url = self.api_information()['components_base_url']
+        return self._storage_url
+
+    def _request(cache=False, use_storage=False):  # type: ignore
         def decorator(f):  # type: (APIClient | Callable[..., Any]) -> Callable
             @wraps(f)  # type: ignore
             def wrapper(self, *args, **kwargs):
                 cache_status = cache and bool(self.cache_time)
-                session = self._create_session(cache=cache_status)
+                url = self.base_url
+                if use_storage:
+                    url = self.storage_url
+
+                session = self._create_session(base_url=url, cache=cache_status)
 
                 def request(method, path, data=None, headers=None, schema=None):
-                    return self._base_request(session, method, path, data=data, headers=headers, schema=schema)
+                    if use_storage:
+                        path[-1] += '.json'
+                    return self._base_request(
+                        url, session, method, path, data=data, headers=headers, schema=schema, use_storage=use_storage)
 
                 return f(self, request=request, *args, **kwargs)
 
@@ -237,6 +257,14 @@ class APIClient(object):
         return decorator
 
     @_request(cache=True)  # type: ignore
+    def api_information(self, request):
+        return request(
+            'get',
+            [],
+            schema=API_INFORMATION_SCHEMA,
+        )
+
+    @_request(cache=True, use_storage=True)  # type: ignore
     def versions(self, request, component_name, spec='*', target=None):
         """List of versions for given component with required spec"""
         semantic_spec = SimpleSpec(spec or '*')
@@ -247,7 +275,7 @@ class APIClient(object):
                 ['components', component_name],
                 schema=COMPONENT_SCHEMA,
             )
-        except ComponentNotFound:
+        except (ComponentNotFound, StorageFileNotFound):
             versions = []
         else:
             versions = []
@@ -269,7 +297,7 @@ class APIClient(object):
             ],
         )
 
-    @_request(cache=True)  # type: ignore
+    @_request(cache=True, use_storage=True)  # type: ignore
     def component(self, request, component_name, version=None):
         """Manifest for given version of component, if version is None most recent version returned"""
         response = request(
@@ -286,15 +314,29 @@ class APIClient(object):
         else:
             best_version = max(versions, key=lambda v: Version(v['version']))
 
+        download_url = join_url(self.storage_url, best_version['url'])
+
+        documents = best_version['docs']
+        for document, url in documents.items():
+            documents[document] = join_url(self.storage_url, url)
+
+        license_info = best_version['license']
+        if license_info:
+            license_info['url'] = join_url(self.storage_url, license_info['url'])
+
+        examples = best_version['examples']
+        for example in examples:
+            example.update({'url': join_url(self.storage_url, example['url'])})
+
         return ComponentDetails(
             name=('%s/%s' % (response['namespace'], response['name'])),
             version=tools.manifest.ComponentVersion(best_version['version']),
             dependencies=self._version_dependencies(best_version),
             maintainers=None,
-            download_url=best_version['url'],
-            documents=best_version['docs'],
-            license=best_version['license'],
-            examples=best_version['examples'])
+            download_url=download_url,
+            documents=documents,
+            license=license_info,
+            examples=examples)
 
     @auth_required
     @_request(cache=False)  # type: ignore
