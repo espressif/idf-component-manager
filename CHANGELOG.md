@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Default revision number change from 1 to 0
 - Warn users when the `override_path` point to a non-component directory
 - Load component details from pre-rendered JSON files from the static endpoint
+- Use local file system like `file://` as a Component storage URL
 
 ### Fixed
 

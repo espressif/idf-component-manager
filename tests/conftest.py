@@ -148,3 +148,11 @@ def release_component_path():
         'components',
         'cmp',
     )
+
+
+@pytest.fixture(scope='session')
+def fixtures_path():
+    return os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        'fixtures',
+    )

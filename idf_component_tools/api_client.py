@@ -12,6 +12,7 @@ from cachecontrol import CacheControlAdapter
 from cachecontrol.caches import FileCache
 from cachecontrol.heuristics import ExpiresAfter
 from requests.adapters import HTTPAdapter
+from requests_file import FileAdapter
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 from schema import Schema, SchemaError
 from tqdm import tqdm
@@ -27,6 +28,11 @@ from .api_client_errors import KNOWN_API_ERRORS, APIClientError, ComponentNotFou
 from .api_schemas import (
     API_INFORMATION_SCHEMA, COMPONENT_SCHEMA, ERROR_SCHEMA, TASK_STATUS_SCHEMA, VERSION_UPLOAD_SCHEMA)
 from .manifest import Manifest
+
+try:
+    from urllib.parse import urlparse  # type: ignore
+except ImportError:
+    from urlparse import urlparse  # type: ignore
 
 try:
     from typing import TYPE_CHECKING, Any, Callable, Tuple
@@ -212,7 +218,9 @@ class APIClient(object):
             cache=False,  # type: bool
             cache_path=file_cache.FileCache.path()  # type: str
     ):  # type: (...) -> requests.Session
-        if cache:
+        if urlparse(base_url).scheme == 'file':
+            api_adapter = FileAdapter()
+        elif cache:
             api_adapter = CacheControlAdapter(
                 max_retries=MAX_RETRIES,
                 heuristic=ExpiresAfter(minutes=self.cache_time),
