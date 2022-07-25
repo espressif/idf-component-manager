@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Hide stack trace after solver dependency error
+- Fix packing archives with version from git tag
 
 ## [1.1.4] 2022-07-04
 
