@@ -35,7 +35,8 @@ def live_print_call(*args, **kwargs):
     for line in process.stdout:
         if not isinstance(line, string_type):
             line = line.decode('utf-8')
-        logging.info(line.rstrip())
+        line = line.rstrip()
+        logging.info(line)
         res += line
 
     return res
@@ -195,7 +196,7 @@ def test_idf_check_target_fail_manifest(project):
     ], indirect=True)
 def test_idf_check_target_fail_dependency(project):
     res = set_target(project, 'esp32')
-    assert 'project depends on example/cmp (0.0.1) which doesn\'t match any' in res
+    assert 'project depends on example/cmp (0.0.1) which doesn\'t match' in res
 
 
 @pytest.mark.parametrize(
@@ -240,14 +241,14 @@ def test_changing_target(project):
         return
 
     lock_path = os.path.join(project, 'dependencies.lock')
+    res = set_target(project, 'esp32')
+    assert 'Building ESP-IDF components for target esp32' in res
+    with open(lock_path, mode='r', encoding='utf-8') as f:
+        assert 'esp32\n' in f.read()
     res = set_target(project, 'esp32s2')
     assert 'Building ESP-IDF components for target esp32s2' in res
     with open(lock_path, mode='r', encoding='utf-8') as f:
-        assert 'esp32s2' in f.read()
-    res = set_target(project, 'esp32')
-    assert 'Building ESP-IDF components for target esp32\n' in res
-    with open(lock_path, mode='r', encoding='utf-8') as f:
-        assert 'esp32\n' in f.read()
+        assert 'esp32s2\n' in f.read()
 
 
 @pytest.fixture  # fake fixture since can't specify `indirect` for only one fixture
