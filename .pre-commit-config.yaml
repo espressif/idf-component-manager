@@ -44,7 +44,7 @@ repos:
     hooks:
       - id: eradicate
   - repo: https://github.com/espressif/check-copyright/
-    rev: v1.0.0
+    rev: v1.0.1
     hooks:
       - id: check-copyright
         args: ['--ignore', 'ci/check_copyright_ignore', '--config', 'ci/check_copyright_config.yaml']
