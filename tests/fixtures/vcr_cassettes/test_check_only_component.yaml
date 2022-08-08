@@ -1,0 +1,100 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SoP1gZLb4GZUnT-xHs4zxucO8aKpPpNEF4PAYU45DqKl1R1XgjaWEpUkHFXAtIu_
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+    method: GET
+    uri: http://localhost:5000/
+  response:
+    body:
+      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",
+        \n  \"info\": \"Espressif Component Manager Service HTTP JSON API\", \n  \"status\":
+        \"ok\", \n  \"version\": \"0.2.0\"\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '171'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 08 Aug 2022 17:26:59 GMT
+      Server:
+      - Werkzeug/2.1.2 Python/3.10.0
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SoP1gZLb4GZUnT-xHs4zxucO8aKpPpNEF4PAYU45DqKl1R1XgjaWEpUkHFXAtIu_
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+    method: GET
+    uri: http://localhost:9000/test-public/components/espressif/cmp.json
+  response:
+    body:
+      string: '{"created_at": "2022-08-08T15:39:31.655332+00:00", "featured": false,
+        "versions": [{"examples": [], "documentation": "", "targets": ["esp32"], "dependencies":
+        [{"is_public": false, "namespace": null, "spec": ">=4.0", "name": null, "source":
+        "idf"}], "tags": [], "issues": "", "discussion": "", "created_at": "2022-08-08T15:39:31.906540+00:00",
+        "homepage": "", "repository": "", "component_hash": "ec0069763f87c38724e16369423863ff6b2d09d767691929b5f8f09c056fc320",
+        "url": "c302ba35-9750-4b39-8e0a-54d20c5e4d06.tgz", "license": null, "uploader":
+        "dmitry", "docs": {"readme": "c302ba35-9750-4b39-8e0a-54d20c5e4d06/readme.md"},
+        "version": "3.0.4", "description": "Test Component"}, {"examples": [], "documentation":
+        "", "targets": ["esp32"], "dependencies": [{"is_public": false, "namespace":
+        null, "spec": ">=4.0", "name": null, "source": "idf"}], "tags": [], "issues":
+        "", "discussion": "", "created_at": "2022-08-08T15:43:40.897343+00:00", "homepage":
+        "", "repository": "", "component_hash": "5e17a5e31cf23d6f5ea8126ae409ab081f4467aaad6cb4ca78e70b1a7dbaf366",
+        "url": "246e76a3-9104-4c7b-8b55-0d2ffaa011fc.tgz", "license": null, "uploader":
+        "dmitry", "docs": {}, "version": "1.0.0", "description": null}], "namespace":
+        "espressif", "name": "cmp"}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '1244'
+      Content-Security-Policy:
+      - block-all-mixed-content
+      Content-Type:
+      - binary/octet-stream
+      Date:
+      - Mon, 08 Aug 2022 17:26:59 GMT
+      ETag:
+      - '"8b30ea3d6e8167ae7e2ff9b01e285e92"'
+      Last-Modified:
+      - Mon, 08 Aug 2022 17:26:44 GMT
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      X-Amz-Request-Id:
+      - 17096EAB4B0EB854
+      X-Content-Type-Options:
+      - nosniff
+      X-Xss-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

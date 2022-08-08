@@ -1,0 +1,98 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+    method: GET
+    uri: http://localhost:5000/
+  response:
+    body:
+      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",
+        \n  \"info\": \"Espressif Component Manager Service HTTP JSON API\", \n  \"status\":
+        \"ok\", \n  \"version\": \"0.2.0\"\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '171'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 10 Aug 2022 10:04:55 GMT
+      Server:
+      - Werkzeug/2.1.2 Python/3.10.0
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+    method: GET
+    uri: http://localhost:9000/test-public/components/test/cmp.json
+  response:
+    body:
+      string: '{"name": "cmp", "versions": [{"examples": [{"name": "sample_project",
+        "url": "2252f790-5a7b-4bb2-be6c-7dfff067776a/examples/8faa57c5-a2fe-4647-ae8f-d2c7977c24b0.tgz"}],
+        "url": "2252f790-5a7b-4bb2-be6c-7dfff067776a.tgz", "repository": "", "issues":
+        "", "tags": [], "docs": {"readme": "2252f790-5a7b-4bb2-be6c-7dfff067776a/readme.md"},
+        "description": "Test Component", "version": "1.0.1", "discussion": "", "uploader":
+        "dmitry", "created_at": "2022-08-10T10:04:25.435920+00:00", "dependencies":
+        [{"spec": ">=4.0", "name": null, "is_public": false, "source": "idf", "namespace":
+        null}], "documentation": "", "license": {"name": "Unknown license", "url":
+        "2252f790-5a7b-4bb2-be6c-7dfff067776a/license.txt"}, "component_hash": "e244cfd01cbc56545dac29bbac803624699947ba0aaa78f313b0c399d4533165",
+        "homepage": "", "targets": ["esp32"]}, {"examples": [], "url": "507f0e57-c9b9-45ff-a024-7bd1ad336e92.tgz",
+        "repository": "", "issues": "", "tags": [], "docs": {"readme": "507f0e57-c9b9-45ff-a024-7bd1ad336e92/readme.md"},
+        "description": "Test Component", "version": "1.0.0", "discussion": "", "uploader":
+        "dmitry", "created_at": "2022-08-08T15:52:11.805598+00:00", "dependencies":
+        [{"spec": ">=4.0", "name": null, "is_public": false, "source": "idf", "namespace":
+        null}], "documentation": "", "license": null, "component_hash": "e603c6d848a22fc1a4651c5e297dcf53b3d3eeba6e20c7589e14a6a4345b0415",
+        "homepage": "", "targets": ["esp32"]}], "created_at": "2022-08-08T15:52:11.672772+00:00",
+        "featured": false, "namespace": "test"}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '1514'
+      Content-Security-Policy:
+      - block-all-mixed-content
+      Content-Type:
+      - binary/octet-stream
+      Date:
+      - Wed, 10 Aug 2022 10:04:55 GMT
+      ETag:
+      - '"e4e545684286d18ccbea48bb7dc80bca"'
+      Last-Modified:
+      - Wed, 10 Aug 2022 10:04:25 GMT
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      X-Amz-Request-Id:
+      - 1709F3B4DD4B4583
+      X-Content-Type-Options:
+      - nosniff
+      X-Xss-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1
