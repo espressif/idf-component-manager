@@ -18,19 +18,19 @@ class TestAPIClient(object):
         tests = [
             {
                 'in': ['http://', 'test.com', 'asdfasdf'],
-                'out': 'http://test.com/asdfasdf/',
+                'out': 'http://test.com/asdfasdf',
             },
             {
                 'in': ['https://test.com:4323/api', 'a/a'],
-                'out': 'https://test.com:4323/api/a/a/',
+                'out': 'https://test.com:4323/api/a/a',
             },
             {
                 'in': ['https://test.com:4323/api/', 'a/a/'],
-                'out': 'https://test.com:4323/api/a/a/',
+                'out': 'https://test.com:4323/api/a/a',
             },
             {
                 'in': ['', 'a/a/'],
-                'out': '/a/a/'
+                'out': '/a/a'
             },
         ]
 
@@ -49,7 +49,10 @@ class TestAPIClient(object):
         assert len(list(component.versions)) == 2
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_component_details.yaml')
-    def test_component(self, base_url):
+    def test_component(self, base_url, monkeypatch):
+        monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '0')
+        storage_name = 'http://localhost:9000/test-public/'
+
         client = APIClient(base_url=base_url)
 
         # Also check case normalisation
@@ -57,6 +60,10 @@ class TestAPIClient(object):
 
         assert manifest.name == 'test/cmp'
         assert str(manifest.version) == '1.0.1'
+        assert manifest.download_url.startswith(storage_name)
+        assert manifest.documents['readme'].startswith(storage_name)
+        assert manifest.examples[0]['url'].startswith(storage_name)
+        assert manifest.license['url'].startswith(storage_name)
 
     def test_user_agent(self, base_url):
         ua = user_agent()
@@ -78,3 +85,9 @@ class TestAPIClient(object):
 
         client.component(component_name='test/cmp')
         client.component(component_name='test/cmp')
+
+    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_api_information.yaml')
+    def test_api_information(self, base_url):
+        client = APIClient(base_url=base_url)
+
+        assert client.storage_url == 'http://localhost:9000/test-public'

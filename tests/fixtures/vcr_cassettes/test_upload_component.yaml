@@ -7,88 +7,93 @@ interactions:
       Accept-Encoding:
       - gzip, deflate
       Authorization:
-      - Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJSUURGZmQ0M1NNQzcza0FscFlaWDlnPT0iLCJpc3MiOiJpZGYtY29tcG9uZW50LXNlcnZpY2UiLCJpYXQiOjE2MTM0NzgyMjMsInN1YiI6Ik5vbmUiLCJhdWQiOiJ1c2VyIHdyaXRlOmNvbXBvbmVudHMiLCJleHAiOjE2MTM0ODE4MjN9.M3TAx-0aqKXe7r9TNwTG3X01-EJpj3FO7j9EUiixYKY
+      - Bearer SoP1gZLb4GZUnT-xHs4zxucO8aKpPpNEF4PAYU45DqKl1R1XgjaWEpUkHFXAtIu_
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.25.1
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
     method: GET
-    uri: http://localhost:5000/components/espressif/cmp/
+    uri: http://localhost:5000/
   response:
     body:
-      string: "{\n  \"created_at\": \"2021-02-23T20:25:49.507037+00:00\", \n  \"featured\"\
-        : false, \n  \"name\": \"cmp\", \n  \"namespace\": \"espressif\", \n  \"versions\"\
-        : [\n    {\n      \"component_hash\": \"0a38abb60f0fcb67604554284b51a0598d8380a7053444a6ee871f6e044271be\"\
-        , \n      \"created_at\": \"2021-02-23T21:08:31.840475+00:00\", \n      \"\
-        dependencies\": [\n        {\n          \"is_public\": false, \n         \
-        \ \"name\": null, \n          \"namespace\": null, \n          \"source\"\
-        : \"idf\", \n          \"spec\": \">=4.0\"\n        }\n      ], \n      \"\
-        description\": null, \n      \"docs\": {\n        \"changelog\": \"http://localhost:5001/98f83b1b-bb0f-4ee1-be0c-72ac7eedf28d/changelog.md\"\
-        , \n        \"readme\": \"http://localhost:5001/98f83b1b-bb0f-4ee1-be0c-72ac7eedf28d/readme.md\"\
-        \n      }, \n      \"targets\": [\n        \"esp32\"\n      ], \n      \"\
-        url\": \"http://localhost:5001/98f83b1b-bb0f-4ee1-be0c-72ac7eedf28d.tgz\"\
-        , \n      \"version\": \"3.0.15\"\n    }, \n    {\n      \"component_hash\"\
-        : \"79fdc7da82698a4a00b3d3a5ab187ff8a89f7b3e03fab608bb37397aae58a8a4\", \n\
-        \      \"created_at\": \"2021-02-23T20:44:48.698841+00:00\", \n      \"dependencies\"\
-        : [\n        {\n          \"is_public\": false, \n          \"name\": null,\
-        \ \n          \"namespace\": null, \n          \"source\": \"idf\", \n   \
-        \       \"spec\": \">=4.0\"\n        }\n      ], \n      \"description\":\
-        \ null, \n      \"docs\": {\n        \"changelog\": \"http://localhost:5001/ff75aea1-f39a-4809-a577-44a02aebdb57/changelog.md\"\
-        , \n        \"readme\": \"http://localhost:5001/ff75aea1-f39a-4809-a577-44a02aebdb57/readme.md\"\
-        \n      }, \n      \"targets\": [\n        \"esp32\"\n      ], \n      \"\
-        url\": \"http://localhost:5001/ff75aea1-f39a-4809-a577-44a02aebdb57.tgz\"\
-        , \n      \"version\": \"3.0.14\"\n    }, \n    {\n      \"component_hash\"\
-        : \"2ce26c142344f9294fb4f036d7b238ca1e6ad1d044eed677bf93eddd511315d6\", \n\
-        \      \"created_at\": \"2021-02-23T20:42:05.209844+00:00\", \n      \"dependencies\"\
-        : [\n        {\n          \"is_public\": false, \n          \"name\": null,\
-        \ \n          \"namespace\": null, \n          \"source\": \"idf\", \n   \
-        \       \"spec\": \">=4.0\"\n        }\n      ], \n      \"description\":\
-        \ null, \n      \"docs\": {\n        \"changelog\": \"http://localhost:5001/8a52ad04-b75a-4330-8a92-1b82c1b06592/changelog.md\"\
-        , \n        \"readme\": \"http://localhost:5001/8a52ad04-b75a-4330-8a92-1b82c1b06592/readme.md\"\
-        \n      }, \n      \"targets\": [\n        \"esp32\"\n      ], \n      \"\
-        url\": \"http://localhost:5001/8a52ad04-b75a-4330-8a92-1b82c1b06592.tgz\"\
-        , \n      \"version\": \"3.0.12\"\n    }, \n    {\n      \"component_hash\"\
-        : \"43df99840cae4c1833c7fa86f44301b9babe7875b73ab4bdb95d613d6f2b2f9d\", \n\
-        \      \"created_at\": \"2021-02-23T20:40:55.413690+00:00\", \n      \"dependencies\"\
-        : [\n        {\n          \"is_public\": false, \n          \"name\": null,\
-        \ \n          \"namespace\": null, \n          \"source\": \"idf\", \n   \
-        \       \"spec\": \">=4.0\"\n        }\n      ], \n      \"description\":\
-        \ null, \n      \"docs\": {\n        \"changelog\": \"http://localhost:5001/67fd74d2-8a31-456e-b30e-1a38c6268a61/changelog.md\"\
-        , \n        \"readme\": \"http://localhost:5001/67fd74d2-8a31-456e-b30e-1a38c6268a61/readme.md\"\
-        \n      }, \n      \"targets\": [\n        \"esp32\"\n      ], \n      \"\
-        url\": \"http://localhost:5001/67fd74d2-8a31-456e-b30e-1a38c6268a61.tgz\"\
-        , \n      \"version\": \"3.0.11\"\n    }, \n    {\n      \"component_hash\"\
-        : \"5f21951854cd38669fbf372c7fde0f3d8b38f449faf8f503a9ef774e114fb505\", \n\
-        \      \"created_at\": \"2021-02-23T20:36:06.047552+00:00\", \n      \"dependencies\"\
-        : [\n        {\n          \"is_public\": false, \n          \"name\": null,\
-        \ \n          \"namespace\": null, \n          \"source\": \"idf\", \n   \
-        \       \"spec\": \">=4.0\"\n        }\n      ], \n      \"description\":\
-        \ null, \n      \"docs\": {\n        \"changelog\": \"http://localhost:5001/ae0ad016-c41b-4d26-902c-168d51254b8f/changelog.md\"\
-        , \n        \"readme\": \"http://localhost:5001/ae0ad016-c41b-4d26-902c-168d51254b8f/readme.md\"\
-        \n      }, \n      \"targets\": [\n        \"esp32\"\n      ], \n      \"\
-        url\": \"http://localhost:5001/ae0ad016-c41b-4d26-902c-168d51254b8f.tgz\"\
-        , \n      \"version\": \"3.0.10\"\n    }, \n    {\n      \"component_hash\"\
-        : \"63ba247312100eb4313fbdc73e174066cc723511578c215599afdd08860f252f\", \n\
-        \      \"created_at\": \"2021-02-23T20:25:57.103291+00:00\", \n      \"dependencies\"\
-        : [\n        {\n          \"is_public\": false, \n          \"name\": null,\
-        \ \n          \"namespace\": null, \n          \"source\": \"idf\", \n   \
-        \       \"spec\": \">=4.0\"\n        }\n      ], \n      \"description\":\
-        \ null, \n      \"docs\": {\n        \"changelog\": \"http://localhost:5001/46e1f25a-d241-49fb-88fb-e16ee8e354c6/changelog.md\"\
-        , \n        \"readme\": \"http://localhost:5001/46e1f25a-d241-49fb-88fb-e16ee8e354c6/readme.md\"\
-        \n      }, \n      \"targets\": [\n        \"esp32\"\n      ], \n      \"\
-        url\": \"http://localhost:5001/46e1f25a-d241-49fb-88fb-e16ee8e354c6.tgz\"\
-        , \n      \"version\": \"3.0.9\"\n    }\n  ]\n}\n"
+      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",
+        \n  \"info\": \"Espressif Component Manager Service HTTP JSON API\", \n  \"status\":
+        \"ok\", \n  \"version\": \"0.2.0\"\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
+      Connection:
+      - close
       Content-Length:
-      - '4637'
+      - '171'
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Apr 2021 22:09:09 GMT
+      - Mon, 08 Aug 2022 17:37:50 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.9.0
+      - Werkzeug/2.1.2 Python/3.10.0
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SoP1gZLb4GZUnT-xHs4zxucO8aKpPpNEF4PAYU45DqKl1R1XgjaWEpUkHFXAtIu_
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+    method: GET
+    uri: http://localhost:9000/test-public/components/espressif/cmp.json
+  response:
+    body:
+      string: '{"featured": false, "created_at": "2022-08-08T15:39:31.655332+00:00",
+        "versions": [{"homepage": "", "docs": {"readme": "c302ba35-9750-4b39-8e0a-54d20c5e4d06/readme.md"},
+        "version": "3.0.4", "component_hash": "ec0069763f87c38724e16369423863ff6b2d09d767691929b5f8f09c056fc320",
+        "description": "Test Component", "repository": "", "examples": [], "uploader":
+        "dmitry", "tags": [], "targets": ["esp32"], "created_at": "2022-08-08T15:39:31.906540+00:00",
+        "documentation": "", "issues": "", "url": "c302ba35-9750-4b39-8e0a-54d20c5e4d06.tgz",
+        "license": null, "discussion": "", "dependencies": [{"is_public": false, "source":
+        "idf", "spec": ">=4.0", "name": null, "namespace": null}]}, {"homepage": "",
+        "docs": {}, "version": "1.0.0", "component_hash": "5e17a5e31cf23d6f5ea8126ae409ab081f4467aaad6cb4ca78e70b1a7dbaf366",
+        "description": null, "repository": "", "examples": [], "uploader": "dmitry",
+        "tags": [], "targets": ["esp32"], "created_at": "2022-08-08T15:43:40.897343+00:00",
+        "documentation": "", "issues": "", "url": "246e76a3-9104-4c7b-8b55-0d2ffaa011fc.tgz",
+        "license": null, "discussion": "", "dependencies": [{"is_public": false, "source":
+        "idf", "spec": ">=4.0", "name": null, "namespace": null}]}], "name": "cmp",
+        "namespace": "espressif"}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '1244'
+      Content-Security-Policy:
+      - block-all-mixed-content
+      Content-Type:
+      - binary/octet-stream
+      Date:
+      - Mon, 08 Aug 2022 17:37:50 GMT
+      ETag:
+      - '"6467fd55fdaf2166f311a61027779368"'
+      Last-Modified:
+      - Mon, 08 Aug 2022 17:37:31 GMT
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      X-Amz-Request-Id:
+      - 17096F42EC60DB70
+      X-Content-Type-Options:
+      - nosniff
+      X-Xss-Protection:
+      - 1; mode=block
     status:
       code: 200
       message: OK
@@ -96,21 +101,24 @@ interactions:
     body: !!python/object/new:_io.BytesIO
       state: !!python/tuple
       - !!binary |
-        LS0wYWNmMWRmZDZhNmE0MmQ0YjQ3NjJkYjI2ODk1NjZjOQ0KQ29udGVudC1EaXNwb3NpdGlvbjog
-        Zm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImNtcF8xLjAuMC1hcGxoYS50Z3oiDQpD
-        b250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL29jdGV0LXN0cmVhbQ0KDQofiwgIBfSBYAL/Y21wXzEu
-        MC4wLWFwbGhhLnRnegDt2Ftv2jAYBuBc51dY2Q1c1MROQkoPqBMgFakcBN2uJqGImGI1pyWmYpr2
-        32cOUgdT26ukbH0fCYJyIBLk+17btEEbN+NgfSuCUORGKeydl7a27bjPnzf7mc0ZN8jaqMCqUEGu
-        b298TPycxErG4po1WYtx3+U+bdnc8VjLNOC/J8PFbJ7GWZqIRNEfcVRS/TfdbY0z37P/3G4xnx3V
-        P+euZxC7yvp/XL1+3lvH/1FPIi9kmlwQi1Gb2mdBFi0Dy9S/yYNQxYVJyBkRReZwMw5kovRLX7Db
-        bd2LQpHNm8jJldLbG7EO4iwSVD9RbcsMRSaSUCRzKbaX6GdN36d97VLbQnM5DfQk8t/5O/8Z8r+S
-        /PcP8985Z5Qxnf8cFfoRzOOMzku+x5v57/DD+rf9Jmsi/6vwSSbzaBUKclWoUKZ02TbNp1SGRD8Y
-        s6WIorRWN3/q8N7Jcj0IWNSs280RssjTmHQGY7IfRZDtGOJbYtUvzV+oLeQ/8h/5D6esMwgexZ0s
-        VEHVWr1T/vvNo/pnrusg/6sZ/+n/fxbLRMareJaL7yuZi7D2tTeZ9kdD4lDm1E2zEKrWGQ3Go2Fv
-        eD+bTjrd/mRKaP3owOdud9Yfdu6+dHvbE6z94MLSX5GLB7lZKXhebdIDC9Qf8h/5j/yH97Lv0I2y
-        5/++572Y/we9YFf/DucG8ZD/6P/o/+j/UHr/36wDL0vs/6/N/3S1H8//OOZ/1The671ESQAAAAAA
-        AAAAAAAAAAAAAAAAAAAAAJys36PnVRoAUAAADQotLTBhY2YxZGZkNmE2YTQyZDRiNDc2MmRiMjY4
-        OTU2NmM5LS0NCg==
+        LS1iZDAzY2Q2YzA2N2E0NWRlYjFhMDk3MmEzMGFkZTYwYw0KQ29udGVudC1EaXNwb3NpdGlvbjog
+        Zm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImNtcF8xLjAuMC1hbHBoYS50Z3oiDQpD
+        b250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL29jdGV0LXN0cmVhbQ0KDQofiwgI7knxYgL/Y21wXzEu
+        MC4wLWFscGhhLnRnegDtme9r2kAYx32dv+JwL6oFz/uVRO0PWtRRoVWpbuzFQEJymmNekiWxWMb+
+        9120rJushQ5MS30+oBdzDwmYe77fPM/hJm5ejL31lfQCmVb2Atny1EgIF4/HxXlKGGUVtK6UwCrL
+        vdTcvnKYsBbSudLyjDp2u90izCW45QiHUGFVgHdPs4R7FEnt2vZ2dLYjYX/nPBXMFUwI13ZN/tNi
+        Gtll5r/2Fsr3Us3Yv+NM2Hz+/p4/Bv0H/d/qP2/zdluwFuaU07YD+n8IdG+8b/JaZXmG83W+v/x3
+        hHhS/6nrGP2ntu0I88ucp1y4pIJImfl/oPrva/P8Z1pFSq/0LJXfVyqVQe1z/3YyGA0Rx5TXLSuT
+        ea07uhmPhv3hdDa57fYGtxOE6zsTl73ebDDsXn/q9TcBVRX5y1Ugq+YSqVyYVSbTmR/rJI5klNfq
+        oDDg/+D/b6b+s13qiDY3/k9dQR3IzgPA1wn2S6j/nvN/zjb1ny0Itxm1i/qvCAf/L6P+P7bQMZqM
+        e18aH9VSduPkPlWLMJ/Kdd5BjDCG+lmSyixTczS5Nw6uM1SbhF60CD1VR90Rup72zDV+X+Za+TLK
+        ZGMQGI9XcyXTDrpMPD+UDYaJCWtaHx7eC9BplgcqxuG5Zd3FKkBmNc5CuVzG5t3gh4UeSFIV5fNa
+        9aqYQfM01qh7M0Z3Ms1UHCGKCSZfo2r9xPoJmgX+D/7/n/7/2P+1ud2C+v8QUMH8sSLD93r5GvW/
+        Q3f6v4IX+Q/+v38CmcjIOLWvZNYxjmvWQwcdnZ8JTI4s7RnjNR9jtB2rgaYyyzdfMkWnuRkv5NrT
+        yVJis4LOLfM/LmS+iZRZwpn1YNCdrUM3vGUSeiAq4P/g/2/d/4XTogxS9RD8f1uJ7XUb+OX7v4wX
+        /X/Y/wX9B/0vT///6P+2bIeD/h+Q/hd94HCP+v9c/ceIu9P/5ZzA/m8pvEr/d7fXewJSAwAAAAAA
+        AAAAAAAAAAAAAAAAAAAAAAAAAAAA8FJ+ATGsuG8AUAAADQotLWJkMDNjZDZjMDY3YTQ1ZGViMWEw
+        OTcyYTMwYWRlNjBjLS0NCg==
       - 0
       - null
     headers:
@@ -119,32 +127,34 @@ interactions:
       Accept-Encoding:
       - gzip, deflate
       Authorization:
-      - Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJSUURGZmQ0M1NNQzcza0FscFlaWDlnPT0iLCJpc3MiOiJpZGYtY29tcG9uZW50LXNlcnZpY2UiLCJpYXQiOjE2MTM0NzgyMjMsInN1YiI6Ik5vbmUiLCJhdWQiOiJ1c2VyIHdyaXRlOmNvbXBvbmVudHMiLCJleHAiOjE2MTM0ODE4MjN9.M3TAx-0aqKXe7r9TNwTG3X01-EJpj3FO7j9EUiixYKY
+      - Bearer SoP1gZLb4GZUnT-xHs4zxucO8aKpPpNEF4PAYU45DqKl1R1XgjaWEpUkHFXAtIu_
       Connection:
       - keep-alive
       Content-Length:
-      - '808'
+      - '985'
       Content-Type:
-      - multipart/form-data; boundary=0acf1dfd6a6a42d4b4762db2689566c9
+      - multipart/form-data; boundary=bd03cd6c067a45deb1a0972a30ade60c
       User-Agent:
-      - python-requests/2.25.1
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
     method: POST
-    uri: http://localhost:5000/components/espressif/cmp/versions/
+    uri: http://localhost:5000/components/espressif/cmp/versions
   response:
     body:
-      string: "{\n  \"job_id\": \"6c520950-09de-4f41-8e28-872077f2a3c2\", \n  \"upload_format\"\
-        : \"tgz\", \n  \"upload_id\": \"b6b83877-a16f-4668-804f-c3c6f4e9a02a\"\n}\n"
+      string: "{\n  \"job_id\": \"59608962-16fe-4838-af9e-0a0c174ea319\", \n  \"upload_format\":
+        \"tgz\", \n  \"upload_id\": \"ba5592c5-920a-4954-a86a-75168a17bb05\"\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
+      Connection:
+      - close
       Content-Length:
       - '138'
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Apr 2021 22:09:09 GMT
+      - Mon, 08 Aug 2022 17:37:51 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.9.0
+      - Werkzeug/2.1.2 Python/3.10.0
     status:
       code: 201
       message: CREATED
@@ -156,29 +166,30 @@ interactions:
       Accept-Encoding:
       - gzip, deflate
       Authorization:
-      - Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJSUURGZmQ0M1NNQzcza0FscFlaWDlnPT0iLCJpc3MiOiJpZGYtY29tcG9uZW50LXNlcnZpY2UiLCJpYXQiOjE2MTM0NzgyMjMsInN1YiI6Ik5vbmUiLCJhdWQiOiJ1c2VyIHdyaXRlOmNvbXBvbmVudHMiLCJleHAiOjE2MTM0ODE4MjN9.M3TAx-0aqKXe7r9TNwTG3X01-EJpj3FO7j9EUiixYKY
+      - Bearer SoP1gZLb4GZUnT-xHs4zxucO8aKpPpNEF4PAYU45DqKl1R1XgjaWEpUkHFXAtIu_
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.25.1
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
     method: GET
-    uri: http://localhost:5000/tasks/6c520950-09de-4f41-8e28-872077f2a3c2/
+    uri: http://localhost:5000/tasks/59608962-16fe-4838-af9e-0a0c174ea319
   response:
     body:
-      string: "{\n  \"id\": \"6c520950-09de-4f41-8e28-872077f2a3c2\", \n  \"message\"\
-        : \"Check manifest\", \n  \"progress\": 80.0, \n  \"status\": \"processing\"\
-        \n}\n"
+      string: "{\n  \"id\": \"59608962-16fe-4838-af9e-0a0c174ea319\", \n  \"message\":
+        \"Processing license file\", \n  \"progress\": 80.0, \n  \"status\": \"processing\"\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
+      Connection:
+      - close
       Content-Length:
-      - '131'
+      - '140'
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Apr 2021 22:09:09 GMT
+      - Mon, 08 Aug 2022 17:37:51 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.9.0
+      - Werkzeug/2.1.2 Python/3.10.0
     status:
       code: 200
       message: OK
@@ -190,29 +201,31 @@ interactions:
       Accept-Encoding:
       - gzip, deflate
       Authorization:
-      - Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJSUURGZmQ0M1NNQzcza0FscFlaWDlnPT0iLCJpc3MiOiJpZGYtY29tcG9uZW50LXNlcnZpY2UiLCJpYXQiOjE2MTM0NzgyMjMsInN1YiI6Ik5vbmUiLCJhdWQiOiJ1c2VyIHdyaXRlOmNvbXBvbmVudHMiLCJleHAiOjE2MTM0ODE4MjN9.M3TAx-0aqKXe7r9TNwTG3X01-EJpj3FO7j9EUiixYKY
+      - Bearer SoP1gZLb4GZUnT-xHs4zxucO8aKpPpNEF4PAYU45DqKl1R1XgjaWEpUkHFXAtIu_
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.25.1
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
     method: GET
-    uri: http://localhost:5000/tasks/6c520950-09de-4f41-8e28-872077f2a3c2/
+    uri: http://localhost:5000/tasks/59608962-16fe-4838-af9e-0a0c174ea319
   response:
     body:
-      string: "{\n  \"id\": \"6c520950-09de-4f41-8e28-872077f2a3c2\", \n  \"message\"\
-        : \"Uploaded archive successfully processed\", \n  \"progress\": 100.0, \n\
-        \  \"status\": \"success\"\n}\n"
+      string: "{\n  \"id\": \"59608962-16fe-4838-af9e-0a0c174ea319\", \n  \"message\":
+        \"Uploaded archive successfully processed\", \n  \"progress\": 100.0, \n  \"status\":
+        \"success\"\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
+      Connection:
+      - close
       Content-Length:
       - '154'
       Content-Type:
       - application/json
       Date:
-      - Thu, 22 Apr 2021 22:09:12 GMT
+      - Mon, 08 Aug 2022 17:37:54 GMT
       Server:
-      - Werkzeug/1.0.1 Python/3.9.0
+      - Werkzeug/2.1.2 Python/3.10.0
     status:
       code: 200
       message: OK

@@ -3,3 +3,4 @@
 
 DEFAULT_NAMESPACE = 'espressif'
 DEFAULT_COMPONENT_SERVICE_URL = 'https://api.components.espressif.com/'
+IDF_COMPONENT_STORAGE_URL = 'https://components-file.espressif.com/'

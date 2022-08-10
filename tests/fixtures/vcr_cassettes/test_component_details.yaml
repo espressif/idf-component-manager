@@ -9,47 +9,89 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.27.1
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
     method: GET
-    uri: http://localhost:5000/components/test/cmp/
+    uri: http://localhost:5000/
   response:
     body:
-      string: "{\n  \"created_at\": \"2022-03-14T16:12:46.517009+00:00\", \n  \"featured\":
-        false, \n  \"name\": \"cmp\", \n  \"namespace\": \"test\", \n  \"versions\":
-        [\n    {\n      \"component_hash\": \"712ac99e7bcc47c5519dcb5a7de9f37825ff98f30a74ea2b13f4f465be429dc2\",
-        \n      \"created_at\": \"2022-03-14T16:12:47.461645+00:00\", \n      \"dependencies\":
-        [], \n      \"description\": null, \n      \"docs\": {}, \n      \"examples\":
-        [\n        {\n          \"name\": \"ble_mesh_wifi_coexist\", \n          \"url\":
-        \"http://localhost:9000/test-public/a08800ec-304e-46b2-80be-fb2b3656ba7e/examples/9a82860b-7d7b-4c5b-a216-eaa2b46ba46e.tgz\"\n
-        \       }, \n        {\n          \"name\": \"aligenie_demo\", \n          \"url\":
-        \"http://localhost:9000/test-public/a08800ec-304e-46b2-80be-fb2b3656ba7e/examples/271b1811-b362-426c-a673-f933176f58a4.tgz\"\n
-        \       }, \n        {\n          \"name\": \"ble_mesh_console\", \n          \"url\":
-        \"http://localhost:9000/test-public/a08800ec-304e-46b2-80be-fb2b3656ba7e/examples/9a0297bd-927d-464b-9163-40c188da6053.tgz\"\n
-        \       }, \n        {\n          \"name\": \"ble_mesh_provisioner\", \n          \"url\":
-        \"http://localhost:9000/test-public/a08800ec-304e-46b2-80be-fb2b3656ba7e/examples/92d285f0-8448-45a8-b13c-1ad9c1779d3c.tgz\"\n
-        \       }, \n        {\n          \"name\": \"vendor_client\", \n          \"url\":
-        \"http://localhost:9000/test-public/a08800ec-304e-46b2-80be-fb2b3656ba7e/examples/0249f30b-3df5-4a29-ac88-df4b21c4677a.tgz\"\n
-        \       }, \n        {\n          \"name\": \"sensor_server\", \n          \"url\":
-        \"http://localhost:9000/test-public/a08800ec-304e-46b2-80be-fb2b3656ba7e/examples/2c3f9dd2-e90b-420a-af36-44cf463ccf95.tgz\"\n
-        \       }, \n        {\n          \"name\": \"fast_prov_client\", \n          \"url\":
-        \"http://localhost:9000/test-public/a08800ec-304e-46b2-80be-fb2b3656ba7e/examples/5ca10509-6cfd-4ad1-8469-9ba25ac01a3e.tgz\"\n
-        \       }, \n        {\n          \"name\": \"onoff_server\", \n          \"url\":
-        \"http://localhost:9000/test-public/a08800ec-304e-46b2-80be-fb2b3656ba7e/examples/462df96c-ac60-4d8f-9b33-4f13860d5c0c.tgz\"\n
-        \       }\n      ], \n      \"homepage\": null, \n      \"license\": null,
-        \n      \"tags\": [], \n      \"targets\": [], \n      \"uploader\": \"Dmitry
-        Bondarenko\", \n      \"url\": \"http://localhost:9000/test-public/a08800ec-304e-46b2-80be-fb2b3656ba7e.tgz\",
-        \n      \"version\": \"1.0.1\"\n    }\n  ]\n}\n"
+      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",
+        \n  \"info\": \"Espressif Component Manager Service HTTP JSON API\", \n  \"status\":
+        \"ok\", \n  \"version\": \"0.2.0\"\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
+      Connection:
+      - close
       Content-Length:
-      - '2256'
+      - '171'
       Content-Type:
       - application/json
       Date:
-      - Mon, 14 Mar 2022 16:13:23 GMT
+      - Wed, 10 Aug 2022 10:04:55 GMT
       Server:
-      - Werkzeug/2.0.3 Python/3.10.0
+      - Werkzeug/2.1.2 Python/3.10.0
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+    method: GET
+    uri: http://localhost:9000/test-public/components/test/cmp.json
+  response:
+    body:
+      string: '{"name": "cmp", "versions": [{"examples": [{"name": "sample_project",
+        "url": "2252f790-5a7b-4bb2-be6c-7dfff067776a/examples/8faa57c5-a2fe-4647-ae8f-d2c7977c24b0.tgz"}],
+        "url": "2252f790-5a7b-4bb2-be6c-7dfff067776a.tgz", "repository": "", "issues":
+        "", "tags": [], "docs": {"readme": "2252f790-5a7b-4bb2-be6c-7dfff067776a/readme.md"},
+        "description": "Test Component", "version": "1.0.1", "discussion": "", "uploader":
+        "dmitry", "created_at": "2022-08-10T10:04:25.435920+00:00", "dependencies":
+        [{"spec": ">=4.0", "name": null, "is_public": false, "source": "idf", "namespace":
+        null}], "documentation": "", "license": {"name": "Unknown license", "url":
+        "2252f790-5a7b-4bb2-be6c-7dfff067776a/license.txt"}, "component_hash": "e244cfd01cbc56545dac29bbac803624699947ba0aaa78f313b0c399d4533165",
+        "homepage": "", "targets": ["esp32"]}, {"examples": [], "url": "507f0e57-c9b9-45ff-a024-7bd1ad336e92.tgz",
+        "repository": "", "issues": "", "tags": [], "docs": {"readme": "507f0e57-c9b9-45ff-a024-7bd1ad336e92/readme.md"},
+        "description": "Test Component", "version": "1.0.0", "discussion": "", "uploader":
+        "dmitry", "created_at": "2022-08-08T15:52:11.805598+00:00", "dependencies":
+        [{"spec": ">=4.0", "name": null, "is_public": false, "source": "idf", "namespace":
+        null}], "documentation": "", "license": null, "component_hash": "e603c6d848a22fc1a4651c5e297dcf53b3d3eeba6e20c7589e14a6a4345b0415",
+        "homepage": "", "targets": ["esp32"]}], "created_at": "2022-08-08T15:52:11.672772+00:00",
+        "featured": false, "namespace": "test"}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '1514'
+      Content-Security-Policy:
+      - block-all-mixed-content
+      Content-Type:
+      - binary/octet-stream
+      Date:
+      - Wed, 10 Aug 2022 10:04:55 GMT
+      ETag:
+      - '"e4e545684286d18ccbea48bb7dc80bca"'
+      Last-Modified:
+      - Wed, 10 Aug 2022 10:04:25 GMT
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      X-Amz-Request-Id:
+      - 1709F3B4DD4B4583
+      X-Content-Type-Options:
+      - nosniff
+      X-Xss-Protection:
+      - 1; mode=block
     status:
       code: 200
       message: OK

@@ -20,7 +20,7 @@ from ..file_tools import copy_directory
 from ..hash_tools import validate_dir
 from . import utils
 from .base import BaseSource
-from .constants import DEFAULT_COMPONENT_SERVICE_URL
+from .constants import DEFAULT_COMPONENT_SERVICE_URL, IDF_COMPONENT_STORAGE_URL
 
 try:
     from urllib.parse import urlparse  # type: ignore
@@ -36,22 +36,30 @@ except ImportError:
     pass
 
 
-def default_component_service_url(service_profile=None):
-    env_service_url = os.getenv('DEFAULT_COMPONENT_SERVICE_URL')
-    if env_service_url:
-        return env_service_url
+def default_component_registry_storage_url(
+        registry_profile=None):  # type: (dict[str, str] | None) -> tuple[str, str | None]
+    env_registry_url = os.getenv('DEFAULT_COMPONENT_SERVICE_URL')
+    if env_registry_url:
+        env_storage_url = os.getenv('IDF_COMPONENT_STORAGE_URL')
+        return env_registry_url, env_storage_url
 
-    env_service_profile_name = os.getenv('IDF_COMPONENT_SERVICE_PROFILE')
-    if env_service_profile_name:
-        service_profile = ConfigManager().load().profiles.get(env_service_profile_name, {})
-    elif service_profile is None:
-        service_profile = {}
+    env_registry_profile_name = os.getenv('IDF_COMPONENT_SERVICE_PROFILE')
+    if env_registry_profile_name:
+        registry_profile = ConfigManager().load().profiles.get(env_registry_profile_name, {})
+    if registry_profile is None:
+        registry_profile = {}
 
-    service_url = service_profile.get('url')
-    if service_url and service_url != 'default':
-        return service_url
+    registry_url = DEFAULT_COMPONENT_SERVICE_URL
+    profile_registry_url = registry_profile.get('url')
+    if profile_registry_url and profile_registry_url != 'default':
+        registry_url = profile_registry_url
 
-    return DEFAULT_COMPONENT_SERVICE_URL
+    storage_url = IDF_COMPONENT_STORAGE_URL
+    profile_storage_url = registry_profile.get('storage_url')
+    if profile_storage_url and profile_storage_url != 'default':
+        storage_url = profile_storage_url
+
+    return registry_url, storage_url
 
 
 class WebServiceSource(BaseSource):
@@ -60,9 +68,14 @@ class WebServiceSource(BaseSource):
     def __init__(self, source_details=None, **kwargs):
         super(WebServiceSource, self).__init__(source_details=source_details, **kwargs)
 
-        self.base_url = str(self.source_details.get('service_url', default_component_service_url()))
+        self.base_url = self.source_details.get('service_url')
+        self.storage_url = None
+        if self.base_url is None:
+            self.base_url, self.storage_url = default_component_registry_storage_url()
+
+        self.base_url = str(self.base_url)
         self.api_client = self.source_details.get(
-            'api_client', api_client.APIClient(base_url=self.base_url, source=self))
+            'api_client', api_client.APIClient(base_url=self.base_url, storage_url=self.storage_url, source=self))
 
     @classmethod
     def required_keys(cls):

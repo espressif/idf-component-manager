@@ -9,33 +9,88 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.27.1
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
     method: GET
-    uri: http://localhost:5000/components/test/cmp/
+    uri: http://localhost:5000/
   response:
     body:
-      string: "{\n  \"created_at\": \"2022-03-16T12:52:44.017420+00:00\", \n  \"featured\"\
-        : false, \n  \"name\": \"cmp\", \n  \"namespace\": \"test\", \n  \"versions\"\
-        : [\n    {\n      \"component_hash\": \"6c3365fc80eb43873bf0a8e3c22dbd6c05a2d773a636ad4eebda2a0fa4b93f37\"\
-        , \n      \"created_at\": \"2022-03-16T12:52:44.218236+00:00\", \n      \"\
-        dependencies\": [], \n      \"description\": null, \n      \"docs\": {}, \n\
-        \      \"examples\": [\n        {\n          \"name\": \"sample_project\"\
-        , \n          \"url\": \"http://localhost:9000/test-public/f8762c4a-1c02-48b5-91c6-1951c4216601/examples/a1cbeade-3768-4628-b425-36bf19614f04.tgz\"\
-        \n        }\n      ], \n      \"homepage\": null, \n      \"license\": null,\
-        \ \n      \"tags\": [], \n      \"targets\": [], \n      \"uploader\": \"\
-        Dmitry Bondarenko\", \n      \"url\": \"http://localhost:9000/test-public/f8762c4a-1c02-48b5-91c6-1951c4216601.tgz\"\
-        , \n      \"version\": \"1.0.1\"\n    }\n  ]\n}\n"
+      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",
+        \n  \"info\": \"Espressif Component Manager Service HTTP JSON API\", \n  \"status\":
+        \"ok\", \n  \"version\": \"0.2.0\"\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
+      Connection:
+      - close
       Content-Length:
-      - '851'
+      - '171'
       Content-Type:
       - application/json
       Date:
-      - Mon, 04 Apr 2022 16:52:04 GMT
+      - Mon, 08 Aug 2022 17:31:19 GMT
       Server:
-      - Werkzeug/2.0.3 Python/3.10.0
+      - Werkzeug/2.1.2 Python/3.10.0
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+    method: GET
+    uri: http://localhost:9000/test-public/components/test/cmp.json
+  response:
+    body:
+      string: '{"name": "cmp", "versions": [{"examples": [{"name": "sample_project",
+        "url": "4da734a3-e912-48e8-804a-70d15de25ec9/examples/50a9b79d-e1d6-4ac8-8389-634389339d9c.tgz"}],
+        "url": "4da734a3-e912-48e8-804a-70d15de25ec9.tgz", "repository": "", "issues":
+        "", "tags": [], "docs": {"readme": "4da734a3-e912-48e8-804a-70d15de25ec9/readme.md"},
+        "description": "Test Component", "version": "1.0.1", "discussion": "", "uploader":
+        "dmitry", "created_at": "2022-08-08T17:31:12.653646+00:00", "dependencies":
+        [{"spec": ">=4.0", "name": null, "is_public": false, "source": "idf", "namespace":
+        null}], "documentation": "", "license": null, "component_hash": "3245e6ba01df4a6a7323af71afc73640b296e89c1d083f094f0b9a2f76667a42",
+        "homepage": "", "targets": ["esp32"]}, {"examples": [], "url": "507f0e57-c9b9-45ff-a024-7bd1ad336e92.tgz",
+        "repository": "", "issues": "", "tags": [], "docs": {"readme": "507f0e57-c9b9-45ff-a024-7bd1ad336e92/readme.md"},
+        "description": "Test Component", "version": "1.0.0", "discussion": "", "uploader":
+        "dmitry", "created_at": "2022-08-08T15:52:11.805598+00:00", "dependencies":
+        [{"spec": ">=4.0", "name": null, "is_public": false, "source": "idf", "namespace":
+        null}], "documentation": "", "license": null, "component_hash": "e603c6d848a22fc1a4651c5e297dcf53b3d3eeba6e20c7589e14a6a4345b0415",
+        "homepage": "", "targets": ["esp32"]}], "created_at": "2022-08-08T15:52:11.672772+00:00",
+        "featured": false, "namespace": "test"}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '1432'
+      Content-Security-Policy:
+      - block-all-mixed-content
+      Content-Type:
+      - binary/octet-stream
+      Date:
+      - Mon, 08 Aug 2022 17:31:19 GMT
+      ETag:
+      - '"a4b9b56563b7eb8d71bb33702c3ea9dd"'
+      Last-Modified:
+      - Mon, 08 Aug 2022 17:31:12 GMT
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      X-Amz-Request-Id:
+      - 17096EE7BA7F9F85
+      X-Content-Type-Options:
+      - nosniff
+      X-Xss-Protection:
+      - 1; mode=block
     status:
       code: 200
       message: OK
@@ -51,51 +106,48 @@ interactions:
       User-Agent:
       - python-requests/2.27.1
     method: GET
-    uri: http://localhost:9000/test-public/f8762c4a-1c02-48b5-91c6-1951c4216601/examples/a1cbeade-3768-4628-b425-36bf19614f04.tgz
+    uri: http://localhost:9000/test-public/4da734a3-e912-48e8-804a-70d15de25ec9/examples/50a9b79d-e1d6-4ac8-8389-634389339d9c.tgz
   response:
     body:
       string: !!binary |
-        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
-        IBAIBAKBQCAQXyb+Ar3Bry0AUAAA
+        H4sICGBI8WIC/zUwYTliNzlkLWUxZDYtNGFjOC04Mzg5LTYzNDM4OTMzOWQ5Yy50Z3oA7Zlbc+I2
+        FIB59q84yzZbeycxtjEQkmbbhMuGWZIw4Gz70BmPg2WsxrdKJpdm8t8rGQghl2n3IUy7nG88I1t3
+        Hekc6ch6Ra/8MvBujonnE1Z6E4wZr4WGUbWX7zLeNCzTKsFNaQ1Mee4x0XxpM7F2Ic5pTA7Meq3Z
+        bDR3G5ZumzW7YdtKCfnuqayhDanUjVptFtZnoWE90flV/W/YtRLU1qn/sTehY4/FlvVyPpEtCL6/
+        +dfR/qP9n9v/3aZZa+zWdKveMCyjhvZ/A2ideJekT3nO9fwmfzv9r9v2q/a/Wnuq/1W7apTAWKf+
+        b6j9fw9OSCBIoyi9pskEIpoQDmkAFymNCMsiLycQelcE8hQuCNAEbtMpg4ylf5Bx/iNX3sNyDcnk
+        PKQcyI03ziFlYk8RlTMYxyKLrOI6ZZcwThkThaNbpYh3Y5rQeBq7jPw5pYz46tfOcNQ7O4WqbtY1
+        RaHJOJr6RP2hc/r1rtfuuoND5/i+kqdpxCtFFZV5f/TiS1Pmn2pIxMBc0Wjka2jPcP/H/f/f+X+7
+        VbOO+rIBxB5N3toH/Hb/z6xL/Uf/b1Psf/W5/TfR/q/F/jdW7H/dtG291myYzSaa/42x/2/sBP6T
+        /2dWzSf6b1fl/R/6f28P9QN3nMZZmpAkFw7YRKwCwtTRsDWCMvfiLCLu3Jly5VrRx2UFXqB32uqf
+        tztuuzcUBcvobOH+j/7f/8z/222adcNq6JawvqaJ//82Zv9/0c6vbf+3bLvxRP/rMsD9fw1UPirw
+        EUaD9m87XRqRVprdMjoJc4fc5HtgCVO8YxmWBR2eMcI5DWB0K04IMQd1FHrJJPSoBq0z6DttUdFD
+        XX06JgknOz1fHCtoQAnbg1bL2DF1Q+SpKMr7+Z0u/MRzn6Z6+GkZVeb+5ThNAjrRw/Kj6IARwvKU
+        V7riZeicjV5Jzj1+uZpEeOaOQ5q5NAnS50lB5PFQRitXKfXBy7JCB1T5pSl3xYEnYzTJA7V8LG+U
+        obhRfvd7Utb2lSK58hEGMgfIZkA2w2Ivp2kiRyszrHTBneUr3veL5KkoW7VEfNEXl9O/yP7zcuqH
+        h1dtf6Vbjrx1F88Wn/XgmuYhbPnQGpzL63aicm0bfqVdusW3+DaUtx+f4lpnp93eZ1ferDuHw88d
+        ZyV1KThZEV9JU5eJAfHyqUiHD9A67g3cbufQOR923CNHg5+hXDlyyrAnjobfXL7fmVfQ78xqWMh8
+        MXZOIyrWCzByRbkU+ZYvR/io44uUudBooD5MuzsheSFu9fS839+GD8sJ0ODdAXRGA/fsiwZ3D91e
+        NPuZzGcLZGYIPKE/fnnehIQRMaBk9n2/2uWt6cmRnKuivFhG24/mHSqgihOQLXRJBtq3CqxzcuR2
+        +4ej40JsJL4gvi86JkUnlJqwxIueifBk9gcGpA5BSLysGNOeXEEXtznhRRelzKS0Fr9rZGZXZp7J
+        T1tUKn/4qFIXKByIIeyL8NMByHBn5yVBDom0wbn8/UTl5AEnYjp9rut60S59JNMrRyh3m0TerZCR
+        YQhZZSnLnV7rizvoDHtnbfdkpC1E/kojSXqtz1S36G0QTXmoCjOUTnNtqXRsVkAVUfd4FEIQBEEQ
+        BEEQBEEQBEEQBEEQBEEQBEEQBEEQBEEQ5L/D36pMYywAUAAA
     headers:
       Accept-Ranges:
       - bytes
       Content-Length:
-      - '1446'
+      - '1290'
       Content-Security-Policy:
       - block-all-mixed-content
       Content-Type:
       - binary/octet-stream
       Date:
-      - Mon, 04 Apr 2022 16:52:04 GMT
+      - Mon, 08 Aug 2022 17:31:19 GMT
       ETag:
-      - '"e3651582c979fb2cc54905d97746de04"'
+      - '"3f36d64cd6312bc04672dc6d9c11a97a"'
       Last-Modified:
-      - Wed, 16 Mar 2022 12:52:44 GMT
+      - Mon, 08 Aug 2022 17:31:12 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -103,7 +155,7 @@ interactions:
       Vary:
       - Origin
       X-Amz-Request-Id:
-      - 16E2BFA3F954FD52
+      - 17096EE7BB32A7B7
       X-Content-Type-Options:
       - nosniff
       X-Xss-Protection:

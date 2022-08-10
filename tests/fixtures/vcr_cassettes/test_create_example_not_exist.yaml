@@ -9,33 +9,88 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.27.1
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
     method: GET
-    uri: http://localhost:5000/components/test/cmp/
+    uri: http://localhost:5000/
   response:
     body:
-      string: "{\n  \"created_at\": \"2022-03-16T12:52:44.017420+00:00\", \n  \"featured\"\
-        : false, \n  \"name\": \"cmp\", \n  \"namespace\": \"test\", \n  \"versions\"\
-        : [\n    {\n      \"component_hash\": \"6c3365fc80eb43873bf0a8e3c22dbd6c05a2d773a636ad4eebda2a0fa4b93f37\"\
-        , \n      \"created_at\": \"2022-03-16T12:52:44.218236+00:00\", \n      \"\
-        dependencies\": [], \n      \"description\": null, \n      \"docs\": {}, \n\
-        \      \"examples\": [\n        {\n          \"name\": \"sample_project\"\
-        , \n          \"url\": \"http://localhost:9000/test-public/f8762c4a-1c02-48b5-91c6-1951c4216601/examples/a1cbeade-3768-4628-b425-36bf19614f04.tgz\"\
-        \n        }\n      ], \n      \"homepage\": null, \n      \"license\": null,\
-        \ \n      \"tags\": [], \n      \"targets\": [], \n      \"uploader\": \"\
-        Dmitry Bondarenko\", \n      \"url\": \"http://localhost:9000/test-public/f8762c4a-1c02-48b5-91c6-1951c4216601.tgz\"\
-        , \n      \"version\": \"1.0.1\"\n    }\n  ]\n}\n"
+      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",
+        \n  \"info\": \"Espressif Component Manager Service HTTP JSON API\", \n  \"status\":
+        \"ok\", \n  \"version\": \"0.2.0\"\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
+      Connection:
+      - close
       Content-Length:
-      - '851'
+      - '171'
       Content-Type:
       - application/json
       Date:
-      - Mon, 04 Apr 2022 16:49:15 GMT
+      - Mon, 08 Aug 2022 17:31:37 GMT
       Server:
-      - Werkzeug/2.0.3 Python/3.10.0
+      - Werkzeug/2.1.2 Python/3.10.0
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+    method: GET
+    uri: http://localhost:9000/test-public/components/test/cmp.json
+  response:
+    body:
+      string: '{"name": "cmp", "versions": [{"examples": [{"name": "sample_project",
+        "url": "4da734a3-e912-48e8-804a-70d15de25ec9/examples/50a9b79d-e1d6-4ac8-8389-634389339d9c.tgz"}],
+        "url": "4da734a3-e912-48e8-804a-70d15de25ec9.tgz", "repository": "", "issues":
+        "", "tags": [], "docs": {"readme": "4da734a3-e912-48e8-804a-70d15de25ec9/readme.md"},
+        "description": "Test Component", "version": "1.0.1", "discussion": "", "uploader":
+        "dmitry", "created_at": "2022-08-08T17:31:12.653646+00:00", "dependencies":
+        [{"spec": ">=4.0", "name": null, "is_public": false, "source": "idf", "namespace":
+        null}], "documentation": "", "license": null, "component_hash": "3245e6ba01df4a6a7323af71afc73640b296e89c1d083f094f0b9a2f76667a42",
+        "homepage": "", "targets": ["esp32"]}, {"examples": [], "url": "507f0e57-c9b9-45ff-a024-7bd1ad336e92.tgz",
+        "repository": "", "issues": "", "tags": [], "docs": {"readme": "507f0e57-c9b9-45ff-a024-7bd1ad336e92/readme.md"},
+        "description": "Test Component", "version": "1.0.0", "discussion": "", "uploader":
+        "dmitry", "created_at": "2022-08-08T15:52:11.805598+00:00", "dependencies":
+        [{"spec": ">=4.0", "name": null, "is_public": false, "source": "idf", "namespace":
+        null}], "documentation": "", "license": null, "component_hash": "e603c6d848a22fc1a4651c5e297dcf53b3d3eeba6e20c7589e14a6a4345b0415",
+        "homepage": "", "targets": ["esp32"]}], "created_at": "2022-08-08T15:52:11.672772+00:00",
+        "featured": false, "namespace": "test"}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '1432'
+      Content-Security-Policy:
+      - block-all-mixed-content
+      Content-Type:
+      - binary/octet-stream
+      Date:
+      - Mon, 08 Aug 2022 17:31:37 GMT
+      ETag:
+      - '"a4b9b56563b7eb8d71bb33702c3ea9dd"'
+      Last-Modified:
+      - Mon, 08 Aug 2022 17:31:12 GMT
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      X-Amz-Request-Id:
+      - 17096EEC0C552AFC
+      X-Content-Type-Options:
+      - nosniff
+      X-Xss-Protection:
+      - 1; mode=block
     status:
       code: 200
       message: OK

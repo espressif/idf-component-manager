@@ -9,33 +9,88 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.27.1
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
     method: GET
-    uri: http://localhost:5000/components/test/cmp/
+    uri: http://localhost:5000/
   response:
     body:
-      string: "{\n  \"created_at\": \"2022-03-16T12:52:44.017420+00:00\", \n  \"featured\"\
-        : false, \n  \"name\": \"cmp\", \n  \"namespace\": \"test\", \n  \"versions\"\
-        : [\n    {\n      \"component_hash\": \"6c3365fc80eb43873bf0a8e3c22dbd6c05a2d773a636ad4eebda2a0fa4b93f37\"\
-        , \n      \"created_at\": \"2022-03-16T12:52:44.218236+00:00\", \n      \"\
-        dependencies\": [], \n      \"description\": null, \n      \"docs\": {}, \n\
-        \      \"examples\": [\n        {\n          \"name\": \"sample_project\"\
-        , \n          \"url\": \"http://localhost:9000/test-public/f8762c4a-1c02-48b5-91c6-1951c4216601/examples/a1cbeade-3768-4628-b425-36bf19614f04.tgz\"\
-        \n        }\n      ], \n      \"homepage\": null, \n      \"license\": null,\
-        \ \n      \"tags\": [], \n      \"targets\": [], \n      \"uploader\": \"\
-        Dmitry Bondarenko\", \n      \"url\": \"http://localhost:9000/test-public/f8762c4a-1c02-48b5-91c6-1951c4216601.tgz\"\
-        , \n      \"version\": \"1.0.1\"\n    }\n  ]\n}\n"
+      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",
+        \n  \"info\": \"Espressif Component Manager Service HTTP JSON API\", \n  \"status\":
+        \"ok\", \n  \"version\": \"0.2.0\"\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
+      Connection:
+      - close
       Content-Length:
-      - '851'
+      - '171'
       Content-Type:
       - application/json
       Date:
-      - Wed, 16 Mar 2022 13:13:42 GMT
+      - Mon, 08 Aug 2022 17:22:28 GMT
       Server:
-      - Werkzeug/2.0.3 Python/3.10.0
+      - Werkzeug/2.1.2 Python/3.10.0
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+    method: GET
+    uri: http://localhost:9000/test-public/components/test/cmp.json
+  response:
+    body:
+      string: '{"name": "cmp", "versions": [{"examples": [{"name": "sample_project",
+        "url": "05675538-4ace-4821-b09d-ea21b7f062bf/examples/ad378616-1432-40db-b343-e73c47c741bc.tgz"}],
+        "url": "05675538-4ace-4821-b09d-ea21b7f062bf.tgz", "repository": "", "issues":
+        "", "tags": [], "docs": {"readme": "05675538-4ace-4821-b09d-ea21b7f062bf/readme.md"},
+        "description": "Test Component", "version": "1.0.1", "discussion": "", "uploader":
+        "dmitry", "created_at": "2022-08-08T16:29:29.450916+00:00", "dependencies":
+        [{"spec": ">=4.0", "name": null, "is_public": false, "source": "idf", "namespace":
+        null}], "documentation": "", "license": null, "component_hash": "3245e6ba01df4a6a7323af71afc73640b296e89c1d083f094f0b9a2f76667a42",
+        "homepage": "", "targets": ["esp32"]}, {"examples": [], "url": "507f0e57-c9b9-45ff-a024-7bd1ad336e92.tgz",
+        "repository": "", "issues": "", "tags": [], "docs": {"readme": "507f0e57-c9b9-45ff-a024-7bd1ad336e92/readme.md"},
+        "description": "Test Component", "version": "1.0.0", "discussion": "", "uploader":
+        "dmitry", "created_at": "2022-08-08T15:52:11.805598+00:00", "dependencies":
+        [{"spec": ">=4.0", "name": null, "is_public": false, "source": "idf", "namespace":
+        null}], "documentation": "", "license": null, "component_hash": "e603c6d848a22fc1a4651c5e297dcf53b3d3eeba6e20c7589e14a6a4345b0415",
+        "homepage": "", "targets": ["esp32"]}], "created_at": "2022-08-08T15:52:11.672772+00:00",
+        "featured": false, "namespace": "test"}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '1432'
+      Content-Security-Policy:
+      - block-all-mixed-content
+      Content-Type:
+      - binary/octet-stream
+      Date:
+      - Mon, 08 Aug 2022 17:22:28 GMT
+      ETag:
+      - '"1331931b7d283a34363420143764d03a"'
+      Last-Modified:
+      - Mon, 08 Aug 2022 16:29:29 GMT
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      X-Amz-Request-Id:
+      - 17096E6C161EC061
+      X-Content-Type-Options:
+      - nosniff
+      X-Xss-Protection:
+      - 1; mode=block
     status:
       code: 200
       message: OK
@@ -51,39 +106,38 @@ interactions:
       User-Agent:
       - python-requests/2.27.1
     method: GET
-    uri: http://localhost:9000/test-public/f8762c4a-1c02-48b5-91c6-1951c4216601.tgz
+    uri: http://localhost:9000/test-public/05675538-4ace-4821-b09d-ea21b7f062bf.tgz
   response:
     body:
       string: !!binary |
-        H4sICJzdMWIC/2Y4NzYyYzRhLTFjMDItNDhiNS05MWM2LTE5NTFjNDIxNjYwMS50Z3oA7ZldT9sw
-        FIZ7nV9hwaS1FziJnQ/KPrRpA4G0MbQhbqs0cYhHHGe2A60Q/x2nZTDKmLSLho2c58aJkx5Xbd/3
-        7Ymxi913R8lsnyUZU4O14C15bPQ8Gtwdt/O+R3wyQLNBBzTaJMouP+gnZBsJwwV740dBHNDQDtgf
-        +zGJA2cAPHvcDtZoRR2H4XKMlqNHVjR/X/9xEA5Q2KX+RXLK00QJQn5/n70tz5/f94/B/8H/l/5P
-        t2lExzHFQRBTEkfg/z3gw+fkjH3i2mhsZmZ9+o+C4FH/D8NV/dOAWv17Xeq/p/6/ifakQkIqhniV
-        SyUSw2WFkqlsDJo2vMyQnmvDBNKMOZuoMKbWO66byVRjpmvFtOY5TqVwayW/s9Ro105v8Sx3WeWW
-        iWHauEnNt04bnjHtLmpuLWviwojSFj0uGMplWcoLXp2inJ8zVPKKaSRzNJW8ZKpuC6EisVeMRNP2
-        zaK5bBS6WfSltmXufsvtZVNwjdgsSQ2SymabXUGhVNhb2hIXUp2hVCplX1zOncX8RPCKi0ZMFPvR
-        cMWy4cnu128HXw4RxeHIcXiVlk3Ghi92D08uDz7uTY7eH+9fuUbKUruLCj8/A7w4Gzk3p0OR8Gr0
-        T/op5D/k/y/9HwnCCIfWkcc+5H8fSEU9aS0ap+vt//6U/14cr+ifRPYvAeR/F/l/E2rotTYZl7h4
-        69xObdz+OIoNxzmXPEN5U6XD9mjkXDrOFVgE9P+Q/88o/0M/ongckzEJYhB3D7B92sQ2b7WsWGXw
-        XJRPkf/+av4HhFLI/y44Z0rbhn8H+djDPkge8h/yH/KfhGOPgBn0If+Xvd5at4H/fv+XUN+H/d/e
-        +D+JHvo/Bf/vxP/Jw/1fD5y/d/5/96jvCfo/4j/o/2If+r9O+r/7T3VfgfQBAAAAAAAAAAAAAAAA
-        AAAAAAAAAAAAAAAAAAD+D64BUyRh7QBQAAA=
+        H4sICOk58WIC/zA1Njc1NTM4LTRhY2UtNDgyMS1iMDlkLWVhMjFiN2YwNjJiZi50Z3oA7Zpdb9ow
+        FIZznV9hsYvCxYztfEJb1AmQWqlMFd3uJqEocSAa+VCSVkzT/vsMtJqatZ02KaEj7yOBUeJgCXze
+        1+fYtE/7Fzfe5lJ6gcy1WmB7XmoZM8xfn7fXORNcaGSjNcBdUXq5Gl5rJ8IlcRnF8pzb1mDg2Nwe
+        UJNz1xS2roGjp9/AGNugdixr39r7lolKzD+Nf8e0NGI1Gf+xt4x8L4+FeL6f6haGx/f/07eg/8L+
+        Xf8N6H8j+i8e9d8aCNe0DcugDMrfGsYz76u8joqyoOWmrC/+bdN8Wf+d6vrPMIWjEdZk/LdU/6Mg
+        XPhpnKWJTMpFLpdqKsi8ezsf35KOH2fU75Crj+Prz5PpYnI1VxejxF/fBbLTg0rA/+H/x+T/lstd
+        bsP/W8R8+mEym9I4qDn/e9X/jWr8C666w/8b4B35JIuSjB+XALo+V04QSxJGawkdgP/D/1vl/4Yr
+        4P8tYpfi1TzGn/yf82r+z21mwf8b8f+HdJ6cFWUQpXQ10vX7NAqImhiLlVyv025P/66TB7I8Ssqw
+        27nc3iFhnsZkPLv5knR6p/oPRBP8/5/8H/u/h/P/Z/Z/ucGEsDlWAS3gSf2XfovXB/B/wZxK/JvC
+        QP7fCIHMZBLIxI9kMVQ2r+bDkJyMzk3KTvRAFn4eZWWUJsNqnSD21EpAvWSunnu/v7t9kzk5K1V7
+        ITdenK0lVbNrpKvfeCnLXU9ZZIbQ79Vzu6/llFFIDfwf/v92/F8MHOG4CMo2+P8+/av1GNjfn/8S
+        Buc4/9Ua/Uf993D6X63/Ojj/1Ub939aBVzXq/6v7v4JXz38JQyD/a4JqrfcUIQEAAAAAAAAAAAAA
+        AAAAAAAAAP8lPwFFVz6QAFAAAA==
     headers:
       Accept-Ranges:
       - bytes
       Content-Length:
-      - '767'
+      - '703'
       Content-Security-Policy:
       - block-all-mixed-content
       Content-Type:
       - binary/octet-stream
       Date:
-      - Wed, 16 Mar 2022 13:13:42 GMT
+      - Mon, 08 Aug 2022 17:22:28 GMT
       ETag:
-      - '"2231a2b7959275937d904320f1f31b84"'
+      - '"73dcdbc18768a96378090df954521470"'
       Last-Modified:
-      - Wed, 16 Mar 2022 12:52:44 GMT
+      - Mon, 08 Aug 2022 16:29:29 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -91,7 +145,127 @@ interactions:
       Vary:
       - Origin
       X-Amz-Request-Id:
-      - 16DCDEB2B7ECAAAA
+      - 17096E6C1737436A
+      X-Content-Type-Options:
+      - nosniff
+      X-Xss-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+    method: GET
+    uri: http://localhost:9000/test-public/components/test/cmp.json
+  response:
+    body:
+      string: '{"name": "cmp", "versions": [{"examples": [{"name": "sample_project",
+        "url": "05675538-4ace-4821-b09d-ea21b7f062bf/examples/ad378616-1432-40db-b343-e73c47c741bc.tgz"}],
+        "url": "05675538-4ace-4821-b09d-ea21b7f062bf.tgz", "repository": "", "issues":
+        "", "tags": [], "docs": {"readme": "05675538-4ace-4821-b09d-ea21b7f062bf/readme.md"},
+        "description": "Test Component", "version": "1.0.1", "discussion": "", "uploader":
+        "dmitry", "created_at": "2022-08-08T16:29:29.450916+00:00", "dependencies":
+        [{"spec": ">=4.0", "name": null, "is_public": false, "source": "idf", "namespace":
+        null}], "documentation": "", "license": null, "component_hash": "3245e6ba01df4a6a7323af71afc73640b296e89c1d083f094f0b9a2f76667a42",
+        "homepage": "", "targets": ["esp32"]}, {"examples": [], "url": "507f0e57-c9b9-45ff-a024-7bd1ad336e92.tgz",
+        "repository": "", "issues": "", "tags": [], "docs": {"readme": "507f0e57-c9b9-45ff-a024-7bd1ad336e92/readme.md"},
+        "description": "Test Component", "version": "1.0.0", "discussion": "", "uploader":
+        "dmitry", "created_at": "2022-08-08T15:52:11.805598+00:00", "dependencies":
+        [{"spec": ">=4.0", "name": null, "is_public": false, "source": "idf", "namespace":
+        null}], "documentation": "", "license": null, "component_hash": "e603c6d848a22fc1a4651c5e297dcf53b3d3eeba6e20c7589e14a6a4345b0415",
+        "homepage": "", "targets": ["esp32"]}], "created_at": "2022-08-08T15:52:11.672772+00:00",
+        "featured": false, "namespace": "test"}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '1432'
+      Content-Security-Policy:
+      - block-all-mixed-content
+      Content-Type:
+      - binary/octet-stream
+      Date:
+      - Mon, 08 Aug 2022 17:22:28 GMT
+      ETag:
+      - '"1331931b7d283a34363420143764d03a"'
+      Last-Modified:
+      - Mon, 08 Aug 2022 16:29:29 GMT
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      X-Amz-Request-Id:
+      - 17096E6C18312DC4
+      X-Content-Type-Options:
+      - nosniff
+      X-Xss-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.27.1
+    method: GET
+    uri: http://localhost:9000/test-public/05675538-4ace-4821-b09d-ea21b7f062bf.tgz
+  response:
+    body:
+      string: !!binary |
+        H4sICOk58WIC/zA1Njc1NTM4LTRhY2UtNDgyMS1iMDlkLWVhMjFiN2YwNjJiZi50Z3oA7Zpdb9ow
+        FIZznV9hsYvCxYztfEJb1AmQWqlMFd3uJqEocSAa+VCSVkzT/vsMtJqatZ02KaEj7yOBUeJgCXze
+        1+fYtE/7Fzfe5lJ6gcy1WmB7XmoZM8xfn7fXORNcaGSjNcBdUXq5Gl5rJ8IlcRnF8pzb1mDg2Nwe
+        UJNz1xS2roGjp9/AGNugdixr39r7lolKzD+Nf8e0NGI1Gf+xt4x8L4+FeL6f6haGx/f/07eg/8L+
+        Xf8N6H8j+i8e9d8aCNe0DcugDMrfGsYz76u8joqyoOWmrC/+bdN8Wf+d6vrPMIWjEdZk/LdU/6Mg
+        XPhpnKWJTMpFLpdqKsi8ezsf35KOH2fU75Crj+Prz5PpYnI1VxejxF/fBbLTg0rA/+H/x+T/lstd
+        bsP/W8R8+mEym9I4qDn/e9X/jWr8C666w/8b4B35JIuSjB+XALo+V04QSxJGawkdgP/D/1vl/4Yr
+        4P8tYpfi1TzGn/yf82r+z21mwf8b8f+HdJ6cFWUQpXQ10vX7NAqImhiLlVyv025P/66TB7I8Ssqw
+        27nc3iFhnsZkPLv5knR6p/oPRBP8/5/8H/u/h/P/Z/Z/ucGEsDlWAS3gSf2XfovXB/B/wZxK/JvC
+        QP7fCIHMZBLIxI9kMVQ2r+bDkJyMzk3KTvRAFn4eZWWUJsNqnSD21EpAvWSunnu/v7t9kzk5K1V7
+        ITdenK0lVbNrpKvfeCnLXU9ZZIbQ79Vzu6/llFFIDfwf/v92/F8MHOG4CMo2+P8+/av1GNjfn/8S
+        Buc4/9Ua/Uf993D6X63/Ojj/1Ub939aBVzXq/6v7v4JXz38JQyD/a4JqrfcUIQEAAAAAAAAAAAAA
+        AAAAAAAAAP8lPwFFVz6QAFAAAA==
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '703'
+      Content-Security-Policy:
+      - block-all-mixed-content
+      Content-Type:
+      - binary/octet-stream
+      Date:
+      - Mon, 08 Aug 2022 17:22:28 GMT
+      ETag:
+      - '"73dcdbc18768a96378090df954521470"'
+      Last-Modified:
+      - Mon, 08 Aug 2022 16:29:29 GMT
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      X-Amz-Request-Id:
+      - 17096E6C18DB661A
       X-Content-Type-Options:
       - nosniff
       X-Xss-Protection:
