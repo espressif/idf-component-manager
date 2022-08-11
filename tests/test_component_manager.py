@@ -58,6 +58,7 @@ def test_init_project():
 def test_upload_component(monkeypatch, pre_release_component_path):
     monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
     monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
+    monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '0')
     manager = ComponentManager(path=pre_release_component_path)
 
     manager.upload_component({
@@ -70,6 +71,7 @@ def test_upload_component(monkeypatch, pre_release_component_path):
 def test_check_only_upload_component(monkeypatch, pre_release_component_path):
     monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
     monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
+    monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '0')
     manager = ComponentManager(path=pre_release_component_path)
 
     manager.upload_component({

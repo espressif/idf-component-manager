@@ -25,7 +25,7 @@ from idf_component_tools.__version__ import __version__
 from idf_component_tools.semver import SimpleSpec, Version
 
 from .api_client_errors import (
-    KNOWN_API_ERRORS, APIClientError, ComponentNotFound, NetworkConnectionError, StorageFileNotFound)
+    KNOWN_API_ERRORS, APIClientError, ComponentNotFound, NetworkConnectionError, NoRegistrySet, StorageFileNotFound)
 from .api_schemas import (
     API_INFORMATION_SCHEMA, COMPONENT_SCHEMA, ERROR_SCHEMA, TASK_STATUS_SCHEMA, VERSION_UPLOAD_SCHEMA)
 from .manifest import Manifest
@@ -127,8 +127,8 @@ def user_agent():  # type: () -> str
 
 
 class APIClient(object):
-    def __init__(self, base_url, storage_url=None, source=None, auth_token=None):
-        # type: (str, str | None, BaseSource | None, str | None) -> None
+    def __init__(self, base_url=None, storage_url=None, source=None, auth_token=None):
+        # type: (str | None, str | None, BaseSource | None, str | None) -> None
         self.base_url = base_url
         self._storage_url = storage_url
         self.source = source
@@ -252,6 +252,15 @@ class APIClient(object):
                 url = self.base_url
                 if use_storage:
                     url = self.storage_url
+
+                if url is None:
+                    raise NoRegistrySet(
+                        'The current operation requires access to the IDF component registry. '
+                        'However, the registry URL is not set. You can set the '
+                        'DEFAULT_COMPONENT_SERVICE_URL environment variable or "url" field for your current profile '
+                        'in "idf_component_manager.yaml" file. To use the default IDF component registry '
+                        'unset IDF_COMPONENT_STORAGE_URL environment variable or remove "storage_url" field '
+                        'from the "idf_component_manager.yaml" file')
 
                 session = self._create_session(base_url=url, cache=cache_status)
 
