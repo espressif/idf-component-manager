@@ -12,13 +12,16 @@ from idf_component_tools.archive_tools import (
     ArchiveError, get_format_from_path, is_known_format, unpack_archive, unpack_tar, unpack_zip)
 
 
-def archive_path(ext):
-    return os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        'fixtures',
-        'archives',
-        'cmp_1.0.0.%s' % ext,
-    )
+@pytest.fixture
+def archive_path(fixtures_path):
+    def inner(ext):
+        return os.path.join(
+            fixtures_path,
+            'archives',
+            'cmp_1.0.0.%s' % ext,
+        )
+
+    return inner
 
 
 class TestUtilsArchive(object):
@@ -36,7 +39,7 @@ class TestUtilsArchive(object):
         assert is_known_format('zip')
         assert is_known_format('gztar')
 
-    def test_unpack_archive_tgz(self):
+    def test_unpack_archive_tgz(self, archive_path):
 
         tempdir = tempfile.mkdtemp()
         target = os.path.join(tempdir, 'cmp')
@@ -52,7 +55,7 @@ class TestUtilsArchive(object):
         finally:
             shutil.rmtree(tempdir)
 
-    def test_unpack_archive_zip(self):
+    def test_unpack_archive_zip(self, archive_path):
         tempdir = tempfile.mkdtemp()
         target = os.path.join(tempdir, 'cmp')
 
@@ -66,7 +69,7 @@ class TestUtilsArchive(object):
         finally:
             shutil.rmtree(tempdir)
 
-    def test_unpack_archive(self):
+    def test_unpack_archive(self, archive_path):
         tempdir = tempfile.mkdtemp()
         target1 = os.path.join(tempdir, 'cmp_1')
         target2 = os.path.join(tempdir, 'cmp_2')

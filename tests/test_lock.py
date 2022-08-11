@@ -34,21 +34,27 @@ dependencies = {
 }
 
 MANIFEST_HASH = 'f149f1bd032c8b1aa9ffc0f32db8525c73f1f35910dc73645ee5b1d0eb110c8a'
-valid_lock_path = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)),
-    'fixtures',
-    'locks',
-    'dependencies.lock',
-)
-manifest_path = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)),
-    'fixtures',
-    'idf_component.yml',
-)
+
+
+@pytest.fixture
+def valid_lock_path(fixtures_path):
+    return os.path.join(
+        fixtures_path,
+        'locks',
+        'dependencies.lock',
+    )
+
+
+@pytest.fixture
+def manifest_path(fixtures_path):
+    return os.path.join(
+        fixtures_path,
+        'idf_component.yml',
+    )
 
 
 class TestLockManager(object):
-    def test_load_valid_lock(self):
+    def test_load_valid_lock(self, valid_lock_path):
         parser = LockManager(valid_lock_path)
 
         lock = parser.load()
@@ -57,7 +63,7 @@ class TestLockManager(object):
         test_cmp = [cmp for cmp in lock.dependencies if cmp.name == 'espressif/test_cmp'][0]
         assert (test_cmp.source.service_url == 'https://repo.example.com')
 
-    def test_lock_dump_with_solution(self, tmp_path, monkeypatch):
+    def test_lock_dump_with_solution(self, tmp_path, monkeypatch, manifest_path, valid_lock_path):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
 
@@ -82,7 +88,7 @@ class TestLockManager(object):
 
         assert filecmp.cmp(lock_path, valid_lock_path, shallow=False)
 
-    def test_lock_dump_with_dictionary(self, tmp_path, monkeypatch):
+    def test_lock_dump_with_dictionary(self, tmp_path, monkeypatch, valid_lock_path):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
@@ -97,7 +103,7 @@ class TestLockManager(object):
 
         assert filecmp.cmp(lock_path, valid_lock_path, shallow=False)
 
-    def test_lock_dump(self, tmp_path, monkeypatch):
+    def test_lock_dump(self, tmp_path, monkeypatch, valid_lock_path):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
@@ -111,11 +117,10 @@ class TestLockManager(object):
 
         assert filecmp.cmp(lock_path, valid_lock_path, shallow=False)
 
-    def test_load_invalid_lock(self, capsys, monkeypatch):
+    def test_load_invalid_lock(self, monkeypatch, fixtures_path):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         lock_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)),
-            'fixtures',
+            fixtures_path,
             'locks',
             'invalid_dependencies.lock',
         )

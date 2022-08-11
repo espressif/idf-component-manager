@@ -11,8 +11,8 @@ from idf_component_tools.file_tools import copy_filtered_directory, filtered_pat
 
 
 @pytest.fixture
-def assets_path(tmp_path):
-    templatepath = Path(os.path.dirname(os.path.realpath(__file__))) / 'fixtures' / 'hash_examples' / 'component_4'
+def assets_path(tmp_path, fixtures_path):
+    templatepath = Path(fixtures_path) / 'hash_examples' / 'component_4'
     # Avoid `dirs_exist_ok=True` missing in python 2
     subdir = tmp_path / 'sub'
     shutil.copytree(templatepath.as_posix(), subdir.as_posix())

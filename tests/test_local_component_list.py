@@ -9,10 +9,9 @@ from idf_component_manager.local_component_list import parse_component_list
 from idf_component_tools.errors import ProcessingError
 
 
-def test_parse_valid_component_list():
+def test_parse_valid_component_list(fixtures_path):
     path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        'fixtures',
+        fixtures_path,
         'local_component_list',
         'valid.yml',
     )
@@ -22,10 +21,9 @@ def test_parse_valid_component_list():
     assert result[1]['path'].endswith('app_update')
 
 
-def test_parse_broken_component_list():
+def test_parse_broken_component_list(fixtures_path):
     path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        'fixtures',
+        fixtures_path,
         'local_component_list',
         'invalid.yml',
     )

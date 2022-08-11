@@ -13,8 +13,8 @@ from idf_component_tools.sources import WebServiceSource
 from idf_component_tools.sources.fetcher import ComponentFetcher
 
 
-def test_fetcher_download_and_create_hash():
-    components_folder_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'fixtures', 'components')
+def test_fetcher_download_and_create_hash(fixtures_path):
+    components_folder_path = os.path.join(fixtures_path, 'components')
     source = WebServiceSource({'service_url': 'https://repo.example.com'})
     component = SolvedComponent(
         'cmp',

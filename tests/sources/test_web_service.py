@@ -30,7 +30,7 @@ class TestComponentWebServiceSource(object):
             'service_{}/espressif__cmp_1.0.0_{}'.format(self.EXAMPLE_HASH[:8], self.CMP_HASH))
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_fetch_webservice.yaml')
-    def test_download(self, cmp_path, monkeypatch):
+    def test_download(self, release_component_path, monkeypatch):
         monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '0')
         tempdir = tempfile.mkdtemp()
         cache_dir = os.path.join(tempdir, 'cache')
@@ -56,12 +56,12 @@ class TestComponentWebServiceSource(object):
             source.download(cmp, download_path)
 
             # Check copy from the cache (NO http request)
-            fixture_cmp = SolvedComponent('test/cmp', '1.0.0', source, component_hash=hash_dir(cmp_path))
+            fixture_cmp = SolvedComponent('test/cmp', '1.0.0', source, component_hash=hash_dir(release_component_path))
             download_path = os.path.join(tempdir, 'test_cached')
             cache_path = source.component_cache_path(fixture_cmp)
             if os.path.exists(cache_path):
                 shutil.rmtree(cache_path, ignore_errors=True)
-            shutil.copytree(cmp_path, cache_path)
+            shutil.copytree(release_component_path, cache_path)
 
             local_path = source.download(fixture_cmp, download_path)
 
