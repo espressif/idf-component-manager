@@ -131,20 +131,26 @@ def tmp_managed_components(tmp_path):
 
 
 @pytest.fixture(scope='session')
-def pre_release_component_path():
+def fixtures_path():
     return os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
         'fixtures',
+    )
+
+
+@pytest.fixture(scope='session')
+def pre_release_component_path(fixtures_path):
+    return os.path.join(
+        fixtures_path,
         'components',
         'pre',
     )
 
 
 @pytest.fixture(scope='session')
-def release_component_path():
+def release_component_path(fixtures_path):
     return os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        'fixtures',
+        fixtures_path,
         'components',
         'cmp',
     )

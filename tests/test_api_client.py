@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+import os
 
 import pytest
 import vcr
@@ -91,3 +92,10 @@ class TestAPIClient(object):
         client = APIClient(base_url=base_url)
 
         assert client.storage_url == 'http://localhost:9000/test-public'
+
+    def test_file_adapter(self, base_url, fixtures_path):
+        storage_url = '{}{}'.format('file://', fixtures_path)
+        client = APIClient(base_url, storage_url=storage_url)
+
+        assert client.component(component_name='example/cmp').download_url == os.path.join(
+            storage_url, '86f07b70-bb83-45f0-99c7-a10f82781f5a.tgz')

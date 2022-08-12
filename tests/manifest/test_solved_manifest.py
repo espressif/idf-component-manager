@@ -7,17 +7,15 @@ from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import ManifestManager, SolvedComponent
 from idf_component_tools.sources import WebServiceSource
 
-valid_lock_path = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)),
-    '..',
-    'fixtures',
-    'locks',
-    'dependencies.lock',
-)
-
 
 class TestSolverResult(object):
-    def test_load_valid_lock(self):
+    def test_load_valid_lock(self, fixtures_path):
+        valid_lock_path = os.path.join(
+            fixtures_path,
+            'locks',
+            'dependencies.lock',
+        )
+
         manager = LockManager(valid_lock_path)
         solution = manager.load()
 

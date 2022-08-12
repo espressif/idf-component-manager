@@ -54,8 +54,8 @@ class TestManifestPipeline(object):
 
         assert parser._path == os.path.join(path, 'idf_component.yml')
 
-    def test_parse_invalid_yaml(self):
-        manifest_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'fixtures', 'invalid_yaml.yml')
+    def test_parse_invalid_yaml(self, fixtures_path):
+        manifest_path = os.path.join(fixtures_path, 'invalid_yaml.yml')
         parser = ManifestManager(manifest_path, name='fixtures')
 
         with pytest.raises(ManifestError) as e:
@@ -64,14 +64,14 @@ class TestManifestPipeline(object):
         assert e.type == ManifestError
         assert str(e.value).startswith('Cannot parse')
 
-    def test_parse_valid_yaml(self, capsys):
-        manifest_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'fixtures', 'idf_component.yml')
+    def test_parse_valid_yaml(self, capsys, fixtures_path):
+        manifest_path = os.path.join(fixtures_path, 'idf_component.yml')
         parser = ManifestManager(manifest_path, name='fixtures')
 
         assert len(parser.manifest_tree.keys()) == 7
 
-    def test_prepare(self):
-        manifest_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'fixtures', 'idf_component.yml')
+    def test_prepare(self, fixtures_path):
+        manifest_path = os.path.join(fixtures_path, 'idf_component.yml')
         parser = ManifestManager(manifest_path, name='fixtures')
 
         parser.load()
@@ -322,10 +322,9 @@ class TestManifestValidator(object):
         assert len(result) == 8
         assert 'test' in result
 
-    def test_known_targets_idf(self, monkeypatch):
+    def test_known_targets_idf(self, monkeypatch, fixtures_path):
         monkeypatch.delenv('IDF_COMPONENT_MANAGER_KNOWN_TARGETS', raising=False)
-        monkeypatch.setenv(
-            'IDF_PATH', os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'fixtures', 'fake_idf'))
+        monkeypatch.setenv('IDF_PATH', os.path.join(fixtures_path, 'fake_idf'))
         result = known_targets()
 
         assert len(result) == 8

@@ -12,6 +12,7 @@ future = '*'
 pathlib = {version = "*", markers = "python_version<'3.4'"}
 pyyaml = "<5.3" # Last version with Python 3.4 support is 5.2
 requests = "*"
+requests-file = "*"
 requests-toolbelt = "*"
 schema = "*"
 six = "*"
