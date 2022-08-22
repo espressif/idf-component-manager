@@ -403,7 +403,7 @@ class ComponentManager(object):
                     manifests.append(ManifestManager(component['path'], component['name']).load())
 
             project_requirements = ProjectRequirements(manifests)
-            downloaded_component_paths = download_project_dependencies(
+            downloaded_component_paths, downloaded_component_version_dict = download_project_dependencies(
                 project_requirements, self.lock_path, self.managed_components_path)
 
         # Exclude requirements paths
@@ -414,6 +414,10 @@ class ComponentManager(object):
         with open(managed_components_list_file, mode='w', encoding='utf-8') as file:
             for component_path in downloaded_component_paths:
                 file.write(u'idf_build_component("%s")\n' % Path(component_path).as_posix())
+                component_name = Path(component_path).name
+                file.write(
+                    u'idf_component_set_property(%s %s "%s")\n' %
+                    (component_name, 'COMPONENT_VERSION', downloaded_component_version_dict[component_name]))
 
             component_names = ';'.join(os.path.basename(path) for path in downloaded_component_paths)
             file.write(u'set(managed_components "%s")\n' % component_names)

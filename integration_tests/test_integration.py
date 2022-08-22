@@ -646,3 +646,28 @@ def test_reconfigure_with_invalid_override_path(project):
     assert 'The override_path you\'re using is pointing to directory' in res
     assert ' that is not a component.' in res
     assert 'cmake failed with exit code 1' in res
+
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'example/cmp': {
+                            'version': '3.3.7',
+                        },
+                    }
+                }
+            }
+        },
+    ], indirect=True)
+def test_set_component_version(project):
+    with open(os.path.join(project, 'CMakeLists.txt'), 'a') as fw:
+        fw.write(u'\n')
+        fw.write(u'idf_component_get_property(version example__cmp COMPONENT_VERSION)\n')
+        fw.write(u'message("Component example__cmp version: ${version}")\n')
+
+    res = project_action(project, 'reconfigure')
+    assert 'example/cmp (3.3.7)' in res
+    assert 'Component example__cmp version: 3.3.7' in res
