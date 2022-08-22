@@ -32,7 +32,7 @@ KNOWN_ROOT_KEYS = [
     'tags',
 ] + LINKS
 
-DEFAULT_KNOWN_TARGETS = ['esp32', 'esp32s2', 'esp32c3', 'esp32s3', 'linux', 'esp32h2', 'esp32c2']
+DEFAULT_KNOWN_TARGETS = ['esp32', 'esp32s2', 'esp32c3', 'esp32s3', 'linux', 'esp32h2', 'esp32c2', 'esp32c6']
 
 KNOWN_FILES_KEYS = [
     'include',
@@ -45,7 +45,7 @@ NONEMPTY_STRING = And(Or(*string_types), len, error='Non-empty string is require
 SLUG_REGEX_COMPILED = re.compile(FULL_SLUG_REGEX)
 
 LINKS_URL_ERROR = 'Invalid URL in the "{}" field. Check that link is a correct HTTP(S) URL. '
-LINKS_GIT_ERROR = 'Invalid URL in the "{}" field. Check that link is a valid Git remote URL'
+LINKS_GIT_ERROR = 'Invalid URL in the "{}" field. Checsk that link is a valid Git remote URL'
 
 
 def known_targets():  # type: () -> list[str]
