@@ -254,13 +254,16 @@ class ManifestValidator(object):
             errors = list(filter(None, e.errors))
             self._errors.extend(sorted(set(errors), key=errors.index))
 
-    def validate_tags(self):
-        '''Validate tags for duplicates'''
-        tags = self.manifest_tree.get('tags', [])
-        tags = [str(tag).lower() for tag in tags]
-        dupes = set([tag for tag in tags if tags.count(tag) > 1])
-        if dupes:
-            self.add_error('Some tags are more than once in the manifest: %s' % ', '.join(dupes))
+    def validate_duplicates(self, tree):
+        for k, v in tree.items():
+            if isinstance(v, list):
+                v = [i.lower() for i in v if isinstance(i, str)]
+                duplicates = set([i for i in v if v.count(i) > 1])
+                if duplicates:
+                    self.add_error('Duplicate item in "{}": {}'.format(k, duplicates))
+
+            if isinstance(v, dict):
+                self.validate_duplicates(v)
 
     def validate_normalize(self):
         self.validate_normalize_schema()
@@ -269,5 +272,5 @@ class ManifestValidator(object):
         self.validate_targets()
         self.validate_normalize_required_keys()
         self.validate_files()
-        self.validate_tags()
+        self.validate_duplicates(self.manifest_tree)
         return self._errors
