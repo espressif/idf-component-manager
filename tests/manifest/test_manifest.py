@@ -270,14 +270,32 @@ class TestManifestValidator(object):
         assert len(errors) == 2
         assert errors[1].startswith('Invalid tag')
 
-    def test_validate_tags_duplicates(self, valid_manifest):
-        valid_manifest['tags'].append('dup_tag')
-        valid_manifest['tags'].append('duP_TaG')
+    @pytest.mark.parametrize(
+        'key, value', [
+            ('targets', 'esp32'),
+            ('maintainers', 'foo@bar.com'),
+            ('tags', 'foobar'),
+            ('include', '*.md'),
+            ('exclude', '*.md'),
+        ])
+    def test_validate_duplicates(self, valid_manifest, key, value):
+        if key in ['include', 'exclude']:
+            valid_manifest['files'][key].append(value)
+            valid_manifest['files'][key].append(value.upper())
+        elif key == 'targets':
+            # can't use upper case
+            valid_manifest[key].append(value)
+            valid_manifest[key].append(value)
+        else:
+            valid_manifest[key].append(value)
+            valid_manifest[key].append(value.upper())
+
         validator = ManifestValidator(valid_manifest)
         errors = validator.validate_normalize()
 
         assert len(errors) == 1
-        assert errors[0].startswith('Some tags are more than once in the manifest')
+        assert errors[0].startswith('Duplicate item in "{}":'.format(key))
+        assert value in errors[0]
 
     def test_validate_optional_dependency_success(self, valid_optional_dependency_manifest, monkeypatch):
         validator = ManifestValidator(valid_optional_dependency_manifest)
