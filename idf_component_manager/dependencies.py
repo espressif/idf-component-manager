@@ -91,7 +91,7 @@ def is_solve_required(project_requirements, solution):
 
 
 def download_project_dependencies(project_requirements, lock_path, managed_components_path):
-    # type: (ProjectRequirements, str, str) -> set[str]
+    # type: (ProjectRequirements, str, str) -> tuple[set[str], dict[str, str]]
     '''Solves dependencies and download components'''
     lock_manager = LockManager(lock_path)
     solution = lock_manager.load()
@@ -111,6 +111,7 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
 
     # Download components
     downloaded_component_paths = set()
+    downloaded_component_version_dict = dict()
     requirement_dependencies = []
     project_requirements_dependencies = [manifest.name for manifest in project_requirements.manifests]
 
@@ -136,10 +137,11 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
                 download_paths = fetcher.download()
                 fetcher.create_hash(download_paths, component.component_hash)
                 downloaded_component_paths.update(download_paths)
+                downloaded_component_version_dict[build_name(component.name)] = str(component.version)
             except ComponentModifiedError:
                 changed_components.append(component.name)
 
         if changed_components:
             raise_component_modified_error(managed_components_path, changed_components)
 
-    return downloaded_component_paths
+    return downloaded_component_paths, downloaded_component_version_dict
