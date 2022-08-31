@@ -24,7 +24,8 @@ from idf_component_tools import file_cache
 from idf_component_tools.__version__ import __version__
 from idf_component_tools.semver import SimpleSpec, Version
 
-from .api_client_errors import KNOWN_API_ERRORS, APIClientError, ComponentNotFound, StorageFileNotFound
+from .api_client_errors import (
+    KNOWN_API_ERRORS, APIClientError, ComponentNotFound, NetworkConnectionError, StorageFileNotFound)
 from .api_schemas import (
     API_INFORMATION_SCHEMA, COMPONENT_SCHEMA, ERROR_SCHEMA, TASK_STATUS_SCHEMA, VERSION_UPLOAD_SCHEMA)
 from .manifest import Manifest
@@ -198,6 +199,8 @@ class APIClient(object):
                         endpoint, response.status_code))
 
             json = response.json()
+        except requests.exceptions.ConnectionError as e:
+            raise NetworkConnectionError(str(e))
         except requests.exceptions.RequestException:
             raise APIClientError('HTTP request error')
 

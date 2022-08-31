@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Hide stack trace after solver dependency error
 - Fix packing archives with version from git tag
 - Validate case-insensitive duplicate items in the manifest file
+- Provide better error message when no network connection
 
 ## [1.1.4] 2022-07-04
 

@@ -6,6 +6,10 @@ class APIClientError(Exception):
     pass
 
 
+class NetworkConnectionError(APIClientError):
+    pass
+
+
 class ComponentNotFound(APIClientError):
     pass
 

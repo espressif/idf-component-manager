@@ -3,6 +3,7 @@
 """Core module of component manager"""
 from __future__ import print_function
 
+import functools
 import os
 import re
 import shutil
@@ -16,7 +17,7 @@ from pathlib import Path
 import requests
 
 from idf_component_manager.utils import info, warn
-from idf_component_tools.api_client_errors import APIClientError
+from idf_component_tools.api_client_errors import APIClientError, NetworkConnectionError
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.errors import FatalError, GitError, ManifestError, NothingToDoError
@@ -51,6 +52,20 @@ except TypeError:
 
 CHECK_INTERVAL = 3
 MAX_PROGRESS = 100  # Expected progress is in percent
+
+
+def general_error_handler(func):
+    @functools.wraps(func)
+    def wrapper(self, *args, **kwargs):
+        try:
+            return func(self, *args, **kwargs)
+        except NetworkConnectionError:
+            raise FatalError(
+                'Cannot establish a connection to the component registry. Are you connected to the internet?')
+        except APIClientError as e:
+            raise FatalError(e)
+
+    return wrapper
 
 
 class ComponentManager(object):
@@ -98,11 +113,13 @@ class ComponentManager(object):
             created = True
         return manifest_filepath, created
 
+    @general_error_handler
     def create_manifest(self, args):
         manifest_filepath, created = self._get_manifest(args.get('component', 'main'))
         if not created:
             info('"{}" already exists, skipping...'.format(manifest_filepath))
 
+    @general_error_handler
     def create_project_from_example(self, args):
         profile = get_profile(args.get('service_details'))
         namespace = get_namespace(profile, args.get('namespace') or 'espressif')
@@ -145,6 +162,7 @@ class ComponentManager(object):
             tar.extractall(project_path)
         info('Example {} successfully downloaded to {}'.format(example_full_name, os.path.abspath(project_path)))
 
+    @general_error_handler
     def add_dependency(self, args):
         dependency = args.get('dependency')
         manifest_filepath, _ = self._get_manifest(args.get('component', 'main'))
@@ -202,6 +220,7 @@ class ComponentManager(object):
         shutil.move(temp_manifest_file.name, manifest_filepath)
         info('Successfully added dependency "{}{}" for component "{}"'.format(name, spec, manifest_manager.name))
 
+    @general_error_handler
     def pack_component(self, args):  # type: (dict) -> Tuple[str, Manifest]
         version = args.get('version')
 
@@ -227,6 +246,7 @@ class ComponentManager(object):
         pack_archive(dist_temp_dir, archive_filepath)
         return archive_filepath, manifest
 
+    @general_error_handler
     def delete_version(self, args):
         client, namespace = service_details(args.get('namespace'), args.get('service_profile'))
         name = args.get('name')
@@ -243,12 +263,10 @@ class ComponentManager(object):
             raise NothingToDoError(
                 'Version {} of the component "{}" is not on the service'.format(version, component_name))
 
-        try:
-            client.delete_version(component_name=component_name, component_version=version)
-            info('Deleted version {} of the component {}'.format(component_name, version))
-        except APIClientError as e:
-            raise FatalError(e)
+        client.delete_version(component_name=component_name, component_version=version)
+        info('Deleted version {} of the component {}'.format(component_name, version))
 
+    @general_error_handler
     def remove_managed_components(self, args):
         managed_components_dir = Path(self.path, 'managed_components')
 
@@ -275,6 +293,7 @@ class ComponentManager(object):
         elif any(managed_components_dir.iterdir()) == 0:
             shutil.rmtree(str(managed_components_dir))
 
+    @general_error_handler
     def upload_component(self, args):
         client, namespace = service_details(args.get('namespace'), args.get('service_profile'))
         version = args.get('version')
@@ -301,57 +320,52 @@ class ComponentManager(object):
         if manifest.version.semver.prerelease and args.get('skip_pre_release'):
             raise NothingToDoError('Skipping pre-release version {}'.format(manifest.version))
 
-        try:
-            component_name = '/'.join([namespace, manifest.name])
-            # Checking if current version already uploaded
-            versions = client.versions(component_name=component_name, spec='*').versions
-            if manifest.version in versions:
-                if args.get('allow_existing'):
-                    return
-
-                raise NothingToDoError(
-                    'Version {} of the component "{}" is already on the service'.format(
-                        manifest.version, component_name))
-
-            # Exit if check flag was set
-            if args.get('check_only'):
+        component_name = '/'.join([namespace, manifest.name])
+        # Checking if current version already uploaded
+        versions = client.versions(component_name=component_name, spec='*').versions
+        if manifest.version in versions:
+            if args.get('allow_existing'):
                 return
 
-            # Uploading the component
-            info('Uploading archive: %s' % archive_file)
-            job_id = client.upload_version(component_name=component_name, file_path=archive_file)
+            raise NothingToDoError(
+                'Version {} of the component "{}" is already on the service'.format(manifest.version, component_name))
 
-            # Wait for processing
-            info(
-                'Wait for processing, it is safe to press CTRL+C and exit\n'
-                'You can check the state of processing by running subcommand '
-                '"upload-component-status --job=%s"' % job_id)
+        # Exit if check flag was set
+        if args.get('check_only'):
+            return
 
-            timeout_at = datetime.now() + timedelta(seconds=PROCESSING_TIMEOUT)
+        # Uploading the component
+        info('Uploading archive: %s' % archive_file)
+        job_id = client.upload_version(component_name=component_name, file_path=archive_file)
 
-            try:
-                with ProgressBar(total=MAX_PROGRESS, unit='%') as progress_bar:
-                    while True:
-                        if datetime.now() > timeout_at:
-                            raise TimeoutError()
-                        status = client.task_status(job_id=job_id)
-                        progress_bar.set_description(status.message)
-                        progress_bar.update_to(status.progress)
+        # Wait for processing
+        info(
+            'Wait for processing, it is safe to press CTRL+C and exit\n'
+            'You can check the state of processing by running subcommand '
+            '"upload-component-status --job=%s"' % job_id)
 
-                        if status.status == 'failure':
-                            raise FatalError("Uploaded version wasn't processed successfully.\n%s" % status.message)
-                        elif status.status == 'success':
-                            return
+        timeout_at = datetime.now() + timedelta(seconds=PROCESSING_TIMEOUT)
 
-                        time.sleep(CHECK_INTERVAL)
-            except TimeoutError:
-                raise FatalError(
-                    "Component wasn't processed in {} seconds. Check processing status later.".format(
-                        PROCESSING_TIMEOUT))
+        try:
+            with ProgressBar(total=MAX_PROGRESS, unit='%') as progress_bar:
+                while True:
+                    if datetime.now() > timeout_at:
+                        raise TimeoutError()
+                    status = client.task_status(job_id=job_id)
+                    progress_bar.set_description(status.message)
+                    progress_bar.update_to(status.progress)
 
-        except APIClientError as e:
-            raise FatalError(e)
+                    if status.status == 'failure':
+                        raise FatalError("Uploaded version wasn't processed successfully.\n%s" % status.message)
+                    elif status.status == 'success':
+                        return
 
+                    time.sleep(CHECK_INTERVAL)
+        except TimeoutError:
+            raise FatalError(
+                "Component wasn't processed in {} seconds. Check processing status later.".format(PROCESSING_TIMEOUT))
+
+    @general_error_handler
     def upload_component_status(self, args):
         job_id = args.get('job')
 
@@ -359,16 +373,13 @@ class ComponentManager(object):
             raise FatalError('Job ID is required')
 
         client, _ = service_details(None, args.get('service_profile'))
-        try:
-            status = client.task_status(job_id=job_id)
-            if status.status == 'failure':
-                raise FatalError("Uploaded version wasn't processed successfully.\n%s" % status.message)
-            else:
-                info('Status: %s. %s' % (status.status, status.message))
+        status = client.task_status(job_id=job_id)
+        if status.status == 'failure':
+            raise FatalError("Uploaded version wasn't processed successfully.\n%s" % status.message)
+        else:
+            info('Status: %s. %s' % (status.status, status.message))
 
-        except APIClientError as e:
-            raise FatalError(e)
-
+    @general_error_handler
     def prepare_dep_dirs(self, managed_components_list_file, component_list_file, local_components_list_file=None):
         '''Process all manifests and download all dependencies'''
         # Find all components
@@ -427,6 +438,7 @@ class ComponentManager(object):
         with open(component_list_file, mode='w', encoding='utf-8') as file:
             file.write(u'\n'.join(all_components))
 
+    @general_error_handler
     def inject_requirements(
             self,
             interface_version,  # type: int
