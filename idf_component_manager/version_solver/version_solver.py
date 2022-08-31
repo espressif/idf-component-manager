@@ -8,7 +8,7 @@ from .mixology.package import Package
 from .mixology.version_solver import VersionSolver as Solver
 
 try:
-    from typing import Optional
+    from typing import Callable, Optional
 except ImportError:
     pass
 
@@ -18,10 +18,12 @@ class VersionSolver(object):
     The version solver that finds a set of package versions
     that satisfy the root package's dependencies.
     """
-    def __init__(
-            self, requirements, old_solution=None):  # type: (ProjectRequirements, Optional[SolvedManifest]) -> None
+    def __init__(self, requirements, old_solution=None, component_solved_callback=None):
+        # type: (ProjectRequirements, Optional[SolvedManifest], Optional[Callable[[], None]]) -> None
         self.requirements = requirements
         self.old_solution = old_solution
+        self.component_solved_callback = component_solved_callback
+
         self._source = PackageSource()
         self._solver = Solver(self._source)
         self._target = None
@@ -67,3 +69,6 @@ class VersionSolver(object):
             if version.dependencies:
                 for dep in version.dependencies:
                     self.solve_component(dep)
+
+        if self.component_solved_callback:
+            self.component_solved_callback()
