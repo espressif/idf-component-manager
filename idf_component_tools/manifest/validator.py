@@ -93,7 +93,8 @@ def dependency_schema():  # type: () -> Or
                 'no',
                 False,
                 error='Invalid format of dependency require field format. '
-                'Should be "public", "private" or "no"')
+                'Should be "public", "private" or "no"'),
+            Optional('pre_release'): Use(bool, error='Invalid format of dependency pre_release flag'),
         },
         error='Invalid dependency format',
     )

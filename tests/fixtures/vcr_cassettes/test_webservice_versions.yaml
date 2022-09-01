@@ -1,0 +1,95 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+    method: GET
+    uri: http://localhost:5000/
+  response:
+    body:
+      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\"\
+        , \n  \"info\": \"Espressif Component Manager Service HTTP JSON API\", \n\
+        \  \"status\": \"ok\", \n  \"version\": \"0.2.0\"\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '171'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 02 Sep 2022 09:03:32 GMT
+      Server:
+      - Werkzeug/2.1.2 Python/3.10.0
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+    method: GET
+    uri: http://localhost:9000/test-public/components/example/cmp.json
+  response:
+    body:
+      string: '{"versions": [{"discussion": "", "docs": {}, "license": null, "documentation":
+        "", "url": "a4bc6071-63d9-4f21-ad7d-ef73ce651fbb.tgz", "issues": "", "version":
+        "0.0.5-alpha1", "homepage": "", "created_at": "2022-09-01T16:22:36.563938+00:00",
+        "uploader": "dmitry", "tags": [], "downloads_total": 0, "repository": "",
+        "component_hash": "034c3c5dddedd5b4afa3ebc23e04af4808a9a4e75fd8eaf9a3fc4027273f5310",
+        "examples": [], "description": null, "dependencies": [], "targets": []}, {"discussion":
+        "", "docs": {}, "license": null, "documentation": "", "url": "3f493bd8-5077-45e3-8c40-700b2f43510c.tgz",
+        "issues": "", "version": "0.0.4", "homepage": "", "created_at": "2022-09-02T09:01:02.789957+00:00",
+        "uploader": "dmitry", "tags": [], "downloads_total": 0, "repository": "",
+        "component_hash": "3f7ff82c7b2d5dec138a4f25570c3e54a3dbb2ec31f12180955c1edcec0bf958",
+        "examples": [], "description": null, "dependencies": [], "targets": []}],
+        "namespace": "example", "created_at": "2022-09-01T14:48:07.020336+00:00",
+        "featured": false, "name": "cmp"}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '1035'
+      Content-Security-Policy:
+      - block-all-mixed-content
+      Content-Type:
+      - binary/octet-stream
+      Date:
+      - Fri, 02 Sep 2022 09:03:32 GMT
+      ETag:
+      - '"aade7e58bcca50ef779cc1303ef0a228"'
+      Last-Modified:
+      - Fri, 02 Sep 2022 09:01:02 GMT
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      - Accept-Encoding
+      X-Amz-Request-Id:
+      - 1710FFB458FCC2C5
+      X-Content-Type-Options:
+      - nosniff
+      X-Xss-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

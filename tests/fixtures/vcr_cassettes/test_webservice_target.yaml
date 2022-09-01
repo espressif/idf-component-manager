@@ -1,0 +1,90 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+    method: GET
+    uri: http://localhost:5000/
+  response:
+    body:
+      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\"\
+        , \n  \"info\": \"Espressif Component Manager Service HTTP JSON API\", \n\
+        \  \"status\": \"ok\", \n  \"version\": \"0.2.0\"\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '171'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 05 Sep 2022 12:22:46 GMT
+      Server:
+      - Werkzeug/2.1.2 Python/3.10.0
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+    method: GET
+    uri: http://localhost:9000/test-public/components/example/cmp.json
+  response:
+    body:
+      string: '{"versions": [{"version": "0.0.6", "description": null, "targets":
+        ["esp32"], "created_at": "2022-09-05T12:20:04.561479+00:00", "docs": {}, "homepage":
+        "", "repository": "", "discussion": "", "url": "ea453afd-3e04-43f2-8bda-cbbbd5a77b07.tgz",
+        "component_hash": "c9812707cb83130df41747a38d49c6f007bf6cb080c2d5640e2411df9db34659",
+        "examples": [], "issues": "", "documentation": "", "tags": [], "dependencies":
+        [], "downloads_total": 0, "uploader": "dmitry", "license": null}], "created_at":
+        "2022-09-01T14:48:07.020336+00:00", "namespace": "example", "name": "cmp",
+        "featured": false}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '582'
+      Content-Security-Policy:
+      - block-all-mixed-content
+      Content-Type:
+      - binary/octet-stream
+      Date:
+      - Mon, 05 Sep 2022 12:22:46 GMT
+      ETag:
+      - '"62a79b1b0abeeafac4200da1cf10deb1"'
+      Last-Modified:
+      - Mon, 05 Sep 2022 12:20:04 GMT
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      - Accept-Encoding
+      X-Amz-Request-Id:
+      - 1711F6514F894C2D
+      X-Content-Type-Options:
+      - nosniff
+      X-Xss-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1
