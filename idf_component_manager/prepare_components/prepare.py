@@ -24,7 +24,11 @@ def _component_list_file(build_dir):
 
 def prepare_dep_dirs(args):
     build_dir = args.build_dir or os.path.dirname(args.managed_components_list_file)
-    ComponentManager(args.project_dir).prepare_dep_dirs(
+    ComponentManager(
+        args.project_dir,
+        lock_path=args.lock_path,
+        interface_version=args.interface_version,
+    ).prepare_dep_dirs(
         managed_components_list_file=args.managed_components_list_file,
         component_list_file=_component_list_file(build_dir),
         local_components_list_file=args.local_components_list_file,
@@ -32,8 +36,11 @@ def prepare_dep_dirs(args):
 
 
 def inject_requirements(args):
-    ComponentManager(args.project_dir).inject_requirements(
+    ComponentManager(
+        args.project_dir,
+        lock_path=args.lock_path,
         interface_version=args.interface_version,
+    ).inject_requirements(
         component_requires_file=args.component_requires_file,
         component_list_file=_component_list_file(args.build_dir),
     )
@@ -48,14 +55,17 @@ def main():
     # Interface versions support:
     # *0* supports ESP-IDF <=4.4
     # *1* starting ESP-IDF 5.0
+    # *2* starting ESP-IDF 5.1
 
     parser.add_argument(
         '--interface_version',
         help='Version of ESP-IDF build system integration',
         default=0,
         type=int,
-        choices=[0, 1],
+        choices=[0, 1, 2],
     )
+
+    parser.add_argument('--lock_path', help='lock file path relative to the project path')
 
     subparsers = parser.add_subparsers(dest='step')
     subparsers.required = True
