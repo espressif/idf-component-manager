@@ -90,6 +90,10 @@ def is_solve_required(project_requirements, solution):
     return False
 
 
+def print_dot():
+    info('.', nl=False)
+
+
 def download_project_dependencies(project_requirements, lock_path, managed_components_path):
     # type: (ProjectRequirements, str, str) -> tuple[set[str], dict[str, str]]
     '''Solves dependencies and download components'''
@@ -99,7 +103,7 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
 
     if is_solve_required(project_requirements, solution):
         info('Solving dependencies requirements')
-        solver = VersionSolver(project_requirements, solution)
+        solver = VersionSolver(project_requirements, solution, component_solved_callback=print_dot)
 
         try:
             solution = solver.solve()
