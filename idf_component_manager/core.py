@@ -69,8 +69,8 @@ def general_error_handler(func):
 
 
 class ComponentManager(object):
-    def __init__(self, path, lock_path=None, manifest_path=None):
-        # type: (str, Optional[str], Optional[str]) -> None
+    def __init__(self, path, lock_path=None, manifest_path=None, interface_version=0):
+        # type: (str, Optional[str], Optional[str], int) -> None
 
         # Working directory
         self.path = os.path.abspath(path if os.path.isdir(path) else os.path.dirname(path))
@@ -83,7 +83,15 @@ class ComponentManager(object):
             os.path.join(path, 'main', MANIFEST_FILENAME) if os.path.isdir(path) else path)
 
         # Lock path
-        self.lock_path = lock_path or (os.path.join(path, 'dependencies.lock') if os.path.isdir(path) else path)
+        if not lock_path:
+            if os.path.isfile(path):
+                self.lock_path = path
+            else:
+                self.lock_path = os.path.join(path, 'dependencies.lock')
+        elif os.path.isabs(lock_path):
+            self.lock_path = lock_path
+        else:
+            self.lock_path = os.path.join(path, lock_path)
 
         # Components directories
         self.components_path = os.path.join(self.path, 'components')
@@ -91,6 +99,8 @@ class ComponentManager(object):
 
         # Dist directory
         self.dist_path = os.path.join(self.path, 'dist')
+
+        self.interface_version = interface_version
 
     def _get_manifest(self, component='main'):  # type: (str) -> Tuple[str, bool]
         base_dir = self.path if component == 'main' else self.components_path
@@ -441,7 +451,6 @@ class ComponentManager(object):
     @general_error_handler
     def inject_requirements(
             self,
-            interface_version,  # type: int
             component_requires_file,  # type: Path | str
             component_list_file,  # type: Path | str
     ):
@@ -489,7 +498,7 @@ class ComponentManager(object):
                 add_req(managed_requirement_key)
 
                 # In interface v0, component_requires_file contains also common requirements
-                if interface_version == 0 and name_key == ComponentName('idf', 'main'):
+                if self.interface_version == 0 and name_key == ComponentName('idf', 'main'):
                     add_all_components_to_main = True
 
         # If there are dependencies added to the `main` component,
