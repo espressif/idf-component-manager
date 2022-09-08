@@ -41,8 +41,7 @@ class TestAPIClient(object):
             assert join_url(*test['in']) == test['out']
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_component_versions.yaml')
-    def test_version(self, base_url, monkeypatch):
-        monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '0')
+    def test_version(self, base_url):
         client = APIClient(base_url=base_url)
 
         # Also check case normalisation
@@ -52,8 +51,7 @@ class TestAPIClient(object):
         assert len(list(component.versions)) == 2
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_component_details.yaml')
-    def test_component(self, base_url, monkeypatch):
-        monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '0')
+    def test_component(self, base_url):
         storage_name = 'http://localhost:9000/test-public/'
 
         client = APIClient(base_url=base_url)
