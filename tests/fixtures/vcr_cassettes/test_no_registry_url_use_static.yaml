@@ -1,0 +1,73 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer test
+      Connection:
+      - keep-alive
+      If-Modified-Since:
+      - Mon, 08 Aug 2022 17:37:31 GMT
+      If-None-Match:
+      - '"6467fd55fdaf2166f311a61027779368"'
+      User-Agent:
+      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+    method: GET
+    uri: http://localhost:9000/test-public/components/espressif/cmp.json
+  response:
+    body:
+      string: '{"name": "cmp", "versions": [{"examples": [], "url": "c302ba35-9750-4b39-8e0a-54d20c5e4d06.tgz",
+        "repository": "", "issues": "", "tags": [], "docs": {"readme": "c302ba35-9750-4b39-8e0a-54d20c5e4d06/readme.md"},
+        "description": "Test Component", "version": "3.0.4", "discussion": "", "uploader":
+        "dmitry", "created_at": "2022-08-08T15:39:31.906540+00:00", "dependencies":
+        [{"spec": ">=4.0", "name": null, "is_public": false, "source": "idf", "namespace":
+        null}], "documentation": "", "license": null, "component_hash": "ec0069763f87c38724e16369423863ff6b2d09d767691929b5f8f09c056fc320",
+        "homepage": "", "targets": ["esp32"]}, {"examples": [], "url": "246e76a3-9104-4c7b-8b55-0d2ffaa011fc.tgz",
+        "repository": "", "issues": "", "tags": [], "docs": {}, "description": null,
+        "version": "1.0.0", "discussion": "", "uploader": "dmitry", "created_at":
+        "2022-08-08T15:43:40.897343+00:00", "dependencies": [{"spec": ">=4.0", "name":
+        null, "is_public": false, "source": "idf", "namespace": null}], "documentation":
+        "", "license": null, "component_hash": "5e17a5e31cf23d6f5ea8126ae409ab081f4467aaad6cb4ca78e70b1a7dbaf366",
+        "homepage": "", "targets": ["esp32"]}, {"examples": [], "url": "ba5592c5-920a-4954-a86a-75168a17bb05.tgz",
+        "repository": "", "issues": "", "tags": [], "docs": {}, "description": null,
+        "version": "1.0.0-alpha", "discussion": "", "uploader": "dmitry", "created_at":
+        "2022-08-08T17:37:51.212524+00:00", "dependencies": [{"spec": ">=4.0", "name":
+        null, "is_public": false, "source": "idf", "namespace": null}], "documentation":
+        "", "license": null, "component_hash": "0399dc1afb51534626f5bc9cde9b7f33b3cf930d18fddd27788f1cf4e57a759c",
+        "homepage": "", "targets": ["esp32"]}], "created_at": "2022-08-08T15:39:31.655332+00:00",
+        "featured": false, "namespace": "espressif"}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '1775'
+      Content-Security-Policy:
+      - block-all-mixed-content
+      Content-Type:
+      - binary/octet-stream
+      Date:
+      - Fri, 12 Aug 2022 13:49:14 GMT
+      ETag:
+      - '"5409ee107c7d49c1f35d4945fb7c0800"'
+      Last-Modified:
+      - Mon, 08 Aug 2022 17:37:51 GMT
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      X-Amz-Request-Id:
+      - 170A9D1B9CFEF520
+      X-Content-Type-Options:
+      - nosniff
+      X-Xss-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

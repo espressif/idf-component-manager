@@ -22,6 +22,10 @@ class StorageFileNotFound(APIClientError):
     pass
 
 
+class NoRegistrySet(APIClientError):
+    pass
+
+
 KNOWN_API_ERRORS = {
     'NamespaceNotFoundError': NamespaceNotFound,
     'ComponentNotFoundError': ComponentNotFound,

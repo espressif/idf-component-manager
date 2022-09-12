@@ -7,6 +7,8 @@ import vcr
 
 from idf_component_manager import version
 from idf_component_tools.api_client import APIClient, join_url, user_agent
+from idf_component_tools.api_client_errors import NoRegistrySet
+from idf_component_tools.sources.web_service import default_component_registry_storage_url
 
 
 @pytest.fixture
@@ -39,8 +41,7 @@ class TestAPIClient(object):
             assert join_url(*test['in']) == test['out']
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_component_versions.yaml')
-    def test_version(self, base_url, monkeypatch):
-        monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '0')
+    def test_version(self, base_url):
         client = APIClient(base_url=base_url)
 
         # Also check case normalisation
@@ -50,8 +51,7 @@ class TestAPIClient(object):
         assert len(list(component.versions)) == 2
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_component_details.yaml')
-    def test_component(self, base_url, monkeypatch):
-        monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '0')
+    def test_component(self, base_url):
         storage_name = 'http://localhost:9000/test-public/'
 
         client = APIClient(base_url=base_url)
@@ -99,3 +99,19 @@ class TestAPIClient(object):
 
         assert client.component(component_name='example/cmp').download_url == os.path.join(
             storage_url, '86f07b70-bb83-45f0-99c7-a10f82781f5a.tgz')
+
+    def test_no_registry_url_error(self, monkeypatch):
+        monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'http://localhost:9000/test-public')
+
+        registry_url, storage_url = default_component_registry_storage_url()
+        client = APIClient(base_url=registry_url, storage_url=storage_url, auth_token='test')
+        with pytest.raises(NoRegistrySet):
+            client.upload_version(component_name='example/cmp')
+
+    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_no_registry_url_use_static.yaml')
+    def test_no_registry_url_use_static(self, monkeypatch):
+        monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'http://localhost:9000/test-public')
+
+        registry_url, storage_url = default_component_registry_storage_url()
+        client = APIClient(base_url=registry_url, storage_url=storage_url, auth_token='test')
+        client.component(component_name='espressif/cmp')  # no errors

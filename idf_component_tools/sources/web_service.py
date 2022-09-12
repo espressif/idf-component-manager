@@ -37,10 +37,10 @@ except ImportError:
 
 
 def default_component_registry_storage_url(
-        registry_profile=None):  # type: (dict[str, str] | None) -> tuple[str, str | None]
+        registry_profile=None):  # type: (dict[str, str] | None) -> tuple[str | None, str | None]
     env_registry_url = os.getenv('DEFAULT_COMPONENT_SERVICE_URL')
-    if env_registry_url:
-        env_storage_url = os.getenv('IDF_COMPONENT_STORAGE_URL')
+    env_storage_url = os.getenv('IDF_COMPONENT_STORAGE_URL')
+    if env_registry_url or env_storage_url:
         return env_registry_url, env_storage_url
 
     env_registry_profile_name = os.getenv('IDF_COMPONENT_SERVICE_PROFILE')
@@ -49,15 +49,23 @@ def default_component_registry_storage_url(
     if registry_profile is None:
         registry_profile = {}
 
-    registry_url = DEFAULT_COMPONENT_SERVICE_URL
+    storage_url = None
+    profile_storage_url = registry_profile.get('storage_url')
+    if profile_storage_url and profile_storage_url != 'default':
+        storage_url = profile_storage_url
+
+    registry_url = None
     profile_registry_url = registry_profile.get('url')
     if profile_registry_url and profile_registry_url != 'default':
         registry_url = profile_registry_url
 
-    storage_url = IDF_COMPONENT_STORAGE_URL
-    profile_storage_url = registry_profile.get('storage_url')
-    if profile_storage_url and profile_storage_url != 'default':
-        storage_url = profile_storage_url
+    if storage_url and not registry_url:
+        return None, storage_url
+
+    if not registry_url:
+        registry_url = DEFAULT_COMPONENT_SERVICE_URL
+    if not storage_url:
+        storage_url = IDF_COMPONENT_STORAGE_URL
 
     return registry_url, storage_url
 
@@ -73,7 +81,8 @@ class WebServiceSource(BaseSource):
         if self.base_url is None:
             self.base_url, self.storage_url = default_component_registry_storage_url()
 
-        self.base_url = str(self.base_url)
+        if self.base_url is not None:
+            self.base_url = str(self.base_url)
         self.api_client = self.source_details.get(
             'api_client', api_client.APIClient(base_url=self.base_url, storage_url=self.storage_url, source=self))
 
