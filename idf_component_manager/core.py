@@ -21,7 +21,7 @@ from idf_component_tools.api_client_errors import APIClientError, NetworkConnect
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.errors import FatalError, GitError, ManifestError, NothingToDoError
-from idf_component_tools.file_tools import copy_filtered_directory, create_directory
+from idf_component_tools.file_tools import check_unexpected_component_files, copy_filtered_directory, create_directory
 from idf_component_tools.git_client import GitClient
 from idf_component_tools.hash_tools import (
     HashDoesNotExistError, HashNotEqualError, HashNotSHA256Error, validate_dir_with_hash_file)
@@ -251,6 +251,9 @@ class ComponentManager(object):
         copy_filtered_directory(
             self.path, dist_temp_dir, include=set(manifest.files['include']), exclude=set(manifest.files['exclude']))
         manifest_manager.dump(dist_temp_dir)
+
+        check_unexpected_component_files(dist_temp_dir)
+
         archive_filepath = os.path.join(self.dist_path, archive_filename(manifest))
         info('Saving archive to "{}"'.format(archive_filepath))
         pack_archive(dist_temp_dir, archive_filepath)
