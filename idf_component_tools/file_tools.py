@@ -24,6 +24,7 @@ DEFAULT_EXCLUDE = [
     # dist and build artefacts
     './dist/**/*',
     'build/**/*',
+    'examples/**/build/**/*',
     # CI files
     '.github/**/*',
     '.gitlab-ci.yml',
