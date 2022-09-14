@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Disable API interaction if only storage URL is set
 - Add warnings for build files in component version archives
 - Add hints for user printed to stderr
+- New CLI: compote
 
 ### Fixed
 

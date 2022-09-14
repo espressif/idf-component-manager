@@ -64,7 +64,7 @@ def action_extensions(base_actions, project_path):
         try:
             warnings.showwarning = showwarning
             manager = ComponentManager(args.project_dir)
-            getattr(manager, str(subcommand_name).replace('-', '_'))(kwargs)
+            getattr(manager, str(subcommand_name).replace('-', '_'))(**kwargs)
         except FatalError as e:
             print_error(e)
             sys.exit(e.exit_code)

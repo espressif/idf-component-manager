@@ -36,18 +36,18 @@ def test_init_project():
         foo_manifest_path = os.path.join(tempdir, 'components', 'foo', MANIFEST_FILENAME)
 
         manager = ComponentManager(path=tempdir)
-        manager.create_manifest({})
-        manager.create_manifest({'component': 'foo'})
+        manager.create_manifest()
+        manager.create_manifest(component='foo')
 
         for filepath in [main_manifest_path, foo_manifest_path]:
             with open(filepath, mode='r', encoding='utf-8') as file:
                 assert file.readline().startswith('## IDF Component Manager')
 
-        manager.add_dependency({'dependency': 'comp<=1.0.0'})
+        manager.add_dependency('comp<=1.0.0')
         manifest_manager = ManifestManager(main_manifest_path, 'main')
         assert manifest_manager.manifest_tree['dependencies']['espressif/comp'] == '<=1.0.0'
 
-        manager.add_dependency({'dependency': 'idf/comp<=1.0.0', 'component': 'foo'})
+        manager.add_dependency('idf/comp<=1.0.0', component='foo')
         manifest_manager = ManifestManager(foo_manifest_path, 'foo')
         assert manifest_manager.manifest_tree['dependencies']['idf/comp'] == '<=1.0.0'
     finally:
@@ -60,10 +60,7 @@ def test_upload_component(monkeypatch, pre_release_component_path):
     monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
     manager = ComponentManager(path=pre_release_component_path)
 
-    manager.upload_component({
-        'name': 'cmp',
-        'namespace': 'espressif',
-    })
+    manager.upload_component('cmp')
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_check_only_component.yaml')
@@ -72,11 +69,10 @@ def test_check_only_upload_component(monkeypatch, pre_release_component_path):
     monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
     manager = ComponentManager(path=pre_release_component_path)
 
-    manager.upload_component({
-        'name': 'cmp',
-        'namespace': 'espressif',
-        'check_only': True,
-    })
+    manager.upload_component(
+        'cmp',
+        check_only=True,
+    )
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_allow_existing_component.yaml')
@@ -85,11 +81,10 @@ def test_allow_existing_component(monkeypatch, release_component_path):
     monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
     manager = ComponentManager(path=release_component_path)
 
-    manager.upload_component({
-        'name': 'cmp',
-        'namespace': 'espressif',
-        'allow_existing': True,
-    })
+    manager.upload_component(
+        'cmp',
+        allow_existing=True,
+    )
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_upload_component_skip_pre.yaml')
@@ -99,13 +94,12 @@ def test_upload_component_skip_pre(monkeypatch, pre_release_component_path):
     monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
 
     with pytest.raises(NothingToDoError) as e:
-        manager.upload_component({
-            'name': 'cmp',
-            'namespace': 'espressif',
-            'skip_pre_release': True,
-        })
+        manager.upload_component(
+            'cmp',
+            skip_pre_release=True,
+        )
 
-    assert str(e.value).startswith('Skipping pre-release')
+        assert str(e.value).startswith('Skipping pre-release')
 
 
 def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_component_path):
@@ -124,10 +118,7 @@ def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_comp
 
     monkeypatch.setattr(GitClient, 'get_tag_version', mock_git_tag)
 
-    component_manager.pack_component({
-        'name': 'pre',
-        'version': 'git',
-    })
+    component_manager.pack_component('pre', 'git')
 
     tempdir = os.path.join(tempfile.tempdir, 'cmp_pre')
     unpack_archive(os.path.join(component_manager.dist_path, 'pre_3.0.0.tgz'), tempdir)
@@ -153,21 +144,12 @@ def test_pack_component_with_version(tmp_path, release_component_path):
         f.writelines(lines[1:])
         f.truncate()
 
-    component_manager.pack_component({
-        'name': 'cmp',
-        'version': '2.3.4',
-    })
+    component_manager.pack_component('cmp', '2.3.4')
 
     tempdir = os.path.join(tempfile.tempdir, 'cmp')
     unpack_archive(os.path.join(component_manager.dist_path, 'cmp_2.3.4.tgz'), tempdir)
     manifest = ManifestManager(tempdir, 'cmp', check_required_fields=True).load()
     assert manifest.version == '2.3.4'
-
-
-def test_create_example_no_example(tmp_path):
-    manager = ComponentManager(path=str(tmp_path))
-    with raises(FatalError, match='Failed to get example name*'):
-        manager.create_project_from_example({'name': 'test', 'path': str(tmp_path)})
 
 
 def test_create_example_project_path_not_a_directory(tmp_path):
@@ -177,7 +159,7 @@ def test_create_example_project_path_not_a_directory(tmp_path):
     manager = ComponentManager(path=str(tmp_path))
 
     with raises(FatalError, match='Your target path is not a directory*'):
-        manager.create_project_from_example({'name': 'test', 'example': 'example', 'path': str(tmp_path)})
+        manager.create_project_from_example('test', 'example')
 
 
 def test_create_example_project_path_not_empty(tmp_path):
@@ -189,13 +171,13 @@ def test_create_example_project_path_not_empty(tmp_path):
     manager = ComponentManager(path=str(tmp_path))
 
     with raises(FatalError, match='To create an example you must*'):
-        manager.create_project_from_example({'name': 'test', 'example': 'example', 'path': str(tmp_path)})
+        manager.create_project_from_example('test', 'example')
 
 
 def test_create_example_component_not_exist(tmp_path):
     manager = ComponentManager(path=str(tmp_path))
     with raises(FatalError, match='Selected component*'):
-        manager.create_project_from_example({'name': 'test', 'example': 'example', 'path': str(tmp_path)})
+        manager.create_project_from_example('test', 'example')
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_create_example_not_exist.yaml')
@@ -203,25 +185,11 @@ def test_create_example_not_exist(monkeypatch, tmp_path):
     monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
     manager = ComponentManager(path=str(tmp_path))
     with raises(FatalError, match='Cannot find example "example" for test/cmp version 1.0.1'):
-        manager.create_project_from_example(
-            {
-                'namespace': 'test',
-                'name': 'cmp',
-                'version': '1.0.1',
-                'example': 'example',
-                'path': str(tmp_path)
-            })
+        manager.create_project_from_example('cmp', 'example', version='1.0.1', namespace='test')
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_create_example_success.yaml')
 def test_create_example_success(monkeypatch, tmp_path):
     monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
     manager = ComponentManager(path=str(tmp_path))
-    manager.create_project_from_example(
-        {
-            'namespace': 'test',
-            'name': 'cmp',
-            'version': '1.0.1',
-            'example': 'sample_project',
-            'path': str(tmp_path)
-        })
+    manager.create_project_from_example('cmp', 'sample_project', version='1.0.1', namespace='test')
