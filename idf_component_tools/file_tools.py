@@ -3,6 +3,7 @@
 """Set of tools and constants to work with files and directories """
 import os
 import shutil
+import warnings
 from pathlib import Path
 from shutil import copytree, rmtree
 
@@ -21,9 +22,12 @@ DEFAULT_EXCLUDE = [
     '**/.DS_Store',
     # Git
     '**/.git/**/*',
+    # SVN
+    '**/.svn/**/*',
     # dist and build artefacts
     './dist/**/*',
     'build/**/*',
+    'examples/**/build/**/*',
     # CI files
     '.github/**/*',
     '.gitlab-ci.yml',
@@ -36,6 +40,10 @@ DEFAULT_EXCLUDE = [
     # Hash file
     '.component_hash'
 ]
+
+UNEXPECTED_FILES = {
+    'CMakeCache.txt',
+}
 
 
 def filtered_paths(path, include=None, exclude=None):
@@ -127,3 +135,15 @@ def copy_filtered_directory(source_directory, destination_directory, include=Non
             shutil.copy2(path, dest_path)
         else:
             os.makedirs(dest_path)
+
+
+def check_unexpected_component_files(path):  # type: (str | Path) -> None
+    '''Create a warning if a directory contains files not expected inside component'''
+    for root, _dirs, files in os.walk(str(path)):
+        unexpected_files = UNEXPECTED_FILES.intersection(files)
+        if unexpected_files:
+            warning = (
+                'Unexpected files "{files}" found in the component directory "{path}". '
+                'Please check if these files should be ignored').format(
+                    files=', '.join(unexpected_files), path=os.path.relpath(root, start=str(path)))
+            warnings.warn(warning)

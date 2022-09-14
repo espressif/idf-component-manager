@@ -3,11 +3,12 @@
 
 import os
 import shutil
+import warnings
 from pathlib import Path
 
 import pytest
 
-from idf_component_tools.file_tools import copy_filtered_directory, filtered_paths
+from idf_component_tools.file_tools import check_unexpected_component_files, copy_filtered_directory, filtered_paths
 
 
 @pytest.fixture
@@ -102,3 +103,14 @@ def test_excluded_and_included_files(tmpdir_factory):
         exclude=['**/*'])
 
     assert os.listdir(temp_dir.strpath) == ['folder1']
+
+
+def test_check_suspisious_component_files(release_component_path, tmp_path):
+    sub = str(tmp_path / 'sub')
+    shutil.copytree(release_component_path, sub)
+    (Path(sub) / 'dev' / 'CMakeCache.txt').touch()
+
+    with warnings.catch_warnings(record=True) as w:
+        check_unexpected_component_files(sub)
+        assert w
+        assert 'Unexpected files "CMakeCache.txt" found in the component directory "dev"' in str(w[-1].message)

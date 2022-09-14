@@ -22,6 +22,10 @@ def warn(message):  # type: (Exception | str) -> None
     print_stderr_prefixed('WARNING', 'yellow', message)
 
 
+def showwarning(message, category, filename, lineno, file=None, line=None):
+    warn(message)
+
+
 def info(
         message,  # type: str
         fg=None,  # type: str | None

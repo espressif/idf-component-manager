@@ -17,7 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Load component details from pre-rendered JSON files from the static endpoint
 - Use local file system like `file://` as a Component storage URL
 - Record managed component version in component property `COMPONENT_VERSION`
-- Disable API interaction if only storage url is set
+- Disable API interaction if only storage URL is set
+- Add warnings for build files in component version archives
 
 ### Fixed
 
