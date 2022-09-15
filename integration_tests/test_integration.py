@@ -671,3 +671,34 @@ def test_set_component_version(project):
     res = project_action(project, 'reconfigure')
     assert 'example/cmp (3.3.7)' in res
     assert 'Component example__cmp version: 3.3.7' in res
+
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'idf': {
+                            'version': '^6.1',
+                        }
+                    }
+                },
+                'component_foo': {
+                    'version': '1.0.0',
+                    'dependencies': {
+                        'idf': {
+                            'version': '^6.1',
+                        }
+                    },
+                },
+            }
+        }
+    ],
+    indirect=True)
+def test_root_dep_failed(project):
+    res = project_action(project, 'reconfigure')
+    assert 'ERROR: Because project depends on idf (^6.1) which doesn\'t match any' in res
+    assert 'versions, version solving failed.' in res
+    assert 'Please check manifest file of the following component(s): main,' in res
+    assert 'component_foo' in res

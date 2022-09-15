@@ -3,6 +3,8 @@
 
 from idf_component_tools.manifest import HashedComponentVersion
 
+from .mixology.failure import SolverFailure
+
 try:
     from typing import Any, Dict, List, Optional
     from typing import Union as _Union
@@ -53,6 +55,17 @@ def parse_single_constraint(_range):  # type: (_Union[SemverRange, HashedCompone
         return Union(Range(min=version, string=str(_range)), Range(max=version, string=str(_range)))
     else:
         return Range(version, version, True, True, str(_range))
+
+
+def parse_root_dep_conflict_constraints(failure):  # type: (SolverFailure) -> list[Constraint]
+    terms = failure._incompatibility.terms
+    res = []
+    if len(terms) == 1 and terms[0].package == Package.root():  # root dep
+        conflict_terms = failure._incompatibility.cause.conflict.terms
+        for conflict_term in conflict_terms:
+            res.append(conflict_term.constraint)
+
+    return res
 
 
 class Dependency:
