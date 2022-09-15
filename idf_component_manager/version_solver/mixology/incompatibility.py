@@ -73,7 +73,7 @@ class Incompatibility:
         return self._terms
 
     @property
-    def cause(self):  # type: () -> IncompatibilityCause
+    def cause(self):  # type: () -> ConflictCause
         return self._cause
 
     @property

@@ -3,6 +3,7 @@
 
 import os
 import shutil
+import warnings
 
 from idf_component_manager.utils import info, warn
 from idf_component_tools.build_system_tools import build_name
@@ -13,7 +14,9 @@ from idf_component_tools.manifest import ProjectRequirements, SolvedComponent, S
 from idf_component_tools.sources.fetcher import ComponentFetcher
 
 from .core_utils import raise_component_modified_error
+from .version_solver.helper import parse_root_dep_conflict_constraints
 from .version_solver.mixology.failure import SolverFailure
+from .version_solver.mixology.package import Package
 from .version_solver.version_solver import VersionSolver
 
 
@@ -108,6 +111,21 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
         try:
             solution = solver.solve()
         except SolverFailure as e:
+            conflict_constraints = parse_root_dep_conflict_constraints(e)
+            components_introduce_conflict = []
+            for conflict_constraint in conflict_constraints:
+                for manifest in project_requirements.manifests:
+                    for dep in manifest.dependencies:
+                        if (Package(dep.name, dep.source) == conflict_constraint.package
+                                and dep.version_spec == str(conflict_constraint.constraint)):
+                            components_introduce_conflict.append(manifest.name)
+                            break
+
+            if components_introduce_conflict:
+                warnings.warn(
+                    'Please check manifest file of the following component(s): {}'.format(
+                        ', '.join(components_introduce_conflict)))
+
             raise SolverError(str(e))
 
         info('Updating lock file at %s' % lock_path)
