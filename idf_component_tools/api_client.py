@@ -25,7 +25,8 @@ from idf_component_tools.__version__ import __version__
 from idf_component_tools.semver import SimpleSpec, Version
 
 from .api_client_errors import (
-    KNOWN_API_ERRORS, APIClientError, ComponentNotFound, NetworkConnectionError, NoRegistrySet, StorageFileNotFound)
+    KNOWN_API_ERRORS, APIClientError, ComponentNotFound, NetworkConnectionError, NoRegistrySet, StorageFileNotFound,
+    VersionNotFound)
 from .api_schemas import (
     API_INFORMATION_SCHEMA, COMPONENT_SCHEMA, ERROR_SCHEMA, TASK_STATUS_SCHEMA, VERSION_UPLOAD_SCHEMA)
 from .manifest import Manifest

@@ -17,7 +17,7 @@ from pathlib import Path
 import requests
 
 from idf_component_manager.utils import print_info, print_warn
-from idf_component_tools.api_client_errors import APIClientError, NetworkConnectionError
+from idf_component_tools.api_client_errors import APIClientError, NetworkConnectionError, VersionNotFound
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.errors import FatalError, GitError, ManifestError, NothingToDoError
@@ -150,9 +150,10 @@ class ComponentManager(object):
         client = create_api_client()
         try:
             component_details = client.component(component_name=component_name, version=version_spec)
+        except VersionNotFound as e:
+            raise FatalError(e)
         except APIClientError:
-            raise FatalError(
-                'Selected component "{}" with selected version "{}" doesn\'t exist.'.format(component_name, version))
+            raise FatalError('Selected component "{}" doesn\'t exist.'.format(component_name))
 
         try:
             example_url = [example for example in component_details.examples if example_name == example['name']][-1]
