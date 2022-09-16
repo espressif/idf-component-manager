@@ -58,6 +58,21 @@ VERSION_PARAMETER = [
     }
 ]
 
+CREATE_PROJECT_FROM_EXAMPLE_DESCR = """
+Create a project from an example.
+
+You can specify EXAMPLE in the format like:
+namespace/name=1.0.0:example
+
+where "=1.0.0" is a version specification.
+
+An example command:
+
+idf.py create-project-from-example example/cmp^3.3.8:cmp_ex
+
+Namespace and version are optional in the EXAMPLE argument.
+"""
+
 
 def action_extensions(base_actions, project_path):
     def callback(subcommand_name, ctx, args, **kwargs):
@@ -166,6 +181,22 @@ def action_extensions(base_actions, project_path):
                     'New CLI command: "compote component pack". '
                     'Create component archive and store it in the dist directory.'),
                 'options': SERVICE_PROFILE + NAME + VERSION_PARAMETER,
+            },
+            'create-project-from-example': {
+                'callback': callback,
+                'help': CREATE_PROJECT_FROM_EXAMPLE_DESCR,
+                'arguments': [{
+                    'names': ['example']
+                }],
+                'options': [
+                    {
+                        'names': ['-p', '--path'],
+                        'help': (
+                            'Set the path for the new project. The project '
+                            'will be created directly in the given folder if it does not contain anything'),
+                        'required': False,
+                    }
+                ],
             },
         },
     }

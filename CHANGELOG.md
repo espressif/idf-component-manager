@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add warnings for build files in component version archives
 - Add hints for user printed to stderr
 - New CLI: compote
+- Add `create-project-from-example` command to the `idf.py`
 
 ### Fixed
 

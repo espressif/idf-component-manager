@@ -32,10 +32,10 @@ from idf_component_tools.sources import WebServiceSource
 
 from .cmake_component_requirements import CMakeRequirementsManager, ComponentName, handle_project_requirements
 from .context_manager import make_ctx
-from .core_utils import ProgressBar, archive_filename, dist_name, raise_component_modified_error
+from .core_utils import ProgressBar, archive_filename, dist_name, parse_example, raise_component_modified_error
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
-from .service_details import create_api_client, get_namespace, get_profile, service_details
+from .service_details import create_api_client, service_details
 
 try:
     from typing import Optional, Tuple
@@ -73,7 +73,7 @@ class ComponentManager(object):
         # type: (str, Optional[str], Optional[str], int) -> None
 
         # Working directory
-        self.path = os.path.abspath(path if os.path.isdir(path) else os.path.dirname(path))
+        self.path = os.path.abspath(path)
 
         # Set path of the project's main component
         self.main_component_path = os.path.join(self.path, 'main')
@@ -130,20 +130,17 @@ class ComponentManager(object):
             print_info('"{}" already exists, skipping...'.format(manifest_filepath))
 
     @general_error_handler
-    def create_project_from_example(
-            self, name, example_full_name, version='*', service_profile='default', namespace='espressif'):
-        # type: (str, str, str, str, str) -> None
-        profile = get_profile(service_profile)
-        namespace = get_namespace(profile, namespace)
-        component_name = '/'.join([namespace, name])
-        example_name = os.path.basename(example_full_name)
-        project_path = os.path.join(self.path, example_name)
+    def create_project_from_example(self, example, path=None):
+        # type: (str, str) -> None
+        component_name, version_spec, example_name = parse_example(example)
+        project_path = path or os.path.join(self.path, os.path.basename(example_name))
 
         if os.path.isfile(project_path):
             raise FatalError(
                 'Your target path is not a directory. Please remove the {} or use different target path.'.format(
                     os.path.abspath(project_path)),
                 exit_code=4)
+
         if os.path.isdir(project_path) and os.listdir(project_path):
             raise FatalError(
                 'The directory {} is not empty. To create an example you must empty the directory or '
@@ -152,23 +149,22 @@ class ComponentManager(object):
 
         client = create_api_client()
         try:
-            component_details = client.component(component_name=component_name, version=version)
+            component_details = client.component(component_name=component_name, version=version_spec)
         except APIClientError:
             raise FatalError(
                 'Selected component "{}" with selected version "{}" doesn\'t exist.'.format(component_name, version))
 
         try:
-            example_url = [example for example in component_details.examples
-                           if example_full_name == example['name']][-1]
+            example_url = [example for example in component_details.examples if example_name == example['name']][-1]
         except IndexError:
             raise FatalError(
-                'Cannot find example "{}" for {} version {}'.format(example_full_name, component_name, version),
+                'Cannot find example "{}" for "{}" version "{}"'.format(example_name, component_name, version_spec),
                 exit_code=2)
 
         response = requests.get(example_url['url'], stream=True)
         with tarfile.open(fileobj=response.raw, mode='r|gz') as tar:
             tar.extractall(project_path)
-        print_info('Example {} successfully downloaded to {}'.format(example_full_name, os.path.abspath(project_path)))
+        print_info('Example "{}" successfully downloaded to {}'.format(example_name, os.path.abspath(project_path)))
 
     @general_error_handler
     def add_dependency(self, dependency_str, component='main'):  # type: (str, str) -> None

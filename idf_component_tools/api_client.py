@@ -330,15 +330,15 @@ class APIClient(object):
         if version and version != '*':
             requested_version = SimpleSpec(str(version))
             filtered_versions = [v for v in versions if requested_version.match(Version(v['version']))]
-            try:
-                best_version = filtered_versions[0]
-            except IndexError:
-                raise VersionNotFound(
-                    'Selected component "{}" with selected version "{}" doesn\'t exist.'.format(
-                        component_name, requested_version))
         else:
-            best_version = max(versions, key=lambda v: Version(v['version']))
+            filtered_versions = versions
 
+        if not filtered_versions:
+            raise VersionNotFound(
+                'Version of the component "{}" satisfying the spec "{}" was not found.'.format(
+                    component_name, str(version)))
+
+        best_version = max(filtered_versions, key=lambda v: Version(v['version']))
         download_url = join_url(self.storage_url, best_version['url'])
 
         documents = best_version['docs']
