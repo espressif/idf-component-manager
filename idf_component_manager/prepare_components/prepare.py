@@ -12,7 +12,7 @@ import os
 import sys
 import warnings
 
-from idf_component_manager.utils import error, showwarning
+from idf_component_manager.utils import print_error, showwarning
 from idf_component_tools.errors import FatalError
 
 from ..core import ComponentManager
@@ -124,5 +124,5 @@ def main():
         args.func(args)
 
     except FatalError as e:
-        error(e)
+        print_error(e)
         sys.exit(e.exit_code)

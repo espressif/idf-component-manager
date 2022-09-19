@@ -4,7 +4,7 @@
 import sys
 import warnings
 
-from idf_component_manager.utils import error, showwarning
+from idf_component_manager.utils import print_error, showwarning
 from idf_component_tools.errors import FatalError
 
 from .core import ComponentManager
@@ -66,7 +66,7 @@ def action_extensions(base_actions, project_path):
             manager = ComponentManager(args.project_dir)
             getattr(manager, str(subcommand_name).replace('-', '_'))(kwargs)
         except FatalError as e:
-            error(e)
+            print_error(e)
             sys.exit(e.exit_code)
 
     def global_callback(ctx, global_args, tasks):

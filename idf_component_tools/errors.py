@@ -1,10 +1,24 @@
 # SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
+import warnings
+
 try:
     from typing import Any
 except ImportError:
     pass
+
+
+class UserHint(Warning):
+    pass
+
+
+def warn(message):  # type: (Exception | str) -> None
+    warnings.warn(str(message))
+
+
+def hint(message):  # type: (Exception | str) -> None
+    warnings.warn(str(message), category=UserHint)
 
 
 class FatalError(RuntimeError):
