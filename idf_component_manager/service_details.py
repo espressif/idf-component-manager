@@ -4,7 +4,7 @@
 import os
 from collections import namedtuple
 
-from idf_component_manager.utils import info
+from idf_component_manager.utils import print_info
 from idf_component_tools.api_client import APIClient
 from idf_component_tools.config import ConfigManager
 from idf_component_tools.errors import FatalError
@@ -67,9 +67,9 @@ def service_details(
     profile = get_profile(config_path, profile_name)
 
     if profile:
-        info('Selected profile name from idf_component_manager.yml file: {}'.format(profile_name))
+        print_info('Selected profile " {}" from the idf_component_manager.yml file'.format(profile_name))
     elif profile_name != 'default' and not profile:
-        raise NoSuchProfile('"{}" didn\'t find in idf_component_manager.yml file'.format(profile_name))
+        raise NoSuchProfile('"{}" didn\'t find in the idf_component_manager.yml file'.format(profile_name))
 
     # Priorities: DEFAULT_COMPONENT_SERVICE_URL env variable > profile value > built-in default
     registry_url, storage_url = default_component_registry_storage_url(registry_profile=profile)

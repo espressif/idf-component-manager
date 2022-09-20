@@ -3,6 +3,7 @@
 
 import os
 import re
+import warnings
 
 import pytest
 import yaml
@@ -378,7 +379,7 @@ class TestManifestValidator(object):
 
         assert not os.listdir(tmp_managed_components)
 
-    def test_unused_files_message(self, tmp_path, capsys):
+    def test_unused_files_message(self, tmp_path):
         managed_components_path = tmp_path / 'managed_components'
         managed_components_path.mkdir()
 
@@ -386,10 +387,11 @@ class TestManifestValidator(object):
         unused_file.write_text(u'test')
 
         project_requirements = []
-        detect_unused_components(project_requirements, str(managed_components_path))
-        captured = capsys.readouterr()
-
-        assert 'Content of the managed components directory is managed automatically' in captured.err
+        with warnings.catch_warnings(record=True) as w:
+            detect_unused_components(project_requirements, str(managed_components_path))
+            assert len(w) == 1
+            assert issubclass(w[-1].category, UserWarning)
+            assert 'Content of the managed components directory is managed automatically' in str(w[-1].message)
 
     @pytest.mark.parametrize(
         'if_clause, bool_value', [

@@ -3,6 +3,8 @@
 
 import click
 
+from idf_component_tools.errors import UserHint
+
 try:
     from typing import Any
 except ImportError:
@@ -14,19 +16,26 @@ def print_stderr_prefixed(prefix, color, message):  # type: (str, str, Exception
     click.echo(styled_prefix + str(message), err=True)
 
 
-def error(message):  # type: (Exception | str) -> None
+def print_error(message):  # type: (Exception | str) -> None
     print_stderr_prefixed('ERROR', 'red', message)
 
 
-def warn(message):  # type: (Exception | str) -> None
+def print_warn(message):  # type: (Exception | str) -> None
     print_stderr_prefixed('WARNING', 'yellow', message)
 
 
+def print_hint(message):  # type: (Exception | str) -> None
+    print_stderr_prefixed('HINT', 'yellow', message)
+
+
 def showwarning(message, category, filename, lineno, file=None, line=None):
-    warn(message)
+    if category is UserHint:
+        print_hint(message)
+    else:
+        print_warn(message)
 
 
-def info(
+def print_info(
         message,  # type: str
         fg=None,  # type: str | None
         bg=None,  # type: str | None

@@ -19,7 +19,7 @@ from tqdm import tqdm
 
 # Import whole module to avoid circular dependencies
 import idf_component_tools as tools
-from idf_component_manager.utils import warn
+from idf_component_manager.utils import print_warn
 from idf_component_tools import file_cache
 from idf_component_tools.__version__ import __version__
 from idf_component_tools.semver import SimpleSpec, Version
@@ -137,7 +137,7 @@ class APIClient(object):
             self.cache_time = int(
                 os.environ.get('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', DEFAULT_API_CACHE_EXPIRATION))
         except ValueError:
-            warn(
+            print_warn(
                 'IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES is set to a non-numeric value. '
                 'Please set the variable to the number of minutes. '
                 'Using the default value of {} minutes.'.format(DEFAULT_API_CACHE_EXPIRATION))
