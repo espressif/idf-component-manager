@@ -244,8 +244,8 @@ class APIClient(object):
             self._storage_url = self.api_information()['components_base_url']
         return self._storage_url
 
-    def _request(cache=False, use_storage=False):  # type: ignore
-        def decorator(f):  # type: (APIClient | Callable[..., Any]) -> Callable
+    def _request(cache=False, use_storage=False):  # type: (APIClient | bool, bool) -> Callable
+        def decorator(f):  # type: (Callable[..., Any]) -> Callable
             @wraps(f)  # type: ignore
             def wrapper(self, *args, **kwargs):
                 cache_status = cache and bool(self.cache_time)
@@ -276,7 +276,7 @@ class APIClient(object):
 
         return decorator
 
-    @_request(cache=True)  # type: ignore
+    @_request(cache=True)
     def api_information(self, request):
         return request(
             'get',
@@ -284,7 +284,7 @@ class APIClient(object):
             schema=API_INFORMATION_SCHEMA,
         )
 
-    @_request(cache=True, use_storage=True)  # type: ignore
+    @_request(cache=True, use_storage=True)
     def versions(self, request, component_name, spec='*', target=None):
         """List of versions for given component with required spec"""
         semantic_spec = SimpleSpec(spec or '*')
@@ -317,7 +317,7 @@ class APIClient(object):
             ],
         )
 
-    @_request(cache=True, use_storage=True)  # type: ignore
+    @_request(cache=True, use_storage=True)
     def component(self, request, component_name, version=None):
         """Manifest for given version of component, if version is None most recent version returned"""
         response = request(
@@ -359,7 +359,7 @@ class APIClient(object):
             examples=examples)
 
     @auth_required
-    @_request(cache=False)  # type: ignore
+    @_request(cache=False)
     def upload_version(self, request, component_name, file_path):
         with open(file_path, 'rb') as file:
             filename = os.path.basename(file_path)
@@ -387,11 +387,11 @@ class APIClient(object):
                 progress_bar.close()
 
     @auth_required
-    @_request(cache=False)  # type: ignore
+    @_request(cache=False)
     def delete_version(self, request, component_name, component_version):
         request('delete', ['components', component_name.lower(), component_version])
 
-    @_request(cache=False)  # type: ignore
+    @_request(cache=False)
     def task_status(self, request, job_id):  # type: (Callable, str) -> TaskStatus
         body = request('get', ['tasks', job_id], schema=TASK_STATUS_SCHEMA)
         return TaskStatus(body['message'], body['status'], body['progress'])
