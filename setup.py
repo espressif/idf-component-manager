@@ -83,7 +83,7 @@ setuptools.setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'compote = idf_component_manager.cli:cli',
+            'compote = idf_component_manager.cli:safe_cli',
         ],
     },
 )

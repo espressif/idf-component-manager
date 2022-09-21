@@ -3,10 +3,13 @@
 
 import os
 import subprocess  # nosec
+import sys
 
 import click
 
 from idf_component_manager.core import ComponentManager
+from idf_component_manager.utils import print_error
+from idf_component_tools.errors import FatalError
 
 CLI_NAME = 'compote'
 
@@ -25,6 +28,17 @@ DEFAULT_SETTINGS = {
     'show_default': True,
     'help_option_names': ['-h', '--help'],
 }
+
+
+def safe_cli():
+    """
+    Cli entrypoint with error handling
+    """
+    try:
+        cli()
+    except FatalError as e:
+        print_error(e)
+        sys.exit(e.exit_code)
 
 
 @click.group(context_settings=DEFAULT_SETTINGS)
