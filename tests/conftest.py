@@ -160,3 +160,16 @@ def release_component_path(fixtures_path):
         'components',
         'cmp',
     )
+
+
+@pytest.fixture
+def assert_return_code_run():
+    def real_func(*args, **kwargs):
+        if 'code' in kwargs:
+            code = kwargs.pop('code')
+        else:
+            code = 0
+        ret = subprocess.check_call(*args, **kwargs)
+        assert ret == code
+
+    return real_func

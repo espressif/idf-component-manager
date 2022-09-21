@@ -40,7 +40,7 @@ def test_init_project():
         manager.create_manifest(component='foo')
 
         for filepath in [main_manifest_path, foo_manifest_path]:
-            with open(filepath, mode='r', encoding='utf-8') as file:
+            with open(filepath, mode='r') as file:
                 assert file.readline().startswith('## IDF Component Manager')
 
         manager.add_dependency('comp<=1.0.0')
