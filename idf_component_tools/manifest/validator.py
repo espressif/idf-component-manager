@@ -45,7 +45,7 @@ NONEMPTY_STRING = And(Or(*string_types), len, error='Non-empty string is require
 SLUG_REGEX_COMPILED = re.compile(FULL_SLUG_REGEX)
 
 LINKS_URL_ERROR = 'Invalid URL in the "{}" field. Check that link is a correct HTTP(S) URL. '
-LINKS_GIT_ERROR = 'Invalid URL in the "{}" field. Checsk that link is a valid Git remote URL'
+LINKS_GIT_ERROR = 'Invalid URL in the "{}" field. Check that link is a valid Git remote URL'
 
 
 def known_targets():  # type: () -> list[str]
