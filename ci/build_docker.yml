@@ -1,6 +1,6 @@
 build:
   image:
-    name: gcr.io/kaniko-project/executor:debug
+    name: gcr.io/kaniko-project/executor:v1.9.1-debug
     entrypoint: [""]
   stage: .pre
   tags:
@@ -28,5 +28,4 @@ build:
       --build-arg PYTHON_IMAGE_TAG="${PYTHON_IMAGE_TAG}"
       --build-arg IDF_BRANCH="${IDF_BRANCH}"
       --cache=true
-      --cache-copy-layers=true
       --cache-ttl=720h
