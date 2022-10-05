@@ -81,4 +81,9 @@ setuptools.setup(
     install_requires=REQUIRES,
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
     include_package_data=True,
+    entry_points={
+        'console_scripts': [
+            'compote = idf_component_manager.cli:safe_cli',
+        ],
+    },
 )

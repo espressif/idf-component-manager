@@ -23,6 +23,14 @@ KNOWN_ACTIONS = [
 ]
 
 
+def check_required_args(args, required_field=None):
+    required_field = required_field or []
+
+    for _f in required_field:
+        if getattr(args, _f) is None:
+            raise ValueError('--{} is required'.format(_f.replace('_', '-')))
+
+
 def main():
     parser = argparse.ArgumentParser(description='IDF component manager v{}'.format(version))
     parser.add_argument('command', choices=KNOWN_ACTIONS, help='Command to execute')
@@ -33,7 +41,7 @@ def main():
         help='Profile for component registry to use. By default profile named "default" will be used.',
         default='default',
     )
-    parser.add_argument('--name', help='Component name', required=True)
+    parser.add_argument('--name', help='Component name')
     parser.add_argument('--archive', help='Path of the archive with component to upload.')
     parser.add_argument('--job', help='Background job ID.')
     parser.add_argument('--version', help='Version for upload or deletion.')
@@ -49,7 +57,30 @@ def main():
     try:
         warnings.showwarning = showwarning
         manager = ComponentManager(args.path)
-        getattr(manager, str(args.command).replace('-', '_'))(vars(args))
+
+        if args.command == 'pack-component':
+            warnings.warn('Deprecated! New CLI command: "compote component pack"', DeprecationWarning)
+            check_required_args(args, ['name', 'version'])
+            manager.pack_component(args.name, args.version)
+        elif args.command == 'upload-component':
+            warnings.warn('Deprecated! New CLI command: "compote component upload"', DeprecationWarning)
+            check_required_args(args, ['name'])
+            manager.upload_component(
+                args.name, args.version, args.service_profile, args.namespace, args.archive_file, args.skip_pre_release,
+                args.check_only, args.allow_existing)
+        elif args.command == 'upload-component-status':
+            warnings.warn('Deprecated! New CLI command: "compote component upload-status"', DeprecationWarning)
+            check_required_args(args, ['job'])
+            manager.upload_component_status(args.job, args.service_profile)
+        elif args.command == 'create-project-from-example':
+            warnings.warn('Deprecated! New CLI command: "compote project create-from-example"', DeprecationWarning)
+            check_required_args(args, ['name', 'example'])
+            manager.create_project_from_example(
+                args.name, args.example, args.version, args.service_profile, args.namespace)
+        elif args.command == 'delete-version':
+            warnings.warn('Deprecated! New CLI command: "compote component delete"', DeprecationWarning)
+            check_required_args(args, ['name', 'version'])
+            manager.delete_version(args.name, args.version, args.service_profile, args.namespace)
     except FatalError as e:
         print_error(e)
         sys.exit(e.exit_code)

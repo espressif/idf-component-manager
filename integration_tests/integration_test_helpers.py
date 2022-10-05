@@ -36,7 +36,7 @@ def create_manifest(project_path, component_dict, libraries, component_name):
     if len(libraries) == 0 or 'dependencies' not in component_dict.keys():
         return
     component_manager = ComponentManager(path=project_path)
-    component_manager.create_manifest({'component': component_name})
+    component_manager.create_manifest(component_name)
     component_path = get_component_path(project_path, component_name)
 
     with open(os.path.join(component_path, 'idf_component.yml')) as manifest:

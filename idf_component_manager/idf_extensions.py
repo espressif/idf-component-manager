@@ -64,7 +64,7 @@ def action_extensions(base_actions, project_path):
         try:
             warnings.showwarning = showwarning
             manager = ComponentManager(args.project_dir)
-            getattr(manager, str(subcommand_name).replace('-', '_'))(kwargs)
+            getattr(manager, str(subcommand_name).replace('-', '_'))(**kwargs)
         except FatalError as e:
             print_error(e)
             sys.exit(e.exit_code)
@@ -80,12 +80,16 @@ def action_extensions(base_actions, project_path):
         'actions': {
             'create-manifest': {
                 'callback': callback,
-                'help': 'Create manifest for specified component.',
+                'deprecated': True,
+                'help': ('New CLI command: "compote manifest create". '
+                         'Create manifest for specified component.'),
                 'options': LOCAL_MANIFEST_OPTIONS,
             },
             'add-dependency': {
                 'callback': callback,
+                'deprecated': True,
                 'help': (
+                    'New CLI command: "compote manifest add-dependency". '
                     'Add dependency to the manifest file. '
                     'For now we only support adding dependencies from the component registry.'),
                 'arguments': [
@@ -102,8 +106,11 @@ def action_extensions(base_actions, project_path):
             },
             'upload-component': {
                 'callback': callback,
-                'help': 'Upload component to the component registry. '
-                'If the component doesn\'t exist in the registry it will be created automatically.',
+                'deprecated': True,
+                'help': (
+                    'New CLI command: "compote component upload". '
+                    'Upload component to the component registry. '
+                    'If the component doesn\'t exist in the registry it will be created automatically.'),
                 'options': SERVICE_OPTIONS + VERSION_PARAMETER + [
                     {
                         'names': ['--archive'],
@@ -129,7 +136,10 @@ def action_extensions(base_actions, project_path):
             },
             'delete-version': {
                 'callback': callback,
-                'help': 'Delete specified version of the component from the component registry.',
+                'deprecated': True,
+                'help': (
+                    'New CLI command: "compote component delete". '
+                    'Delete specified version of the component from the component registry.'),
                 'options': SERVICE_OPTIONS +
                 [{
                     'names': ['--version'],
@@ -139,7 +149,10 @@ def action_extensions(base_actions, project_path):
             },
             'upload-component-status': {
                 'callback': callback,
-                'help': 'Check the component uploading status by the job ID.',
+                'deprecated': True,
+                'help': (
+                    'New CLI command: "compote component upload-status". '
+                    'Check the component uploading status by the job ID.'),
                 'options': SERVICE_PROFILE + [{
                     'names': ['--job'],
                     'help': 'Job ID',
@@ -148,7 +161,10 @@ def action_extensions(base_actions, project_path):
             },
             'pack-component': {
                 'callback': callback,
-                'help': 'Create component archive and store it in the dist directory.',
+                'deprecated': True,
+                'help': (
+                    'New CLI command: "compote component pack". '
+                    'Create component archive and store it in the dist directory.'),
                 'options': SERVICE_PROFILE + NAME + VERSION_PARAMETER,
             },
         },

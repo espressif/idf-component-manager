@@ -124,22 +124,20 @@ class ComponentManager(object):
         return manifest_filepath, created
 
     @general_error_handler
-    def create_manifest(self, args):
-        manifest_filepath, created = self._get_manifest(args.get('component', 'main'))
+    def create_manifest(self, component='main'):  # type: (str) -> None
+        manifest_filepath, created = self._get_manifest(component)
         if not created:
             print_info('"{}" already exists, skipping...'.format(manifest_filepath))
 
     @general_error_handler
-    def create_project_from_example(self, args):
-        profile = get_profile(args.get('service_details'))
-        namespace = get_namespace(profile, args.get('namespace') or 'espressif')
-        component_name = '/'.join([namespace, args.get('name')])
-        version = args.get('version') or '*'
-        example_full_name = args.get('example')
-        if not example_full_name:
-            raise FatalError('Failed to get example name. Please use --example flag to select example name')
+    def create_project_from_example(
+            self, name, example_full_name, version='*', service_profile='default', namespace='espressif'):
+        # type: (str, str, str, str, str) -> None
+        profile = get_profile(service_profile)
+        namespace = get_namespace(profile, namespace)
+        component_name = '/'.join([namespace, name])
         example_name = os.path.basename(example_full_name)
-        project_path = os.path.join(args.get('path'), example_name)
+        project_path = os.path.join(self.path, example_name)
 
         if os.path.isfile(project_path):
             raise FatalError(
@@ -173,15 +171,14 @@ class ComponentManager(object):
         print_info('Example {} successfully downloaded to {}'.format(example_full_name, os.path.abspath(project_path)))
 
     @general_error_handler
-    def add_dependency(self, args):
-        dependency = args.get('dependency')
-        manifest_filepath, _ = self._get_manifest(args.get('component', 'main'))
+    def add_dependency(self, dependency_str, component='main'):  # type: (str, str) -> None
+        manifest_filepath, _ = self._get_manifest(component)
 
-        match = re.match(WEB_DEPENDENCY_REGEX, dependency)
+        match = re.match(WEB_DEPENDENCY_REGEX, dependency_str)
         if match:
             name, spec = match.groups()
         else:
-            raise FatalError('Invalid dependency: "{}". Please use format "namespace/name".'.format(dependency))
+            raise FatalError('Invalid dependency: "{}". Please use format "namespace/name".'.format(dependency_str))
 
         if not spec:
             spec = '*'
@@ -193,7 +190,7 @@ class ComponentManager(object):
                 'Invalid dependency version requirement: {}. Please use format like ">=1" or "*".'.format(spec))
 
         name = WebServiceSource().normalized_name(name)
-        manifest_manager = ManifestManager(manifest_filepath, args.get('component'))
+        manifest_manager = ManifestManager(manifest_filepath, component)
         manifest = manifest_manager.load()
 
         for dependency in manifest.dependencies:
@@ -231,21 +228,19 @@ class ComponentManager(object):
         print_info('Successfully added dependency "{}{}" for component "{}"'.format(name, spec, manifest_manager.name))
 
     @general_error_handler
-    def pack_component(self, args):  # type: (dict) -> Tuple[str, Manifest]
-        version = args.get('version')
-
+    def pack_component(self, name, version):  # type: (str, str) -> Tuple[str, Manifest]
         if version == 'git':
             try:
                 version = str(GitClient().get_tag_version())
             except GitError:
-                raise FatalError('An error happend while getting version from git tag')
+                raise FatalError('An error happened while getting version from git tag')
         elif version:
             try:
                 Version.parse(version)
             except ValueError:
                 raise FatalError('Version parameter must be either "git" or a valid semantic version')
 
-        manifest_manager = ManifestManager(self.path, args['name'], check_required_fields=True, version=version)
+        manifest_manager = ManifestManager(self.path, name, check_required_fields=True, version=version)
         manifest = manifest_manager.load()
         dist_temp_dir = os.path.join(self.dist_path, dist_name(manifest))
         copy_filtered_directory(
@@ -260,10 +255,8 @@ class ComponentManager(object):
         return archive_filepath, manifest
 
     @general_error_handler
-    def delete_version(self, args):
-        client, namespace = service_details(args.get('namespace'), args.get('service_profile'))
-        name = args.get('name')
-        version = args.get('version')
+    def delete_version(self, name, version, service_profile='default', namespace='espressif'):
+        client, namespace = service_details(namespace, service_profile)
 
         if not version:
             raise FatalError('Argument "version" is required')
@@ -280,7 +273,7 @@ class ComponentManager(object):
         print_info('Deleted version {} of the component {}'.format(component_name, version))
 
     @general_error_handler
-    def remove_managed_components(self, args):
+    def remove_managed_components(self, **kwargs):  # kwargs here to keep idf_extension.py compatibility
         managed_components_dir = Path(self.path, 'managed_components')
 
         if not managed_components_dir.is_dir():
@@ -307,10 +300,18 @@ class ComponentManager(object):
             shutil.rmtree(str(managed_components_dir))
 
     @general_error_handler
-    def upload_component(self, args):
-        client, namespace = service_details(args.get('namespace'), args.get('service_profile'))
-        version = args.get('version')
-        archive_file = args.get('archive')
+    def upload_component(
+            self,
+            name,
+            version=None,
+            service_profile='default',
+            namespace='espressif',
+            archive_file=None,
+            skip_pre_release=False,
+            check_only=False,
+            allow_existing=False):
+        # type: (str, Optional[str], str, str, str | None, bool, bool, bool) -> None
+        client, namespace = service_details(namespace, service_profile)
         if archive_file:
             if not os.path.isfile(archive_file):
                 raise FatalError('Cannot find archive to upload: {}'.format(archive_file))
@@ -321,30 +322,33 @@ class ComponentManager(object):
             tempdir = tempfile.mkdtemp()
             try:
                 unpack_archive(archive_file, tempdir)
-                manifest = ManifestManager(tempdir, args['name'], check_required_fields=True).load()
+                manifest = ManifestManager(tempdir, name, check_required_fields=True).load()
             finally:
                 shutil.rmtree(tempdir)
         else:
-            archive_file, manifest = self.pack_component(args)
+            archive_file, manifest = self.pack_component(name, version)
+
+        if not manifest.version:
+            raise FatalError('"version" field is required when uploading the component')
 
         if not manifest.version.is_semver:
             raise FatalError('Only components with semantic versions are allowed on the service')
 
-        if manifest.version.semver.prerelease and args.get('skip_pre_release'):
+        if manifest.version.semver.prerelease and skip_pre_release:
             raise NothingToDoError('Skipping pre-release version {}'.format(manifest.version))
 
         component_name = '/'.join([namespace, manifest.name])
         # Checking if current version already uploaded
         versions = client.versions(component_name=component_name, spec='*').versions
         if manifest.version in versions:
-            if args.get('allow_existing'):
+            if allow_existing:
                 return
 
             raise NothingToDoError(
                 'Version {} of the component "{}" is already on the service'.format(manifest.version, component_name))
 
         # Exit if check flag was set
-        if args.get('check_only'):
+        if check_only:
             return
 
         # Uploading the component
@@ -354,8 +358,8 @@ class ComponentManager(object):
         # Wait for processing
         print_info(
             'Wait for processing, it is safe to press CTRL+C and exit\n'
-            'You can check the state of processing by running subcommand '
-            '"upload-component-status --job=%s"' % job_id)
+            'You can check the state of processing by running CLI command '
+            '"compote component upload-status --job=%s"' % job_id)
 
         timeout_at = datetime.now() + timedelta(seconds=PROCESSING_TIMEOUT)
 
@@ -379,13 +383,8 @@ class ComponentManager(object):
                 "Component wasn't processed in {} seconds. Check processing status later.".format(PROCESSING_TIMEOUT))
 
     @general_error_handler
-    def upload_component_status(self, args):
-        job_id = args.get('job')
-
-        if not job_id:
-            raise FatalError('Job ID is required')
-
-        client, _ = service_details(None, args.get('service_profile'))
+    def upload_component_status(self, job_id, service_profile='default'):
+        client, _ = service_details(None, service_profile)
         status = client.task_status(job_id=job_id)
         if status.status == 'failure':
             raise FatalError("Uploaded version wasn't processed successfully.\n%s" % status.message)
