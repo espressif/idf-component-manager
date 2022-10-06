@@ -440,7 +440,7 @@ class ComponentManager(object):
                 component_name = Path(component_path).name
                 file.write(
                     u'idf_component_set_property(%s %s "%s")\n' %
-                    (component_name, 'COMPONENT_VERSION', downloaded_component_version_dict[component_name]))
+                    (component_name, 'COMPONENT_VERSION', downloaded_component_version_dict[component_path]))
 
             component_names = ';'.join(os.path.basename(path) for path in downloaded_component_paths)
             file.write(u'set(managed_components "%s")\n' % component_names)

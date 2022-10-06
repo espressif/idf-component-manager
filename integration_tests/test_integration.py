@@ -68,7 +68,7 @@ def test_local_dependency_with_relative_path(project):
                         'requires': 'efuse',
                     },
                     'dependencies': {
-                        'cmp': {
+                        'example/cmp': {
                             'version': '*',
                             'path': fixtures_path('components', 'cmp'),
                             'include': 'cmp.h',

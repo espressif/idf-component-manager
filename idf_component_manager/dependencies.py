@@ -159,8 +159,8 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
                 if download_path:
                     fetcher.create_hash(download_path, component.component_hash)
                     downloaded_component_paths.add(download_path)
-                # Save versions of downloadable components
-                downloaded_component_version_dict[build_name(component.name)] = str(component.version)
+                    # Save versions of downloadable components
+                    downloaded_component_version_dict[download_path] = str(component.version)
             except ComponentModifiedError:
                 changed_components.append(component.name)
 
