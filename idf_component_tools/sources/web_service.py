@@ -28,7 +28,7 @@ except ImportError:
     from urlparse import urlparse  # type: ignore
 
 try:
-    from typing import TYPE_CHECKING, Dict, List
+    from typing import TYPE_CHECKING, Dict
 
     if TYPE_CHECKING:
         from ..manifest import SolvedComponent
@@ -134,7 +134,7 @@ class WebServiceSource(BaseSource):
     def normalized_name(self, name):
         return utils.normalized_name(name)
 
-    def download(self, component, download_path):  # type: (SolvedComponent, str) -> List[str]
+    def download(self, component, download_path):  # type: (SolvedComponent, str) -> str
         # Check for required components
         if not component.component_hash:
             raise FetchingError('Component hash is required for componets from web service')
@@ -143,12 +143,12 @@ class WebServiceSource(BaseSource):
             raise FetchingError('Version should be provided for %s' % component.name)
 
         if self.up_to_date(component, download_path):
-            return [download_path]
+            return download_path
 
         # Check if component is in the cache
         if validate_dir(self.component_cache_path(component), component.component_hash):
             copy_directory(self.component_cache_path(component), download_path)
-            return [download_path]
+            return download_path
 
         component_manifest = self.api_client.component(component_name=component.name, version=component.version)
         url = component_manifest.download_url
@@ -199,7 +199,7 @@ class WebServiceSource(BaseSource):
             finally:
                 shutil.rmtree(tempdir)
 
-        return [download_path]
+        return download_path
 
     @property
     def service_url(self):

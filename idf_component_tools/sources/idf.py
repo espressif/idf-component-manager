@@ -42,7 +42,7 @@ class IDFSource(BaseSource):
 
     def download(self, component, download_path):
         get_idf_path()
-        return []
+        return None
 
     def serialize(self):  # type: () -> Dict
         return {'type': self.name}

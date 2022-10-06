@@ -25,7 +25,7 @@ def test_fetcher_download_and_create_hash(fixtures_path):
     component_path = os.path.join(components_folder_path, 'cmp')
 
     try:
-        fetcher.create_hash([component_path], component.component_hash)
+        fetcher.create_hash(component_path, component.component_hash)
 
         with pytest.raises(ComponentModifiedError, match='Component directory was modified '
                            'on the disk since the last run of the CMake'):

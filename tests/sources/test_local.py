@@ -22,7 +22,7 @@ def test_service_is_me():
 def test_download(fixtures_path):
     source = LocalSource(source_details={'path': fixtures_path})
     component = SolvedComponent('cmp', '*', source)
-    assert source.download(component, '/test/path/')[0].endswith('fixtures')
+    assert source.download(component, '/test/path/').endswith('fixtures')
 
 
 def test_versions_without_manifest():

@@ -21,7 +21,7 @@ except ImportError:
     from urlparse import urlparse  # type: ignore
 
 try:
-    from typing import TYPE_CHECKING, Dict, List
+    from typing import TYPE_CHECKING, Dict
 
     if TYPE_CHECKING:
         from ..manifest import SolvedComponent
@@ -92,7 +92,7 @@ class GitSource(BaseSource):
         path = os.path.join(self.system_cache_path, 'b_{}_{}'.format(self.NAME, self.hash_key[:8]))
         return path
 
-    def download(self, component, download_path):  # type: (SolvedComponent, str) -> List[str]
+    def download(self, component, download_path):  # type: (SolvedComponent, str) -> str | None
         # Check for required components
         if not component.component_hash:
             raise FetchingError('Component hash is required for components from git repositories')
@@ -101,7 +101,7 @@ class GitSource(BaseSource):
             raise FetchingError('Version should provided for %s' % component.name)
 
         if self.up_to_date(component, download_path):
-            return [download_path]
+            return download_path
 
         temp_dir = tempfile.mkdtemp()
         try:
@@ -126,7 +126,7 @@ class GitSource(BaseSource):
         finally:
             shutil.rmtree(temp_dir)
 
-        return [download_path]
+        return download_path
 
     def versions(self, name, details=None, spec='*', target=None):
         """For git returns hash of locked commit, ignoring manifest"""
