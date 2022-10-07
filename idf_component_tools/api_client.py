@@ -327,10 +327,15 @@ class APIClient(object):
         )
         versions = response['versions']
 
-        if version:
-            requested_version = tools.manifest.ComponentVersion(str(version))
-            best_version = [v for v in versions
-                            if tools.manifest.ComponentVersion(v['version']) == requested_version][0]
+        if version and version != '*':
+            requested_version = SimpleSpec(str(version))
+            filtered_versions = [v for v in versions if requested_version.match(Version(v['version']))]
+            try:
+                best_version = filtered_versions[0]
+            except IndexError:
+                raise VersionNotFound(
+                    'Selected component "{}" with selected version "{}" doesn\'t exist.'.format(
+                        component_name, requested_version))
         else:
             best_version = max(versions, key=lambda v: Version(v['version']))
 
