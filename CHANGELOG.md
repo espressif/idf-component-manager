@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Validate case-insensitive duplicate items in the manifest file
 - Provide better error message when no network connection
 - Improve the error message when failed to solve the dependencies specified in manifest files
+- Fix crash on use of local components and `override_path` for namespaced components
 
 ## [1.1.4] 2022-07-04
 

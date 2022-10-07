@@ -12,7 +12,7 @@ from ..hash_tools import (
 from ..manifest import SolvedComponent
 
 try:
-    from typing import TYPE_CHECKING, List
+    from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
         from . import BaseSource
@@ -32,7 +32,7 @@ class ComponentFetcher(object):
         self.components_path = components_path
         self.managed_path = os.path.join(self.components_path, build_name(self.component.name))
 
-    def download(self):  # type: () -> List[str]
+    def download(self):  # type: () -> str | None
         """If necessary, it downloads component and returns local path to component directory"""
         try:
             validate_dir_with_hash_file(self.managed_path)
@@ -52,9 +52,9 @@ class ComponentFetcher(object):
 
         return self.source.download(self.component, self.managed_path)
 
-    def create_hash(self, paths, component_hash):  # type: (list[str], None | str) -> None
+    def create_hash(self, path, component_hash):  # type: (str, None | str) -> None
         if self.component.source.downloadable:
-            hash_file = os.path.join(paths[0], HASH_FILENAME)
+            hash_file = os.path.join(path, HASH_FILENAME)
 
             if not os.path.isfile(hash_file):
                 with open(hash_file, mode='w+', encoding='utf-8') as f:

@@ -178,7 +178,7 @@ class BaseSource(object):
         """List of versions for given spec"""
 
     @abstractmethod
-    def download(self, component, download_path):  # type: (SolvedComponent, str) -> List[str]
+    def download(self, component, download_path):  # type: (SolvedComponent, str) -> str | None
         """
         Fetch required component version from the source
         Returns list of absolute paths to directories with component on local filesystem

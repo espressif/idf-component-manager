@@ -42,10 +42,9 @@ class TestComponentWebServiceSource(object):
             download_path = os.path.join(tempdir, 'test_download')
             local_path = source.download(cmp, download_path)
 
-            assert len(local_path) == 1
-            assert local_path[0] == download_path
-            assert os.path.isdir(local_path[0])
-            downloaded_manifest = os.path.join(local_path[0], 'idf_component.yml')
+            assert local_path == download_path
+            assert os.path.isdir(local_path)
+            downloaded_manifest = os.path.join(local_path, 'idf_component.yml')
             assert os.path.isfile(downloaded_manifest)
             cached_manifest = os.path.join(source.component_cache_path(cmp), 'idf_component.yml')
             assert os.path.isfile(cached_manifest)
@@ -64,7 +63,7 @@ class TestComponentWebServiceSource(object):
 
             local_path = source.download(fixture_cmp, download_path)
 
-            assert os.path.isfile(os.path.join(local_path[0], 'idf_component.yml'))
+            assert os.path.isfile(os.path.join(local_path, 'idf_component.yml'))
 
         finally:
             shutil.rmtree(tempdir)

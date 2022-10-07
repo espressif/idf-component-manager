@@ -9,6 +9,11 @@ from jinja2 import Environment, FileSystemLoader
 from .integration_test_helpers import create_component, generate_from_template
 
 
+@pytest.fixture  # fake fixture since can't specify `indirect` for only one fixture
+def result(request):
+    return getattr(request, 'param')
+
+
 @pytest.fixture(scope='function')
 def project(request, tmpdir_factory):
     project_path = str(tmpdir_factory.mktemp('project'))

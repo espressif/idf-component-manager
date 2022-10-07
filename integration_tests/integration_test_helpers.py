@@ -1,7 +1,10 @@
 # SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
+import logging
 import os
+import subprocess
+from io import open
 
 import yaml
 from jinja2 import Environment, Template
@@ -105,3 +108,57 @@ def get_dependencies(component_dict):
     ]
 
     return include_list, libraries_for_manifest
+
+
+def fixtures_path(*args):
+    return os.path.join(os.path.dirname(__file__), '..', 'tests', 'fixtures', *args)
+
+
+def live_print_call(*args, **kwargs):
+    default_kwargs = {
+        'stdout': subprocess.PIPE,
+        'stderr': subprocess.STDOUT,
+    }
+    kwargs.update(default_kwargs)
+    process = subprocess.Popen(*args, **kwargs)
+
+    try:
+        string_type = basestring  # type: ignore
+    except NameError:
+        string_type = str
+
+    res = ''
+    for line in process.stdout:
+        if not isinstance(line, string_type):
+            line = line.decode('utf-8')
+        line = line.rstrip()
+        logging.info(line)
+        res += line
+
+    return res
+
+
+def idf_version():
+    return live_print_call(['idf.py', '--version'])
+
+
+def project_action(project_path, *actions):
+    return live_print_call(['idf.py', '-C', project_path] + list(actions))
+
+
+def build_project(project_path):
+    return project_action(project_path, 'build')
+
+
+def set_target(project_path, target):
+    return live_print_call(['idf.py', '-C', project_path, 'set-target', target])
+
+
+def skip_for_idf_versions(*versions):
+    current_version = idf_version()
+    for version in versions:
+        if version in current_version:
+            logging.info('Skipping the test for %s', current_version)
+            return True
+
+    return False

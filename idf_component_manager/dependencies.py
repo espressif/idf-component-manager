@@ -155,10 +155,12 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
             print_info('[{}/{}] {} ({})'.format(index + 1, number_of_components, component.name, component.version))
             fetcher = ComponentFetcher(component, managed_components_path)
             try:
-                download_paths = fetcher.download()
-                fetcher.create_hash(download_paths, component.component_hash)
-                downloaded_component_paths.update(download_paths)
-                downloaded_component_version_dict[build_name(component.name)] = str(component.version)
+                download_path = fetcher.download()
+                if download_path:
+                    fetcher.create_hash(download_path, component.component_hash)
+                    downloaded_component_paths.add(download_path)
+                    # Save versions of downloadable components
+                    downloaded_component_version_dict[download_path] = str(component.version)
             except ComponentModifiedError:
                 changed_components.append(component.name)
 

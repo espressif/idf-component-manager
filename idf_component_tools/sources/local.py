@@ -93,7 +93,7 @@ class LocalSource(BaseSource):
                 + 'requirements resolution. To avoid the problem rename the component directory to ' +
                 '"{component_without_namespace}"{alternative_name}'.format(
                     component_without_namespace=component_without_namespace, alternative_name=alternative_name))
-        return [str(self._path)]
+        return str(self._path)
 
     def versions(self, name, details=None, spec='*', target=None):
         """For local return version from manifest, or * if manifest not found"""
