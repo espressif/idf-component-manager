@@ -18,6 +18,10 @@ class NamespaceNotFound(APIClientError):
     pass
 
 
+class VersionNotFound(APIClientError):
+    pass
+
+
 class StorageFileNotFound(APIClientError):
     pass
 

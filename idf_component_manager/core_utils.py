@@ -1,13 +1,21 @@
 # SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
+import re
 from pathlib import Path
 
 from tqdm import tqdm
 
-from idf_component_tools.errors import ComponentModifiedError
+from idf_component_tools.constants import DEFAULT_NAMESPACE
+from idf_component_tools.errors import ComponentModifiedError, FatalError
 from idf_component_tools.hash_tools import HASH_FILENAME
 from idf_component_tools.manifest import Manifest
+from idf_component_tools.semver import SimpleSpec
+
+CREATE_PROJECT_FROM_EXAMPLE_NAME_REGEX = r'^((?P<namespace>\w+)\/)?' \
+                                         r'(?P<component>\w+)' \
+                                         r'(?P<version>[<=>!^~\*].+)?:' \
+                                         r'(?P<example>[\w\/]+)$'
 
 
 class ProgressBar(tqdm):
@@ -55,3 +63,23 @@ def raise_component_modified_error(managed_components_dir, components):  # type:
         hash_path=hash_path,
         hash_filename=HASH_FILENAME)
     raise ComponentModifiedError(error)
+
+
+def parse_example(example):  # type: (str) -> tuple[str, str, str]
+    match = re.match(CREATE_PROJECT_FROM_EXAMPLE_NAME_REGEX, example)
+    if not match:
+        raise FatalError(
+            'Cannot parse EXAMPLE argument. Please use format like: namespace/component=1.0.0:example_name')
+
+    namespace = match.group('namespace') or DEFAULT_NAMESPACE
+    component = match.group('component')
+    version_spec = match.group('version') or '*'
+    example_name = match.group('example')
+
+    try:
+        SimpleSpec(version_spec)
+    except ValueError:
+        raise FatalError(
+            'Invalid version specification: "{}". Please use format like ">=1" or "*".'.format(version_spec))
+
+    return '{}/{}'.format(namespace, component), version_spec, example_name

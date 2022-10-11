@@ -81,20 +81,29 @@ NAMESPACE_NAME_OPTIONS = NAMESPACE_OPTION + NAME_OPTION
 
 
 @project.command()
-@add_options(PROJECT_OPTIONS + NAMESPACE_NAME_OPTIONS)
-@click.option('--example', required=True, help='Full name of the example')
-@click.option('--version', default='*', help='Version of the example project')
-def create_from_example(manager, service_profile, namespace, name, example, version):
+@add_options(PROJECT_DIR_OPTION)
+@click.option(
+    '-p',
+    '--path',
+    default=None,
+    help='Path of the new project. The project will be created directly in the given folder if it is empty.')
+@click.argument('example', required=True)
+def create_from_example(manager, example, path):
     """
-    Create project from example.
+    Create a project from an example.
+
+    You can specify EXAMPLE in the format like:
+      namespace/name=1.0.0:example
+
+    where "=1.0.0" is a version specification.
+
+    An example command:
+
+      compote project create-from-example example/cmp^3.3.8:cmp_ex
+
+    Namespace and version are optional in the EXAMPLE argument.
     """
-    manager.create_project_from_example(
-        name,
-        example,
-        version=version,
-        service_profile=service_profile,
-        namespace=namespace,
-    )
+    manager.create_project_from_example(example, path=path)
 
 
 @project.command()

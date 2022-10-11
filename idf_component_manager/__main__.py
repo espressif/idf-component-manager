@@ -74,9 +74,9 @@ def main():
             manager.upload_component_status(args.job, args.service_profile)
         elif args.command == 'create-project-from-example':
             warnings.warn('Deprecated! New CLI command: "compote project create-from-example"', DeprecationWarning)
-            check_required_args(args, ['name', 'example'])
+            check_required_args(args, ['namespace', 'name', 'example', 'version'])
             manager.create_project_from_example(
-                args.name, args.example, args.version, args.service_profile, args.namespace)
+                '{}/{}={}:{}'.format(args.namespace, args.name, args.version, args.example))
         elif args.command == 'delete-version':
             warnings.warn('Deprecated! New CLI command: "compote component delete"', DeprecationWarning)
             check_required_args(args, ['name', 'version'])
