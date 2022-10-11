@@ -63,11 +63,11 @@ class GitSource(BaseSource):
 
     @classmethod
     def required_keys(cls):
-        return ['git']
+        return {'git': 'str'}
 
     @classmethod
     def optional_keys(cls):
-        return ['path']
+        return {'path': 'str'}
 
     @property
     def component_hash_required(self):  # type: () -> bool

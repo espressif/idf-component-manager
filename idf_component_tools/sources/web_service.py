@@ -91,11 +91,11 @@ class WebServiceSource(BaseSource):
 
     @classmethod
     def required_keys(cls):
-        return ['service_url']
+        return {'service_url': 'str'}
 
     @classmethod
     def optional_keys(cls):
-        return ['pre_release']
+        return {'pre_release': 'bool'}
 
     @property
     def hash_key(self):

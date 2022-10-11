@@ -15,14 +15,18 @@ from ..hash_tools import validate_dir
 from ..semver import SimpleSpec
 
 try:
-    from typing import TYPE_CHECKING, Callable, Dict, List
+    from typing import TYPE_CHECKING, Callable
     from typing import Optional as _Optional
-    from typing import Union
 
     if TYPE_CHECKING:
         from ..manifest import ComponentWithVersions, SolvedComponent
 except ImportError:
     pass
+
+VALUE_TYPES = {
+    'str': Or(*string_types),
+    'bool': bool,
+}
 
 
 class BaseSource(object):
@@ -63,7 +67,7 @@ class BaseSource(object):
         return '{}({})'.format(type(self).__name__, self.hash_key)
 
     @staticmethod
-    def fromdict(name, details):  # type: (str, Dict) -> BaseSource
+    def fromdict(name, details):  # type: (str, dict) -> BaseSource
         '''Build component source by dict'''
         for source_class in tools.sources.KNOWN_SOURCES:
             source = source_class.build_if_me(name, details)
@@ -76,32 +80,33 @@ class BaseSource(object):
         raise SourceError('Unknown source for component: %s' % name)
 
     @staticmethod
-    def is_me(name, details):  # type: (str, Dict) -> bool
+    def is_me(name, details):  # type: (str, dict) -> bool
         return False
 
     @classmethod
     def required_keys(cls):
-        return []
+        return {}
 
     @classmethod
     def optional_keys(cls):
-        return []
+        return {}
 
     @classmethod
-    def known_keys(cls):  # type: () -> List[str]
+    def known_keys(cls):  # type: () -> list[str]
         """List of known details key"""
-        return ['version', 'public', 'rules', 'require'] + cls.required_keys() + cls.optional_keys()
+        return ['version', 'public', 'rules', 'require'] + list(cls.required_keys().keys()) + list(
+            cls.optional_keys().keys())
 
     @classmethod
-    def schema(cls):  # type: () -> Dict
+    def schema(cls):  # type: () -> dict
         """Schema for lock file"""
-        source_schema = {'type': cls.NAME}  # type: Dict[str, Union[str, Callable]]
+        source_schema = {'type': cls.NAME}  # type: dict[str, str | Callable]
 
-        for key in cls.required_keys():
-            source_schema[key] = Or(*string_types)
+        for key, type_field in cls.required_keys().items():
+            source_schema[key] = VALUE_TYPES[type_field]
 
-        for key in cls.optional_keys():
-            source_schema[Optional(key)] = Or(*string_types)
+        for key, type_field in cls.optional_keys().items():
+            source_schema[Optional(key)] = VALUE_TYPES[type_field]
 
         return source_schema
 
@@ -170,7 +175,7 @@ class BaseSource(object):
     def versions(
             self,
             name,  # type: str
-            details=None,  # type: Union[Dict, None]
+            details=None,  # type: dict | None
             spec='*',  # type: str
             target=None,  # type: _Optional[str]
     ):
@@ -185,7 +190,7 @@ class BaseSource(object):
         """
 
     @abstractmethod
-    def serialize(self):  # type: () -> Dict
+    def serialize(self):  # type: () -> dict
         """
         Return fields to describe source to be saved in lock file
         """
