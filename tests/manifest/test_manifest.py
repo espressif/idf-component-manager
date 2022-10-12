@@ -51,9 +51,7 @@ class TestManifestPipeline(object):
         path = tmp_path.as_posix()
         parser = ManifestManager(path, name='test')
 
-        parser.check_filename()
-
-        assert parser._path == os.path.join(path, 'idf_component.yml')
+        assert parser.path == os.path.join(path, 'idf_component.yml')
 
     def test_parse_invalid_yaml(self, fixtures_path):
         manifest_path = os.path.join(fixtures_path, 'invalid_yaml.yml')
