@@ -286,7 +286,7 @@ class APIClient(object):
         )
 
     @_request(cache=True, use_storage=True)
-    def versions(self, request, component_name, spec='*', target=None):
+    def versions(self, request, component_name, spec='*'):
         """List of versions for given component with required spec"""
         semantic_spec = SimpleSpec(spec or '*')
         component_name = component_name.lower()
@@ -302,8 +302,6 @@ class APIClient(object):
             versions = []
             for version in body['versions']:
                 if semantic_spec.match(Version(version['version'])):
-                    if target and version['targets'] and target not in version['targets']:
-                        continue
                     versions.append(version)
 
         return tools.manifest.ComponentWithVersions(

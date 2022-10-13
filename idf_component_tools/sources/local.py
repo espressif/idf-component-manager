@@ -63,11 +63,11 @@ class LocalSource(BaseSource):
 
     @classmethod
     def required_keys(cls):
-        return ['path']
+        return {'path': 'str'}
 
     @classmethod
     def optional_keys(cls):
-        return ['override_path']
+        return {'override_path': 'str'}
 
     @staticmethod
     def is_me(name, details):
