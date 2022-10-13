@@ -20,4 +20,7 @@ COMPILED_URL_RE = re.compile(URL_RE, re.IGNORECASE)
 GIT_URL_RE = r'^(?:git|ssh|https?|git@[-\w.]+):(//)?(.*?)(\.git)(/?|#[-\d\w._]+?)$'
 COMPILED_GIT_URL_RE = re.compile(GIT_URL_RE, re.IGNORECASE)
 
+# Registry related constants
 DEFAULT_NAMESPACE = 'espressif'
+DEFAULT_COMPONENT_SERVICE_URL = 'https://api.components.espressif.com/'
+IDF_COMPONENT_STORAGE_URL = 'https://components-file.espressif.com/'

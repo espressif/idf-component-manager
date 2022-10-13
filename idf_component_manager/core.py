@@ -148,7 +148,7 @@ class ComponentManager(object):
                 'choose a different path.'.format(project_path),
                 exit_code=3)
 
-        client = create_api_client()
+        client = create_api_client()  # TODO
         try:
             component_details = client.component(component_name=component_name, version=version_spec)
         except VersionNotFound as e:
