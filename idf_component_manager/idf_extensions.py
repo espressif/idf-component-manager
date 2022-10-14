@@ -188,7 +188,7 @@ def action_extensions(base_actions, project_path):
                 'arguments': [{
                     'names': ['example']
                 }],
-                'options': [
+                'options': SERVICE_PROFILE + [
                     {
                         'names': ['-p', '--path'],
                         'help': (
