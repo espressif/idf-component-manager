@@ -4,7 +4,7 @@
 import sys
 import warnings
 
-from idf_component_manager.utils import print_error, showwarning
+from idf_component_manager.utils import CLICK_SUPPORTS_SHOW_DEFAULT, print_error, showwarning
 from idf_component_tools.errors import FatalError
 
 from .core import ComponentManager
@@ -44,10 +44,12 @@ LOCAL_MANIFEST_OPTIONS = [
     {
         'names': ['--component'],
         'default': 'main',
-        'show_default': True,
         'help': 'Name of the component in the project.',
     },
-]
+]  # type: list[dict[str, Any]]
+
+if CLICK_SUPPORTS_SHOW_DEFAULT:
+    LOCAL_MANIFEST_OPTIONS[0]['show_default'] = True
 
 VERSION_PARAMETER = [
     {

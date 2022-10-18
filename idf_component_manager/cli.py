@@ -8,8 +8,13 @@ import sys
 import click
 
 from idf_component_manager.core import ComponentManager
-from idf_component_manager.utils import print_error
+from idf_component_manager.utils import CLICK_SUPPORTS_SHOW_DEFAULT, print_error
 from idf_component_tools.errors import FatalError
+
+try:
+    from typing import Any
+except ImportError:
+    pass
 
 CLI_NAME = 'compote'
 
@@ -25,9 +30,11 @@ def add_options(options):
 
 
 DEFAULT_SETTINGS = {
-    'show_default': True,
     'help_option_names': ['-h', '--help'],
-}
+}  # type: dict[str, Any]
+
+if CLICK_SUPPORTS_SHOW_DEFAULT:
+    DEFAULT_SETTINGS['show_default'] = True
 
 
 def safe_cli():
