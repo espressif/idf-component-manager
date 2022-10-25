@@ -37,4 +37,7 @@ bandit_output.txt
 
 # Coverage reports
 .coverage
+.coverage.*
 coverage.xml
+
+.venv/

@@ -18,11 +18,17 @@ def test_manifest_create_add_dependency(tmp_path, assert_return_code_run):
 
     os.makedirs(os.path.join(tempdir, 'main'))
     os.makedirs(os.path.join(tempdir, 'components', 'foo'))
+    os.makedirs(os.path.join(tempdir, 'src'))
     main_manifest_path = os.path.join(tempdir, 'main', MANIFEST_FILENAME)
     foo_manifest_path = os.path.join(tempdir, 'components', 'foo', MANIFEST_FILENAME)
+    src_path = os.path.join(tempdir, 'src')
+    src_manifest_path = os.path.join(src_path, MANIFEST_FILENAME)
 
     assert_return_code_run(['compote', 'manifest', 'create'], cwd=tempdir)
     assert_return_code_run(['compote', 'manifest', 'create', '--component', 'foo'], cwd=tempdir)
+    assert_return_code_run(['compote', 'manifest', 'create', '--path', src_path], cwd=tempdir)
+    assert_return_code_run(
+        ['compote', 'manifest', 'create', '--component', 'src', '--path', src_path], cwd=tempdir, code=2)
 
     for filepath in [main_manifest_path, foo_manifest_path]:
         with open(filepath, mode='r') as file:
@@ -35,4 +41,9 @@ def test_manifest_create_add_dependency(tmp_path, assert_return_code_run):
     assert_return_code_run(
         ['compote', 'manifest', 'add-dependency', 'idf/comp<=1.0.0', '--component', 'foo'], cwd=tempdir)
     manifest_manager = ManifestManager(foo_manifest_path, 'foo')
+    assert manifest_manager.manifest_tree['dependencies']['idf/comp'] == '<=1.0.0'
+
+    assert_return_code_run(
+        ['compote', 'manifest', 'add-dependency', 'idf/comp<=1.0.0', '--path', src_path], cwd=tempdir)
+    manifest_manager = ManifestManager(src_manifest_path, 'src')
     assert manifest_manager.manifest_tree['dependencies']['idf/comp'] == '<=1.0.0'

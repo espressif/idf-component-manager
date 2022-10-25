@@ -116,7 +116,14 @@ def remove_managed_components(manager):
     manager.remove_managed_components()
 
 
-MANIFEST_COMPONENT_NAME_OPTION = [click.option('--component', default='main', help='Component name in the project')]
+MANIFEST_OPTIONS = [
+    click.option(
+        '--component',
+        default='main',
+        help='Component name in the project. Only main and components in the `components` directory are supported.'),
+    click.option(
+        '-p', '--path', default=None, help='Path of the component. Component name ignored when path specified.'),
+]
 
 
 @cli.group()
@@ -128,18 +135,18 @@ def manifest():
 
 
 @manifest.command()
-@add_options(PROJECT_DIR_OPTION + MANIFEST_COMPONENT_NAME_OPTION)
-def create(manager, component):
+@add_options(PROJECT_DIR_OPTION + MANIFEST_OPTIONS)
+def create(manager, component, path):
     """
     Create manifest file for the specified component.
     """
-    manager.create_manifest(component=component)
+    manager.create_manifest(component=component, path=path)
 
 
 @manifest.command()
-@add_options(PROJECT_DIR_OPTION + MANIFEST_COMPONENT_NAME_OPTION)
+@add_options(PROJECT_DIR_OPTION + MANIFEST_OPTIONS)
 @click.argument('dependency', required=True)
-def add_dependency(manager, component, dependency):
+def add_dependency(manager, component, path, dependency):
     """
     Add dependency to the manifest file. For now we only support adding dependencies from the component registry.
 
@@ -150,7 +157,7 @@ def add_dependency(manager, component, dependency):
     - $ compote manifest add-dependency example/cmp<=2.0.0
       would add component `example/cmp` with constraint `<=2.0.0`
     """
-    manager.add_dependency(dependency, component=component)
+    manager.add_dependency(dependency, component=component, path=path)
 
 
 @cli.group()
@@ -165,7 +172,7 @@ COMPONENT_VERSION_OPTION = [
     click.option(
         '--version',
         help='Set version if not defined in the manifest. Use "git" to get version from the git tag. '
-        '(command would fail if running not from a git tag)',
+             '(command would fail if running not from a git tag)',
     )
 ]
 
@@ -184,7 +191,7 @@ def pack(manager, namespace, name, version):  # noqa: namespace is not used
 @click.option(
     '--archive',
     help='Path of the archive with a component to upload. '
-    'When not provided the component will be packed automatically.',
+         'When not provided the component will be packed automatically.',
 )
 @click.option('--skip-pre-release', is_flag=True, default=False, help='Do not upload pre-release versions.')
 @click.option(

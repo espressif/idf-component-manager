@@ -102,13 +102,24 @@ class ComponentManager(object):
 
         self.interface_version = interface_version
 
-    def _get_manifest(self, component='main'):  # type: (str) -> Tuple[str, bool]
-        base_dir = self.path if component == 'main' else self.components_path
-        manifest_dir = os.path.join(base_dir, component)
+    def _get_manifest(self, component='main', path=None):  # type: (str, str) -> Tuple[str, bool]
+        if component != 'main' and path is not None:
+            raise FatalError('Cannot determine manifest directory. Please specify either component or path.')
+
+        if path:
+            manifest_dir = os.path.abspath(path)
+        else:
+            base_dir = self.path if component == 'main' else self.components_path
+            manifest_dir = os.path.join(base_dir, component)
 
         if not os.path.isdir(manifest_dir):
             raise FatalError(
                 'Directory "{}" does not exist! '
+                'Please specify a valid component under {}'.format(manifest_dir, self.path))
+
+        if not manifest_dir.startswith(self.path):
+            raise FatalError(
+                'Directory "{}" is not under project directory! '
                 'Please specify a valid component under {}'.format(manifest_dir, self.path))
 
         manifest_filepath = os.path.join(manifest_dir, MANIFEST_FILENAME)
@@ -124,8 +135,8 @@ class ComponentManager(object):
         return manifest_filepath, created
 
     @general_error_handler
-    def create_manifest(self, component='main'):  # type: (str) -> None
-        manifest_filepath, created = self._get_manifest(component)
+    def create_manifest(self, component='main', path=None):  # type: (str, str) -> None
+        manifest_filepath, created = self._get_manifest(component=component, path=path)
         if not created:
             print_info('"{}" already exists, skipping...'.format(manifest_filepath))
 
@@ -168,8 +179,11 @@ class ComponentManager(object):
         print_info('Example "{}" successfully downloaded to {}'.format(example_name, os.path.abspath(project_path)))
 
     @general_error_handler
-    def add_dependency(self, dependency_str, component='main'):  # type: (str, str) -> None
-        manifest_filepath, _ = self._get_manifest(component)
+    def add_dependency(self, dependency_str, component='main', path=None):  # type: (str, str, str) -> None
+        manifest_filepath, _ = self._get_manifest(component=component, path=path)
+        if path:
+            component_path = os.path.abspath(path)
+            component = os.path.basename(component_path)
 
         match = re.match(WEB_DEPENDENCY_REGEX, dependency_str)
         if match:
