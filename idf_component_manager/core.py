@@ -303,27 +303,27 @@ class ComponentManager(object):
             version=None,
             service_profile='default',
             namespace='espressif',
-            archive_file=None,
+            archive=None,
             skip_pre_release=False,
             check_only=False,
             allow_existing=False):
         # type: (str, Optional[str], str, str, str | None, bool, bool, bool) -> None
         client, namespace = service_details(namespace, service_profile)
-        if archive_file:
-            if not os.path.isfile(archive_file):
-                raise FatalError('Cannot find archive to upload: {}'.format(archive_file))
+        if archive:
+            if not os.path.isfile(archive):
+                raise FatalError('Cannot find archive to upload: {}'.format(archive))
 
             if version:
                 raise FatalError('Parameters "version" and "archive" are not supported at the same time')
 
             tempdir = tempfile.mkdtemp()
             try:
-                unpack_archive(archive_file, tempdir)
+                unpack_archive(archive, tempdir)
                 manifest = ManifestManager(tempdir, name, check_required_fields=True).load()
             finally:
                 shutil.rmtree(tempdir)
         else:
-            archive_file, manifest = self.pack_component(name, version)
+            archive, manifest = self.pack_component(name, version)
 
         if not manifest.version:
             raise FatalError('"version" field is required when uploading the component')
@@ -349,8 +349,8 @@ class ComponentManager(object):
             return
 
         # Uploading the component
-        print_info('Uploading archive: %s' % archive_file)
-        job_id = client.upload_version(component_name=component_name, file_path=archive_file)
+        print_info('Uploading archive: %s' % archive)
+        job_id = client.upload_version(component_name=component_name, file_path=archive)
 
         # Wait for processing
         print_info(
