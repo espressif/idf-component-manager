@@ -15,7 +15,9 @@ workflow:
     - pip install tox
   artifacts:
     reports:
-      cobertura: coverage.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
 
 test:py2.7:
   extends: .test_template
