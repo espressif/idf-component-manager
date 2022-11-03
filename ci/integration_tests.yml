@@ -7,7 +7,9 @@ integration_test:
   timeout: 2h
   artifacts:
     reports:
-      cobertura: coverage_integration.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage_integration.xml
   parallel:
     matrix:
       - IDF_BRANCH: [release-v4.1, release-v4.2]
