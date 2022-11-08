@@ -9,7 +9,7 @@ import yaml
 
 from ..errors import ManifestError
 from .constants import MANIFEST_FILENAME
-from .env_expander import expand_env_vars
+from .env_expander import dump_yaml, expand_env_vars
 from .manifest import Manifest
 from .validator import ManifestValidator
 
@@ -135,5 +135,4 @@ class ManifestManager(object):
         return Manifest.fromdict(self.manifest_tree, name=self.name)
 
     def dump(self, path):  # type: (str) -> None
-        with open(os.path.join(path, MANIFEST_FILENAME), 'w', encoding='utf-8') as fw:
-            yaml.dump(self.manifest_tree, fw)
+        dump_yaml(self.manifest_tree, os.path.join(path, MANIFEST_FILENAME))

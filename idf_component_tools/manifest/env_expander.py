@@ -2,7 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+from io import open
 from string import Template
+
+import yaml
 
 from ..errors import ManifestError
 
@@ -60,3 +63,11 @@ def process_nested_strings(
 
     # we don't process other data types, like numbers
     return obj
+
+
+def dump_yaml(d, path):  # type: (dict[str, Any], str) -> None
+    def _unescape_dollar_sign(s):
+        return s.replace('$', '$$')
+
+    with open(path, 'w', encoding='utf-8') as fw:
+        yaml.dump(process_nested_strings(d, _unescape_dollar_sign), fw, allow_unicode=True, Dumper=yaml.SafeDumper)
