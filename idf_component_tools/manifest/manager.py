@@ -134,5 +134,12 @@ class ManifestManager(object):
 
         return Manifest.fromdict(self.manifest_tree, name=self.name)
 
-    def dump(self, path):  # type: (str) -> None
-        dump_yaml(self.manifest_tree, os.path.join(path, MANIFEST_FILENAME))
+    def dump(self, path=None):  # type: (str | None) -> None
+        if path is None:
+            p = self._path
+        elif os.path.isfile(path):
+            p = path
+        else:
+            p = os.path.join(path, MANIFEST_FILENAME)
+
+        dump_yaml(self.manifest_tree, p)
