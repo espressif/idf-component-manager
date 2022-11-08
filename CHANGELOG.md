@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Provide better error message when no network connection
 - Improve the error message when failed to solve the dependencies specified in manifest files
 - Fix crash on use of local components and `override_path` for namespaced components
+- Mixing stdout and stderr of git command
 
 ## [1.1.4] 2022-07-04
 
