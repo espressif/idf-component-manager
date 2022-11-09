@@ -8,7 +8,7 @@ import time
 from datetime import datetime
 from functools import wraps
 
-from .errors import GitError
+from .errors import GitError, warn
 from .semver import Version
 
 try:
@@ -166,16 +166,25 @@ class GitClient(object):
         env_copy = dict(os.environ)
         if env:
             env_copy.update(env)
-        try:
-            return subprocess.check_output(  # nosec
-                [self.git_command] + list(args),
-                cwd=cwd,
-                env=env_copy,
-                stderr=subprocess.STDOUT,
-            ).decode('utf-8')
-        except subprocess.CalledProcessError as e:
+
+        p = subprocess.Popen(  # nosec
+            [self.git_command] + list(args),
+            cwd=cwd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=env_copy,
+        )
+        stdout, stderr = p.communicate()
+
+        if p.returncode == 0:
+            if stderr:
+                warn(stderr.decode('utf-8'))
+        else:
             raise GitCommandError(
-                "'git %s' failed with exit code %d \n%s" % (' '.join(args), e.returncode, e.output.decode('utf-8')))
+                "'git %s' failed with exit code %d \n%s\n%s" %
+                (' '.join(args), p.returncode, stderr.decode('utf-8'), stdout.decode('utf-8')))
+
+        return stdout.decode('utf-8')
 
     def check_version(self):  # type: () -> None
         version = self.version()
