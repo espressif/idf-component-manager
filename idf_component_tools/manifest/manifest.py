@@ -59,6 +59,7 @@ class Manifest(object):
             version=None,  # type: ComponentVersion | None # Version
             tags=None,  # type: list[str] | None # List of tags
             links=None,  # type: ComponentLinks | None # Links of the component
+            examples=None,  # type: list[dict[str, str]] | None # List of paths to the examples
     ):
         # type: (...) -> None
 
@@ -89,6 +90,7 @@ class Manifest(object):
 
         self._manifest_hash = manifest_hash
         self.links = links
+        self.examples = examples
 
     @classmethod
     def fromdict(cls, manifest_tree, name):  # type: (dict, str) -> Manifest
@@ -101,6 +103,7 @@ class Manifest(object):
             targets=manifest_tree.get('targets', []),
             include_files=manifest_tree.get('files', {}).get('include'),
             exclude_files=manifest_tree.get('files', {}).get('exclude'),
+            examples=manifest_tree.get('examples', []),
         )
 
         version = manifest_tree.get('version')

@@ -32,7 +32,8 @@ from idf_component_tools.sources import WebServiceSource
 
 from .cmake_component_requirements import CMakeRequirementsManager, ComponentName, handle_project_requirements
 from .context_manager import make_ctx
-from .core_utils import ProgressBar, archive_filename, dist_name, parse_example, raise_component_modified_error
+from .core_utils import (
+    ProgressBar, archive_filename, copy_examples_folders, dist_name, parse_example, raise_component_modified_error)
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
 from .service_details import create_api_client, service_details
@@ -131,7 +132,7 @@ class ComponentManager(object):
 
     @general_error_handler
     def create_project_from_example(self, example, path=None):
-        # type: (str, str) -> None
+        # type: (str, str | None) -> None
         component_name, version_spec, example_name = parse_example(example)
         project_path = path or os.path.join(self.path, os.path.basename(example_name))
 
@@ -239,16 +240,21 @@ class ComponentManager(object):
 
         manifest_manager = ManifestManager(self.path, name, check_required_fields=True, version=version)
         manifest = manifest_manager.load()
-        dist_temp_dir = os.path.join(self.dist_path, dist_name(manifest))
-        copy_filtered_directory(
-            self.path, dist_temp_dir, include=set(manifest.files['include']), exclude=set(manifest.files['exclude']))
-        manifest_manager.dump(dist_temp_dir)
+        dist_temp_dir = Path(self.dist_path, dist_name(manifest))
+        include = set(manifest.files['include'])
+        exclude = set(manifest.files['exclude'])
+        copy_filtered_directory(self.path, str(dist_temp_dir), include=include, exclude=exclude)
 
-        check_unexpected_component_files(dist_temp_dir)
+        if manifest.examples:
+            copy_examples_folders(manifest.examples, Path(self.path), dist_temp_dir, include=include, exclude=exclude)
+
+        manifest_manager.dump(str(dist_temp_dir))
+
+        check_unexpected_component_files(str(dist_temp_dir))
 
         archive_filepath = os.path.join(self.dist_path, archive_filename(manifest))
         print_info('Saving archive to "{}"'.format(archive_filepath))
-        pack_archive(dist_temp_dir, archive_filepath)
+        pack_archive(str(dist_temp_dir), archive_filepath)
         return archive_filepath, manifest
 
     @general_error_handler

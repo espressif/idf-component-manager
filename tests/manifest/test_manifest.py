@@ -452,3 +452,10 @@ class TestManifestValidator(object):
         validator.validate_normalize()
 
         assert len(validator._errors) == 2
+
+    def test_validate_examples_empty_element(self, valid_manifest):
+        valid_manifest['examples'] = [{'path: test'}, {}]
+        validator = ManifestValidator(valid_manifest)
+        validator.validate_normalize()
+
+        assert len(validator._errors) == 1

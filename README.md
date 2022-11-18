@@ -120,6 +120,23 @@ discussion: "https://discord.example.com/test_project" # URL of the component di
 A link should be a correct HTTP(S) URL like `https://example.com/path` except the `repository` field,
 it is expected to be a valid [Git remote](https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes) URL.
 
+## Add examples to the component
+
+To add examples to your component place them in the `examples` directory inside your component.
+Examples are discovered recursively in subdirectories at this path.
+A directory with `CMakeLists.txt` that registers a project is considered as an example.
+
+## Custom example paths
+
+You can specify custom example paths for uploading them to the component registry.
+For that, add `examples` field to the root of the manifest:
+
+```yaml
+examples:
+  - path: ../some/path
+  - path: ../some/other_path
+```
+
 ## Contributions Guide
 
 We welcome all contributions to the Component Manager project.

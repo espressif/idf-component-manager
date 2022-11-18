@@ -6,6 +6,7 @@ import shutil
 import tempfile
 from distutils.dir_util import copy_tree
 from io import open
+from pathlib import Path
 
 import pytest
 import vcr
@@ -102,16 +103,20 @@ def test_upload_component_skip_pre(monkeypatch, pre_release_component_path):
         assert str(e.value).startswith('Skipping pre-release')
 
 
+def remove_version_line(path):
+    with open(os.path.join(str(path), MANIFEST_FILENAME), 'r+') as f:
+        lines = f.readlines()
+        f.seek(0)
+        f.writelines(lines[1:])
+        f.truncate()
+
+
 def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_component_path):
     copy_tree(pre_release_component_path, str(tmp_path))
     component_manager = ComponentManager(path=str(tmp_path))
 
     # remove the first version line
-    with open(os.path.join(str(tmp_path), MANIFEST_FILENAME), 'r+') as f:
-        lines = f.readlines()
-        f.seek(0)
-        f.writelines(lines[1:])
-        f.truncate()
+    remove_version_line(tmp_path)
 
     def mock_git_tag(self):
         return Version('3.0.0')
@@ -138,11 +143,7 @@ def test_pack_component_with_version(tmp_path, release_component_path):
     component_manager = ComponentManager(path=str(tmp_path))
 
     # remove the first version line
-    with open(os.path.join(str(tmp_path), MANIFEST_FILENAME), 'r+') as f:
-        lines = f.readlines()
-        f.seek(0)
-        f.writelines(lines[1:])
-        f.truncate()
+    remove_version_line(tmp_path)
 
     component_manager.pack_component('cmp', '2.3.4')
 
@@ -150,6 +151,56 @@ def test_pack_component_with_version(tmp_path, release_component_path):
     unpack_archive(os.path.join(component_manager.dist_path, 'cmp_2.3.4.tgz'), tempdir)
     manifest = ManifestManager(tempdir, 'cmp', check_required_fields=True).load()
     assert manifest.version == '2.3.4'
+
+
+def test_pack_component_with_examples(tmp_path, example_component_path):
+    project_path = tmp_path / 'cmp'
+    copy_tree(example_component_path, str(project_path))
+    component_manager = ComponentManager(path=str(project_path))
+
+    component_manager.pack_component('cmp', '2.3.4')
+
+    unpack_archive(str(Path(component_manager.dist_path, 'cmp_2.3.4.tgz')), str(tmp_path / 'unpack'))
+
+    assert (tmp_path / 'unpack' / 'examples' / 'cmp_ex').is_dir()
+    assert 'cmake_minimum_required(VERSION 3.16)' in (tmp_path / 'unpack' / 'examples' / 'cmp_ex' /
+                                                      'CMakeLists.txt').read_text()
+
+
+@pytest.mark.parametrize(
+    'examples, message', [
+        (
+            [{
+                'path': './custom_example_path/cmp_ex'
+            }, {
+                'path': './custom_example_path_2/cmp_ex'
+            }], 'Examples from "./custom_example_path/cmp_ex" and "./custom_example_path_2/cmp_ex" '
+            'have the same name: cmp_ex.'),
+        (
+            [{
+                'path': './custom_example_path'
+            }, {
+                'path': './custom_example_path'
+            }], 'Some paths in the `examples` block in the manifest are listed multiple times: ./custom_example_path'),
+        ([{
+            'path': './unknown_path'
+        }], 'Example directory doesn\'t exist:*'),
+    ])
+def test_pack_component_with_examples_errors(tmp_path, example_component_path, examples, message):
+    project_path = tmp_path / 'cmp'
+    copy_tree(example_component_path, str(project_path))
+    if len(examples) == 2 and examples[0] != examples[1]:  # Add second example
+        copy_tree(str(Path(example_component_path, 'custom_example_path')), str(project_path / 'custom_example_path_2'))
+
+    component_manager = ComponentManager(path=str(project_path))
+
+    # Add folder with the same name of the example
+    manifest_manager = ManifestManager(str(project_path), 'cmp', check_required_fields=True, version='2.3.4')
+    manifest_manager.manifest_tree['examples'] = examples
+    manifest_manager.dump(str(project_path))
+
+    with pytest.raises(FatalError, match=message):
+        component_manager.pack_component('cmp', '2.3.4')
 
 
 def test_create_example_project_path_not_a_directory(tmp_path):

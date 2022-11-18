@@ -30,6 +30,7 @@ KNOWN_ROOT_KEYS = [
     'description',
     'files',
     'tags',
+    'examples'
 ] + LINKS
 
 DEFAULT_KNOWN_TARGETS = ['esp32', 'esp32s2', 'esp32c3', 'esp32s3', 'linux', 'esp32h2', 'esp32c2', 'esp32c6']
@@ -38,6 +39,8 @@ KNOWN_FILES_KEYS = [
     'include',
     'exclude',
 ]
+
+KNOWN_EXAMPLES_KEYS = ['path']
 
 KNOWN_IF_CLAUSE_KEYWORDS = ['IDF_TARGET', 'IDF_VERSION']
 
@@ -119,6 +122,8 @@ def manifest_schema():  # type: () -> Schema
             },
             Optional('files'): {Optional(key): [NONEMPTY_STRING]
                                 for key in KNOWN_FILES_KEYS},
+            Optional('examples'): [{key: NONEMPTY_STRING
+                                    for key in KNOWN_EXAMPLES_KEYS}],
             # Links of the project
             Optional('url'): Regex(COMPILED_URL_RE, error=LINKS_URL_ERROR.format('url')),
             Optional('repository'): Regex(COMPILED_GIT_URL_RE, error=LINKS_GIT_ERROR.format('repository')),
