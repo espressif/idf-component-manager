@@ -26,7 +26,7 @@ class ComponentFetcher(object):
         solved_component,
         components_path,
         source=None,
-    ):  # type: (SolvedComponent, str, BaseSource) -> None
+    ):  # type: (SolvedComponent, str, BaseSource | None) -> None
         self.source = source if source else solved_component.source
         self.component = solved_component
         self.components_path = components_path

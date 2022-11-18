@@ -45,7 +45,7 @@ class GitSource(BaseSource):
             self,
             version,  # type: str | ComponentVersion | None
             path,  # type: str
-            selected_paths=None  # type: list[str]
+            selected_paths=None  # type: list[str] | None
     ):  # type: (...) -> str
         if version is not None:
             version = None if version == '*' else str(version)
