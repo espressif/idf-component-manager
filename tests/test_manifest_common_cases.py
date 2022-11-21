@@ -58,8 +58,13 @@ def test_validator_passed_version(valid_manifest):
 
 
 @pytest.mark.parametrize(
-    'require_field,public,require',
-    [('public', True, True), ('private', False, True), ('no', None, False), (False, None, False), (None, None, True)])
+    'require_field,public,require', [
+        ('public', True, True),
+        ('private', False, True),
+        ('no', None, False),
+        (False, None, False),
+        (None, None, True),
+    ])
 def test_require_field_public(require_field, public, require):
     test_manifest = {'dependencies': {'test': {'version': '*', 'require': require_field}}}
     manifest = Manifest.fromdict(test_manifest, name='test')

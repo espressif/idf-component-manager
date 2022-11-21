@@ -22,5 +22,5 @@ COMPILED_GIT_URL_RE = re.compile(GIT_URL_RE, re.IGNORECASE)
 
 # Registry related constants
 DEFAULT_NAMESPACE = 'espressif'
-DEFAULT_COMPONENT_SERVICE_URL = 'https://api.components.espressif.com/'
+IDF_COMPONENT_REGISTRY_URL = 'https://components.espressif.com/'
 IDF_COMPONENT_STORAGE_URL = 'https://components-file.espressif.com/'

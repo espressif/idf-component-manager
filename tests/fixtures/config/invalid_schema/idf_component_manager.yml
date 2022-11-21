@@ -1,0 +1,3 @@
+profiles:
+  test:
+    url: http://example.com

@@ -15,8 +15,9 @@ import idf_component_tools.api_client as api_client
 from idf_component_tools.semver import Version
 
 from ..archive_tools import ArchiveError, get_format_from_path, unpack_archive
-from ..errors import FetchingError, hint
 from ..config import component_registry_url
+from ..constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL
+from ..errors import FetchingError, hint
 from ..file_tools import copy_directory
 from ..hash_tools import validate_dir
 from . import utils
@@ -35,6 +36,9 @@ try:
 except ImportError:
     pass
 
+CANONICAL_IDF_COMPONENT_REGISTRY_API_URL = 'https://api.components.espressif.com/'
+IDF_COMPONENT_REGISTRY_API_URL = '{}api/'.format(IDF_COMPONENT_REGISTRY_URL)
+
 
 class WebServiceSource(BaseSource):
     NAME = 'service'
@@ -42,24 +46,30 @@ class WebServiceSource(BaseSource):
     def __init__(self, source_details=None, **kwargs):
         super(WebServiceSource, self).__init__(source_details=source_details, **kwargs)
 
+        # Use URL from source details with the high priority
         self.base_url = self.source_details.get('service_url')
-        self.storage_url = None
 
-        if self.base_url is None:
+        # Use the default URL, even if the lock file was made with the canonical one
+        if self.base_url == CANONICAL_IDF_COMPONENT_REGISTRY_API_URL:
+            self.base_url = IDF_COMPONENT_REGISTRY_API_URL
+
+        self.storage_url = self.source_details.get('storage_url')
+
+        if not self.base_url and not self.storage_url:
             self.base_url, self.storage_url = component_registry_url()
 
         self.api_client = self.source_details.get(
             'api_client', api_client.APIClient(base_url=self.base_url, storage_url=self.storage_url, source=self))
 
-        self.pre_release = self.source_details.get('pre_release', None)
+        self.pre_release = self.source_details.get('pre_release')
 
     @classmethod
     def required_keys(cls):
-        return {'service_url': 'str'}
+        return {}
 
     @classmethod
     def optional_keys(cls):
-        return {'pre_release': 'bool'}
+        return {'pre_release': 'bool', 'storage_url': 'str', 'service_url': 'str'}
 
     @property
     def hash_key(self):
@@ -205,7 +215,20 @@ class WebServiceSource(BaseSource):
         return self.base_url
 
     def serialize(self):  # type: () -> Dict
-        source = {'service_url': self.base_url, 'type': self.name}
+        source = {'type': self.name}
+
+        service_url = self.base_url
+
+        # Use canonical API url for lock file
+        if service_url == IDF_COMPONENT_REGISTRY_API_URL:
+            service_url = CANONICAL_IDF_COMPONENT_REGISTRY_API_URL
+
+        if service_url is not None:
+            source['service_url'] = service_url
+
+        if self.storage_url != IDF_COMPONENT_STORAGE_URL and self.storage_url is not None:
+            source['storage_url'] = self.storage_url
+
         if self.pre_release is not None:
             source['pre_release'] = self.pre_release
 

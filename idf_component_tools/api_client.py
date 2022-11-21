@@ -37,7 +37,7 @@ except ImportError:
     from urlparse import urlparse  # type: ignore
 
 try:
-    from typing import TYPE_CHECKING, Any, Callable, Tuple
+    from typing import TYPE_CHECKING, Any, Callable
 
     if TYPE_CHECKING:
         from idf_component_tools.sources import BaseSource
@@ -163,11 +163,21 @@ class APIClient(object):
 
         return dependencies
 
-    def _base_request(self, url, session, method, path, data=None, headers=None, schema=None, use_storage=False):
-        # type: (str, requests.Session, str, list[str], dict | None, dict | None, Schema | None, bool) -> dict
+    def _base_request(
+            self,
+            url,  # type: str
+            session,  # type: requests.Session
+            method,  # type: str
+            path,  # type: list[str]
+            data=None,  # type: dict | None
+            headers=None,  # type: dict | None
+            schema=None,  # type: Schema | None
+            use_storage=False,  # type: bool
+    ):
+        # type: (...) -> dict
         endpoint = join_url(url, *path)
 
-        timeout = DEFAULT_TIMEOUT  # type: float | Tuple[float, float]
+        timeout = DEFAULT_TIMEOUT  # type: float | tuple[float, float]
         try:
             timeout = float(os.environ['IDF_COMPONENT_SERVICE_TIMEOUT'])
         except ValueError:
@@ -258,10 +268,10 @@ class APIClient(object):
                     raise NoRegistrySet(
                         'The current operation requires access to the IDF component registry. '
                         'However, the registry URL is not set. You can set the '
-                        'DEFAULT_COMPONENT_SERVICE_URL environment variable or "url" field for your current profile '
-                        'in "idf_component_manager.yaml" file. To use the default IDF component registry '
+                        'IDF_COMPONENT_REGISTRY_URL environment variable or "registry_url" field for your current '
+                        'profile in "idf_component_manager.yml" file. To use the default IDF component registry '
                         'unset IDF_COMPONENT_STORAGE_URL environment variable or remove "storage_url" field '
-                        'from the "idf_component_manager.yaml" file')
+                        'from the "idf_component_manager.yml" file')
 
                 session = self._create_session(base_url=url, cache=cache_status)
 

@@ -4,7 +4,7 @@
 import json
 import os
 
-from pytest import fixture, raises
+from pytest import deprecated_call, fixture, raises, warns
 
 from idf_component_manager.service_details import NoSuchProfile, get_namespace, get_profile, get_token, service_details
 from idf_component_tools.config import Config, ConfigManager
@@ -25,7 +25,7 @@ def config_path(tmp_path):
                 {
                     'profiles': {
                         'test': {
-                            'url': 'https://example.com/',
+                            'registry_url': 'https://example.com/',
                             'default_namespace': 'test',
                             'api_token': 'token'
                         }
@@ -72,9 +72,27 @@ def test_get_token_allow_none(service_config):
 
 def test_get_profile_success(config_path):
     profile = get_profile(config_path, 'test')
-    assert profile['url'] == 'https://example.com/'
+    assert profile['registry_url'] == 'https://example.com/'
     assert profile['default_namespace'] == 'test'
     assert profile['api_token'] == 'token'
+
+
+def test_get_profile_env_dep(config_path, monkeypatch):
+    monkeypatch.setenv('IDF_COMPONENT_SERVICE_PROFILE', 'test')
+    with deprecated_call():
+        assert get_profile(config_path)['default_namespace'] == 'test'
+
+
+def test_get_profile_env(config_path, monkeypatch):
+    monkeypatch.setenv('IDF_COMPONENT_REGISTRY_PROFILE', 'test')
+    assert get_profile(config_path)['default_namespace'] == 'test'
+
+
+def test_get_profile_env_both(config_path, monkeypatch):
+    monkeypatch.setenv('IDF_COMPONENT_SERVICE_PROFILE', 'test')
+    monkeypatch.setenv('IDF_COMPONENT_REGISTRY_PROFILE', 'test')
+    with warns(UserWarning, match='IDF_COMPONENT_SERVICE_PROFILE and IDF_COMPONENT_REGISTRY_PROFILE'):
+        assert get_profile(config_path)['default_namespace'] == 'test'
 
 
 def test_get_profile_not_exist(config_path):
@@ -83,13 +101,13 @@ def test_get_profile_not_exist(config_path):
 
 def test_service_details_success(config_path):
     client, namespace = service_details(service_profile='test', namespace='test', config_path=config_path)
-    assert client.base_url == 'https://example.com/'
+    assert client.base_url == 'https://example.com/api/'
     assert namespace == 'test'
 
 
-def test_service_details_namespace_not_exist():
+def test_service_details_namespace_not_exist(tmp_path):
     with raises(NoSuchProfile):
-        service_details(service_profile='not_exists')
+        service_details(config_path=str(tmp_path), service_profile='not_exists')
 
 
 def test_service_details_without_token(tmp_path):
