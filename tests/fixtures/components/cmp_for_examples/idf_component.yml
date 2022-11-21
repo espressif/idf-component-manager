@@ -1,0 +1,9 @@
+version: "1.0.0"
+targets:
+  - esp32
+maintainers:
+  - "Test Tester <test@example.com>"
+dependencies:
+  idf: ">=4.0"
+examples:
+  - path: ./custom_example_path/cmp_ex

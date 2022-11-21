@@ -1,0 +1,5 @@
+## IDF Component Manager Manifest File
+dependencies:
+  example/cmp:
+    version: "^3.3.7"
+    override_path: "../../.."

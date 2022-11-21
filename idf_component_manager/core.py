@@ -32,7 +32,8 @@ from idf_component_tools.sources import WebServiceSource
 
 from .cmake_component_requirements import CMakeRequirementsManager, ComponentName, handle_project_requirements
 from .context_manager import make_ctx
-from .core_utils import ProgressBar, archive_filename, dist_name, parse_example, raise_component_modified_error
+from .core_utils import (
+    ProgressBar, archive_filename, copy_examples_folders, dist_name, parse_example, raise_component_modified_error)
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
 from .service_details import create_api_client, service_details
@@ -131,7 +132,7 @@ class ComponentManager(object):
 
     @general_error_handler
     def create_project_from_example(self, example, path=None):
-        # type: (str, str) -> None
+        # type: (str, str | None) -> None
         component_name, version_spec, example_name = parse_example(example)
         project_path = path or os.path.join(self.path, os.path.basename(example_name))
 
@@ -239,16 +240,21 @@ class ComponentManager(object):
 
         manifest_manager = ManifestManager(self.path, name, check_required_fields=True, version=version)
         manifest = manifest_manager.load()
-        dist_temp_dir = os.path.join(self.dist_path, dist_name(manifest))
-        copy_filtered_directory(
-            self.path, dist_temp_dir, include=set(manifest.files['include']), exclude=set(manifest.files['exclude']))
-        manifest_manager.dump(dist_temp_dir)
+        dist_temp_dir = Path(self.dist_path, dist_name(manifest))
+        include = set(manifest.files['include'])
+        exclude = set(manifest.files['exclude'])
+        copy_filtered_directory(self.path, str(dist_temp_dir), include=include, exclude=exclude)
 
-        check_unexpected_component_files(dist_temp_dir)
+        if manifest.examples:
+            copy_examples_folders(manifest.examples, Path(self.path), dist_temp_dir, include=include, exclude=exclude)
+
+        manifest_manager.dump(str(dist_temp_dir))
+
+        check_unexpected_component_files(str(dist_temp_dir))
 
         archive_filepath = os.path.join(self.dist_path, archive_filename(manifest))
         print_info('Saving archive to "{}"'.format(archive_filepath))
-        pack_archive(dist_temp_dir, archive_filepath)
+        pack_archive(str(dist_temp_dir), archive_filepath)
         return archive_filepath, manifest
 
     @general_error_handler
@@ -303,27 +309,27 @@ class ComponentManager(object):
             version=None,
             service_profile='default',
             namespace='espressif',
-            archive_file=None,
+            archive=None,
             skip_pre_release=False,
             check_only=False,
             allow_existing=False):
         # type: (str, Optional[str], str, str, str | None, bool, bool, bool) -> None
         client, namespace = service_details(namespace, service_profile)
-        if archive_file:
-            if not os.path.isfile(archive_file):
-                raise FatalError('Cannot find archive to upload: {}'.format(archive_file))
+        if archive:
+            if not os.path.isfile(archive):
+                raise FatalError('Cannot find archive to upload: {}'.format(archive))
 
             if version:
                 raise FatalError('Parameters "version" and "archive" are not supported at the same time')
 
             tempdir = tempfile.mkdtemp()
             try:
-                unpack_archive(archive_file, tempdir)
+                unpack_archive(archive, tempdir)
                 manifest = ManifestManager(tempdir, name, check_required_fields=True).load()
             finally:
                 shutil.rmtree(tempdir)
         else:
-            archive_file, manifest = self.pack_component(name, version)
+            archive, manifest = self.pack_component(name, version)
 
         if not manifest.version:
             raise FatalError('"version" field is required when uploading the component')
@@ -349,8 +355,8 @@ class ComponentManager(object):
             return
 
         # Uploading the component
-        print_info('Uploading archive: %s' % archive_file)
-        job_id = client.upload_version(component_name=component_name, file_path=archive_file)
+        print_info('Uploading archive: %s' % archive)
+        job_id = client.upload_version(component_name=component_name, file_path=archive)
 
         # Wait for processing
         print_info(

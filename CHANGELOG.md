@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `create-project-from-example` command to the `idf.py`
 - Add the `pre_release` flag for the dependency to control downloads of pre-release versions
 - Print a note with the list of alternative targets when the solver cannot find a suitable component version for the current target but there are some candidates for other targets.
+- Add the `examples` field for the custom examples paths
 
 ### Fixed
 

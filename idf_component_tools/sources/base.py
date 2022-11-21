@@ -16,7 +16,6 @@ from ..semver import SimpleSpec
 
 try:
     from typing import TYPE_CHECKING, Callable
-    from typing import Optional as _Optional
 
     if TYPE_CHECKING:
         from ..manifest import ComponentWithVersions, SolvedComponent
@@ -33,7 +32,7 @@ class BaseSource(object):
     __metaclass__ = ABCMeta
     NAME = 'base'
 
-    def __init__(self, source_details=None, system_cache_path=None):  # type: (dict, _Optional[str]) -> None
+    def __init__(self, source_details=None, system_cache_path=None):  # type: (dict | None, str | None) -> None
         self._source_details = source_details or {}
         self._hash_key = None
 
@@ -177,7 +176,7 @@ class BaseSource(object):
             name,  # type: str
             details=None,  # type: dict | None
             spec='*',  # type: str
-            target=None,  # type: _Optional[str]
+            target=None,  # type: str | None
     ):
         # type: (...) -> ComponentWithVersions
         """List of versions for given spec"""

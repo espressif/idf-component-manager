@@ -99,9 +99,9 @@ class GitClient(object):
             repo,  # type: str
             bare_path,  # type: str
             checkout_path,  # type: str
-            ref=None,  # type: str
+            ref=None,  # type: str | None
             with_submodules=True,  # type: bool
-            selected_paths=None  # type: list[str]
+            selected_paths=None  # type: list[str] | None
     ):  # type: (...) -> str
         """
         Checkout required branch to desired path. Create a bare repo, if necessary
@@ -160,7 +160,7 @@ class GitClient(object):
 
         return self.run(['rev-parse', '--verify', ref], cwd=bare_path).strip()
 
-    def run(self, args, cwd=None, env=None):  # type: (List[str], str, dict) -> str
+    def run(self, args, cwd=None, env=None):  # type: (List[str], str | None, dict | None) -> str
         if cwd is None:
             cwd = os.getcwd()
         env_copy = dict(os.environ)

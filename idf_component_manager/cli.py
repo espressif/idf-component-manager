@@ -202,7 +202,7 @@ def upload(manager, service_profile, namespace, name, version, archive, skip_pre
         version=version,
         service_profile=service_profile,
         namespace=namespace,
-        archive_file=archive,
+        archive=archive,
         skip_pre_release=skip_pre_release,
         check_only=check_only,
         allow_existing=allow_existing,

@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        * Before reporting a new issue please check and search in [List of existing issues](https://github.com/espressif/idf-component-manager/issues?q=is%3Aissue) 
+        * Before reporting a new issue please check and search in [List of existing issues](https://github.com/espressif/idf-component-manager/issues?q=is%3Aissue)
         * Please check [IDF Component Manager Online Documentation](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/tools/idf-component-manager.html)
         * Check the version of the Component manager. Run `python -m idf_component_manager --help` in the same terminal where you run `idf.py` to get the version. The output will have a line like `IDF component manager v1.0.0`. If you don't see a version in the output or the version is less than on stated on the [Component manager PyPI](https://pypi.org/project/idf-component-manager/)it means that your component manager installation is outdated. Please run `pip install -U idf-component-manager` to update to the most recent version and try again before reporting the issue.
         * Please be aware that this is IDF Component Manager repository and NOT an ESP-IDF repository
@@ -43,7 +43,7 @@ body:
     validations:
       required: true
   - type: input
-    id: browser 
+    id: browser
     attributes:
       label: Browser (for https://components.espressif.com  Issues)
       description: What browser are you using?
@@ -72,11 +72,11 @@ body:
       description: A clear and concise description of what you expected to happen.
       placeholder: eg. I expected this filter will only shows components supported by ESP32-S3..
     validations:
-      required: true      
+      required: true
   - type: textarea
     id: additional-info
     attributes:
-      label: Additional info 
+      label: Additional info
       description: More info as Screenshot can be added here.
       placeholder: eg. Insert screenshots...
   - type: checkboxes

@@ -162,6 +162,15 @@ def release_component_path(fixtures_path):
     )
 
 
+@pytest.fixture(scope='session')
+def example_component_path(fixtures_path):
+    return os.path.join(
+        fixtures_path,
+        'components',
+        'cmp_for_examples',
+    )
+
+
 @pytest.fixture
 def assert_return_code_run():
     def real_func(*args, **kwargs):

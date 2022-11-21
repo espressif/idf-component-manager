@@ -117,11 +117,7 @@ def copy_directory(source_directory, destination_directory):  # type: (str, str)
     copytree(source_directory, destination_directory)
 
 
-def copy_filtered_directory(source_directory, destination_directory, include=None, exclude=None):
-    # type: (str, str, Optional[Iterable[str]], Optional[Iterable[str]]) -> None
-    paths = filtered_paths(source_directory, include=include, exclude=exclude)
-    prepare_empty_directory(destination_directory)
-
+def copy_directories(source_directory, destination_directory, paths):  # type: (str, str, set[Path]) -> None
     for path in sorted(paths):
         path = str(path)  # type: ignore # Path backward compatibility
         rel_path = os.path.relpath(path, source_directory)
@@ -136,6 +132,13 @@ def copy_filtered_directory(source_directory, destination_directory, include=Non
             shutil.copy2(path, dest_path)
         else:
             os.makedirs(dest_path)
+
+
+def copy_filtered_directory(source_directory, destination_directory, include=None, exclude=None):
+    # type: (str, str, Optional[Iterable[str]], Optional[Iterable[str]]) -> None
+    paths = filtered_paths(source_directory, include=include, exclude=exclude)
+    prepare_empty_directory(destination_directory)
+    copy_directories(source_directory, destination_directory, paths)
 
 
 def check_unexpected_component_files(path):  # type: (str | Path) -> None
