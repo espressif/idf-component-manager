@@ -33,7 +33,7 @@ KNOWN_ROOT_KEYS = [
     'examples'
 ] + LINKS
 
-DEFAULT_KNOWN_TARGETS = ['esp32', 'esp32s2', 'esp32c3', 'esp32s3', 'linux', 'esp32h2', 'esp32c2', 'esp32c6']
+DEFAULT_KNOWN_TARGETS = ['esp32', 'esp32s2', 'esp32c3', 'esp32s3', 'linux', 'esp32h2', 'esp32h4', 'esp32c2', 'esp32c6']
 
 KNOWN_FILES_KEYS = [
     'include',
