@@ -40,6 +40,44 @@ CANONICAL_IDF_COMPONENT_REGISTRY_API_URL = 'https://api.components.espressif.com
 IDF_COMPONENT_REGISTRY_API_URL = '{}api/'.format(IDF_COMPONENT_REGISTRY_URL)
 
 
+def download_archive(url, download_dir):  # type: (str, str) -> str
+    session = api_client.create_session(cache=False)
+
+    try:
+        with session.get(url, stream=True, allow_redirects=True) as r:
+            # Trying to get extension from url
+            original_filename = url.split('/')[-1]
+
+            try:
+                extension = get_format_from_path(original_filename)[1]
+            except ArchiveError:
+                extension = None
+
+            if r.status_code != 200:
+                raise FetchingError('Server returned HTTP code {}'.format(r.status_code))
+
+            # If didn't find anything useful, trying content disposition
+            content_disposition = r.headers.get('content-disposition')
+            if not extension and content_disposition:
+                filenames = re.findall('filename=(.+)', content_disposition)
+                try:
+                    extension = get_format_from_path(filenames[0])[1]
+                except IndexError:
+                    raise FetchingError('Web Service returned invalid download url')
+
+            filename = 'component.%s' % extension
+            file_path = os.path.join(download_dir, filename)
+
+            with open(file_path, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=65536):
+                    if chunk:
+                        f.write(chunk)
+
+            return file_path
+    except requests.exceptions.RequestException as e:
+        raise FetchingError(str(e))
+
+
 class WebServiceSource(BaseSource):
     NAME = 'service'
 
@@ -174,44 +212,16 @@ class WebServiceSource(BaseSource):
                 component.name,
             )
 
-        with requests.get(url, stream=True, allow_redirects=True) as r:
-            # Trying to get extension from url
-            original_filename = url.split('/')[-1]
+        tempdir = tempfile.mkdtemp()
 
-            try:
-                extension = get_format_from_path(original_filename)[1]
-            except ArchiveError:
-                extension = None
-
-            if r.status_code != 200:
-                raise FetchingError(
-                    'Cannot download component %s@%s. Server returned HTTP code %s' %
-                    (component.name, component.version, r.status_code))
-
-            # If didn't find anything useful, trying content disposition
-            content_disposition = r.headers.get('content-disposition')
-            if not extension and content_disposition:
-                filenames = re.findall('filename=(.+)', content_disposition)
-                try:
-                    extension = get_format_from_path(filenames[0])[1]
-                except IndexError:
-                    raise FetchingError('Web Service returned invalid download url')
-
-            tempdir = tempfile.mkdtemp()
-
-            try:
-                filename = 'component.%s' % extension
-                file_path = os.path.join(tempdir, filename)
-
-                with open(file_path, 'wb') as f:
-                    for chunk in r.iter_content(chunk_size=65536):
-                        if chunk:
-                            f.write(chunk)
-
-                unpack_archive(file_path, self.component_cache_path(component))
-                copy_directory(self.component_cache_path(component), download_path)
-            finally:
-                shutil.rmtree(tempdir)
+        try:
+            file_path = download_archive(url, tempdir)
+            unpack_archive(file_path, self.component_cache_path(component))
+            copy_directory(self.component_cache_path(component), download_path)
+        except FetchingError as e:
+            raise FetchingError('Cannot download component {}@{}. {}'.format(component.name, component.version, str(e)))
+        finally:
+            shutil.rmtree(tempdir)
 
         return download_path
 

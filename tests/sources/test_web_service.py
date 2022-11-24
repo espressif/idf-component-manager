@@ -4,7 +4,6 @@
 import filecmp
 import os
 import shutil
-import tempfile
 
 import pytest
 import vcr
@@ -13,6 +12,7 @@ from idf_component_tools.errors import FetchingError
 from idf_component_tools.hash_tools import hash_dir
 from idf_component_tools.manifest import ComponentVersion, SolvedComponent
 from idf_component_tools.sources import WebServiceSource
+from idf_component_tools.sources.web_service import download_archive
 
 
 class TestComponentWebServiceSource(object):
@@ -32,46 +32,53 @@ class TestComponentWebServiceSource(object):
             'service_{}/espressif__cmp_1.0.0_{}'.format(self.EXAMPLE_HASH[:8], self.CMP_HASH))
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_fetch_webservice.yaml')
-    def test_download(self, release_component_path):
-        tempdir = tempfile.mkdtemp()
-        cache_dir = os.path.join(tempdir, 'cache')
+    def test_download(self, release_component_path, tmp_path):
+        cache_dir = str(tmp_path / 'cache')
         source = WebServiceSource(
             source_details={'service_url': 'https://example.com/api'}, system_cache_path=cache_dir)
         cmp = SolvedComponent('test/cmp', '1.0.1', source, component_hash=self.CMP_HASH)
 
-        try:
-            source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/'})
-            download_path = os.path.join(tempdir, 'test_download')
-            local_path = source.download(cmp, download_path)
+        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/'})
+        download_path = str(tmp_path / 'test_download')
+        local_path = source.download(cmp, download_path)
 
-            assert local_path == download_path
-            assert os.path.isdir(local_path)
-            downloaded_manifest = os.path.join(local_path, 'idf_component.yml')
-            assert os.path.isfile(downloaded_manifest)
-            cached_manifest = os.path.join(source.component_cache_path(cmp), 'idf_component.yml')
-            assert os.path.isfile(cached_manifest)
-            assert filecmp.cmp(downloaded_manifest, cached_manifest)
+        assert local_path == download_path
+        assert os.path.isdir(local_path)
+        downloaded_manifest = os.path.join(local_path, 'idf_component.yml')
+        assert os.path.isfile(downloaded_manifest)
+        cached_manifest = os.path.join(source.component_cache_path(cmp), 'idf_component.yml')
+        assert os.path.isfile(cached_manifest)
+        assert filecmp.cmp(downloaded_manifest, cached_manifest)
 
-            # Download one more time, to check that nothing will happen
-            source.download(cmp, download_path)
+        # Download one more time, to check that nothing will happen
+        source.download(cmp, download_path)
 
-            # Check copy from the cache (NO http request)
-            fixture_cmp = SolvedComponent('test/cmp', '1.0.0', source, component_hash=hash_dir(release_component_path))
-            download_path = os.path.join(tempdir, 'test_cached')
-            cache_path = source.component_cache_path(fixture_cmp)
-            if os.path.exists(cache_path):
-                shutil.rmtree(cache_path, ignore_errors=True)
-            shutil.copytree(release_component_path, cache_path)
+        # Check copy from the cache (NO http request)
+        fixture_cmp = SolvedComponent('test/cmp', '1.0.0', source, component_hash=hash_dir(release_component_path))
+        download_path = str(tmp_path / 'test_cached')
+        cache_path = source.component_cache_path(fixture_cmp)
+        if os.path.exists(cache_path):
+            shutil.rmtree(cache_path, ignore_errors=True)
+        shutil.copytree(release_component_path, cache_path)
 
-            local_path = source.download(fixture_cmp, download_path)
+        local_path = source.download(fixture_cmp, download_path)
 
-            assert os.path.isfile(os.path.join(local_path, 'idf_component.yml'))
+        assert os.path.isfile(os.path.join(local_path, 'idf_component.yml'))
 
-        finally:
-            shutil.rmtree(tempdir)
+    def test_download_local_file(self, fixtures_path, tmp_path):
+        source_file = os.path.join(fixtures_path, 'archives', 'cmp_1.0.0.tar.gz')
+
+        file = download_archive('file://{}'.format(source_file), str(tmp_path))
+        assert filecmp.cmp(source_file, file)
+
+    def test_download_local_file_not_existing(self, tmp_path):
+        source_file = os.path.join(str(tmp_path), 'cmp_1.0.0.tar.gz')
+
+        with pytest.raises(FetchingError):
+            download_archive('file://{}'.format(source_file), tmp_path)
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_pre_release.yaml')
-    def test_pre_release_exists(self, monkeypatch, capsys):
+    def test_pre_release_exists(self, capsys):
         source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/'})
 
         captured = capsys.readouterr()
@@ -81,12 +88,12 @@ class TestComponentWebServiceSource(object):
             assert 'pre_release' in captured.out
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_versions.yaml')
-    def test_skip_pre_release(self, monkeypatch):
+    def test_skip_pre_release(self):
         source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/', 'pre_release': False})
         assert len(source.versions('example/cmp').versions) == 1
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_versions.yaml')
-    def test_select_pre_release(self, monkeypatch):
+    def test_select_pre_release(self):
         source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/', 'pre_release': True})
         assert len(source.versions('example/cmp').versions) == 2
 
