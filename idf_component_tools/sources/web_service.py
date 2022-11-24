@@ -12,7 +12,6 @@ from io import open
 import requests
 
 import idf_component_tools.api_client as api_client
-from idf_component_tools.semver import Version
 
 from ..archive_tools import ArchiveError, get_format_from_path, unpack_archive
 from ..config import component_registry_url
@@ -142,37 +141,40 @@ class WebServiceSource(BaseSource):
     def versions(self, name, details=None, spec='*', target=None):
         cmp_with_versions = self.api_client.versions(component_name=name, spec=spec)
         versions = []
-        versions_target = []
-        versions_pre_release = []
+        other_targets_versions = []
+        pre_release_versions = []
+
         for version_info in cmp_with_versions.versions:
-            version = Version(version_info.text)
             if target and version_info.targets and target not in version_info.targets:
-                versions_target.append(version_info)
+                other_targets_versions.append(version_info)
                 continue
 
-            if not self.pre_release and version.prerelease:
-                versions_pre_release.append(version_info)
+            if not self.pre_release and version_info.semver.prerelease:
+                pre_release_versions.append(str(version_info))
                 continue
 
             versions.append(version_info)
 
-        if not versions:
-            if versions_pre_release:
-                hint(
-                    'Component "{}" has a pre-release version. To use that version, add '
-                    '"pre_release: True" to the dependency in the manifest.'.format(name))
-
-            if versions_target:
-                targets = set()
-                for version in versions_target:
-                    targets.update(version.targets)
-                hint(
-                    'Component "{}" has versions for the different targets: {}. Change the target in the manifest '
-                    'to use that versions.'.format(name, ', '.join(targets)))
-
-            raise FetchingError('Cannot get versions of "{}"'.format(name))
-
         cmp_with_versions.versions = versions
+        if not versions:
+            current_target = '"{}"'.format(target) if target else ''
+
+            if pre_release_versions:
+                hint(
+                    'Component "{}" has some pre-release versions: "{}" satisfies your requirements. '
+                    'To allow pre-release versions add "pre_release: true" '
+                    'to the dependency in the manifest.'.format(name, '", "'.join(pre_release_versions)))
+
+            if other_targets_versions:
+                targets = {t for v in other_targets_versions for t in v.targets}
+                hint(
+                    'Component "{}" has suitable versions for other targets: "{}". '
+                    'Is your current target {} set correctly?'.format(name, '", "'.join(targets), current_target))
+
+            raise FetchingError(
+                'Cannot find versions of "{}" with version satisfying "{}" '
+                'for the current target {}'.format(name, spec, current_target))
+
         return cmp_with_versions
 
     @property

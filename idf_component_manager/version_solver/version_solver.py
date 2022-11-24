@@ -16,7 +16,7 @@ except ImportError:
 class VersionSolver(object):
     """
     The version solver that finds a set of package versions
-    that satisfy the root package's dependencies.
+    satisfies the root package's dependencies.
     """
     def __init__(self, requirements, old_solution=None, component_solved_callback=None):
         # type: (ProjectRequirements, Optional[SolvedManifest], Optional[Callable[[], None]]) -> None
