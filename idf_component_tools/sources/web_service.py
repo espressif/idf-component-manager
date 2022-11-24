@@ -58,8 +58,13 @@ class WebServiceSource(BaseSource):
         if not self.base_url and not self.storage_url:
             self.base_url, self.storage_url = component_registry_url()
 
-        self.api_client = self.source_details.get(
-            'api_client', api_client.APIClient(base_url=self.base_url, storage_url=self.storage_url, source=self))
+        self.api_client = self.source_details.get('api_client')
+
+        if self.api_client is None:
+            self.api_client = api_client.APIClient(base_url=self.base_url, storage_url=self.storage_url, source=self)
+
+        if not self.base_url and not self.storage_url:
+            FetchingError('Cannot fetch a dependency with when registry is not defined')
 
         self.pre_release = self.source_details.get('pre_release')
 
@@ -74,7 +79,7 @@ class WebServiceSource(BaseSource):
     @property
     def hash_key(self):
         if self._hash_key is None:
-            url = urlparse(self.base_url)
+            url = urlparse(self.base_url or self.storage_url)
             netloc = url.netloc
             path = '/'.join(filter(None, url.path.split('/')))
             normalized_path = '/'.join([netloc, path])
