@@ -8,7 +8,7 @@ import shutil
 import pytest
 import vcr
 
-from idf_component_tools.errors import FetchingError
+from idf_component_tools.errors import FetchingError, UserHint
 from idf_component_tools.hash_tools import hash_dir
 from idf_component_tools.manifest import ComponentVersion, SolvedComponent
 from idf_component_tools.sources import WebServiceSource
@@ -83,9 +83,22 @@ class TestComponentWebServiceSource(object):
 
         captured = capsys.readouterr()
         with pytest.raises(FetchingError):
-            source.versions('example/cmp')
-            assert 'HINT:' in captured.out
-            assert 'pre_release' in captured.out
+            with pytest.warns(UserHint) as record:
+                source.versions('example/cmp')
+
+                prerelease_hint_str = 'Component "example/cmp" has a pre-release version. ' \
+                                      'To use that version, add "pre_release: True" to the dependency in the manifest.'
+
+                assert prerelease_hint_str in record.list[0].message.args
+
+                assert prerelease_hint_str in captured.out
+                assert 'Cannot get versions of "example/cmp" that satisfy spec "*" with all target' in captured.out
+
+    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_pre_release.yaml')
+    def test_pre_release_exists_with_pre_release_spec(self, monkeypatch):
+        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/'})
+
+        source.versions('example/cmp', spec='^0.0.5-alpha1')
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_versions.yaml')
     def test_skip_pre_release(self):
@@ -103,6 +116,13 @@ class TestComponentWebServiceSource(object):
 
         captured = capsys.readouterr()
         with pytest.raises(FetchingError):
-            source.versions('example/cmp', target='esp32s2')
-            assert 'HINT:' in captured.out
-            assert 'target' in captured.out
+            with pytest.warns(UserHint) as record:
+                source.versions('example/cmp', target='esp32s2')
+
+                other_targets_hint_str = 'Component "example/cmp" has versions for the different targets: esp32. ' \
+                                         'Change the target in the manifest to use that versions.'
+
+                assert other_targets_hint_str in record[0].message.args
+
+                assert other_targets_hint_str in captured.out
+                assert 'Cannot get versions of "example/cmp" that satisfy spec "*" with esp32s2 target' in captured.out

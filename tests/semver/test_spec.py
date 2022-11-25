@@ -11,6 +11,7 @@ from idf_component_tools import semver
 
 # shortcut
 Version = semver.Version
+SimpleSpec = semver.SimpleSpec
 
 
 class FormatTests(unittest.TestCase):
@@ -153,3 +154,26 @@ class FormatTests(unittest.TestCase):
         self.assertLess(Version('1.0.0-beta.2'), Version('1.0.0-beta.11'))
         self.assertLess(Version('1.0.0-beta.11'), Version('1.0.0-rc.1'))
         self.assertLess(Version('1.0.0-rc.1'), Version('1.0.0'))
+
+
+class SimpleSpecTests(unittest.TestCase):
+    spec__contains_prerelease__items = [
+        ('*', False),
+        ('==0.1.0', False),
+        ('=0.1.0', False),
+        ('0.1.0', False),
+        ('<=0.1.1', False),
+        ('<0.1', False),
+        ('1', False),
+        ('>0.1.2-rc1', True),
+        ('>=0.1.2-rc1.3.4', True),
+        ('==0.1.2+build42-12.2012-01-01.12h23', False),
+        ('!=0.1.2-rc1.3-14.15+build.2012-01-01.11h34', True),
+        ('^0.1.2', False),
+        ('~0.1.2', False),
+        ('~=0.1.2', False),
+    ]
+
+    def test_contains_prerelease(self):
+        for spec, contains_prerelease in self.spec__contains_prerelease__items:
+            assert SimpleSpec(spec).contains_prerelease == contains_prerelease
