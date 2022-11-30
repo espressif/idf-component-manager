@@ -26,20 +26,23 @@ DEFAULT_EXCLUDE = [
     # SVN
     '**/.svn/**/*',
     # dist and build artefacts
-    './dist/**/*',
-    'build/**/*',
-    'examples/**/build/**/*',
+    '**/dist/**/*',
+    '**/build/**/*',
+    # artifacts from example projects
+    '**/managed_components/**/*',
+    '**/dependencies.lock',
     # CI files
-    '.github/**/*',
-    '.gitlab-ci.yml',
+    '**/.github/**/*',
+    '**/.gitlab-ci.yml',
     # IDE files
-    '.idea/**/*',
-    '.vscode/**/*',
+    '**/.idea/**/*',
+    '**/.vscode/**/*',
     # Configs
-    '.settings/**/*',
+    '**/.settings/**/*',
     '**/sdkconfig',
+    '**/sdkconfig.old',
     # Hash file
-    '.component_hash'
+    '**/.component_hash'
 ]
 
 UNEXPECTED_FILES = {
@@ -147,7 +150,6 @@ def check_unexpected_component_files(path):  # type: (str | Path) -> None
         unexpected_files = UNEXPECTED_FILES.intersection(files)
         if unexpected_files:
             warn(
-                (
-                    'Unexpected files "{files}" found in the component directory "{path}". '
-                    'Please check if these files should be ignored').format(
-                        files=', '.join(unexpected_files), path=os.path.relpath(root, start=str(path))))
+                'Unexpected files "{files}" found in the component directory "{path}". '
+                'Please check if these files should be ignored'.format(
+                    files=', '.join(unexpected_files), path=os.path.relpath(root, start=str(path))))

@@ -3,7 +3,6 @@
 
 import os
 import shutil
-import warnings
 from pathlib import Path
 
 import pytest
@@ -110,7 +109,5 @@ def test_check_suspisious_component_files(release_component_path, tmp_path):
     shutil.copytree(release_component_path, sub)
     (Path(sub) / 'dev' / 'CMakeCache.txt').touch()
 
-    with warnings.catch_warnings(record=True) as w:
+    with pytest.warns(UserWarning, match='Unexpected files "CMakeCache.txt" found in the component directory "dev"'):
         check_unexpected_component_files(sub)
-        assert w
-        assert 'Unexpected files "CMakeCache.txt" found in the component directory "dev"' in str(w[-1].message)
