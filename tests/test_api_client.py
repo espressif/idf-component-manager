@@ -8,7 +8,7 @@ import vcr
 from idf_component_manager import version
 from idf_component_tools.api_client import APIClient, join_url, user_agent
 from idf_component_tools.api_client_errors import NoRegistrySet
-from idf_component_tools.sources.web_service import default_component_registry_storage_url
+from idf_component_tools.config import component_registry_url
 
 
 @pytest.fixture
@@ -103,7 +103,7 @@ class TestAPIClient(object):
     def test_no_registry_url_error(self, monkeypatch):
         monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'http://localhost:9000/test-public')
 
-        registry_url, storage_url = default_component_registry_storage_url()
+        registry_url, storage_url = component_registry_url()
         client = APIClient(base_url=registry_url, storage_url=storage_url, auth_token='test')
         with pytest.raises(NoRegistrySet):
             client.upload_version(component_name='example/cmp')
@@ -112,6 +112,6 @@ class TestAPIClient(object):
     def test_no_registry_url_use_static(self, monkeypatch):
         monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'http://localhost:9000/test-public')
 
-        registry_url, storage_url = default_component_registry_storage_url()
+        registry_url, storage_url = component_registry_url()
         client = APIClient(base_url=registry_url, storage_url=storage_url, auth_token='test')
         client.component(component_name='espressif/cmp')  # no errors

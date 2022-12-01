@@ -6,7 +6,6 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from idf_component_tools.constants import DEFAULT_NAMESPACE
 from idf_component_tools.errors import ComponentModifiedError, FatalError
 from idf_component_tools.file_tools import copy_directories, filtered_paths
 from idf_component_tools.hash_tools import HASH_FILENAME
@@ -66,13 +65,13 @@ def raise_component_modified_error(managed_components_dir, components):  # type:
     raise ComponentModifiedError(error)
 
 
-def parse_example(example):  # type: (str) -> tuple[str, str, str]
+def parse_example(example, namespace):  # type: (str, str) -> tuple[str, str, str]
     match = re.match(CREATE_PROJECT_FROM_EXAMPLE_NAME_REGEX, example)
     if not match:
         raise FatalError(
             'Cannot parse EXAMPLE argument. Please use format like: namespace/component=1.0.0:example_name')
 
-    namespace = match.group('namespace') or DEFAULT_NAMESPACE
+    namespace = match.group('namespace') or namespace
     component = match.group('component')
     version_spec = match.group('version') or '*'
     example_name = match.group('example')

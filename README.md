@@ -2,18 +2,28 @@
 
 The IDF Component manager is a tool that downloads dependencies for any [ESP-IDF](https://www.espressif.com/en/products/sdks/esp-idf) CMake project. It makes sure that the right versions of all components required for a successful build of your project are in place. The download happens automatically during a run of CMake. It can source components either from [the component registry](https://components.espressif.com/) or from a git repository.
 
-**A list of components can be found on https://components.espressif.com/**
+**A list of components can be found at https://components.espressif.com/**
 
 ## Installing the IDF Component Manager
 
 IDF component manager can be used with ESP-IDF v4.1 and later.
+It is installed by default with ESP-IDF v4.4+ and recent bug-fix releases of ESP-IDF 4.1+.
 
-Starting ESP-IDF v4.4 the [idf-component-manager](https://pypi.org/project/idf-component-manager/) package is installed by default and no extra action is necessary.
-
-In ESP-IDF v4.1 — v4.3, you need to install the following Python package to use the component manager:
+To check the installed version of the IDF component manager, first, activate [ESP-IDF environment](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#installation). On macOS and Linux:
 
 ```bash
 source $IDF_PATH/export.sh
+```
+
+Then run the command:
+
+```bash
+python -m idf_component_manager -h
+```
+
+To update to the most recent version:
+
+```bash
 pip install idf-component-manager --upgrade
 ```
 
@@ -80,11 +90,10 @@ dependencies:
     override_path: "../../" # use component in a local directory, not from registry
   namespace/no_required_component:
     version: "*"
-    require: no  # Download component but don't add it as a requirement
+    require: no # Download component but don't add it as a requirement
   namespace/pre_release_component:
     version: "*"
-    pre_release: true  # Allow downloading of pre-release versions
-
+    pre_release: true # Allow downloading of pre-release versions
 ```
 
 ## Environment variables in manifest

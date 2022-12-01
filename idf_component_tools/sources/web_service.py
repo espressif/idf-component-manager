@@ -12,16 +12,15 @@ from io import open
 import requests
 
 import idf_component_tools.api_client as api_client
-from idf_component_tools.semver import Version
 
 from ..archive_tools import ArchiveError, get_format_from_path, unpack_archive
-from ..config import ConfigManager
+from ..config import component_registry_url
+from ..constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL
 from ..errors import FetchingError, hint
 from ..file_tools import copy_directory
 from ..hash_tools import validate_dir
 from . import utils
 from .base import BaseSource
-from .constants import DEFAULT_COMPONENT_SERVICE_URL, IDF_COMPONENT_STORAGE_URL
 
 try:
     from urllib.parse import urlparse  # type: ignore
@@ -36,39 +35,46 @@ try:
 except ImportError:
     pass
 
+CANONICAL_IDF_COMPONENT_REGISTRY_API_URL = 'https://api.components.espressif.com/'
+IDF_COMPONENT_REGISTRY_API_URL = '{}api/'.format(IDF_COMPONENT_REGISTRY_URL)
 
-def default_component_registry_storage_url(
-        registry_profile=None):  # type: (dict[str, str] | None) -> tuple[str | None, str | None]
-    env_registry_url = os.getenv('DEFAULT_COMPONENT_SERVICE_URL')
-    env_storage_url = os.getenv('IDF_COMPONENT_STORAGE_URL')
-    if env_registry_url or env_storage_url:
-        return env_registry_url, env_storage_url
 
-    env_registry_profile_name = os.getenv('IDF_COMPONENT_SERVICE_PROFILE')
-    if env_registry_profile_name:
-        registry_profile = ConfigManager().load().profiles.get(env_registry_profile_name, {})
-    if registry_profile is None:
-        registry_profile = {}
+def download_archive(url, download_dir):  # type: (str, str) -> str
+    session = api_client.create_session(cache=False)
 
-    storage_url = None
-    profile_storage_url = registry_profile.get('storage_url')
-    if profile_storage_url and profile_storage_url != 'default':
-        storage_url = profile_storage_url
+    try:
+        with session.get(url, stream=True, allow_redirects=True) as r:
+            # Trying to get extension from url
+            original_filename = url.split('/')[-1]
 
-    registry_url = None
-    profile_registry_url = registry_profile.get('url')
-    if profile_registry_url and profile_registry_url != 'default':
-        registry_url = profile_registry_url
+            try:
+                extension = get_format_from_path(original_filename)[1]
+            except ArchiveError:
+                extension = None
 
-    if storage_url and not registry_url:
-        return None, storage_url
+            if r.status_code != 200:
+                raise FetchingError('Server returned HTTP code {}'.format(r.status_code))
 
-    if not registry_url:
-        registry_url = DEFAULT_COMPONENT_SERVICE_URL
-    if not storage_url:
-        storage_url = IDF_COMPONENT_STORAGE_URL
+            # If didn't find anything useful, trying content disposition
+            content_disposition = r.headers.get('content-disposition')
+            if not extension and content_disposition:
+                filenames = re.findall('filename=(.+)', content_disposition)
+                try:
+                    extension = get_format_from_path(filenames[0])[1]
+                except IndexError:
+                    raise FetchingError('Web Service returned invalid download url')
 
-    return registry_url, storage_url
+            filename = 'component.%s' % extension
+            file_path = os.path.join(download_dir, filename)
+
+            with open(file_path, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=65536):
+                    if chunk:
+                        f.write(chunk)
+
+            return file_path
+    except requests.exceptions.RequestException as e:
+        raise FetchingError(str(e))
 
 
 class WebServiceSource(BaseSource):
@@ -77,30 +83,40 @@ class WebServiceSource(BaseSource):
     def __init__(self, source_details=None, **kwargs):
         super(WebServiceSource, self).__init__(source_details=source_details, **kwargs)
 
+        # Use URL from source details with the high priority
         self.base_url = self.source_details.get('service_url')
-        self.storage_url = None
-        if self.base_url is None:
-            self.base_url, self.storage_url = default_component_registry_storage_url()
 
-        if self.base_url is not None:
-            self.base_url = str(self.base_url)
-        self.api_client = self.source_details.get(
-            'api_client', api_client.APIClient(base_url=self.base_url, storage_url=self.storage_url, source=self))
+        # Use the default URL, even if the lock file was made with the canonical one
+        if self.base_url == CANONICAL_IDF_COMPONENT_REGISTRY_API_URL:
+            self.base_url = IDF_COMPONENT_REGISTRY_API_URL
 
-        self.pre_release = self.source_details.get('pre_release', None)
+        self.storage_url = self.source_details.get('storage_url')
+
+        if not self.base_url and not self.storage_url:
+            self.base_url, self.storage_url = component_registry_url()
+
+        self.api_client = self.source_details.get('api_client')
+
+        if self.api_client is None:
+            self.api_client = api_client.APIClient(base_url=self.base_url, storage_url=self.storage_url, source=self)
+
+        if not self.base_url and not self.storage_url:
+            FetchingError('Cannot fetch a dependency with when registry is not defined')
+
+        self.pre_release = self.source_details.get('pre_release')
 
     @classmethod
     def required_keys(cls):
-        return {'service_url': 'str'}
+        return {}
 
     @classmethod
     def optional_keys(cls):
-        return {'pre_release': 'bool'}
+        return {'pre_release': 'bool', 'storage_url': 'str', 'service_url': 'str'}
 
     @property
     def hash_key(self):
         if self._hash_key is None:
-            url = urlparse(self.base_url)
+            url = urlparse(self.base_url or self.storage_url)
             netloc = url.netloc
             path = '/'.join(filter(None, url.path.split('/')))
             normalized_path = '/'.join([netloc, path])
@@ -125,37 +141,40 @@ class WebServiceSource(BaseSource):
     def versions(self, name, details=None, spec='*', target=None):
         cmp_with_versions = self.api_client.versions(component_name=name, spec=spec)
         versions = []
-        versions_target = []
-        versions_pre_release = []
+        other_targets_versions = []
+        pre_release_versions = []
+
         for version_info in cmp_with_versions.versions:
-            version = Version(version_info.text)
             if target and version_info.targets and target not in version_info.targets:
-                versions_target.append(version_info)
+                other_targets_versions.append(version_info)
                 continue
 
-            if not self.pre_release and version.prerelease:
-                versions_pre_release.append(version_info)
+            if not self.pre_release and version_info.semver.prerelease:
+                pre_release_versions.append(str(version_info))
                 continue
 
             versions.append(version_info)
 
-        if not versions:
-            if versions_pre_release:
-                hint(
-                    'Component "{}" has a pre-release version. To use that version, add '
-                    '"pre_release: True" to the dependency in the manifest.'.format(name))
-
-            if versions_target:
-                targets = set()
-                for version in versions_target:
-                    targets.update(version.targets)
-                hint(
-                    'Component "{}" has versions for the different targets: {}. Change the target in the manifest '
-                    'to use that versions.'.format(name, ', '.join(targets)))
-
-            raise FetchingError('Cannot get versions of "{}"'.format(name))
-
         cmp_with_versions.versions = versions
+        if not versions:
+            current_target = '"{}"'.format(target) if target else ''
+
+            if pre_release_versions:
+                hint(
+                    'Component "{}" has some pre-release versions: "{}" satisfies your requirements. '
+                    'To allow pre-release versions add "pre_release: true" '
+                    'to the dependency in the manifest.'.format(name, '", "'.join(pre_release_versions)))
+
+            if other_targets_versions:
+                targets = {t for v in other_targets_versions for t in v.targets}
+                hint(
+                    'Component "{}" has suitable versions for other targets: "{}". '
+                    'Is your current target {} set correctly?'.format(name, '", "'.join(targets), current_target))
+
+            raise FetchingError(
+                'Cannot find versions of "{}" with version satisfying "{}" '
+                'for the current target {}'.format(name, spec, current_target))
+
         return cmp_with_versions
 
     @property
@@ -195,44 +214,16 @@ class WebServiceSource(BaseSource):
                 component.name,
             )
 
-        with requests.get(url, stream=True, allow_redirects=True) as r:
-            # Trying to get extension from url
-            original_filename = url.split('/')[-1]
+        tempdir = tempfile.mkdtemp()
 
-            try:
-                extension = get_format_from_path(original_filename)[1]
-            except ArchiveError:
-                extension = None
-
-            if r.status_code != 200:
-                raise FetchingError(
-                    'Cannot download component %s@%s. Server returned HTTP code %s' %
-                    (component.name, component.version, r.status_code))
-
-            # If didn't find anything useful, trying content disposition
-            content_disposition = r.headers.get('content-disposition')
-            if not extension and content_disposition:
-                filenames = re.findall('filename=(.+)', content_disposition)
-                try:
-                    extension = get_format_from_path(filenames[0])[1]
-                except IndexError:
-                    raise FetchingError('Web Service returned invalid download url')
-
-            tempdir = tempfile.mkdtemp()
-
-            try:
-                filename = 'component.%s' % extension
-                file_path = os.path.join(tempdir, filename)
-
-                with open(file_path, 'wb') as f:
-                    for chunk in r.iter_content(chunk_size=65536):
-                        if chunk:
-                            f.write(chunk)
-
-                unpack_archive(file_path, self.component_cache_path(component))
-                copy_directory(self.component_cache_path(component), download_path)
-            finally:
-                shutil.rmtree(tempdir)
+        try:
+            file_path = download_archive(url, tempdir)
+            unpack_archive(file_path, self.component_cache_path(component))
+            copy_directory(self.component_cache_path(component), download_path)
+        except FetchingError as e:
+            raise FetchingError('Cannot download component {}@{}. {}'.format(component.name, component.version, str(e)))
+        finally:
+            shutil.rmtree(tempdir)
 
         return download_path
 
@@ -241,7 +232,20 @@ class WebServiceSource(BaseSource):
         return self.base_url
 
     def serialize(self):  # type: () -> Dict
-        source = {'service_url': self.base_url, 'type': self.name}
+        source = {'type': self.name}
+
+        service_url = self.base_url
+
+        # Use canonical API url for lock file
+        if service_url == IDF_COMPONENT_REGISTRY_API_URL:
+            service_url = CANONICAL_IDF_COMPONENT_REGISTRY_API_URL
+
+        if service_url is not None:
+            source['service_url'] = service_url
+
+        if self.storage_url != IDF_COMPONENT_STORAGE_URL and self.storage_url is not None:
+            source['storage_url'] = self.storage_url
+
         if self.pre_release is not None:
             source['pre_release'] = self.pre_release
 

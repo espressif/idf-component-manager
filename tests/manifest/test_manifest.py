@@ -51,9 +51,7 @@ class TestManifestPipeline(object):
         path = tmp_path.as_posix()
         parser = ManifestManager(path, name='test')
 
-        parser.check_filename()
-
-        assert parser._path == os.path.join(path, 'idf_component.yml')
+        assert parser.path == os.path.join(path, 'idf_component.yml')
 
     def test_parse_invalid_yaml(self, fixtures_path):
         manifest_path = os.path.join(fixtures_path, 'invalid_yaml.yml')
@@ -349,7 +347,7 @@ class TestManifestValidator(object):
 
     def test_known_targets_env(self, monkeypatch):
         monkeypatch.setenv(
-            'IDF_COMPONENT_MANAGER_KNOWN_TARGETS', 'esp32,test,esp32s2,esp32s3,esp32c3,esp32h2,linux,esp32c2')
+            'IDF_COMPONENT_MANAGER_KNOWN_TARGETS', 'esp32,test,esp32s2,esp32s3,esp32c3,esp32h4,linux,esp32c2')
         result = known_targets()
 
         assert len(result) == 8

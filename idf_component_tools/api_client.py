@@ -19,9 +19,9 @@ from tqdm import tqdm
 
 # Import whole module to avoid circular dependencies
 import idf_component_tools as tools
-from idf_component_manager.utils import print_warn
 from idf_component_tools import file_cache
 from idf_component_tools.__version__ import __version__
+from idf_component_tools.errors import warn
 from idf_component_tools.semver import SimpleSpec, Version
 
 from .api_client_errors import (
@@ -32,12 +32,7 @@ from .api_schemas import (
 from .manifest import Manifest
 
 try:
-    from urllib.parse import urlparse  # type: ignore
-except ImportError:
-    from urlparse import urlparse  # type: ignore
-
-try:
-    from typing import TYPE_CHECKING, Any, Callable, Tuple
+    from typing import TYPE_CHECKING, Any, Callable
 
     if TYPE_CHECKING:
         from idf_component_tools.sources import BaseSource
@@ -53,6 +48,44 @@ DEFAULT_TIMEOUT = (
 
 DEFAULT_API_CACHE_EXPIRATION = 180
 MAX_RETRIES = 3
+
+
+def env_cache_time():
+    try:
+        return int(os.environ.get('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', DEFAULT_API_CACHE_EXPIRATION))
+    except ValueError:
+        warn(
+            'IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES is set to a non-numeric value. '
+            'Please set the variable to the number of minutes. '
+            'Using the default value of {} minutes.'.format(DEFAULT_API_CACHE_EXPIRATION))
+        return DEFAULT_API_CACHE_EXPIRATION
+
+
+def create_session(
+        cache=False,  # type: bool
+        cache_path=file_cache.FileCache.path(),  # type: str
+        cache_time=None,  # type: int | None
+        token=None,  # type: str | None
+):  # type: (...) -> requests.Session
+
+    cache_time = cache_time or env_cache_time()
+    if cache and cache_time:
+        api_adapter = CacheControlAdapter(
+            max_retries=MAX_RETRIES,
+            heuristic=ExpiresAfter(minutes=cache_time),
+            cache=FileCache(os.path.join(cache_path, '.api_client')))
+    else:
+        api_adapter = HTTPAdapter(max_retries=MAX_RETRIES)
+
+    session = requests.Session()
+    session.headers['User-Agent'] = user_agent()
+    session.auth = TokenAuth(token)
+
+    session.mount('http://', api_adapter)
+    session.mount('https://', api_adapter)
+    session.mount('file://', FileAdapter())
+
+    return session
 
 
 class ComponentDetails(Manifest):
@@ -134,15 +167,6 @@ class APIClient(object):
         self._storage_url = storage_url
         self.source = source
         self.auth_token = auth_token
-        try:
-            self.cache_time = int(
-                os.environ.get('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', DEFAULT_API_CACHE_EXPIRATION))
-        except ValueError:
-            print_warn(
-                'IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES is set to a non-numeric value. '
-                'Please set the variable to the number of minutes. '
-                'Using the default value of {} minutes.'.format(DEFAULT_API_CACHE_EXPIRATION))
-            self.cache_time = DEFAULT_API_CACHE_EXPIRATION
 
     def _version_dependencies(self, version):
         dependencies = []
@@ -163,11 +187,21 @@ class APIClient(object):
 
         return dependencies
 
-    def _base_request(self, url, session, method, path, data=None, headers=None, schema=None, use_storage=False):
-        # type: (str, requests.Session, str, list[str], dict | None, dict | None, Schema | None, bool) -> dict
+    def _base_request(
+            self,
+            url,  # type: str
+            session,  # type: requests.Session
+            method,  # type: str
+            path,  # type: list[str]
+            data=None,  # type: dict | None
+            headers=None,  # type: dict | None
+            schema=None,  # type: Schema | None
+            use_storage=False,  # type: bool
+    ):
+        # type: (...) -> dict
         endpoint = join_url(url, *path)
 
-        timeout = DEFAULT_TIMEOUT  # type: float | Tuple[float, float]
+        timeout = DEFAULT_TIMEOUT  # type: float | tuple[float, float]
         try:
             timeout = float(os.environ['IDF_COMPONENT_SERVICE_TIMEOUT'])
         except ValueError:
@@ -182,6 +216,7 @@ class APIClient(object):
                 data=data,
                 headers=headers,
                 timeout=timeout,
+                allow_redirects=True,
             )
 
             if response.status_code == 204:  # NO CONTENT
@@ -216,29 +251,6 @@ class APIClient(object):
 
         return json
 
-    def _create_session(
-            self,
-            base_url='',  # type: str
-            cache=False,  # type: bool
-            cache_path=file_cache.FileCache.path()  # type: str
-    ):  # type: (...) -> requests.Session
-        if urlparse(base_url).scheme == 'file':
-            api_adapter = FileAdapter()
-        elif cache:
-            api_adapter = CacheControlAdapter(
-                max_retries=MAX_RETRIES,
-                heuristic=ExpiresAfter(minutes=self.cache_time),
-                cache=FileCache(os.path.join(cache_path, '.api_client')))
-        else:
-            api_adapter = HTTPAdapter(max_retries=MAX_RETRIES)
-
-        session = requests.Session()
-        session.headers['User-Agent'] = user_agent()
-        session.auth = TokenAuth(self.auth_token)
-        session.mount(base_url, api_adapter)
-
-        return session
-
     @property
     def storage_url(self):
         if not self._storage_url:
@@ -249,7 +261,6 @@ class APIClient(object):
         def decorator(f):  # type: (Callable[..., Any]) -> Callable
             @wraps(f)  # type: ignore
             def wrapper(self, *args, **kwargs):
-                cache_status = cache and bool(self.cache_time)
                 url = self.base_url
                 if use_storage:
                     url = self.storage_url
@@ -258,12 +269,12 @@ class APIClient(object):
                     raise NoRegistrySet(
                         'The current operation requires access to the IDF component registry. '
                         'However, the registry URL is not set. You can set the '
-                        'DEFAULT_COMPONENT_SERVICE_URL environment variable or "url" field for your current profile '
-                        'in "idf_component_manager.yaml" file. To use the default IDF component registry '
+                        'IDF_COMPONENT_REGISTRY_URL environment variable or "registry_url" field for your current '
+                        'profile in "idf_component_manager.yml" file. To use the default IDF component registry '
                         'unset IDF_COMPONENT_STORAGE_URL environment variable or remove "storage_url" field '
-                        'from the "idf_component_manager.yaml" file')
+                        'from the "idf_component_manager.yml" file')
 
-                session = self._create_session(base_url=url, cache=cache_status)
+                session = create_session(cache=cache, token=self.auth_token)
 
                 def request(method, path, data=None, headers=None, schema=None):
                     if use_storage:

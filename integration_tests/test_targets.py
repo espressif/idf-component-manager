@@ -74,7 +74,8 @@ def test_idf_check_target_fail_manifest(project):
     ], indirect=True)
 def test_idf_check_target_fail_dependency(project):
     res = set_target(project, 'esp32')
-    assert 'project depends on example/cmp (0.0.1) which doesn\'t match' in res
+    assert 'Cannot find versions of "example/cmp" with version satisfying' in res
+    assert '"0.0.1" for the current target "esp32"' in res
 
 
 @pytest.mark.parametrize(

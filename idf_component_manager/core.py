@@ -36,7 +36,7 @@ from .core_utils import (
     ProgressBar, archive_filename, copy_examples_folders, dist_name, parse_example, raise_component_modified_error)
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
-from .service_details import create_api_client, service_details
+from .service_details import service_details
 
 try:
     from typing import Optional, Tuple
@@ -131,9 +131,11 @@ class ComponentManager(object):
             print_info('"{}" already exists, skipping...'.format(manifest_filepath))
 
     @general_error_handler
-    def create_project_from_example(self, example, path=None):
-        # type: (str, str | None) -> None
-        component_name, version_spec, example_name = parse_example(example)
+    def create_project_from_example(self, example, path=None, service_profile=None):
+        # type: (str, str | None, str | None) -> None
+
+        client, namespace = service_details(None, service_profile, token_required=False)
+        component_name, version_spec, example_name = parse_example(example, namespace)
         project_path = path or os.path.join(self.path, os.path.basename(example_name))
 
         if os.path.isfile(project_path):
@@ -148,7 +150,6 @@ class ComponentManager(object):
                 'choose a different path.'.format(project_path),
                 exit_code=3)
 
-        client = create_api_client()
         try:
             component_details = client.component(component_name=component_name, version=version_spec)
         except VersionNotFound as e:
@@ -258,7 +259,13 @@ class ComponentManager(object):
         return archive_filepath, manifest
 
     @general_error_handler
-    def delete_version(self, name, version, service_profile='default', namespace='espressif'):
+    def delete_version(
+            self,
+            name,  # type: str
+            version,  # type: str
+            service_profile=None,  # type: str | None
+            namespace=None  # type: str | None
+    ):  # type: (...) -> None
         client, namespace = service_details(namespace, service_profile)
 
         if not version:
@@ -305,15 +312,14 @@ class ComponentManager(object):
     @general_error_handler
     def upload_component(
             self,
-            name,
-            version=None,
-            service_profile='default',
-            namespace='espressif',
-            archive=None,
-            skip_pre_release=False,
-            check_only=False,
-            allow_existing=False):
-        # type: (str, Optional[str], str, str, str | None, bool, bool, bool) -> None
+            name,  # type: str
+            version=None,  # type: str | None
+            service_profile=None,  # type: str | None
+            namespace=None,  # type: str | None
+            archive=None,  # type: str | None
+            skip_pre_release=False,  # type: bool
+            check_only=False,  # type: bool
+            allow_existing=False):  # type: (...) -> None
         client, namespace = service_details(namespace, service_profile)
         if archive:
             if not os.path.isfile(archive):
@@ -386,7 +392,7 @@ class ComponentManager(object):
                 "Component wasn't processed in {} seconds. Check processing status later.".format(PROCESSING_TIMEOUT))
 
     @general_error_handler
-    def upload_component_status(self, job_id, service_profile='default'):
+    def upload_component_status(self, job_id, service_profile=None):  # type: (str, str | None) -> None
         client, _ = service_details(None, service_profile)
         status = client.task_status(job_id=job_id)
         if status.status == 'failure':

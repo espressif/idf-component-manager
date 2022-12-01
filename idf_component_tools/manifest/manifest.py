@@ -275,7 +275,7 @@ class HashedComponentVersion(ComponentVersion):
 
     @property
     def text(self):
-        return self._version_string
+        return str(self)
 
 
 class ComponentWithVersions(object):

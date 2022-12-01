@@ -39,35 +39,18 @@ class TestUtilsArchive(object):
         assert is_known_format('zip')
         assert is_known_format('gztar')
 
-    def test_unpack_archive_tgz(self, archive_path):
+    @pytest.mark.parametrize(['ext', 'func'], [
+        ('tar.gz', unpack_tar),
+        ('zip', unpack_zip),
+    ])
+    def test_unpack_archive_tgz(self, ext, func, archive_path, tmp_path):
+        target = tmp_path / 'cmp'
 
-        tempdir = tempfile.mkdtemp()
-        target = os.path.join(tempdir, 'cmp')
+        func(archive_path(ext), str(target))
 
-        try:
-
-            unpack_tar(archive_path('tar.gz'), target)
-
-            assert os.path.isfile(os.path.join(target, 'CMakeLists.txt'))
-            assert os.path.isdir(os.path.join(target, 'include'))
-            assert os.path.isfile(os.path.join(target, 'include', 'cmp.h'))
-
-        finally:
-            shutil.rmtree(tempdir)
-
-    def test_unpack_archive_zip(self, archive_path):
-        tempdir = tempfile.mkdtemp()
-        target = os.path.join(tempdir, 'cmp')
-
-        try:
-            unpack_zip(archive_path('zip'), target)
-
-            assert os.path.isfile(os.path.join(target, 'CMakeLists.txt'))
-            assert os.path.isdir(os.path.join(target, 'include'))
-            assert os.path.isfile(os.path.join(target, 'include', 'cmp.h'))
-
-        finally:
-            shutil.rmtree(tempdir)
+        assert (target / 'CMakeLists.txt').is_file()
+        assert (target / 'include').is_dir()
+        assert (target / 'include' / 'cmp.h').is_file()
 
     def test_unpack_archive(self, archive_path):
         tempdir = tempfile.mkdtemp()
