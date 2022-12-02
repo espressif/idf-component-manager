@@ -9,7 +9,7 @@ from shutil import copytree, rmtree
 from idf_component_tools.errors import warn
 
 try:
-    from typing import Callable, Iterable, Optional, Set, Text, Union
+    from typing import Callable, Iterable
 except ImportError:
     pass
 
@@ -26,20 +26,23 @@ DEFAULT_EXCLUDE = [
     # SVN
     '**/.svn/**/*',
     # dist and build artefacts
-    './dist/**/*',
-    'build/**/*',
-    'examples/**/build/**/*',
+    '**/dist/**/*',
+    '**/build/**/*',
+    # artifacts from example projects
+    '**/managed_components/**/*',
+    '**/dependencies.lock',
     # CI files
-    '.github/**/*',
-    '.gitlab-ci.yml',
+    '**/.github/**/*',
+    '**/.gitlab-ci.yml',
     # IDE files
-    '.idea/**/*',
-    '.vscode/**/*',
+    '**/.idea/**/*',
+    '**/.vscode/**/*',
     # Configs
-    '.settings/**/*',
+    '**/.settings/**/*',
     '**/sdkconfig',
+    '**/sdkconfig.old',
     # Hash file
-    '.component_hash'
+    '**/.component_hash'
 ]
 
 UNEXPECTED_FILES = {
@@ -48,7 +51,7 @@ UNEXPECTED_FILES = {
 
 
 def filtered_paths(path, include=None, exclude=None):
-    # type: (Union[Text, Path], Optional[Iterable[str]], Optional[Iterable[str]]) -> Set[Path]
+    # type: (str | Path, Iterable[str] | None, Iterable[str] | None) -> set[Path]
     if include is None:
         include = set()
 
@@ -56,7 +59,7 @@ def filtered_paths(path, include=None, exclude=None):
         exclude = set()
 
     base_path = Path(path)
-    paths = set()  # type: Set[Path]
+    paths = set()  # type: set[Path]
 
     def include_paths(pattern):
         paths.update(base_path.glob(pattern))
@@ -117,7 +120,7 @@ def copy_directory(source_directory, destination_directory):  # type: (str, str)
     copytree(source_directory, destination_directory)
 
 
-def copy_directories(source_directory, destination_directory, paths):  # type: (str, str, set[Path]) -> None
+def copy_directories(source_directory, destination_directory, paths):  # type: (str, str, Iterable[Path]) -> None
     for path in sorted(paths):
         path = str(path)  # type: ignore # Path backward compatibility
         rel_path = os.path.relpath(path, source_directory)
@@ -135,7 +138,7 @@ def copy_directories(source_directory, destination_directory, paths):  # type: (
 
 
 def copy_filtered_directory(source_directory, destination_directory, include=None, exclude=None):
-    # type: (str, str, Optional[Iterable[str]], Optional[Iterable[str]]) -> None
+    # type: (str, str, Iterable[str] | None, Iterable[str] | None) -> None
     paths = filtered_paths(source_directory, include=include, exclude=exclude)
     prepare_empty_directory(destination_directory)
     copy_directories(source_directory, destination_directory, paths)
@@ -147,7 +150,6 @@ def check_unexpected_component_files(path):  # type: (str | Path) -> None
         unexpected_files = UNEXPECTED_FILES.intersection(files)
         if unexpected_files:
             warn(
-                (
-                    'Unexpected files "{files}" found in the component directory "{path}". '
-                    'Please check if these files should be ignored').format(
-                        files=', '.join(unexpected_files), path=os.path.relpath(root, start=str(path))))
+                'Unexpected files "{files}" found in the component directory "{path}". '
+                'Please check if these files should be ignored'.format(
+                    files=', '.join(unexpected_files), path=os.path.relpath(root, start=str(path))))
