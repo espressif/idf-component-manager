@@ -29,7 +29,7 @@ class TestComponentWebServiceSource(object):
         source = WebServiceSource(source_details={'service_url': 'https://example.com/api'})
         component = SolvedComponent('cmp', ComponentVersion('1.0.0'), source=source, component_hash=self.CMP_HASH)
         assert source.component_cache_path(component).endswith(
-            'service_{}/espressif__cmp_1.0.0_{}'.format(self.EXAMPLE_HASH[:8], self.CMP_HASH))
+            'service_{}/espressif__cmp_1.0.0_{}'.format(self.EXAMPLE_HASH[:8], self.CMP_HASH[:8]))
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_fetch_webservice.yaml')
     def test_download(self, release_component_path, tmp_path):

@@ -134,7 +134,7 @@ class WebServiceSource(BaseSource):
             [
                 self.normalized_name(component.name).replace('/', '__'),
                 str(component.version),
-                str(component.component_hash),
+                str(component.component_hash)[:8],
             ])
         path = os.path.join(self.cache_path(), component_dir_name)
         return path
