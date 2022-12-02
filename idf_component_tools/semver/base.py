@@ -484,6 +484,19 @@ class BaseSpec(object):
     def __repr__(self):
         return '<%s: %r>' % (self.__class__.__name__, self.expression)
 
+    @classmethod
+    def _contains_prerelease(cls, clause):  # type: (Clause) -> bool
+        if hasattr(clause, 'clauses'):
+            return any(cls._contains_prerelease(c) for c in clause.clauses)
+        elif isinstance(clause, Range):
+            return bool(clause.target.prerelease)
+        else:
+            return False
+
+    @property
+    def contains_prerelease(self):  # type: () -> bool
+        return self._contains_prerelease(self.clause)
+
 
 class Clause(object):
     __slots__ = []  # type: list[str]
@@ -739,7 +752,7 @@ class Range(Matcher):
         if target.build and operator not in (self.OP_EQ, self.OP_NEQ):
             raise ValueError('Invalid range %s%s: build numbers have no ordering.' % (operator, target))
         self.operator = operator
-        self.target = target
+        self.target = target  # type: Version
         self.prerelease_policy = prerelease_policy
         self.build_policy = self.BUILD_STRICT if target.build else build_policy
 

@@ -12,6 +12,7 @@ from io import open
 import requests
 
 import idf_component_tools.api_client as api_client
+from idf_component_tools.semver import SimpleSpec
 
 from ..archive_tools import ArchiveError, get_format_from_path, unpack_archive
 from ..config import component_registry_url
@@ -144,16 +145,16 @@ class WebServiceSource(BaseSource):
         other_targets_versions = []
         pre_release_versions = []
 
-        for version_info in cmp_with_versions.versions:
-            if target and version_info.targets and target not in version_info.targets:
-                other_targets_versions.append(version_info)
+        for version in cmp_with_versions.versions:
+            if target and version.targets and target not in version.targets:
+                other_targets_versions.append(version)
                 continue
 
-            if not self.pre_release and version_info.semver.prerelease:
-                pre_release_versions.append(str(version_info))
+            if not self.pre_release and version.semver.prerelease and not SimpleSpec(spec).contains_prerelease:
+                pre_release_versions.append(str(version))
                 continue
 
-            versions.append(version_info)
+            versions.append(version)
 
         cmp_with_versions.versions = versions
         if not versions:
