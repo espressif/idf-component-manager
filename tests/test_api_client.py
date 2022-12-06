@@ -6,7 +6,7 @@ import pytest
 import vcr
 
 from idf_component_manager import version
-from idf_component_tools.api_client import APIClient, join_url, user_agent
+from idf_component_tools.api_client import APIClient, env_cache_time, join_url, user_agent
 from idf_component_tools.api_client_errors import NoRegistrySet
 from idf_component_tools.config import component_registry_url
 
@@ -69,6 +69,14 @@ class TestAPIClient(object):
     def test_user_agent(self, base_url):
         ua = user_agent()
         assert str(version) in ua
+
+    def test_env_cache_time_env_var(self, monkeypatch):
+        monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '10')
+        assert env_cache_time() == 10
+
+    def test_env_cache_time(self, monkeypatch):
+        monkeypatch.delenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES')
+        assert env_cache_time() == 5
 
     @vcr.use_cassette(
         'tests/fixtures/vcr_cassettes/test_api_cache.yaml',

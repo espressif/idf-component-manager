@@ -46,19 +46,19 @@ DEFAULT_TIMEOUT = (
     30.1,  # Read timeout
 )
 
-DEFAULT_API_CACHE_EXPIRATION = 180
+DEFAULT_API_CACHE_EXPIRATION_MINUTES = 5
 MAX_RETRIES = 3
 
 
 def env_cache_time():
     try:
-        return int(os.environ.get('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', DEFAULT_API_CACHE_EXPIRATION))
+        return int(os.environ.get('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', DEFAULT_API_CACHE_EXPIRATION_MINUTES))
     except ValueError:
         warn(
             'IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES is set to a non-numeric value. '
             'Please set the variable to the number of minutes. '
-            'Using the default value of {} minutes.'.format(DEFAULT_API_CACHE_EXPIRATION))
-        return DEFAULT_API_CACHE_EXPIRATION
+            'Using the default value of {} minutes.'.format(DEFAULT_API_CACHE_EXPIRATION_MINUTES))
+        return DEFAULT_API_CACHE_EXPIRATION_MINUTES
 
 
 def create_session(

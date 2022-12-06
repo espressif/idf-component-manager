@@ -112,7 +112,7 @@ dependencies:
 
 ## Component metadata caching
 
-By default information about available versions of components is cached for 3 hours. You can adjust caching period by setting the duration in minutes to `IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES` environment variable or disable the cache entirely by setting it to 0.
+By default information about available versions of components is cached for 5 minutes. You can adjust caching period by setting the duration in minutes to `IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES` environment variable or disable the cache entirely by setting it to 0.
 
 ## External links
 
