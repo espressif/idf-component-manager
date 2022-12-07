@@ -15,7 +15,7 @@ integration_test:
       - IDF_BRANCH: [release-v4.1, release-v4.2]
         PYTHON_IMAGE_TAG: [2.7-buster, 3.4-stretch, 3.10-bullseye]
       - IDF_BRANCH: [release-v4.3]
-        PYTHON_IMAGE_TAG: [3.4-stretch, 3.10-bullseye]
+        PYTHON_IMAGE_TAG: [3.5-stretch, 3.10-bullseye]
       - IDF_BRANCH: [release-v4.4]
         PYTHON_IMAGE_TAG: [3.6-bullseye, 3.10-bullseye]
       - IDF_BRANCH: [release-v5.0, master]
