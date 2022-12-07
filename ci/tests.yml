@@ -6,39 +6,21 @@ workflow:
   rules:
     - when: always
 
-.test_template:
+test:
   stage: test
   tags:
     - test
     - internet
+  parallel:
+    matrix:
+      - PYTHON_IMAGE_TAG: [2.7-buster, 3.4-stretch, 3.5-buster, 3.11-bullseye]
+  image: python:${PYTHON_IMAGE_TAG}
   before_script:
-    - pip install tox
+    - pip install pytest pytest-cov vcrpy .
+  script:
+    - py.test --cov=. --cov-report=xml
   artifacts:
     reports:
       coverage_report:
         coverage_format: cobertura
         path: coverage.xml
-
-test:py2.7:
-  extends: .test_template
-  image: python:2.7-buster
-  script:
-    - tox -e py27
-
-test:py3.4:
-  extends: .test_template
-  image: python:3.4-stretch
-  script:
-    - tox -e py34
-
-test:py3.5:
-  extends: .test_template
-  image: python:3.5-buster
-  script:
-    - tox -e py35
-
-test:py3.9:
-  extends: .test_template
-  image: python:3.9-buster
-  script:
-    - tox -e py39
