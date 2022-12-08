@@ -271,7 +271,7 @@ class HashedComponentVersion(ComponentVersion):
         self.targets = targets
 
     def __hash__(self):
-        return hash(self.component_hash) if self.component_hash else hash(self._version_string)
+        return hash(self.component_hash) if self.component_hash else hash(str(self))
 
     @property
     def text(self):

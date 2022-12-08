@@ -30,7 +30,6 @@ pytest-cov = '*'
 requests-mock = '*'
 rope = '*'
 setuptools = "*"
-tox = '<=3.0.0'
 twine = "*"
 unify = '*'
 vcrpy = '<5'

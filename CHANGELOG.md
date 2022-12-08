@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Make cache path shorter (important on Windows)
 - Set default API responses cache time to 5 minutes
+- Fix support of python 3.4
 
 ## [1.2.0-rc0] 2022-12-02
 

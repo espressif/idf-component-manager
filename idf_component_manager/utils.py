@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import click
+from packaging import version
 
 from idf_component_tools.errors import UserHint
 
@@ -9,6 +10,8 @@ try:
     from typing import Any
 except ImportError:
     pass
+
+CLICK_SUPPORTS_SHOW_DEFAULT = version.parse(click.__version__) >= version.parse('7.1.0')
 
 
 def print_stderr_prefixed(prefix, color, message):  # type: (str, str, Exception | str) -> None
