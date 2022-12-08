@@ -5,6 +5,7 @@ import os
 import shutil
 import sys
 from io import open
+from pathlib import Path
 
 import pytest
 
@@ -234,3 +235,34 @@ def test_root_dep_failed(project):
 def test_add_dependency(project):
     res = project_action(project, 'add-dependency', 'example/cmp^3.3.8')
     assert 'Successfully added dependency "example/cmp^3.3.8" to component "main"' in res
+
+
+@pytest.mark.parametrize('project', [{}], indirect=True)
+def test_create_manifest(project):
+    res = project_action(project, 'create-manifest')
+    path = os.path.join(project, 'main', 'idf_component.yml')
+    assert 'Created "{}"'.format(path) in res
+
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'example/cmp': {
+                            'version': '*'
+                        },
+                    }
+                }
+            }
+        },
+    ], indirect=True)
+def test_check_remove_managed_component(project):
+    path = Path(project) / 'managed_components'
+    res = project_action(project, 'reconfigure')
+    assert 'Configuring done' in res
+    assert path.is_dir()
+    res = project_action(project, 'fullclean')
+    assert 'Executing action: remove_managed_components' in res
+    assert not path.is_dir()
