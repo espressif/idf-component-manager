@@ -97,16 +97,12 @@ def action_extensions(base_actions, project_path):
         'actions': {
             'create-manifest': {
                 'callback': callback,
-                'deprecated': True,
-                'help': ('New CLI command: "compote manifest create". '
-                         'Create manifest for specified component.'),
+                'help': 'Create manifest for specified component.',
                 'options': LOCAL_MANIFEST_OPTIONS,
             },
             'add-dependency': {
                 'callback': callback,
-                'deprecated': True,
                 'help': (
-                    'New CLI command: "compote manifest add-dependency". '
                     'Add dependency to the manifest file. '
                     'For now we only support adding dependencies from the component registry.'),
                 'arguments': [

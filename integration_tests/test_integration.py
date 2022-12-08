@@ -228,3 +228,9 @@ def test_root_dep_failed(project):
     assert 'versions, version solving failed.' in res
     assert 'Please check manifest file of the following component(s): main,' in res
     assert 'component_foo' in res
+
+
+@pytest.mark.parametrize('project', [{}], indirect=True)
+def test_add_dependency(project):
+    res = project_action(project, 'add-dependency', 'example/cmp^3.3.8')
+    assert 'Successfully added dependency "example/cmp^3.3.8" to component "main"' in res

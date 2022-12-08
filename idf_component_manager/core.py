@@ -170,14 +170,14 @@ class ComponentManager(object):
         print_info('Example "{}" successfully downloaded to {}'.format(example_name, os.path.abspath(project_path)))
 
     @general_error_handler
-    def add_dependency(self, dependency_str, component='main'):  # type: (str, str) -> None
+    def add_dependency(self, dependency, component='main'):  # type: (str, str) -> None
         manifest_filepath, _ = self._get_manifest(component)
 
-        match = re.match(WEB_DEPENDENCY_REGEX, dependency_str)
+        match = re.match(WEB_DEPENDENCY_REGEX, dependency)
         if match:
             name, spec = match.groups()
         else:
-            raise FatalError('Invalid dependency: "{}". Please use format "namespace/name".'.format(dependency_str))
+            raise FatalError('Invalid dependency: "{}". Please use format "namespace/name".'.format(dependency))
 
         if not spec:
             spec = '*'
@@ -192,8 +192,8 @@ class ComponentManager(object):
         manifest_manager = ManifestManager(manifest_filepath, component)
         manifest = manifest_manager.load()
 
-        for dependency in manifest.dependencies:
-            if dependency.name == name:
+        for dep in manifest.dependencies:
+            if dep.name == name:
                 raise FatalError('Dependency "{}" already exists for in manifest "{}"'.format(name, manifest_filepath))
 
         with open(manifest_filepath, 'r', encoding='utf-8') as file:
@@ -224,7 +224,7 @@ class ComponentManager(object):
                 'Please check the manifest file:\n{}'.format(manifest_filepath))
 
         shutil.move(temp_manifest_file.name, manifest_filepath)
-        print_info('Successfully added dependency "{}{}" for component "{}"'.format(name, spec, manifest_manager.name))
+        print_info('Successfully added dependency "{}{}" to component "{}"'.format(name, spec, manifest_manager.name))
 
     @general_error_handler
     def pack_component(self, name, version):  # type: (str, str) -> Tuple[str, Manifest]
