@@ -61,26 +61,37 @@ def main():
         if args.command == 'pack-component':
             warnings.warn('Deprecated! New CLI command: "compote component pack"', DeprecationWarning)
             check_required_args(args, ['name', 'version'])
-            manager.pack_component(args.name, args.version)
+            manager.pack_component(name=args.name, version=args.version)
         elif args.command == 'upload-component':
             warnings.warn('Deprecated! New CLI command: "compote component upload"', DeprecationWarning)
             check_required_args(args, ['name'])
             manager.upload_component(
-                args.name, args.version, args.service_profile, args.namespace, args.archive_file, args.skip_pre_release,
-                args.check_only, args.allow_existing)
+                name=args.name,
+                version=args.version,
+                service_profile=args.service_profile,
+                namespace=args.namespace,
+                archive=args.archive,
+                skip_pre_release=args.skip_pre_release,
+                check_only=args.check_only,
+                allow_existing=args.allow_existing)
         elif args.command == 'upload-component-status':
             warnings.warn('Deprecated! New CLI command: "compote component upload-status"', DeprecationWarning)
             check_required_args(args, ['job'])
-            manager.upload_component_status(args.job, args.service_profile)
+            manager.upload_component_status(job_id=args.job, service_profile=args.service_profile)
         elif args.command == 'create-project-from-example':
             warnings.warn('Deprecated! New CLI command: "compote project create-from-example"', DeprecationWarning)
             check_required_args(args, ['namespace', 'name', 'example', 'version'])
-            manager.create_project_from_example(
-                '{}/{}={}:{}'.format(args.namespace, args.name, args.version, args.example))
+            example = '{}/{}={}:{}'.format(args.namespace, args.name, args.version, args.example)
+            manager.create_project_from_example(example=example)
         elif args.command == 'delete-version':
             warnings.warn('Deprecated! New CLI command: "compote component delete"', DeprecationWarning)
             check_required_args(args, ['name', 'version'])
-            manager.delete_version(args.name, args.version, args.service_profile, args.namespace)
+            manager.delete_version(
+                name=args.name,
+                version=args.version,
+                service_profile=args.service_profile,
+                namespace=args.namespace,
+            )
     except FatalError as e:
         print_error(e)
         sys.exit(e.exit_code)
