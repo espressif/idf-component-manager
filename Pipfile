@@ -28,6 +28,7 @@ pylint = "*"
 pytest = '*'
 pytest-cov = '*'
 requests-mock = '*'
+pytest-mock = '*'
 rope = '*'
 setuptools = "*"
 twine = "*"

@@ -31,7 +31,7 @@ def check_required_args(args, required_field=None):
             raise ValueError('--{} is required'.format(_f.replace('_', '-')))
 
 
-def main():
+def main(command_args=None):  # type: (list[str] | None) -> None
     parser = argparse.ArgumentParser(description='IDF component manager v{}'.format(version))
     parser.add_argument('command', choices=KNOWN_ACTIONS, help='Command to execute')
     parser.add_argument('--path', help='Working directory (default: current directory).', default=os.getcwd())
@@ -52,7 +52,7 @@ def main():
         '--allow-existing', help='Return success if existing version is already uploaded.', action='store_true')
     parser.add_argument('--example', help='Example name')
 
-    args = parser.parse_args()
+    args = parser.parse_args(args=command_args)
 
     try:
         warnings.showwarning = showwarning

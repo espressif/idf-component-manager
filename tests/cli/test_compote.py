@@ -3,14 +3,7 @@
 
 import os
 
-import pytest
-
 from idf_component_tools.manifest import MANIFEST_FILENAME, ManifestManager
-
-
-@pytest.fixture(autouse=True)
-def mock_token(monkeypatch):
-    monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
 
 
 def test_manifest_create_add_dependency(tmp_path, assert_return_code_run):
