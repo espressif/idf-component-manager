@@ -56,18 +56,14 @@ def test_init_project():
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_upload_component.yaml')
-def test_upload_component(monkeypatch, pre_release_component_path):
-    monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
-    monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
+def test_upload_component(mock_registry, pre_release_component_path):
     manager = ComponentManager(path=pre_release_component_path)
 
     manager.upload_component('cmp')
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_check_only_component.yaml')
-def test_check_only_upload_component(monkeypatch, pre_release_component_path):
-    monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
-    monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
+def test_check_only_upload_component(mock_registry, pre_release_component_path):
     manager = ComponentManager(path=pre_release_component_path)
 
     manager.upload_component(
@@ -77,9 +73,7 @@ def test_check_only_upload_component(monkeypatch, pre_release_component_path):
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_allow_existing_component.yaml')
-def test_allow_existing_component(monkeypatch, release_component_path):
-    monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
-    monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
+def test_allow_existing_component(mock_registry, release_component_path):
     manager = ComponentManager(path=release_component_path)
 
     manager.upload_component(
@@ -89,10 +83,8 @@ def test_allow_existing_component(monkeypatch, release_component_path):
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_upload_component_skip_pre.yaml')
-def test_upload_component_skip_pre(monkeypatch, pre_release_component_path):
+def test_upload_component_skip_pre(mock_registry, pre_release_component_path):
     manager = ComponentManager(path=pre_release_component_path)
-    monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
-    monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
 
     with pytest.raises(NothingToDoError) as e:
         manager.upload_component(
@@ -233,23 +225,20 @@ def test_create_example_component_not_exist(tmp_path):
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_create_example_not_exist.yaml')
-def test_create_example_version_not_exist(monkeypatch, tmp_path):
-    monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
+def test_create_example_version_not_exist(mock_registry, tmp_path):
     manager = ComponentManager(path=str(tmp_path))
     with raises(FatalError, match='Version of the component "test/cmp" satisfying the spec "=2.0.0" was not found.'):
         manager.create_project_from_example('test/cmp=2.0.0:example')
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_create_example_not_exist.yaml')
-def test_create_example_not_exist(monkeypatch, tmp_path):
-    monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
+def test_create_example_not_exist(mock_registry, tmp_path):
     manager = ComponentManager(path=str(tmp_path))
     with raises(FatalError, match='Cannot find example "example" for "test/cmp" version "=1.0.1"'):
         manager.create_project_from_example('test/cmp=1.0.1:example')
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_create_example_success.yaml')
-def test_create_example_success(monkeypatch, tmp_path):
-    monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'http://localhost:5000')
+def test_create_example_success(mock_registry, tmp_path):
     manager = ComponentManager(path=str(tmp_path))
     manager.create_project_from_example('test/cmp>=1.0.0:sample_project')
