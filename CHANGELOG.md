@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix `idf.py add-dependency` crash for any argument
+
 ## [1.2.0] 2022-12-08
 
 ### Fixed

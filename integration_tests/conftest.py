@@ -21,7 +21,7 @@ def project(request, tmpdir_factory):
     env = Environment(loader=file_loader)
     generate_from_template(os.path.join(project_path, 'CMakeLists.txt'), env.get_template('CMakeLists.txt'))
 
-    components = request.param['components']
+    components = request.param.get('components', {'main': {}})
     for component in components.keys():
         create_component(project_path, component, components[component], env)
     yield os.path.abspath(project_path)
