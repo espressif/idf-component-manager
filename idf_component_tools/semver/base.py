@@ -823,6 +823,18 @@ class SimpleSpec(BaseSpec):
     def _parse_to_clause(cls, expression):
         return cls.Parser.parse(expression)
 
+    @classmethod
+    def regex_str(cls):
+        naive_spec_string = cls.Parser.NAIVE_SPEC.pattern
+        # remove the \n and the extra spaces
+        naive_spec_string = ''.join([line.strip() for line in naive_spec_string.split()])
+        # remove the name group
+        naive_spec_string = re.sub(r'\(\?P<\w+>', '(?:', naive_spec_string)
+        # remove the first ^ and the last $ and make it as a group
+        naive_spec_group = '(' + naive_spec_string[1:-1] + ')'
+        # ^group(,group)*$ means it could be a comma separated lists
+        return '^{}(,{})*$'.format(naive_spec_group, naive_spec_group)
+
     class Parser:
         NUMBER = r'\*|0|[1-9][0-9]*'
         NAIVE_SPEC = re.compile(

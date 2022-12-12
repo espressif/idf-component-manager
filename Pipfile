@@ -39,6 +39,7 @@ yapf = '*'
 jinja2 = "*"
 comment-parser = "*"
 thefuzz = "*"
+jsonschema = "*"
 
 [pipenv]
 allow_prereleases = false
