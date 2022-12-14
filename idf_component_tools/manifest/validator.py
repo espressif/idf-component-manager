@@ -9,15 +9,16 @@ from schema import And, Optional, Or, Regex, Schema, SchemaError, Use
 from six import string_types
 
 import idf_component_tools as tools
+from idf_component_manager.utils import RE_PATTERN
 
 from ..constants import COMPILED_GIT_URL_RE, COMPILED_URL_RE
 from ..errors import SourceError
-from ..semver import Version
+from ..semver import SimpleSpec, Version
 from .constants import FULL_SLUG_REGEX, LINKS, TAGS_REGEX
-from .if_parser import parse_if_clause
+from .if_parser import IfClause, parse_if_clause
 
 try:
-    from typing import Iterable, List
+    from typing import Any, Callable, Iterable, List
 except ImportError:
     pass
 
@@ -133,6 +134,46 @@ def manifest_schema():  # type: () -> Schema
         },
         error='Invalid manifest format',
     )
+
+
+def manifest_json_schema():  # type: () -> dict
+    def replace_regex_pattern_with_pattern_str(pat):  # type: (re.Pattern) -> Any
+        return pat.pattern
+
+    def process_nested_regex(
+            obj,  # type: dict[str, Any] | list | str | Any
+            func  # type: Callable[[re.Pattern], Any]
+    ):
+        # type: (...) -> dict[str, Any] | list | str | Any
+
+        if isinstance(obj, dict):
+            if not obj.get('required', []):
+                obj.pop('required', None)  # jsonschema 2.5.1 for python 3.4 does not support empty `required` field
+            return {k: process_nested_regex(v, func) for k, v in obj.items()}
+        elif isinstance(obj, RE_PATTERN):
+            return func(obj)
+        elif isinstance(obj, (list, tuple)):
+            # yaml dict won't have other iterable data types
+            return [process_nested_regex(i, func) for i in obj]
+
+        # we don't process other data types, like numbers
+        return obj
+
+    json_schema = manifest_schema().json_schema(
+        'idf-component-manager')  # here id should be an url to use $ref in the future
+    # `version` field is too complicated to be auto-generated. we use an approx regex instead
+    json_schema['properties']['version'] = {'type': 'string', 'pattern': SimpleSpec.regex_str()}
+    # `dependency` field we're using arbitrary string as key
+    json_schema['properties']['dependencies']['additionalProperties'] = {
+        'anyOf': Schema(dependency_schema()).json_schema('#dependency')['anyOf']
+    }
+    # the IfClause should be a string as well
+    _anyof = json_schema['properties']['dependencies']['additionalProperties']['anyOf']
+    _anyof[1]['properties']['rules']['items']['properties']['if'] = {'type': 'string', 'pattern': IfClause.regex_str()}
+    # `re.Pattern` should use the pattern string instead
+    json_schema = process_nested_regex(json_schema, replace_regex_pattern_with_pattern_str)
+
+    return json_schema
 
 
 class ManifestValidator(object):

@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+import re
 
 import click
 from packaging import version
@@ -48,3 +49,6 @@ def print_info(
         **kwargs  # type: 'Any'
 ):  # type: (...) -> None
     click.secho(message, fg=fg, bg=bg, bold=bold, underline=underline, blink=blink, **kwargs)
+
+
+RE_PATTERN = type(re.compile(''))  # this is a workaround for `re.Pattern` for python<3.7

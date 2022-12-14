@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-
+import json
 import os
 import subprocess  # nosec
 import sys
@@ -10,6 +10,7 @@ import click
 from idf_component_manager.core import ComponentManager
 from idf_component_manager.utils import CLICK_SUPPORTS_SHOW_DEFAULT, print_error
 from idf_component_tools.errors import FatalError
+from idf_component_tools.manifest.validator import manifest_json_schema
 
 try:
     from typing import Any
@@ -123,15 +124,23 @@ def remove_managed_components(manager):
     manager.remove_managed_components()
 
 
-MANIFEST_COMPONENT_NAME_OPTION = [click.option('--component', default='main', help='Component name in the project')]
-
-
 @cli.group()
 def manifest():
     """
     Group of manifest related commands
     """
     pass
+
+
+@manifest.command()
+def schema():
+    """
+    Print json schema of the manifest file idf_component.yml
+    """
+    print(json.dumps(manifest_json_schema(), indent=2))
+
+
+MANIFEST_COMPONENT_NAME_OPTION = [click.option('--component', default='main', help='Component name in the project')]
 
 
 @manifest.command()
@@ -281,4 +290,4 @@ def autocomplete(shell):
     if not os.path.isdir(os.path.dirname(complete_file)):
         os.makedirs(os.path.dirname(complete_file))
 
-    subprocess.run(shell_str, shell=True)  # nosec
+    subprocess.call(shell_str, shell=True)  # nosec

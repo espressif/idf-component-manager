@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `compote manifest schema` to generate the json schema file of the `idf_component.yml`
+
 ## [1.2.1] 2022-12-12
 
 ### Fixed

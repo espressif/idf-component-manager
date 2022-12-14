@@ -16,7 +16,7 @@ test:
       - PYTHON_IMAGE_TAG: [2.7-buster, 3.4-stretch, 3.5-buster, 3.11-bullseye]
   image: python:${PYTHON_IMAGE_TAG}
   before_script:
-    - pip install pytest pytest-cov pytest-mock vcrpy .
+    - pip install pytest pytest-cov pytest-mock vcrpy "jsonschema==2.5.1;python_version=='3.4'" "jsonschema;python_version!='3.4'" .
   script:
     - py.test --cov=. --cov-report=xml
   artifacts:

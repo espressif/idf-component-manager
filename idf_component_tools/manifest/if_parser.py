@@ -41,6 +41,22 @@ class IfClause:
     def __repr__(self):
         return '{} ({})'.format(self.clause, self.bool_value)
 
+    @staticmethod
+    def regex_str():
+        if_idf_version = IF_IDF_VERSION_REGEX
+        # remove the name group
+        if_idf_version = re.sub(r'\(\?P<\w+>', '(?:', if_idf_version)
+        # remove the first ^ and the last $ and make it as a group
+        if_idf_version = '(' + if_idf_version[1:-1] + ')'
+
+        if_target = IF_TARGET_REGEX
+        # remove the name group
+        if_target = re.sub(r'\(\?P<\w+>', '(?:', if_idf_version)
+        # remove the first ^ and the last $ and make it as a group
+        if_target = '(' + if_target[1:-1] + ')'
+
+        return '^{}|{}$'.format(if_idf_version, if_target)
+
 
 def _eval_str(s):  # type: (str) -> str
     _s = s.strip()

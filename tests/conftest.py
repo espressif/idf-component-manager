@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
-import subprocess
 
 import pytest
 
@@ -133,19 +132,6 @@ def example_component_path(fixtures_path):
         'components',
         'cmp_for_examples',
     )
-
-
-@pytest.fixture
-def assert_return_code_run():
-    def real_func(*args, **kwargs):
-        if 'code' in kwargs:
-            code = kwargs.pop('code')
-        else:
-            code = 0
-        ret = subprocess.check_call(*args, **kwargs)
-        assert ret == code
-
-    return real_func
 
 
 @pytest.fixture()
