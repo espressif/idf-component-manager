@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import re
@@ -10,12 +10,14 @@ from idf_component_tools.errors import ComponentModifiedError, FatalError
 from idf_component_tools.file_tools import copy_directories, filtered_paths
 from idf_component_tools.hash_tools import HASH_FILENAME
 from idf_component_tools.manifest import Manifest
+from idf_component_tools.manifest.constants import SLUG_BODY_REGEX
 from idf_component_tools.semver import SimpleSpec
 
-CREATE_PROJECT_FROM_EXAMPLE_NAME_REGEX = r'^((?P<namespace>\w+)\/)?' \
-                                         r'(?P<component>\w+)' \
-                                         r'(?P<version>[<=>!^~\*].+)?:' \
-                                         r'(?P<example>[\w\/]+)$'
+CREATE_PROJECT_FROM_EXAMPLE_NAME_REGEX = (
+    r'^((?P<namespace>{slug})\/)?'
+    r'(?P<component>{slug})'
+    r'(?P<version>[<=>!^~\*].+)?:'
+    r'(?P<example>[/a-zA-Z\d_\-\.\+]+)$').format(slug=SLUG_BODY_REGEX)
 
 
 class ProgressBar(tqdm):
