@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add `compote manifest schema` to generate the json schema file of the `idf_component.yml`
+- Add `compote cache clear` to drop system-wide cache of components and API cache
 
 ### Fixed
 
