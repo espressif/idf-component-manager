@@ -8,7 +8,8 @@ import sys
 import click
 
 from idf_component_manager.core import ComponentManager
-from idf_component_manager.utils import CLICK_SUPPORTS_SHOW_DEFAULT, print_error
+from idf_component_manager.utils import CLICK_SUPPORTS_SHOW_DEFAULT, print_error, print_info
+from idf_component_tools import file_cache
 from idf_component_tools.errors import FatalError
 from idf_component_tools.manifest.validator import manifest_json_schema
 
@@ -291,3 +292,21 @@ def autocomplete(shell):
         os.makedirs(os.path.dirname(complete_file))
 
     subprocess.call(shell_str, shell=True)  # nosec
+
+
+@cli.group()
+def cache():
+    """
+    Group of cache related commands
+    """
+    pass
+
+
+@cache.command()
+def clear():
+    """
+    Clear cache of components and API client cache
+    """
+    cache_path = file_cache.FileCache.path()
+    file_cache.FileCache.clear()
+    print_info('Cache from {} cleared successfully'.format(cache_path))

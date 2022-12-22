@@ -9,6 +9,7 @@ import jsonschema
 import pytest
 from jsonschema.exceptions import ValidationError
 
+from idf_component_tools import file_cache
 from idf_component_tools.manifest import MANIFEST_FILENAME, ManifestManager
 
 
@@ -67,3 +68,12 @@ def test_manifest_schema(tmp_path, valid_manifest):
     with pytest.raises(ValidationError, match=r"'test.me'"):
         invalid_manifest = deepcopy(valid_manifest)['url'] = 'test.me'
         jsonschema.validate(invalid_manifest, schema_dict)
+
+
+def test_cache_clear():
+    cache_path = file_cache.FileCache.path()  # Create cache folder if not exists
+    assert os.path.exists(cache_path)
+
+    output = subprocess.check_output(['compote', 'cache', 'clear'])
+    assert not os.path.exists(cache_path)
+    assert 'Cache from {} cleared successfully'.format(cache_path) in output.decode('utf-8')

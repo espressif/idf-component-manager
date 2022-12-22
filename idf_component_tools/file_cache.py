@@ -9,6 +9,7 @@
 """Classes to work with file cache"""
 
 import os
+import shutil
 import sys
 
 
@@ -42,6 +43,11 @@ class FileCache(object):
                 cache_directory = system_cache_path.cache_path_unix()
 
             return os.path.join(cache_directory, 'Espressif', 'ComponentManager')
+
+    @classmethod
+    def clear(cls):
+        cache_path = cls.path()
+        shutil.rmtree(cache_path)
 
 
 class SystemCachePath(object):
