@@ -9,7 +9,8 @@ import jsonschema
 import pytest
 from jsonschema.exceptions import ValidationError
 
-from idf_component_tools import file_cache
+from idf_component_tools.file_cache import FileCache
+from idf_component_tools.file_tools import directory_size
 from idf_component_tools.manifest import MANIFEST_FILENAME, ManifestManager
 
 
@@ -70,10 +71,31 @@ def test_manifest_schema(tmp_path, valid_manifest):
         jsonschema.validate(invalid_manifest, schema_dict)
 
 
-def test_cache_clear():
-    cache_path = file_cache.FileCache.path()  # Create cache folder if not exists
-    assert os.path.exists(cache_path)
+def test_cache_clear(monkeypatch, tmp_path, file_with_size):
+    cache_path = tmp_path / 'cache'
+    monkeypatch.setenv('IDF_COMPONENT_CACHE_PATH', str(cache_path))
+
+    cache_path.mkdir()
+    file_with_size(cache_path / 'file1.txt', 10)
 
     output = subprocess.check_output(['compote', 'cache', 'clear'])
-    assert not os.path.exists(cache_path)
-    assert 'Cache from {} cleared successfully'.format(cache_path) in output.decode('utf-8')
+    assert directory_size(str(cache_path)) == 0
+    assert 'Successfully cleared' in output.decode('utf-8')
+    assert str(cache_path) in output.decode('utf-8')
+
+
+def test_cache_path():
+    output = subprocess.check_output(['compote', 'cache', 'path'])
+    assert FileCache().path() == output.decode('utf-8').strip()
+
+
+def test_cache_size(monkeypatch, tmp_path, file_with_size):
+    monkeypatch.setenv('IDF_COMPONENT_CACHE_PATH', str(tmp_path))
+
+    file_with_size(tmp_path / 'file1.txt', 14)
+
+    output = subprocess.check_output(['compote', 'cache', 'size'])
+    assert '14 bytes' == output.decode('utf-8').strip()
+
+    output = subprocess.check_output(['compote', 'cache', 'size', '--bytes'])
+    assert '14' == output.decode('utf-8').strip()

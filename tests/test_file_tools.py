@@ -114,21 +114,14 @@ def test_check_suspisious_component_files(release_component_path, tmp_path):
         check_unexpected_component_files(sub)
 
 
-def test_directory_size(tmp_path):
-    # Create a couple of files in the temporary directory
+def test_directory_size(tmp_path, file_with_size):
     file1 = tmp_path / 'file1.txt'
-    file1.touch()
     file2 = tmp_path / 'file2.txt'
-    file2.touch()
+    file_with_size(file1, 14)
+    file_with_size(file2, 14)
 
-    # Write some data to the files
-    file1.write_text('This is file 1')
-    file2.write_text('This is file 2')
-
-    # Calculate the size of the directory
     size = directory_size(str(tmp_path))
 
-    # Check that the size is correct
     assert size == 28
 
 

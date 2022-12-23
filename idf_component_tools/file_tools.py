@@ -161,7 +161,7 @@ def directory_size(dir_path):  # type: (str) -> int
     directory = Path(dir_path)
     for file in directory.glob('**/*'):
         try:
-            total_size += os.stat(file).st_size
+            total_size += os.stat(str(file)).st_size
         except OSError:
             pass
     return total_size
@@ -176,12 +176,9 @@ def human_readable_size(size):  # type: (int) -> str
         return '{} bytes'.format(size)
 
     if size < 1024**2:
-        # If the total size is less than 1024^2 bytes (1 MB), return the size in KB
-        return '{:.2f} KB'.format(size / 1024)
+        return '{:.2f} KB'.format(size / 1024.0)
 
     if size < 1024**3:
-        # If the total size is less than 1024^3 bytes (1 GB), return the size in MB
-        return '{:.2f} MB'.format(size / (1024**2))
-    else:
-        # Otherwise, return the size in GB
-        return '{:.2f} GB'.format(size / (1024**3))
+        return '{:.2f} MB'.format(size / (1024.0**2))
+
+    return '{:.2f} GB'.format(size / (1024.0**3))

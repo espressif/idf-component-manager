@@ -2,10 +2,21 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+from io import open
+from pathlib import Path
 
 import pytest
 
 from idf_component_tools.hash_tools import HASH_FILENAME
+
+
+@pytest.fixture()
+def file_with_size():
+    def file_builder(path, size):  # type: (str | Path, int) -> None
+        with open(str(path), 'w') as f:
+            f.write(u'x' * size)
+
+    return file_builder
 
 
 @pytest.fixture()
