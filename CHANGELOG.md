@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `compote manifest schema` to generate the json schema file of the `idf_component.yml`
 - Add `compote cache clear` to drop system-wide cache of components and API cache
+- Make file cache path configurable via `IDF_COMPONENT_CACHE_PATH` environment variable
 
 ### Fixed
 

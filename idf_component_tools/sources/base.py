@@ -37,7 +37,7 @@ class BaseSource(object):
         self._hash_key = None
 
         if system_cache_path is None:
-            system_cache_path = FileCache.path()
+            system_cache_path = FileCache().path()
         self.system_cache_path = system_cache_path
 
         self.is_overrider = False

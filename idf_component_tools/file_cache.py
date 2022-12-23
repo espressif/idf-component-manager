@@ -8,46 +8,59 @@
 # Originally released under MIT license
 """Classes to work with file cache"""
 
+import errno
 import os
 import shutil
 import sys
 
+from idf_component_tools.errors import FatalError
+from idf_component_tools.file_tools import directory_size
+
+
+def system_cache_path():  # type: () -> str
+    """Path of system cache directory"""
+    system_cache_path = SystemCachePath()
+
+    if sys.platform.startswith('win'):
+        cache_directory = system_cache_path.cache_path_win()
+        return os.path.join(cache_directory, 'Espressif', 'ComponentManager', 'Cache')
+    else:
+        if sys.platform == 'darwin':
+            cache_directory = system_cache_path.cache_path_macos()
+        else:
+            cache_directory = system_cache_path.cache_path_unix()
+
+        return os.path.join(cache_directory, 'Espressif', 'ComponentManager')
+
 
 class FileCache(object):
     """Common functions to work with components cache"""
+    def __init__(self, path=None):  # type: (str | None) -> None
+        self._path = path  # type: str | None
 
-    _path = None
+    def path(self):  # type: () -> str
+        """Path of cache directory. Make directory if it doesn't exist"""
+        if not self._path:
+            self._path = os.getenv('IDF_COMPONENT_CACHE_PATH')
 
-    @classmethod
-    def path(cls):
-        if not cls._path:
-            cls._path = cls.cache_path()
+        if not self._path:
+            self._path = system_cache_path()
 
-            if not os.path.exists(cls._path):
-                os.makedirs(cls._path)
+        try:
+            os.makedirs(self._path)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise FatalError('Failed to create cache directory: {}'.format(self._path))
 
-        return cls._path
+        return self._path
 
-    @classmethod
-    def cache_path(cls):
-        """Path of cache directory"""
-        system_cache_path = SystemCachePath()
+    def clear(self):  # type: () -> None
+        '''Clear cache directory'''
+        shutil.rmtree(self.path())
 
-        if sys.platform.startswith('win'):
-            cache_directory = system_cache_path.cache_path_win()
-            return os.path.join(cache_directory, 'Espressif', 'ComponentManager', 'Cache')
-        else:
-            if sys.platform == 'darwin':
-                cache_directory = system_cache_path.cache_path_macos()
-            else:
-                cache_directory = system_cache_path.cache_path_unix()
-
-            return os.path.join(cache_directory, 'Espressif', 'ComponentManager')
-
-    @classmethod
-    def clear(cls):
-        cache_path = cls.path()
-        shutil.rmtree(cache_path)
+    def size(self):  # type: () -> int
+        """Disk usage of cache directory"""
+        return directory_size(self.path())
 
 
 class SystemCachePath(object):

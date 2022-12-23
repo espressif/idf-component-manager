@@ -153,3 +153,35 @@ def check_unexpected_component_files(path):  # type: (str | Path) -> None
                 'Unexpected files "{files}" found in the component directory "{path}". '
                 'Please check if these files should be ignored'.format(
                     files=', '.join(unexpected_files), path=os.path.relpath(root, start=str(path))))
+
+
+def directory_size(dir_path):  # type: (str) -> int
+    '''Return the total size of all files in the directory tree'''
+    total_size = 0
+    directory = Path(dir_path)
+    for file in directory.glob('**/*'):
+        try:
+            total_size += os.stat(file).st_size
+        except OSError:
+            pass
+    return total_size
+
+
+def human_readable_size(size):  # type: (int) -> str
+    '''Return a human readable string representation of a data size'''
+    if size < 0:
+        raise ValueError('size must be non-negative')
+
+    if size < 1024:
+        return '{} bytes'.format(size)
+
+    if size < 1024**2:
+        # If the total size is less than 1024^2 bytes (1 MB), return the size in KB
+        return '{:.2f} KB'.format(size / 1024)
+
+    if size < 1024**3:
+        # If the total size is less than 1024^3 bytes (1 GB), return the size in MB
+        return '{:.2f} MB'.format(size / (1024**2))
+    else:
+        # Otherwise, return the size in GB
+        return '{:.2f} GB'.format(size / (1024**3))

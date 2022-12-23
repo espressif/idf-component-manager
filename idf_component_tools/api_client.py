@@ -19,9 +19,9 @@ from tqdm import tqdm
 
 # Import whole module to avoid circular dependencies
 import idf_component_tools as tools
-from idf_component_tools import file_cache
 from idf_component_tools.__version__ import __version__
 from idf_component_tools.errors import warn
+from idf_component_tools.file_cache import FileCache as ComponentFileCache
 from idf_component_tools.semver import SimpleSpec, Version
 
 from .api_client_errors import (
@@ -63,10 +63,13 @@ def env_cache_time():
 
 def create_session(
         cache=False,  # type: bool
-        cache_path=file_cache.FileCache.path(),  # type: str
+        cache_path=None,  # type: str | None
         cache_time=None,  # type: int | None
         token=None,  # type: str | None
 ):  # type: (...) -> requests.Session
+
+    if cache_path is None:
+        cache_path = ComponentFileCache().path()
 
     cache_time = cache_time or env_cache_time()
     if cache and cache_time:
