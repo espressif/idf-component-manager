@@ -14,6 +14,7 @@ from idf_component_tools.errors import FatalError
 from idf_component_tools.file_cache import FileCache
 from idf_component_tools.file_tools import human_readable_size
 from idf_component_tools.manifest.validator import manifest_json_schema
+from idf_component_tools.semver import Version
 
 try:
     from typing import Any
@@ -253,27 +254,47 @@ def delete(manager, service_profile, namespace, name, version):
 @click.option('--shell', required=True, type=click.Choice(['bash', 'zsh', 'fish']), help='Shell type')
 def autocomplete(shell):
     """
-    Inject autocomplete to your shell
+    Inject sourcing of the autocomplete script into your shell configuration
 
     \b
     Examples:
     - $ compote autocomplete --shell zsh
-      would inject the autocomplete file into your zsh.
+      would inject sourcing of the autocomplete script into your .zshrc config.
       run `exec zsh` afterwards would make it work for your current terminal.
     """
+    click_version = Version.coerce(click.__version__)
+
+    if shell == 'fish':
+        if click_version < Version('7.1.0'):  # fish support was added in 7.1
+            raise FatalError(
+                'Autocomplete for the fish shell is only supported by library `click` version 7.1 and higher. '
+                'An older version is installed on your machine due to an outdated version of python. '
+                'We recommend using python 3.7 and higher with compote CLI.')
+
+    def get_shell_completion():
+        if click_version.major == 7:
+            return 'source_' + shell
+        elif click_version.major > 7:
+            return shell + '_source'
+        else:
+            raise NotImplementedError
+
     if shell == 'bash':
         complete_filepath = '~/.{}-complete.bash'.format(CLI_NAME)
-        shell_str = '_{}_COMPLETE=bash_source {} > {}'.format(CLI_NAME.upper(), CLI_NAME, complete_filepath)
+        shell_str = '_{}_COMPLETE={} {} > {}'.format(
+            CLI_NAME.upper(), get_shell_completion(), CLI_NAME, complete_filepath)
         config_filepath = '~/.bashrc'
         config_str = '. {}'.format(complete_filepath)
     elif shell == 'zsh':
         complete_filepath = '~/.{}-complete.zsh'.format(CLI_NAME)
-        shell_str = '_{}_COMPLETE=zsh_source {} > {}'.format(CLI_NAME.upper(), CLI_NAME, complete_filepath)
+        shell_str = '_{}_COMPLETE={} {} > {}'.format(
+            CLI_NAME.upper(), get_shell_completion(), CLI_NAME, complete_filepath)
         config_filepath = '~/.zshrc'
         config_str = '. {}'.format(complete_filepath)
     else:  # fish
         complete_filepath = '~/.config/fish/completions/{}.fish'.format(CLI_NAME)
-        shell_str = '_{}_COMPLETE=fish_source {} > {}'.format(CLI_NAME.upper(), CLI_NAME, complete_filepath)
+        shell_str = '_{}_COMPLETE={} {} > {}'.format(
+            CLI_NAME.upper(), get_shell_completion(), CLI_NAME, complete_filepath)
         config_filepath = ''
         config_str = ''
 
