@@ -10,6 +10,9 @@ integration_test:
       coverage_report:
         coverage_format: cobertura
         path: coverage_integration.xml
+    paths:
+      - "*.txt"
+    when: always
   parallel:
     matrix:
       - IDF_BRANCH: [release-v4.1, release-v4.2]
@@ -33,6 +36,7 @@ integration_test:
     - sed -i "\+${CI_PROJECT_DIR}+c${ORIGINAL_REQ}" ${REQ_FILE:-requirements.txt}
     - . ./export.sh
     - cd ..
-    - pip install pytest pytest-cov "jinja2<3.1"
+    - apt update && apt install -y fish zsh
+    - pip install pytest pytest-cov pytest-rerunfailures pexpect "jinja2<3.1"
   script:
     - pytest -s -c pytest_integration.ini --cov=. --cov-report=xml:coverage_integration.xml --log-cli-level=INFO
