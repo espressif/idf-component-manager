@@ -267,6 +267,29 @@ def autocomplete(shell):
         else:
             raise NotImplementedError
 
+    def add_if_not_exist(strings, filepath, write_string=None):  # type: (str | list[str], str, str | None) -> None
+        if isinstance(strings, str):
+            strings = [strings]
+
+        if not os.path.isfile(filepath):
+            lines = []
+        else:
+            with open(filepath, encoding='utf8') as fr:
+                lines = [line.rstrip('\n') for line in fr.readlines()]
+
+        found = False
+        for s in strings:
+            if s in lines:
+                found = True
+                break
+
+        if not found:
+            if write_string is None:
+                write_string = strings[-1]
+
+            with open(filepath, 'ab+') as fw:
+                fw.write('\n{}\n'.format(write_string).encode('utf8'))
+
     if shell == 'bash':
         complete_filepath = '~/.{}-complete.bash'.format(CLI_NAME)
         shell_str = '_{}_COMPLETE={} {} > {}'.format(
@@ -288,15 +311,12 @@ def autocomplete(shell):
 
     if config_filepath and config_str:
         config = os.path.expanduser(config_filepath)
-        if not os.path.isfile(config):
-            s = ''
-        else:
-            with open(config, 'r') as fr:
-                s = fr.read()
+        # zsh autocomplete
+        if shell == 'zsh':
+            add_if_not_exist('autoload -Uz compinit', config)
+            add_if_not_exist(['compinit', 'compinit -u'], config)
 
-        if config_str not in s:
-            with open(config, 'a+') as fw:
-                fw.write('\n{}\n'.format(config_str))
+        add_if_not_exist(config_str, config)
 
     complete_file = os.path.expanduser(complete_filepath)
     if not os.path.isdir(os.path.dirname(complete_file)):
