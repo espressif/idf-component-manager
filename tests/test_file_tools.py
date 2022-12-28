@@ -7,7 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from idf_component_tools.file_tools import check_unexpected_component_files, copy_filtered_directory, filtered_paths
+from idf_component_tools.file_tools import (
+    check_unexpected_component_files, copy_filtered_directory, directory_size, filtered_paths, human_readable_size)
 
 
 @pytest.fixture
@@ -111,3 +112,30 @@ def test_check_suspisious_component_files(release_component_path, tmp_path):
 
     with pytest.warns(UserWarning, match='Unexpected files "CMakeCache.txt" found in the component directory "dev"'):
         check_unexpected_component_files(sub)
+
+
+def test_directory_size(tmp_path, file_with_size):
+    file1 = tmp_path / 'file1.txt'
+    file2 = tmp_path / 'file2.txt'
+    file_with_size(file1, 14)
+    file_with_size(file2, 14)
+
+    size = directory_size(str(tmp_path))
+
+    assert size == 28
+
+
+@pytest.mark.parametrize(
+    ('size', 'expected'), [
+        (123, '123 bytes'),
+        (1523, '1.49 KB'),
+        (1052523, '1.00 MB'),
+        (1100523000, '1.02 GB'),
+    ])
+def test_human_readable_size(size, expected):
+    assert human_readable_size(size) == expected
+
+
+def test_human_readable_size_with_negative_size():
+    with pytest.raises(ValueError):
+        human_readable_size(-1)

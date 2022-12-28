@@ -4,6 +4,7 @@
 import re
 import shutil
 import subprocess  # nosec
+from io import open
 from os import environ, getenv
 from pathlib import Path
 

@@ -4,13 +4,15 @@ import json
 import os
 import subprocess  # nosec
 import sys
+from io import open
 
 import click
 
 from idf_component_manager.core import ComponentManager
 from idf_component_manager.utils import CLICK_SUPPORTS_SHOW_DEFAULT, print_error, print_info
-from idf_component_tools import file_cache
 from idf_component_tools.errors import FatalError
+from idf_component_tools.file_cache import FileCache
+from idf_component_tools.file_tools import human_readable_size
 from idf_component_tools.manifest.validator import manifest_json_schema
 
 try:
@@ -248,7 +250,7 @@ def delete(manager, service_profile, namespace, name, version):
 
 
 @cli.command()
-@click.option('--shell', required=True, type=click.Choice(['bash', 'zsh', 'fish']), help='shell type')
+@click.option('--shell', required=True, type=click.Choice(['bash', 'zsh', 'fish']), help='Shell type')
 def autocomplete(shell):
     """
     Inject autocomplete to your shell
@@ -307,6 +309,26 @@ def clear():
     """
     Clear cache of components and API client cache
     """
-    cache_path = file_cache.FileCache.path()
-    file_cache.FileCache.clear()
-    print_info('Cache from {} cleared successfully'.format(cache_path))
+    FileCache().clear()
+    print_info('Successfully cleared cache at\n\t{}'.format(FileCache().path()))
+
+
+@cache.command()
+def path():
+    """
+    Print cache path
+    """
+    print_info(FileCache().path())
+
+
+@cache.command()
+@click.option('--bytes', is_flag=True, default=False, help='Print size in bytes')
+def size(bytes):
+    """
+    Print cache size of cache in human readable format
+    """
+    size = FileCache().size()
+    if bytes:
+        print_info(str(size))
+    else:
+        print_info(human_readable_size(size))

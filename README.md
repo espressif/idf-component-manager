@@ -146,6 +146,19 @@ examples:
   - path: ../some/other_path
 ```
 
+## Environment variables
+
+| Variable                                    | Default value (or example for required) | Required? | Description                                              |
+| ------------------------------------------- | --------------------------------------- | --------- | -------------------------------------------------------- |
+| IDF_COMPONENT_API_TOKEN                     |                                         | no        | API token to access the component registry               |
+| IDF_COMPONENT_REGISTRY_URL                  | https://components.espressif.com/       | no        | URL of the default component registry                    |
+| IDF_COMPONENT_STORAGE_URL                   | https://components-file.espressif.com/  | no        | URL of the default file storage server                   |
+| IDF_COMPONENT_REGISTRY_PROFILE              | default                                 | no        | Profile in the config file to use for component registry |
+| IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES  | 5                                       | no        | API Cache expiration time in minutes                     |
+| IDF_COMPONENT_CACHE_PATH                    | \* Depends on OS                        | no        | Cache directory for component manager                    |
+| COMPONENT_MANAGER_JOB_TIMEOUT               | 300                                     | no        | Timeout in seconds to wait for component processing      |
+| IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS | 0                                       | no        | Ignore unknown files in managed_components directory     |
+
 ## Contributions Guide
 
 We welcome all contributions to the Component Manager project.
