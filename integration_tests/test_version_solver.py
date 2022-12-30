@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 
@@ -153,8 +153,11 @@ def test_single_dependency(project):
     ], indirect=True)
 def test_idf_version_dependency_failed(project):
     res = project_action(project, 'reconfigure')
-    assert 'project depends on idf' in res
-    assert 'version solving failed.' in res
+
+    assert (
+        ('project depends on idf' in res and 'version solving failed.' in res) or
+        # idf release v4.4 components/freemodbus depends on idf >= 4.1
+        ('project depends on both idf (>=4.1) and idf (<4.1)' in res and 'version  solving failed.' in res))
 
 
 @pytest.mark.parametrize(
