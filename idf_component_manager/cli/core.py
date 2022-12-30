@@ -4,7 +4,8 @@ import sys
 
 import click
 
-from idf_component_manager.utils import CLICK_SUPPORTS_SHOW_DEFAULT, print_error
+from idf_component_manager import version as idf_component_manager_version
+from idf_component_manager.utils import CLICK_SUPPORTS_SHOW_DEFAULT, print_error, print_info
 from idf_component_tools.errors import FatalError
 
 from .autocompletion import autocomplete
@@ -29,6 +30,14 @@ if CLICK_SUPPORTS_SHOW_DEFAULT:
 @click.group(context_settings=DEFAULT_SETTINGS)
 def cli():
     pass
+
+
+@cli.command()
+def version():
+    """
+    Print version of the IDF Component Manager
+    """
+    print_info(str(idf_component_manager_version))
 
 
 cli.add_command(autocomplete)

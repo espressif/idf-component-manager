@@ -4,6 +4,7 @@ import json
 
 import click
 
+from idf_component_manager.utils import print_info
 from idf_component_tools.manifest.validator import manifest_json_schema
 
 from .constants import PROJECT_DIR_OPTION
@@ -23,7 +24,7 @@ def schema():
     """
     Print json schema of the manifest file idf_component.yml
     """
-    print(json.dumps(manifest_json_schema(), indent=2))
+    print_info(json.dumps(manifest_json_schema(), indent=2))
 
 
 MANIFEST_COMPONENT_NAME_OPTION = [click.option('--component', default='main', help='Component name in the project')]
