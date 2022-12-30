@@ -40,6 +40,8 @@ jinja2 = "*"
 comment-parser = "*"
 thefuzz = "*"
 jsonschema = "*"
+pexpect = "*"
+pytest-rerunfailures = "*"
 
 [pipenv]
 allow_prereleases = false

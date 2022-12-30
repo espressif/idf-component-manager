@@ -38,3 +38,7 @@ bandit_output.txt
 # Coverage reports
 .coverage
 coverage.xml
+
+fish.txt
+zsh.txt
+bash.txt
