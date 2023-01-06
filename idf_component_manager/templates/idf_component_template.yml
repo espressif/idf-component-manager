@@ -14,3 +14,13 @@ dependencies:
   #   # `public` flag doesn't have an effect dependencies of the `main` component.
   #   # All dependencies of `main` are public by default.
   #   public: true
+  # # For components hosted on non-default registry:
+  # company_user/component:
+  #   version: "~1.0.0"
+  #   service_url: "https://componentregistry.company.com"
+  # # For components in git repository:
+  # test_component:
+  #   git: ssh://git@gitlab.com/user/components.git
+  #   version: main # branch
+  #   # version: 6eb8d4a725643d657bd016e07b3260f8303eabf2 # commit sha
+  #   # version: v1.1.1 # tag

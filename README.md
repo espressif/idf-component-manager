@@ -71,9 +71,12 @@ dependencies:
     service_url: "https://componentregistry.company.com"
   # For components in git repository:
   test_component:
-    path: test_component
     git: ssh://git@gitlab.com/user/components.git
-  # For test projects during component development
+    # version in git component is used to specify a git reference:
+    # version: main # branch main
+    # version: 6eb8d4a725643d657bd016e07b3260f8303eabf2 # commit sha
+    # version: v1.1.1 # tag
+# For test projects during component development
   # components can be used from a local directory
   # with relative or absolute path
   some_local_component:
