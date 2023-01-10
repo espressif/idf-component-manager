@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -10,7 +10,7 @@ from schema import And, Optional, Or, Regex, Schema, SchemaError
 from six import string_types
 
 from idf_component_tools.constants import COMPILED_URL_RE
-from idf_component_tools.errors import FatalError
+from idf_component_tools.errors import FatalError, UserDeprecationWarning
 
 from .constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL
 
@@ -100,7 +100,7 @@ def component_registry_url(registry_profile=None):  # type: (dict[str, str] | No
         warnings.warn(
             'DEFAULT_COMPONENT_SERVICE_URL environment variable pointing to the registy API is deprecated. '
             'Set component registry URL to IDF_COMPONENT_REGISTRY_URL',
-            category=DeprecationWarning)
+            category=UserDeprecationWarning)
 
     if env_registry_url and env_registry_api_url:
         warnings.warn(
