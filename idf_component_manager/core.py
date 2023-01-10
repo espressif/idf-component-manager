@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Core module of component manager"""
 from __future__ import print_function
@@ -444,7 +444,7 @@ class ComponentManager(object):
         downloaded_component_paths = {os.path.abspath(path) for path in list(downloaded_component_paths)}
         # Include managed components in project directory
         with open(managed_components_list_file, mode='w', encoding='utf-8') as file:
-            for component_path in downloaded_component_paths:
+            for component_path in sorted(downloaded_component_paths):
                 file.write(u'idf_build_component("%s")\n' % Path(component_path).as_posix())
                 component_name = Path(component_path).name
                 file.write(
@@ -455,7 +455,7 @@ class ComponentManager(object):
             file.write(u'set(managed_components "%s")\n' % component_names)
 
         # Saving list of all components with manifests for use on requirements injection step
-        all_components = downloaded_component_paths.union(component['path'] for component in local_components)
+        all_components = sorted(downloaded_component_paths.union(component['path'] for component in local_components))
         with open(component_list_file, mode='w', encoding='utf-8') as file:
             file.write(u'\n'.join(all_components))
 
