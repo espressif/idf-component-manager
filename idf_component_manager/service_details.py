@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 ''' Helper function to init API client'''
 import os
@@ -9,7 +9,7 @@ from idf_component_manager.utils import print_info
 from idf_component_tools.api_client import APIClient
 from idf_component_tools.config import ConfigManager, component_registry_url
 from idf_component_tools.constants import DEFAULT_NAMESPACE
-from idf_component_tools.errors import FatalError
+from idf_component_tools.errors import FatalError, UserDeprecationWarning
 
 ServiceDetails = namedtuple('ServiceDetails', ['client', 'namespace'])
 
@@ -51,7 +51,7 @@ def get_profile(config_path=None, profile_name=None):  # type: (str | None, str 
         warnings.warn(
             'IDF_COMPONENT_SERVICE_PROFILE environment variable is deprecated. '
             'Please use IDF_COMPONENT_REGISTRY_PROFILE instead',
-            category=DeprecationWarning)
+            category=UserDeprecationWarning)
 
     profile_name_env = os.getenv('IDF_COMPONENT_REGISTRY_PROFILE')
 

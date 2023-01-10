@@ -1,14 +1,14 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import json
 import os
 
-from pytest import deprecated_call, fixture, raises, warns
+from pytest import fixture, raises, warns
 
 from idf_component_manager.service_details import NoSuchProfile, get_namespace, get_profile, get_token, service_details
 from idf_component_tools.config import Config, ConfigManager
-from idf_component_tools.errors import FatalError
+from idf_component_tools.errors import FatalError, UserDeprecationWarning
 
 
 @fixture()
@@ -79,7 +79,7 @@ def test_get_profile_success(config_path):
 
 def test_get_profile_env_dep(config_path, monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_SERVICE_PROFILE', 'test')
-    with deprecated_call():
+    with warns(UserDeprecationWarning):
         assert get_profile(config_path)['default_namespace'] == 'test'
 
 
