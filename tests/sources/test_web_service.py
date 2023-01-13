@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import filecmp
@@ -31,6 +31,7 @@ class TestComponentWebServiceSource(object):
         assert source.component_cache_path(component).endswith(
             'service_{}/espressif__cmp_1.0.0_{}'.format(self.EXAMPLE_HASH[:8], self.CMP_HASH[:8]))
 
+    # If you re-record this cassette, make sure the file downloaded only once
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_fetch_webservice.yaml')
     def test_download(self, release_component_path, tmp_path):
         cache_dir = str(tmp_path / 'cache')
@@ -38,7 +39,7 @@ class TestComponentWebServiceSource(object):
             source_details={'service_url': 'https://example.com/api'}, system_cache_path=cache_dir)
         cmp = SolvedComponent('test/cmp', '1.0.1', source, component_hash=self.CMP_HASH)
 
-        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/'})
+        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/api/'})
         download_path = str(tmp_path / 'test_download')
         local_path = source.download(cmp, download_path)
 
