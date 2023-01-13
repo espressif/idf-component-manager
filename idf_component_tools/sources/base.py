@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -11,7 +11,7 @@ import idf_component_tools as tools
 
 from ..errors import FetchingError, SourceError
 from ..file_cache import FileCache
-from ..hash_tools import validate_dir
+from ..hash_tools import validate_filtered_dir
 from ..semver import SimpleSpec
 
 try:
@@ -154,7 +154,7 @@ class BaseSource(object):
                 return False
 
             if component.component_hash:
-                return validate_dir(path, component.component_hash)
+                return validate_filtered_dir(path, component.component_hash)
 
         return True
 
