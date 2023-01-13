@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import shutil
@@ -34,7 +34,7 @@ def test_changes_in_component(project):
     shutil.rmtree(os.path.join(project, 'build'))
     res = project_action(project, 'reconfigure')
 
-    assert 'in the "managed_components" directory were modified' in res
+    assert 'in the "managed_components" directory' in res
 
     shutil.move(
         os.path.join(project, 'managed_components', 'example__cmp'),

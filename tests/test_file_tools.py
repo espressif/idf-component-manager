@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -28,6 +28,18 @@ def test_filtered_path_default(assets_path):
             Path(assets_path, 'ignore.dir', 'file.txt'),
             Path(assets_path, 'ignore.me'),
         ])
+
+
+def test_filtered_path_no_default(assets_path):
+    assert filtered_paths(
+        assets_path, exclude_default=False) == set(
+            [
+                Path(assets_path, '1.txt'),
+                Path(assets_path, 'ignore.dir'),
+                Path(assets_path, 'ignore.dir', 'file.txt'),
+                Path(assets_path, 'ignore.me'),
+                Path(assets_path, '.gitlab-ci.yml'),
+            ])
 
 
 def test_filtered_path_exclude_file(assets_path):

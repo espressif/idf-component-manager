@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Set of tools and constants to work with files and directories """
 import os
@@ -9,7 +9,7 @@ from shutil import copytree, rmtree
 from idf_component_tools.errors import warn
 
 try:
-    from typing import Callable, Iterable
+    from typing import Iterable
 except ImportError:
     pass
 
@@ -50,8 +50,15 @@ UNEXPECTED_FILES = {
 }
 
 
-def filtered_paths(path, include=None, exclude=None):
-    # type: (str | Path, Iterable[str] | None, Iterable[str] | None) -> set[Path]
+def filtered_paths(
+        path,  # type: str | Path
+        include=None,  # type: Iterable[str] | None
+        exclude=None,  # type: Iterable[str] | None
+        exclude_default=True,  # type: bool
+):
+    # type: (...) -> set[Path]
+    """Returns set of paths that should be included in component archive"""
+
     if include is None:
         include = set()
 
@@ -71,10 +78,11 @@ def filtered_paths(path, include=None, exclude=None):
     include_paths('**/*')
 
     # Exclude all defaults, including directories
-    for pattern in DEFAULT_EXCLUDE:
-        exclude_paths(pattern)
-        if pattern.endswith('/**/*'):
-            exclude_paths(pattern[:pattern.rindex('/**/*')])
+    if exclude_default:
+        for pattern in DEFAULT_EXCLUDE:
+            exclude_paths(pattern)
+            if pattern.endswith('/**/*'):
+                exclude_paths(pattern[:pattern.rindex('/**/*')])
 
     # Exclude user patterns
     for pattern in exclude:
@@ -85,14 +93,6 @@ def filtered_paths(path, include=None, exclude=None):
         include_paths(pattern)
 
     return paths
-
-
-def filter_builder(paths):  # type: (Iterable[Path]) -> Callable[[Path], bool]
-    def filter_path(path):  # type: (Path) -> bool
-        '''Returns True if path should be included, False otherwise'''
-        return path.resolve() in paths
-
-    return filter_path
 
 
 def create_directory(directory):  # type: (str) -> None

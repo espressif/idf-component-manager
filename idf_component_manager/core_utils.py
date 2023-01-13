@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import re
@@ -43,27 +43,22 @@ def raise_component_modified_error(managed_components_dir, components):  # type:
     managed_component_dir = Path(managed_components_dir, component_example_name)
     component_dir = project_path / 'components' / component_example_name
     hash_path = managed_component_dir / HASH_FILENAME
-    error = """
-        Some components ({component_names}) in the "managed_components" directory were modified \
-        on the disk since the last run of the CMake. Content of this directory is managed automatically.
-
-        If you want to keep the changes, you can move the directory with the component to the "components" \
-        directory of your project.
-
-        I.E. for "{component_example}" run:
-        mv {managed_component_dir} {component_dir}
-
-        Or, if you want to discard the changes remove the "{hash_filename}" file from the component\'s directory.
-
-        I.E. for "{component_example}" run:
-        rm {hash_path}
-        """.format(
-        component_names=', '.join(components),
-        component_example=component_example_name,
-        managed_component_dir=managed_component_dir,
-        component_dir=component_dir,
-        hash_path=hash_path,
-        hash_filename=HASH_FILENAME)
+    error = (
+        'Some components ({component_names}) in the "managed_components" directory were modified '
+        'on the disk since the last run of the CMake. Content of this directory is managed automatically.\n'
+        'If you want to keep the changes, you can move the directory with the component to the "components"'
+        'directory of your project.\n'
+        'I.E. for "{component_example}" run:\n'
+        'mv {managed_component_dir} {component_dir}\n'
+        'Or, if you want to discard the changes remove the "{hash_filename}" file from the component\'s directory.\n'
+        'I.E. for "{component_example}" run:\n'
+        'rm {hash_path}').format(
+            component_names=', '.join(components),
+            component_example=component_example_name,
+            managed_component_dir=managed_component_dir,
+            component_dir=component_dir,
+            hash_path=hash_path,
+            hash_filename=HASH_FILENAME)
     raise ComponentModifiedError(error)
 
 
