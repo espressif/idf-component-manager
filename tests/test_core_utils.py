@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import pytest
 from pytest import raises
@@ -12,6 +12,7 @@ from idf_component_tools.errors import FatalError
         ('test/cmp>=1.0.0:sample_project', ('test/cmp', '>=1.0.0', 'sample_project')),
         ('test/cmp:sample/project', ('test/cmp', '*', 'sample/project')),
         ('cmp:sample/project', ('test2/cmp', '*', 'sample/project')),
+        ('pre_fix/post-fix^2.1.1~1-pre1:te-xt_me', ('pre_fix/post-fix', '^2.1.1~1-pre1', 'te-xt_me'))
     ])
 def test_parse_example_valid(example, res):
     assert parse_example(example, 'test2') == res
