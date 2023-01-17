@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Component source that downloads components from web service"""
 
@@ -19,7 +19,7 @@ from ..config import component_registry_url
 from ..constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL
 from ..errors import FetchingError, hint
 from ..file_tools import copy_directory
-from ..hash_tools import validate_dir
+from ..hash_tools import validate_filtered_dir
 from . import utils
 from .base import BaseSource
 
@@ -201,7 +201,7 @@ class WebServiceSource(BaseSource):
             return download_path
 
         # Check if component is in the cache
-        if validate_dir(self.component_cache_path(component), component.component_hash):
+        if validate_filtered_dir(self.component_cache_path(component), component.component_hash):
             copy_directory(self.component_cache_path(component), download_path)
             return download_path
 
