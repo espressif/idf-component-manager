@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix name and namespace regex used in create project from example command
 - Fix `compote autocomplete` incompatible with click 7.x issue
 - Fix `compote autocomplete` failed when .zshrc has no `compinit` set
+- Fix nondeterministic order of components passed to IDF build system (https://github.com/espressif/esp-idf/issues/10419)
 
 ## [1.2.1] 2022-12-12
 
