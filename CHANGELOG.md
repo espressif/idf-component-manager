@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Make file cache path configurable via `IDF_COMPONENT_CACHE_PATH` environment variable
 - Add `compote cache path` command to print the path to the cache directory
 - Add `compote cache size` command to print the size of the cached data
+- Add `compote version` command to print the version of the component manager
 
 ### Fixed
 

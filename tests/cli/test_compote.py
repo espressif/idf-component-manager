@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import json
 import os
@@ -9,6 +9,7 @@ import jsonschema
 import pytest
 from jsonschema.exceptions import ValidationError
 
+from idf_component_tools.__version__ import __version__
 from idf_component_tools.file_cache import FileCache
 from idf_component_tools.file_tools import directory_size
 from idf_component_tools.manifest import MANIFEST_FILENAME, ManifestManager
@@ -99,3 +100,8 @@ def test_cache_size(monkeypatch, tmp_path, file_with_size):
 
     output = subprocess.check_output(['compote', 'cache', 'size', '--bytes'])
     assert '14' == output.decode('utf-8').strip()
+
+
+def test_version():
+    output = subprocess.check_output(['compote', 'version'])
+    assert __version__ in output.decode('utf-8')
