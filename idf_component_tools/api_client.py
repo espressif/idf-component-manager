@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Classes to work with Espressif Component Web Service"""
 import os
@@ -332,7 +332,7 @@ class APIClient(object):
 
     @_request(cache=True, use_storage=True)
     def component(self, request, component_name, version=None):
-        """Manifest for given version of component, if version is None most recent version returned"""
+        """Manifest for given version of component, if version is None highest version is returned"""
         response = request(
             'get',
             ['components', component_name.lower()],

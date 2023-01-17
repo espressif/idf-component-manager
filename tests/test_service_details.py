@@ -116,5 +116,5 @@ def test_service_details_without_token(tmp_path):
 
 
 def test_service_details_without_profile(tmp_path):
-    with raises(NoSuchProfile, match='"test" didn\'t find*'):
+    with raises(NoSuchProfile, match='Profile "test" not found*'):
         service_details(config_path=str(tmp_path), service_profile='test', namespace='test')

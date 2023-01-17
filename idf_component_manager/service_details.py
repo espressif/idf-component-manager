@@ -73,9 +73,9 @@ def service_details(
     profile = get_profile(config_path, profile_name)
 
     if profile:
-        print_info('Selected profile " {}" from the idf_component_manager.yml file'.format(profile_name))
+        print_info('Selected profile "{}" from the idf_component_manager.yml config file'.format(profile_name))
     elif profile_name != 'default' and not profile:
-        raise NoSuchProfile('"{}" didn\'t find in the idf_component_manager.yml file'.format(profile_name))
+        raise NoSuchProfile('Profile "{}" not found in the idf_component_manager.yml config file'.format(profile_name))
 
     # Priorities: Environment variables > profile value in `idf_component_manager.yml` file > built-in default
     registry_url, storage_url = component_registry_url(registry_profile=profile)
