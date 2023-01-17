@@ -14,14 +14,12 @@ import pytest
     '~/.compote-complete.zsh',
     '~/.compote-complete.bash',
 )
-@pytest.mark.parametrize(
-    'shell', [
-        pytest.param(
-            'fish',
-            marks=pytest.mark.skipif(sys.version_info[:2] == (3, 4), reason='fish support is added in click==7.1')),
-        'bash',
-        'zsh',
-    ])
+@pytest.mark.skipif(sys.version_info < (3, 5, 0), reason='Old pythons are not supported')
+@pytest.mark.parametrize('shell', [
+    'fish',
+    'bash',
+    'zsh',
+])
 @pytest.mark.flaky(reruns=10, reruns_delay=2)
 def test_autocomplete(shell, monkeypatch):
     if shell in ['fish']:
