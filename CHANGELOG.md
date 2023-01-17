@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.2] 2023-01-17
+## [Unreleased]
 
 ### Added
 
@@ -18,10 +18,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix deprecation warnings not showing up in the terminal
+
+## [1.2.2] 2023-01-17
+
+### Fixed
+
 - Fix name and namespace regex used in create project from example command
 - Fix `compote autocomplete` incompatible with click 7.x issue
 - Fix `compote autocomplete` failed when .zshrc has no `compinit` set
-- Fix deprecation warnings not showing up in the terminal
 - Fix nondeterministic order of components passed to IDF build system (https://github.com/espressif/esp-idf/issues/10419)
 - Fix hash validation for components uploaded with older versions of the component manager
 
