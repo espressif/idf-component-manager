@@ -4,19 +4,19 @@
 import os
 import shutil
 
+from idf_component_manager.core_utils import raise_component_modified_error
 from idf_component_manager.utils import print_info
+from idf_component_manager.version_solver.helper import parse_root_dep_conflict_constraints
+from idf_component_manager.version_solver.mixology.failure import SolverFailure
+from idf_component_manager.version_solver.mixology.package import Package
+from idf_component_manager.version_solver.version_solver import VersionSolver
 from idf_component_tools.build_system_tools import build_name
+from idf_component_tools.environment import getenv_bool
 from idf_component_tools.errors import ComponentModifiedError, FetchingError, SolverError, hint, warn
-from idf_component_tools.hash_tools import ValidatingHashError, validate_dir_with_hash_file
+from idf_component_tools.hash_tools import ValidatingHashError, validate_managed_component_hash
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import ProjectRequirements, SolvedComponent, SolvedManifest
 from idf_component_tools.sources.fetcher import ComponentFetcher
-
-from .core_utils import raise_component_modified_error
-from .version_solver.helper import parse_root_dep_conflict_constraints
-from .version_solver.mixology.failure import SolverFailure
-from .version_solver.mixology.package import Package
-from .version_solver.version_solver import VersionSolver
 
 
 def check_manifests_targets(project_requirements):  # type: (ProjectRequirements) -> None
@@ -34,7 +34,7 @@ def get_unused_components(unused_files_with_components, managed_components_path)
 
     for component in unused_files_with_components:
         try:
-            validate_dir_with_hash_file(os.path.join(managed_components_path, component))
+            validate_managed_component_hash(os.path.join(managed_components_path, component))
             unused_components.add(component)
         except ValidatingHashError:
             pass
@@ -56,7 +56,7 @@ def detect_unused_components(
         for unused_component_name in unused_components:
             print_info(' {}'.format(unused_component_name))
             shutil.rmtree(os.path.join(managed_components_path, unused_component_name))
-    if unused_files and os.getenv('IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS') != '1':
+    if unused_files and not getenv_bool('IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS'):
         warning = '{} unexpected files and directories were found in the "managed_components" directory:'.format(
             len(unused_files))
 

@@ -24,7 +24,7 @@ from idf_component_tools.errors import FatalError, GitError, ManifestError, Noth
 from idf_component_tools.file_tools import check_unexpected_component_files, copy_filtered_directory, create_directory
 from idf_component_tools.git_client import GitClient
 from idf_component_tools.hash_tools import (
-    HashDoesNotExistError, HashNotEqualError, HashNotSHA256Error, validate_dir_with_hash_file)
+    HashDoesNotExistError, HashNotEqualError, HashNotSHA256Error, validate_managed_component_hash)
 from idf_component_tools.manifest import (
     MANIFEST_FILENAME, WEB_DEPENDENCY_REGEX, Manifest, ManifestManager, ProjectRequirements)
 from idf_component_tools.semver import SimpleSpec, Version
@@ -296,7 +296,7 @@ class ComponentManager(object):
                 continue
 
             try:
-                validate_dir_with_hash_file(str(managed_components_dir / component_dir))
+                validate_managed_component_hash(str(managed_components_dir / component_dir))
                 shutil.rmtree(str(managed_components_dir / component_dir))
             except (HashNotEqualError, HashNotSHA256Error):
                 undeleted_components.append(component_dir.name)
