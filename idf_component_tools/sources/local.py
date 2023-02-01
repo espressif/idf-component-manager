@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -75,7 +75,7 @@ class LocalSource(BaseSource):
 
     @property
     def hash_key(self):
-        self.source_details.get('path')
+        return self.source_details.get('path')
 
     def download(self, component, download_path):
         directory_name = os.path.basename(str(self._path))
