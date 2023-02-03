@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import sys
@@ -22,7 +22,6 @@ import pytest
         'bash',
         'zsh',
     ])
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
 def test_autocomplete(shell, monkeypatch):
     if shell in ['fish']:
         monkeypatch.setenv('TERM', 'screen-256color')  # var TERM is required in fish
@@ -38,5 +37,10 @@ def test_autocomplete(shell, monkeypatch):
         child.sendline('exec {}'.format(shell))  # reload
         child.expect([r'\$ ', '# ', '> '], timeout=5)
         child.send('compote \t\t')
-        for group in ['autocomplete', 'cache', 'component', 'manifest', 'project']:
-            child.expect(group, timeout=1)
+        child.flush()
+
+        # read all buffer
+        child.expect(pexpect.TIMEOUT, timeout=5)
+
+        for group in ['autocomplete', 'cache', 'component', 'manifest', 'project', 'version']:
+            assert group in child.buffer.decode('utf8')
