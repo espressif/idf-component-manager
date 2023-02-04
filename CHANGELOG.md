@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix deprecation warnings not showing up in the terminal
+- Fix regular expression for repository URL validation
 
 ## [1.2.2] 2023-01-17
 
