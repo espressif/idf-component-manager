@@ -37,6 +37,6 @@ integration_test:
     - . ./export.sh
     - cd ..
     - apt update && apt install -y fish zsh
-    - pip install pytest pytest-cov pytest-rerunfailures pexpect "jinja2<3.1"
+    - pip install pytest pytest-cov pexpect "jinja2<3.1"
   script:
     - pytest -s -c pytest_integration.ini --cov=. --cov-report=xml:coverage_integration.xml --log-cli-level=INFO
