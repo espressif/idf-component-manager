@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import copy
@@ -142,7 +142,7 @@ class ManifestManager(object):
             if 'rules' in details:
                 self.normalized_manifest_tree['dependencies'][name]['rules'] = [rule['if'] for rule in details['rules']]
 
-        return Manifest.fromdict(self.normalized_manifest_tree, name=self.name)
+        return Manifest.fromdict(self.normalized_manifest_tree, name=self.name, manifest_manager=self)
 
     def dump(self, path=None):  # type: (str | None) -> None
         if path is None:
