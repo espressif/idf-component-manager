@@ -1,7 +1,9 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
-from idf_component_tools.manifest import ComponentRequirement, ProjectRequirements, SolvedComponent, SolvedManifest
+from idf_component_tools.errors import DependencySolveError, SolverError
+from idf_component_tools.manifest import (
+    ComponentRequirement, Manifest, ProjectRequirements, SolvedComponent, SolvedManifest)
 
 from .helper import PackageSource
 from .mixology.package import Package
@@ -47,14 +49,27 @@ class VersionSolver(object):
             solved_components.append(SolvedComponent(**kwargs))  # type: ignore
         return SolvedManifest(solved_components, self.requirements.manifest_hash, self.requirements.target)
 
-    def solve_manifest(self, manifest):
+    def solve_manifest(self, manifest):  # type: (Manifest) -> None
         for requirement in manifest.dependencies:  # type: ComponentRequirement
             self._source.root_dep(Package(requirement.name, requirement.source), requirement.version_spec)
-            self.solve_component(requirement)
+            try:
+                self.solve_component(requirement)
+            except DependencySolveError as e:
+                raise SolverError(
+                    'Solver failed processing dependency "{dependency}" '
+                    'from the manifest file "{path}".\n{original_error}'.format(
+                        path=manifest.path, dependency=e.dependency, original_error=str(e)))
+            except SolverError as e:
+                raise SolverError(
+                    'Solver failed processing manifest file "{path}".'
+                    '\n{original_error}'.format(path=manifest.path, original_error=str(e)))
 
     def solve_component(self, requirement):  # type: (ComponentRequirement) -> None
-        cmp_with_versions = requirement.source.versions(
-            name=requirement.name, spec=requirement.version_spec, target=self.requirements.target)
+        try:
+            cmp_with_versions = requirement.source.versions(
+                name=requirement.name, spec=requirement.version_spec, target=self.requirements.target)
+        except Exception as e:
+            raise DependencySolveError(str(e), dependency=requirement.name)
 
         for version in cmp_with_versions.versions:
             if requirement.source.is_overrider:
