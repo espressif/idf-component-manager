@@ -45,6 +45,16 @@ class SolverError(FatalError):
     pass
 
 
+class DependencySolveError(FatalError):
+    def __init__(self, *args, **kwargs):
+        super(FatalError, self).__init__(*args)
+        if 'dependency' not in kwargs:
+            raise ValueError('"dependency" keyword must be used in "DependencySolverError"')
+
+        self.dependency = kwargs.pop('dependency')
+        self.spec = kwargs.pop('spec', None)
+
+
 class ProcessingError(FatalError):
     pass
 

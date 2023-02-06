@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -38,7 +38,10 @@ class GitClient(object):
                 self.check_version()
                 self._git_checked = True
 
-            return func(self, *args, **kwargs)
+            try:
+                return func(self, *args, **kwargs)
+            except GitCommandError as e:
+                raise GitError(e)
 
         return wrapper
 
