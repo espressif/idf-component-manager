@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
@@ -133,8 +133,7 @@ def live_print_call(*args, **kwargs):
             line = line.decode('utf-8')
         line = line.rstrip()
         logging.info(line)
-        res += line
-
+        res += ' ' + line.strip()
     return res
 
 
