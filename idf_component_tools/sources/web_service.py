@@ -173,8 +173,8 @@ class WebServiceSource(BaseSource):
                     'Is your current target {} set correctly?'.format(name, '", "'.join(targets), current_target))
 
             raise FetchingError(
-                'Cannot find versions of "{}" with version satisfying "{}" '
-                'for the current target {}'.format(name, spec, current_target))
+                'Cannot find versions of "{}" satisfying "{}" '
+                'for the current target {}.'.format(name, spec, current_target))
 
         return cmp_with_versions
 

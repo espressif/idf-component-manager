@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 from io import open
@@ -74,8 +74,7 @@ def test_idf_check_target_fail_manifest(project):
     ], indirect=True)
 def test_idf_check_target_fail_dependency(project):
     res = set_target(project, 'esp32')
-    assert 'Cannot find versions of "example/cmp" with version satisfying' in res
-    assert '"0.0.1" for the current target "esp32"' in res
+    assert 'Cannot find versions of "example/cmp" satisfying "0.0.1" for the current target "esp32"' in res
 
 
 @pytest.mark.parametrize(
