@@ -42,6 +42,9 @@ thefuzz = "*"
 jsonschema = "*"
 pexpect = "*"
 pytest-rerunfailures = "*"
+sphinx-rtd-theme = "==1.1.1"
+sphinx-copybutton = "*"
+sphinx-tabs = "*"
 
 [pipenv]
 allow_prereleases = false
