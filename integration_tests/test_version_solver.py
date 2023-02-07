@@ -3,6 +3,7 @@
 import os
 
 import pytest
+import yaml
 
 from .integration_test_helpers import build_project, project_action
 
@@ -241,3 +242,50 @@ def test_version_solver_with_caret_and_prerelease(project, result):
     real_result = project_action(project, 'fullclean', 'reconfigure')
     for line in result:
         assert line in real_result
+
+
+@pytest.mark.parametrize(
+    'project, result', [
+        (
+            {
+                'components': {
+                    'main': {
+                        'dependencies': {
+                            'test/circular_dependency_b': {
+                                'version': '*',
+                            },
+                            'test/circular_dependency_a': {
+                                'path': '../test__circular_dependency_a',
+                            }
+                        }
+                    },
+                    'test__circular_dependency_a': {
+                        'version': '1.0.0',
+                    },
+                }
+            }, [
+                '[1/3] idf',
+                '[2/3] test/circular_dependency_a (*)',
+                '[3/3] test/circular_dependency_b (1.0.0)',
+            ]),
+    ],
+    indirect=True)
+def test_version_solver_on_local_components_higher_priority(project, result):
+    # need to move to another folder, not under the default `components/`
+    os.rename(
+        os.path.join(project, 'components', 'test__circular_dependency_a'),
+        os.path.join(project, 'test__circular_dependency_a'))
+    real_result = project_action(project, 'fullclean', 'reconfigure')
+    for line in result:
+        assert line in real_result
+
+    with open(os.path.join(project, 'dependencies.lock')) as fr:
+        d = yaml.safe_load(fr)
+        assert d['dependencies']['test/circular_dependency_a'] == {
+            'component_hash': None,
+            'source': {
+                'path': os.path.join(project, 'test__circular_dependency_a'),
+                'type': 'local',
+            },
+            'version': '*',
+        }

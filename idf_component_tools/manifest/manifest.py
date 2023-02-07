@@ -219,6 +219,13 @@ class ComponentRequirement(object):
         return 'ComponentRequirement("{}", {}, version_spec="{}", public={})'.format(
             self._name, self.source, self.version_spec, self.public)
 
+    def __str__(self):  # type: () -> str
+        # if local source, avoid circular dependency
+        if self.source.name == 'local':
+            return '{}({})'.format(self._name, self.source._path)  # type: ignore
+        else:
+            return '{}({})'.format(self._name, self._version_spec)
+
 
 @total_ordering
 @serializable(like='str')
@@ -276,12 +283,12 @@ class ComponentVersion(object):
 class HashedComponentVersion(ComponentVersion):
     def __init__(self, *args, **kwargs):
         component_hash = kwargs.pop('component_hash', None)
-        dependencies = kwargs.pop('dependencies', [])
+        dependencies = kwargs.pop('dependencies', []) or []
         targets = kwargs.pop('targets', [])
         super(HashedComponentVersion, self).__init__(*args, **kwargs)
 
         self.component_hash = component_hash
-        self.dependencies = dependencies  # type: list[ComponentRequirement] | None
+        self.dependencies = dependencies  # type: list[ComponentRequirement]
         self.targets = targets
 
     def __hash__(self):
