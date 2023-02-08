@@ -9,27 +9,27 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.2.1 (Darwin/22.2.0 arm64; python/3.10.6)
+      - idf-component-manager/1.2.2 (Darwin/22.1.0 arm64; python/3.9.16)
     method: GET
     uri: http://localhost:5000/api
   response:
     body:
-      string: "{\n  \"components_base_url\": \"http://host.docker.internal:9000/test-public\"\
-        ,\n  \"info\": \"Espressif Component Manager Service HTTP JSON API\",\n  \"\
-        status\": \"ok\",\n  \"version\": \"0.2.0\"\n}\n"
+      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",\n
+        \ \"info\": \"Espressif Component Manager Service HTTP JSON API\",\n  \"status\":
+        \"ok\",\n  \"version\": \"0.2.0\"\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '179'
+      - '168'
       Content-Type:
       - application/json
       Date:
-      - Fri, 13 Jan 2023 16:59:01 GMT
+      - Fri, 10 Feb 2023 14:40:14 GMT
       Server:
-      - Werkzeug/2.2.2 Python/3.11.0
+      - Werkzeug/2.2.2 Python/3.11.1
     status:
       code: 200
       message: OK
@@ -43,60 +43,53 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.2.1 (Darwin/22.2.0 arm64; python/3.10.6)
+      - idf-component-manager/1.2.2 (Darwin/22.1.0 arm64; python/3.9.16)
     method: GET
-    uri: http://host.docker.internal:9000/test-public/components/test/cmp.json
+    uri: http://localhost:9000/test-public/components/test/cmp.json
   response:
     body:
-      string: '{"namespace": "test", "name": "cmp", "created_at": "2023-01-13T16:53:22.294419+00:00",
-        "featured": false, "versions": [{"downloads_total": 0, "tags": [], "examples":
-        [{"url": "04a5eb64-a9f6-4504-8e5d-51d36f7e8f6c/examples/c23c01bb-3f9d-4be1-9b8e-4df3feff35e7.tgz",
-        "name": "cmp_ex", "docs": {}}], "docs": {"readme": "04a5eb64-a9f6-4504-8e5d-51d36f7e8f6c/readme.md",
-        "changelog": "04a5eb64-a9f6-4504-8e5d-51d36f7e8f6c/changelog.md"}, "discussion":
-        "", "issues": "", "repository": "", "uploader": "kumekay", "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
-        "documentation": "", "component_hash": "807a3ac26a1ecd74fedf6df743132e56274d9d897339017c95fc5bc621ae2e30",
+      string: '{"name": "cmp", "versions": [{"discussion": "", "repository": "", "created_at":
+        "2023-02-07T15:14:08.720977+00:00", "uploader": "dmitry", "version": "1.0.1",
+        "documentation": "", "targets": [], "description": "This component is an example,
+        to be used with the IDF component manager.", "dependencies": [{"name": null,
+        "spec": ">=4.1", "is_public": false, "source": "idf", "namespace": null}],
+        "issues": "", "tags": [], "license": null, "component_hash": "c8ac77c6e836c722feb8d48ec7a22a784c1e6c9c9b666650d80c73488211e768",
         "exclusion_list": ["**/__pycache__", "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store",
         "**/.git/**/*", "**/.svn/**/*", "**/dist/**/*", "**/build/**/*", "**/managed_components/**/*",
         "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
         "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "description": "This component is an example, to be
-        used with the IDF component manager.", "license": {"url": "04a5eb64-a9f6-4504-8e5d-51d36f7e8f6c/license.txt",
-        "name": "MIT"}, "url": "04a5eb64-a9f6-4504-8e5d-51d36f7e8f6c.tgz", "created_at":
-        "2023-01-13T16:58:31.608982+00:00", "targets": [], "dependencies": [{"namespace":
-        null, "name": null, "spec": ">=4.1", "source": "idf", "is_public": false}],
-        "version": "1.0.1"}, {"downloads_total": 0, "tags": [], "examples": [{"url":
-        "d0104f59-5673-4040-82ab-1e7e9cb244d6/examples/0a74d0cd-172a-4a7e-b953-d9e700aabced.tgz",
-        "name": "cmp_ex", "docs": {}}], "docs": {"readme": "d0104f59-5673-4040-82ab-1e7e9cb244d6/readme.md",
-        "changelog": "d0104f59-5673-4040-82ab-1e7e9cb244d6/changelog.md"}, "discussion":
-        "", "issues": "", "repository": "", "uploader": "kumekay", "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
-        "documentation": "", "component_hash": "705be6e7b666c7ca499280be2b178888fc28bb5984bd088952de771de9459daa",
+        "**/.component_hash"], "url": "fc6414ce-2a58-4b04-8b78-63fa26cbb9e2.tgz",
+        "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
+        "downloads_total": 0, "examples": [], "docs": {}}, {"discussion": "", "repository":
+        "", "created_at": "2023-02-08T13:40:03.925263+00:00", "uploader": "dmitry",
+        "version": "1.0.0", "documentation": "", "targets": ["esp32"], "description":
+        null, "dependencies": [{"name": null, "spec": ">=4.0", "is_public": false,
+        "source": "idf", "namespace": null}], "issues": "", "tags": [], "license":
+        null, "component_hash": "bda3e8d0ba2edcf96066bec3dcf50451ec29f5304a4d3c4a02005b02152ce284",
         "exclusion_list": ["**/__pycache__", "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store",
         "**/.git/**/*", "**/.svn/**/*", "**/dist/**/*", "**/build/**/*", "**/managed_components/**/*",
         "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
         "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "description": "This component is an example, to be
-        used with the IDF component manager.", "license": {"url": "d0104f59-5673-4040-82ab-1e7e9cb244d6/license.txt",
-        "name": "MIT"}, "url": "d0104f59-5673-4040-82ab-1e7e9cb244d6.tgz", "created_at":
-        "2023-01-13T16:53:22.677303+00:00", "targets": [], "dependencies": [{"namespace":
-        null, "name": null, "spec": ">=4.1", "source": "idf", "is_public": false}],
-        "version": "1.0.0"}]}'
+        "**/.component_hash"], "url": "5580d4d4-283f-4e47-afa9-6c698e4c7feb.tgz",
+        "homepage": "", "downloads_total": 0, "examples": [], "docs": {}}], "featured":
+        false, "created_at": "2023-02-07T15:14:08.299851+00:00", "namespace": "test"}'
     headers:
       Accept-Ranges:
       - bytes
       Cache-Control:
       - max-age=300
       Content-Length:
-      - '2833'
+      - '2065'
       Content-Security-Policy:
       - block-all-mixed-content
       Content-Type:
       - binary/octet-stream
       Date:
-      - Fri, 13 Jan 2023 16:59:01 GMT
+      - Fri, 10 Feb 2023 14:40:14 GMT
       ETag:
-      - '"91f353acdb5002688dfaa4047f60a1a7"'
+      - '"6efe260320070b8234d78d77de77eece"'
       Last-Modified:
-      - Fri, 13 Jan 2023 16:58:31 GMT
+      - Wed, 08 Feb 2023 13:40:55 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -105,7 +98,7 @@ interactions:
       - Origin
       - Accept-Encoding
       X-Amz-Request-Id:
-      - 1739ECD646C05E30
+      - 17427D834B34C73E
       X-Content-Type-Options:
       - nosniff
       X-Xss-Protection:
@@ -123,64 +116,40 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.2.1 (Darwin/22.2.0 arm64; python/3.10.6)
+      - idf-component-manager/1.2.2 (Darwin/22.1.0 arm64; python/3.9.16)
     method: GET
-    uri: http://host.docker.internal:9000/test-public/04a5eb64-a9f6-4504-8e5d-51d36f7e8f6c.tgz
+    uri: http://localhost:9000/test-public/fc6414ce-2a58-4b04-8b78-63fa26cbb9e2.tgz
   response:
     body:
       string: !!binary |
-        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
-        QKcAeAAA
+        H4sICMBq4mMC/2ZjNjQxNGNlLTJhNTgtNGIwNC04Yjc4LTYzZmEyNmNiYjllMi50Z3oA7ZldT9sw
+        FIZ7nV/hdRe00pQP57NloEnARCXGJth2NakKidtYq5Msdlinaf997gcUECBNU7NB3ufGiXvSVLXP
+        +/rYpmVabz7E82MWp6zqbAV7xUOtbbve5nrR79jUoR0y7zRALVVc6dd32gmNiFBcsD0nCP0wopEX
+        mZQOBm7gGR3w7LEaeMciqUPfX7XBqrXp7Zx3PDe0vcB3l/nv2HbQIX6T+S/iKU/iSlB6f5wOm0ye
+        3/ib0H/o/1r/qR14+v83nSi0g0EI/W8BB+/ir+yESyVNNVfby//A8x7Uf8db6r9PXRqs8t/1fLdD
+        7Cbzv6X6nwg9/mPBcy5qMa7Yt5pXLO19Pjo7H70/Ja7p9w2Dp5NxUoiyyFmudNBUzxdW9c7PDs5J
+        NxGlmXTJ6PTg5NPh0fhwdKY7eZ7M6pR1+8gw+D/8/8n5f6Cv4f8tYKneDdR/j/q/G97xf2cRDv9v
+        gJdrpyavpUp5YWb7hnFZ8JToiTHO2GxW9Ba3feOnQdaUFc/VpNc9XnxKJlUhCJvHopwxcr1IePEl
+        7/Z3jV9IMPg//P+J+P/V/m9Ao9C3Xfh/C7hV2pk/xOwf+L+rPXez/+vo/PdoCP9vhJSVLE9ZnnAm
+        h9ri9XwYLp3+klWSF/mQ7OzveaazY6RMJhUv1bLzY8blxu2Jvonzq1XAK6IKcsFILVlKvnOVEZUx
+        Mjp8e+MBEefxlFWmUVezIcmUKuXQsqY6uL4wdZjFZFkxKfnEWn/rZpZKS1WMWSLmuaVXKcb1L3VM
+        XbtAteD/8P+/8n/q6iHxfWRSG/x/Vf5t9Rj4z89/qetTnP9C/6H/Ter/jf3fgRdR6H+L9H+xD5xt
+        Uf8fq/9s6t89/6WhjfqvCe7b691FWgAAAAAAAAAAAAAAAAAAAAAAAAAAAADAf89vTGIJlABQAAA=
     headers:
       Accept-Ranges:
       - bytes
       Content-Length:
-      - '2058'
+      - '740'
       Content-Security-Policy:
       - block-all-mixed-content
       Content-Type:
       - binary/octet-stream
       Date:
-      - Fri, 13 Jan 2023 16:59:01 GMT
+      - Fri, 10 Feb 2023 14:40:14 GMT
       ETag:
-      - '"392ab011ad71c207a64030dd511cbae3"'
+      - '"b63b9d2cc8ca3ba7c502744ce6c37425"'
       Last-Modified:
-      - Fri, 13 Jan 2023 16:58:31 GMT
+      - Tue, 07 Feb 2023 15:14:08 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -189,335 +158,7 @@ interactions:
       - Origin
       - Accept-Encoding
       X-Amz-Request-Id:
-      - 1739ECD648363E6E
-      X-Content-Type-Options:
-      - nosniff
-      X-Xss-Protection:
-      - 1; mode=block
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - idf-component-manager/1.2.1 (Darwin/22.2.0 arm64; python/3.10.6)
-    method: GET
-    uri: http://host.docker.internal:9000/test-public/components/test/cmp.json
-  response:
-    body:
-      string: '{"namespace": "test", "name": "cmp", "created_at": "2023-01-13T16:53:22.294419+00:00",
-        "featured": false, "versions": [{"downloads_total": 0, "tags": [], "examples":
-        [{"url": "04a5eb64-a9f6-4504-8e5d-51d36f7e8f6c/examples/c23c01bb-3f9d-4be1-9b8e-4df3feff35e7.tgz",
-        "name": "cmp_ex", "docs": {}}], "docs": {"readme": "04a5eb64-a9f6-4504-8e5d-51d36f7e8f6c/readme.md",
-        "changelog": "04a5eb64-a9f6-4504-8e5d-51d36f7e8f6c/changelog.md"}, "discussion":
-        "", "issues": "", "repository": "", "uploader": "kumekay", "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
-        "documentation": "", "component_hash": "807a3ac26a1ecd74fedf6df743132e56274d9d897339017c95fc5bc621ae2e30",
-        "exclusion_list": ["**/__pycache__", "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store",
-        "**/.git/**/*", "**/.svn/**/*", "**/dist/**/*", "**/build/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "description": "This component is an example, to be
-        used with the IDF component manager.", "license": {"url": "04a5eb64-a9f6-4504-8e5d-51d36f7e8f6c/license.txt",
-        "name": "MIT"}, "url": "04a5eb64-a9f6-4504-8e5d-51d36f7e8f6c.tgz", "created_at":
-        "2023-01-13T16:58:31.608982+00:00", "targets": [], "dependencies": [{"namespace":
-        null, "name": null, "spec": ">=4.1", "source": "idf", "is_public": false}],
-        "version": "1.0.1"}, {"downloads_total": 0, "tags": [], "examples": [{"url":
-        "d0104f59-5673-4040-82ab-1e7e9cb244d6/examples/0a74d0cd-172a-4a7e-b953-d9e700aabced.tgz",
-        "name": "cmp_ex", "docs": {}}], "docs": {"readme": "d0104f59-5673-4040-82ab-1e7e9cb244d6/readme.md",
-        "changelog": "d0104f59-5673-4040-82ab-1e7e9cb244d6/changelog.md"}, "discussion":
-        "", "issues": "", "repository": "", "uploader": "kumekay", "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
-        "documentation": "", "component_hash": "705be6e7b666c7ca499280be2b178888fc28bb5984bd088952de771de9459daa",
-        "exclusion_list": ["**/__pycache__", "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store",
-        "**/.git/**/*", "**/.svn/**/*", "**/dist/**/*", "**/build/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "description": "This component is an example, to be
-        used with the IDF component manager.", "license": {"url": "d0104f59-5673-4040-82ab-1e7e9cb244d6/license.txt",
-        "name": "MIT"}, "url": "d0104f59-5673-4040-82ab-1e7e9cb244d6.tgz", "created_at":
-        "2023-01-13T16:53:22.677303+00:00", "targets": [], "dependencies": [{"namespace":
-        null, "name": null, "spec": ">=4.1", "source": "idf", "is_public": false}],
-        "version": "1.0.0"}]}'
-    headers:
-      Accept-Ranges:
-      - bytes
-      Cache-Control:
-      - max-age=300
-      Content-Length:
-      - '2833'
-      Content-Security-Policy:
-      - block-all-mixed-content
-      Content-Type:
-      - binary/octet-stream
-      Date:
-      - Fri, 13 Jan 2023 16:59:01 GMT
-      ETag:
-      - '"91f353acdb5002688dfaa4047f60a1a7"'
-      Last-Modified:
-      - Fri, 13 Jan 2023 16:58:31 GMT
-      Server:
-      - MinIO
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubDomains
-      Vary:
-      - Origin
-      - Accept-Encoding
-      X-Amz-Request-Id:
-      - 1739ECD648FF5BF1
-      X-Content-Type-Options:
-      - nosniff
-      X-Xss-Protection:
-      - 1; mode=block
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - idf-component-manager/1.2.1 (Darwin/22.2.0 arm64; python/3.10.6)
-    method: GET
-    uri: http://host.docker.internal:9000/test-public/04a5eb64-a9f6-4504-8e5d-51d36f7e8f6c.tgz
-  response:
-    body:
-      string: !!binary |
-        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
-        QKcAeAAA
-    headers:
-      Accept-Ranges:
-      - bytes
-      Content-Length:
-      - '2058'
-      Content-Security-Policy:
-      - block-all-mixed-content
-      Content-Type:
-      - binary/octet-stream
-      Date:
-      - Fri, 13 Jan 2023 16:59:01 GMT
-      ETag:
-      - '"392ab011ad71c207a64030dd511cbae3"'
-      Last-Modified:
-      - Fri, 13 Jan 2023 16:58:31 GMT
-      Server:
-      - MinIO
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubDomains
-      Vary:
-      - Origin
-      - Accept-Encoding
-      X-Amz-Request-Id:
-      - 1739ECD6497F102A
-      X-Content-Type-Options:
-      - nosniff
-      X-Xss-Protection:
-      - 1; mode=block
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - idf-component-manager/1.2.1 (Darwin/22.2.0 arm64; python/3.10.6)
-    method: GET
-    uri: http://host.docker.internal:9000/test-public/components/test/cmp.json
-  response:
-    body:
-      string: '{"namespace": "test", "name": "cmp", "created_at": "2023-01-13T16:53:22.294419+00:00",
-        "featured": false, "versions": [{"downloads_total": 0, "tags": [], "examples":
-        [{"url": "04a5eb64-a9f6-4504-8e5d-51d36f7e8f6c/examples/c23c01bb-3f9d-4be1-9b8e-4df3feff35e7.tgz",
-        "name": "cmp_ex", "docs": {}}], "docs": {"readme": "04a5eb64-a9f6-4504-8e5d-51d36f7e8f6c/readme.md",
-        "changelog": "04a5eb64-a9f6-4504-8e5d-51d36f7e8f6c/changelog.md"}, "discussion":
-        "", "issues": "", "repository": "", "uploader": "kumekay", "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
-        "documentation": "", "component_hash": "807a3ac26a1ecd74fedf6df743132e56274d9d897339017c95fc5bc621ae2e30",
-        "exclusion_list": ["**/__pycache__", "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store",
-        "**/.git/**/*", "**/.svn/**/*", "**/dist/**/*", "**/build/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "description": "This component is an example, to be
-        used with the IDF component manager.", "license": {"url": "04a5eb64-a9f6-4504-8e5d-51d36f7e8f6c/license.txt",
-        "name": "MIT"}, "url": "04a5eb64-a9f6-4504-8e5d-51d36f7e8f6c.tgz", "created_at":
-        "2023-01-13T16:58:31.608982+00:00", "targets": [], "dependencies": [{"namespace":
-        null, "name": null, "spec": ">=4.1", "source": "idf", "is_public": false}],
-        "version": "1.0.1"}, {"downloads_total": 0, "tags": [], "examples": [{"url":
-        "d0104f59-5673-4040-82ab-1e7e9cb244d6/examples/0a74d0cd-172a-4a7e-b953-d9e700aabced.tgz",
-        "name": "cmp_ex", "docs": {}}], "docs": {"readme": "d0104f59-5673-4040-82ab-1e7e9cb244d6/readme.md",
-        "changelog": "d0104f59-5673-4040-82ab-1e7e9cb244d6/changelog.md"}, "discussion":
-        "", "issues": "", "repository": "", "uploader": "kumekay", "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
-        "documentation": "", "component_hash": "705be6e7b666c7ca499280be2b178888fc28bb5984bd088952de771de9459daa",
-        "exclusion_list": ["**/__pycache__", "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store",
-        "**/.git/**/*", "**/.svn/**/*", "**/dist/**/*", "**/build/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "description": "This component is an example, to be
-        used with the IDF component manager.", "license": {"url": "d0104f59-5673-4040-82ab-1e7e9cb244d6/license.txt",
-        "name": "MIT"}, "url": "d0104f59-5673-4040-82ab-1e7e9cb244d6.tgz", "created_at":
-        "2023-01-13T16:53:22.677303+00:00", "targets": [], "dependencies": [{"namespace":
-        null, "name": null, "spec": ">=4.1", "source": "idf", "is_public": false}],
-        "version": "1.0.0"}]}'
-    headers:
-      Accept-Ranges:
-      - bytes
-      Cache-Control:
-      - max-age=300
-      Content-Length:
-      - '2833'
-      Content-Security-Policy:
-      - block-all-mixed-content
-      Content-Type:
-      - binary/octet-stream
-      Date:
-      - Fri, 13 Jan 2023 16:59:01 GMT
-      ETag:
-      - '"91f353acdb5002688dfaa4047f60a1a7"'
-      Last-Modified:
-      - Fri, 13 Jan 2023 16:58:31 GMT
-      Server:
-      - MinIO
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubDomains
-      Vary:
-      - Origin
-      - Accept-Encoding
-      X-Amz-Request-Id:
-      - 1739ECD64B02D6FF
-      X-Content-Type-Options:
-      - nosniff
-      X-Xss-Protection:
-      - 1; mode=block
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - idf-component-manager/1.2.1 (Darwin/22.2.0 arm64; python/3.10.6)
-    method: GET
-    uri: http://host.docker.internal:9000/test-public/d0104f59-5673-4040-82ab-1e7e9cb244d6.tgz
-  response:
-    body:
-      string: !!binary |
-        H4sICIKMwWMC/2QwMTA0ZjU5LTU2NzMtNDA0MC04MmFiLTFlN2U5Y2IyNDRkNi50Z3oA7Vz7b9s4
-        Es7P+ivmnB+aAI6sl6U4e7s41VZq4RzbkJz2inskikTb3NXrJLmJcbj//YbyI6/dLoprnG49kwCO
-        xOHMkDI/fiRHkVty6y/j4K7PgogVBy8iykp+61NRdP3+b3FfVTRVPYC7gx3IoqyCAt0f7KdoFiQV
-        T9iPqmnppnZ6qmhyW2+bliEdkHz/0tqBDzGorXZ79WmuPhXNeDTmVUM3FV0xNUVggWVYxgG0dzn+
-        f1l8Xg/VptPv7/nL3wT+G8/xXyP83wn+n/4a/iuW2jmlCWAPRAksI1LC6ES1tODECCx2ctNp6ydR
-        h1mKEgQ3IYtaX2H8fxH+q0Zbtwj/9wb/NfM5/uuE/zvBf22L/4besTTD6MgKIf/eSPci+IUNeFmV
-        cnVXvdz4Nw3jN/FfNQT+q5aF4N82VBz/mtpG/Fd2Of73FP/DBJ//VcJTniySq4L9e8ELFh29dzzf
-        HQ1Bl9vHksSj6VWYJXmWsrRCpRl+X1hx5HtdHxphksthA9xhd3DZc656roc3eRrGi4g1jmmE0fxP
-        8z/N/yTfpgzcrjP0nZddY35+/tcUU38y/yuGrtH8vxP+l+XLgs/mFWgIuuCUecHKkk/BX+Icn5Rw
-        5M+DdDYP+DF0RzCY9CRpzIqEo1KWAi9hzgp2s4RZEaQVi5owLRiDbArhPChmrAlVBkG6hJwVJVbI
-        bqoAyUY6gwBC9C00qzmaKbNpdRsUDJUjCMoyC3mA9iDKwkWCtCOohL8pjxnGVM0ZNPx1jcZx7SRi
-        QQw8BVG2KYJbXs2zRQXYqKrgobDRhBU5ETFsimOe8LUHUb3ukFIYXZTYAhFnE5Is4lPxyepm5Yub
-        mJfzJkRcmL5ZVHizFDdDlopa2I5WVkDJ4lhY4Bh33db76God4SUXHVqtu6j2ezvPksctwS6aLooU
-        XbK6TpRhl9Uef2ZhJe4I9WkWx9mtaFqYpREXLSrPJGmCRcFN9onVbVk97zSrMNRVCOIB5PdPdV1U
-        zgOM/YatOwz9YvcGD5pTCPc4MNKKY9/nWVH7e9pMGf33HfBH55MPtueA68PYG713e04PGraP140m
-        fHAn/dHlBFDDs4eTjzA6B3v4Ef7qDntNcP429hzfh5EH7sV44Dp4b0U43eE7eIv1hqMJDNwLd4JG
-        JyMQDtemXMcXxi4cr9vHS/utO3AnH5tw7k6GwuY5GrVhbHsTt3s5sD0YX3rjke+g+x6aHbrDcw+9
-        OBfOcCKjV7wHznu8AL9vDwa1K/sSo/fq+Lqj8UfPfdefQH806CGNhrcORma/HTgrV9io7sB2L5rQ
-        sy/sd05da4RWvFptHd2HvlPfQn82/nYngo1jM7qj4cTDyya20ptsq35wfacJtuf6okPOvRGaF92J
-        NUa1Eaw3dFZWRFfDoyeCKuL60nfuY+k59gBt+aLyQ2WZyAHx/6/M/+n85/X4/+PzH6ujKbJ+ahjm
-        qUkDfQ/Ec+zehSMn0evxf1Vpa5vzH8PQ6vFvWirx/13IITh3QZLHDLqbDT5BF5EPbjf8BPUMUmAr
-        vZprIydEZhzV/Lnmem7v/EGFJEiDGSsE8aspNCC5rVWX2aIAxx+fCP28yGrqKnYgkUgix63mQQV/
-        F/ae2frn0byq8vKs1cqXOZezYtZa12/xaHqy1T9Z67eORdg8xccWxxipoLlhwXBJUceLWnyKawK4
-        frS3KS+T+HqziFjbf1PCdYJrlusHQUW8wJKsWCK3vr6+XgZJLEUsZ2nE0hCp8ZkEm/5qhUl+Bo1/
-        6TL+NIS2JB0egj12n/VzxKY8Fbw6jXFdlCKbX6T1kgWuP2Uc40/yqzkuJ7Kj4+tVX+UFT3GhEsAt
-        i9EOtgsXb9h8WfjYPto6xq50uKbxqy3beUOSaqtBnl+J9h2Jq2PpPxg6PHT1g/TfOmrCSuJ/xP++
-        c/5X5/9ohm5Yp5T/sw8SpBnOdcWLpoF+Wf6PhuMfKSHlfxL+E/6/Fv63NVMj/N8j/BeEn921Xmz8
-        fxn+a7pG+Z+E/4T/r4f/Or0Atof4LzaCWi8x/r8M/3WtrRP+E/4T/u8Q/01TVdROx5AVs2NaHZ3w
-        fw8kFNldLM5mL3gE+Hv5/4ZqCvzX9LauIvMQ+z9IRuj8bxdyeAjiZOpUkk7AjqLNqVV9RiUKLFFw
-        zu8gCEMeiTy8OF6i1johbF5PG3Va3raKubFVsDwruTgmg0UR10dwESvDgufiUGur39642B53RSyM
-        g2KVj8fL9E0FgTiNq7Jqmd/7MZ7Ve66jb2IRp5BhULJykylXYOQJW5euk/b2EPEo/5/y/yn/f4/n
-        f/H21gv7+N33/3Traf6/3lZo/t/J/L9JCvlzWUU8k+c/rdNC7jNAHuaFCKmTTqZHjb4ohWmRJRvW
-        cJ/L8qd/pA2ROUIDjOZ/Wv//Mdb/2/1fQ8Hlv0b5v/sgz9IfX2H+1zXt6fmfZdL8vxN5mrWK34ez
-        eqb/xArxLtgZvPnpR0NW30gPlu5n8NUyhBdFfAab1N4ZKi9uZFRrsc2LiK211ftvadmqCsZWRxXI
-        UqRtpKqs0NqF5n+a///P+V8z2pZqUP7PXsz/q+XfN5f/Sf//bY/wn/Z/Xw//af+X8D+q31KT5y+I
-        /59b/yla+8n+L/5t0PpvF/Jre70/0LAgISEhISEhISEhISEhISEhISEhISEh+UPL/wBHBSlWAHgA
-        AA==
-    headers:
-      Accept-Ranges:
-      - bytes
-      Content-Length:
-      - '2053'
-      Content-Security-Policy:
-      - block-all-mixed-content
-      Content-Type:
-      - binary/octet-stream
-      Date:
-      - Fri, 13 Jan 2023 16:59:01 GMT
-      ETag:
-      - '"7bafb4f9a598db934405ed30f1a7708e"'
-      Last-Modified:
-      - Fri, 13 Jan 2023 16:53:22 GMT
-      Server:
-      - MinIO
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubDomains
-      Vary:
-      - Origin
-      - Accept-Encoding
-      X-Amz-Request-Id:
-      - 1739ECD64B7FFE39
+      - 17427D834DE6DD31
       X-Content-Type-Options:
       - nosniff
       X-Xss-Protection:

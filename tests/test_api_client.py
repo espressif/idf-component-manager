@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import sys
@@ -83,7 +83,7 @@ class TestAPIClient(object):
         'tests/fixtures/vcr_cassettes/test_api_cache.yaml',
         record_mode='none',
     )
-    def test_api_cache(self, base_url, monkeypatch):
+    def test_api_cache(self, base_url, monkeypatch, tmp_path):
         """
         This test is checking api caching with using the same requests 2 times.
         In test_api_cache.yaml we have just one request, so if test is passed,
@@ -91,12 +91,13 @@ class TestAPIClient(object):
         WARNING: Don't overwrite the test_api_cache.yaml file. It can break the test.
         """
 
-        # vcrpy 2.0.1 compatimble with py3.4 doesn't play nice with caching
+        # vcrpy 2.0.1 compatible with py3.4 doesn't play nice with caching
         # It was manually checked that cache itself works
         if sys.version_info[0] == 3 and sys.version_info[1] == 4:
             return
 
         monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '180')
+        monkeypatch.setenv('IDF_COMPONENT_CACHE_PATH', str(tmp_path))
         client = APIClient(base_url=base_url)
 
         client.component(component_name='test/cmp')

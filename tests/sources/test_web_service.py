@@ -18,7 +18,7 @@ from idf_component_tools.sources.web_service import download_archive
 class TestComponentWebServiceSource(object):
     EXAMPLE_HASH = 'ed55692af0eed2feb68f6d7a2ef95a0142b20518a53a0ceb7c699795359d7dc5'
     LOCALHOST_HASH = '02d9269ed8690352e6bfc5f6a6c60e859fa6cbfc56efe75a1199b35bdd6c54c8'
-    CMP_HASH = 'b9d411534df3fd6c6c6291d1e66e7b7f28921f76bc118c321651af1be60cc5d3'
+    CMP_HASH = 'c8ac77c6e836c722feb8d48ec7a22a784c1e6c9c9b666650d80c73488211e768'
 
     def test_service_is_me(self):
         assert WebServiceSource.is_me('test', None)
@@ -33,8 +33,12 @@ class TestComponentWebServiceSource(object):
 
     # If you re-record this cassette, make sure the file downloaded only once
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_fetch_webservice.yaml')
-    def test_download(self, release_component_path, tmp_path):
+    def test_download(self, monkeypatch, release_component_path, tmp_path):
+        monkeypatch.delenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES')
+
         cache_dir = str(tmp_path / 'cache')
+        monkeypatch.setenv('IDF_COMPONENT_CACHE_PATH', cache_dir)
+
         source = WebServiceSource(
             source_details={'service_url': 'https://example.com/api'}, system_cache_path=cache_dir)
         cmp = SolvedComponent('test/cmp', '1.0.1', source, component_hash=self.CMP_HASH)
