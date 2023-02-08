@@ -16,6 +16,16 @@ def service_config(tmp_path):
     return Config({}).validate().profiles.get('default', {})
 
 
+@fixture(scope='module', autouse=True)
+def ignore_local_token():
+    token = os.environ.pop('IDF_COMPONENT_API_TOKEN', None)
+
+    yield
+
+    if token is not None:
+        os.environ['IDF_COMPONENT_API_TOKEN'] = token
+
+
 @fixture()
 def config_path(tmp_path):
     config_path = os.path.join(str(tmp_path), 'idf_component_manager.yml')

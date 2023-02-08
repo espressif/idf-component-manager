@@ -103,8 +103,8 @@ def get_dependencies(component_dict):
         if dependencies[library].get('include', None)
     ]
     libraries_for_manifest = [
-        library for library in dependencies.keys()
-        if 'git' in dependencies[library].keys() or 'version' in dependencies[library].keys()
+        library for library in dependencies.keys() if 'git' in dependencies[library].keys()
+        or 'version' in dependencies[library].keys() or 'path' in dependencies[library].keys()
     ]
 
     return include_list, libraries_for_manifest

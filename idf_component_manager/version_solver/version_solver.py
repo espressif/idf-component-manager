@@ -4,7 +4,9 @@
 from idf_component_tools.errors import DependencySolveError, SolverError
 from idf_component_tools.manifest import (
     ComponentRequirement, Manifest, ProjectRequirements, SolvedComponent, SolvedManifest)
+from idf_component_tools.sources import LocalSource
 
+from ..utils import print_info
 from .helper import PackageSource
 from .mixology.package import Package
 from .mixology.version_solver import VersionSolver as Solver
@@ -30,8 +32,22 @@ class VersionSolver(object):
         self._solver = Solver(self._source)
         self._target = None
         self._overriders = set()  # type: set[str]
+        self._local_root_requirements = dict()  # type: dict[str, ComponentRequirement]
 
     def solve(self):  # type: () -> SolvedManifest
+        # scan all root local requirements
+        # root local requirements defined in the file system manifest files would have higher priorities
+        for manifest in self.requirements.manifests:
+            for requirement in manifest.dependencies:  # type: ComponentRequirement
+                if isinstance(requirement.source, LocalSource):
+                    _recorded_requirement = self._local_root_requirements.get(requirement.name)
+                    if _recorded_requirement:
+                        # can't specify two different root local source dependencies
+                        if _recorded_requirement.source.hash_key != requirement.source.hash_key:
+                            raise ValueError('Already defined root local requirement {}'.format(repr(requirement)))
+                    else:
+                        self._local_root_requirements[requirement.name] = requirement
+
         for manifest in self.requirements.manifests:
             self.solve_manifest(manifest)
 
@@ -51,9 +67,20 @@ class VersionSolver(object):
 
     def solve_manifest(self, manifest):  # type: (Manifest) -> None
         for requirement in manifest.dependencies:  # type: ComponentRequirement
-            self._source.root_dep(Package(requirement.name, requirement.source), requirement.version_spec)
+            # replace root requirement to local one if exists
+            if not isinstance(requirement.source, LocalSource) and requirement.name in self._local_root_requirements:
+                _requirement = self._local_root_requirements[requirement.name]
+                print_info(
+                    'replace manifest dependency {} to {}'.format(
+                        requirement,
+                        self._local_root_requirements[requirement.name],
+                    ))
+            else:
+                _requirement = requirement
+
+            self._source.root_dep(Package(_requirement.name, _requirement.source), _requirement.version_spec)
             try:
-                self.solve_component(requirement)
+                self.solve_component(_requirement)
             except DependencySolveError as e:
                 raise SolverError(
                     'Solver failed processing dependency "{dependency}" '
@@ -75,11 +102,28 @@ class VersionSolver(object):
             if requirement.source.is_overrider:
                 self._overriders.add(requirement.name)
 
+            deps = {}
+            for req in version.dependencies:
+                # replace version requirement to local one if exists
+                if req.name in self._local_root_requirements:
+                    print_info(
+                        'replace component {}({}) dependency {} to {}'.format(
+                            requirement.name,
+                            version.text,
+                            req,
+                            self._local_root_requirements[req.name],
+                        ))
+                    _req = self._local_root_requirements[req.name]
+                else:
+                    _req = req
+
+                deps[Package(_req.name, _req.source)] = _req.version_spec
+
             self._source.add(
                 Package(requirement.name, requirement.source),
                 version,
-                deps={Package(req.name, req.source): req.version_spec
-                      for req in version.dependencies} if version.dependencies else {})
+                deps=deps,
+            )
 
             if version.dependencies:
                 for dep in version.dependencies:
