@@ -31,7 +31,7 @@ def test_autocomplete(shell, monkeypatch):
         child = pexpect.spawn('{} -i'.format(shell))
         child.logfile = fw
         child.expect([r'\$ ', '# ', '> '], timeout=5)
-        child.sendline('compote autocomplete --shell {}'.format(shell))
+        child.sendline('compote autocomplete --shell {} --install'.format(shell))
         # test autocomplete
         child.expect([r'\$ ', '# ', '> '], timeout=5)
         child.sendline('exec {}'.format(shell))  # reload

@@ -18,12 +18,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `IDF_COMPONENT_OVERWRITE_MANAGED_COMPONENTS` environment variable to allow overwrite files in the managed_component directory, even if they have been modified by the user
 - Add documentation project for the component manager and Espressif component registry
 - Treat local source dependency priority higher
+- Add `--install` flag to `compote autocomplete` to create the completion files and append the sourcing code into the rc files. By default, print the completion functions to the console.
+- Add `--dry-run` flag to `compote autocomplete --install` to simulate the install script.
 
 ### Fixed
 
 - Fix deprecation warnings not showing up in the terminal
 - Fix regular expression for repository URL validation
 - Correct spelling of error message for unsatisfied dependency
+- Stop injecting shell config files by default in `compote autocomplete`
 
 ## [1.2.2] 2023-01-17
 
