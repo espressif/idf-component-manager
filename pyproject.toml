@@ -1,0 +1,78 @@
+[tool.poetry]
+name = "idf-component-manager"
+version = "0.0.0"
+description = "Espressif IDF Component Manager"
+authors = []
+license = "Apache2"
+readme = "README.md"
+packages = [
+    {include = "idf_component_manager"},
+    {include = "idf_component_tools"}
+]
+
+
+[tool.poetry.dependencies]
+python = ">=3.7,<4.0"
+cachecontrol = {version = '*', extras = ["filecache"]}
+click = [
+    {version = "==7.0", python = "3.4.*"},
+    {version = "<8.0.0", python = "3.5.*"},
+    {version = "<8.1.0", python = "3.6.*"}
+]
+colorama = '*'
+future = '*'
+pyyaml = [
+    {version = "<5.3", python = "<=3.4"},
+    {version = "*", python = ">3.4"}
+    ] # Last version with Python 3.4 support is 5.2
+requests = "*"
+requests-file = "*"
+requests-toolbelt = "*"
+schema = "*"
+six = "*"
+tqdm = '*'
+poetry-dynamic-versioning = {extras = ["plugin"], version = "^0.21.3"}
+
+
+[tool.poetry.dev-dependencies]
+coverage = '*'
+flake8 = '*'
+flake8-quotes = '*'
+mypy = {extras = ["python2"], version = '*'}
+pre-commit = '*'
+pylint = "*"
+pytest = '*'
+pytest-cov = '*'
+requests-mock = '*'
+pytest-mock = '*'
+rope = '*'
+setuptools = "*"
+twine = "*"
+unify = '*'
+vcrpy = '<5'
+wheel = "*"
+yapf = '*'
+jinja2 = "*"
+comment-parser = "*"
+thefuzz = "*"
+jsonschema = "*"
+pexpect = "*"
+pytest-rerunfailures = "*"
+sphinx-rtd-theme = "==1.1.1"
+sphinx-copybutton = "*"
+sphinx-tabs = "*"
+
+[tool.poetry.scripts]
+compote = { callable = "idf_component_manager.cli:safe_cli"}
+
+[tool.poetry-dynamic-versioning]
+enable = true
+
+[tool.poetry-dynamic-versioning.substitution]
+folders = [
+    {path = "idf_component_tools"}
+]
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+build-backend = "poetry_dynamic_versioning.backend"

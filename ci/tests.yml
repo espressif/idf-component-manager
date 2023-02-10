@@ -6,6 +6,17 @@ workflow:
   rules:
     - when: always
 
+build_wheel:
+  tags:
+    - test
+    - internet
+  image: python:3.11-bullseye
+  script:
+    - python setup.py bdist_wheel --universal
+  artifacts:
+    paths:
+      - "dist/*.whl"
+
 test:
   stage: test
   tags:
@@ -15,10 +26,13 @@ test:
     matrix:
       - PYTHON_IMAGE_TAG: [2.7-buster, 3.4-stretch, 3.5-buster, 3.11-bullseye]
   image: python:${PYTHON_IMAGE_TAG}
+  needs:
+    - build_wheel
   before_script:
-    - pip install pytest pytest-cov pytest-mock vcrpy "jsonschema==2.5.1;python_version=='3.4'" "jsonschema;python_version!='3.4'" .
+    - pip install dist/*.whl
+    - pip install pytest pytest-cov pytest-mock vcrpy "jsonschema==2.5.1;python_version=='3.4'" "jsonschema;python_version!='3.4'"
   script:
-    - py.test --cov=. --cov-report=xml
+    - pytest --cov=. --cov-report=xml
   artifacts:
     reports:
       coverage_report:
