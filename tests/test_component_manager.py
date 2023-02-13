@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 '''Test Core commands'''
 import os
@@ -73,8 +73,9 @@ def test_check_only_upload_component(mock_registry, pre_release_component_path):
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_allow_existing_component.yaml')
-def test_allow_existing_component(mock_registry, release_component_path):
-    manager = ComponentManager(path=release_component_path)
+def test_allow_existing_component(mock_registry, release_component_path, tmp_path):
+    shutil.copytree(release_component_path, str(tmp_path / 'cmp'))
+    manager = ComponentManager(path=str(tmp_path / 'cmp'))
 
     manager.upload_component(
         'cmp',
