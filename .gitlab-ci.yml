@@ -44,6 +44,24 @@ prepare_tests:
     paths:
       - ci/tests.yml
 
+build-docs:
+  stage: test
+  image: python:3.10-slim-bullseye
+  tags:
+    - internet
+  needs: []  # run immediately
+  script:
+    - pip install -r docs/requirements.txt
+    - sphinx-build docs/en html_output
+  after_script:
+    - 'echo "preview link: ${GITLAB_PAGE_HTTPS_URL}/-/idf-component-manager/-/jobs/${CI_JOB_ID}/artifacts/html_output/index.html"'
+  artifacts:
+    paths:
+      - html_output/
+    when: always
+    expire_in: 4 days
+    expose_as: "docs preview"
+
 tests:
   stage: test
   needs:
