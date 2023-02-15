@@ -18,7 +18,7 @@ try:
     from typing import TYPE_CHECKING, Callable
 
     if TYPE_CHECKING:
-        from ..manifest import ComponentWithVersions, SolvedComponent
+        from ..manifest import ComponentWithVersions, ManifestManager, SolvedComponent
 except ImportError:
     pass
 
@@ -32,7 +32,12 @@ class BaseSource(object):
     __metaclass__ = ABCMeta
     NAME = 'base'
 
-    def __init__(self, source_details=None, system_cache_path=None):  # type: (dict | None, str | None) -> None
+    def __init__(
+            self,
+            source_details=None,  # type: dict | None
+            system_cache_path=None,  # type: str | None
+            manifest_manager=None,  # type: ManifestManager | None
+    ):  # type: (...) -> None
         self._source_details = source_details or {}
         self._hash_key = None
 
@@ -45,6 +50,8 @@ class BaseSource(object):
         unknown_keys = [key for key in self._source_details.keys() if key not in self.known_keys()]
         if unknown_keys:
             raise SourceError('Unknown keys in dependency details: %s' % ', '.join(unknown_keys))
+
+        self._manifest_manager = manifest_manager
 
     def _hash_values(self):
         return self.name, self.hash_key
@@ -66,10 +73,15 @@ class BaseSource(object):
         return '{}({})'.format(type(self).__name__, self.hash_key)
 
     @staticmethod
-    def fromdict(name, details):  # type: (str, dict) -> BaseSource
-        '''Build component source by dict'''
+    def fromdict(
+            name,  # type: str
+            details,  # type: dict
+            manifest_manager=None,  # type: ManifestManager | None
+    ):  # type: (...) -> BaseSource
+        """Build component source by dict"""
         for source_class in tools.sources.KNOWN_SOURCES:
-            source = source_class.build_if_me(name, details)
+            # MARKER
+            source = source_class.build_if_me(name, details, manifest_manager)
 
             if source:
                 return source
@@ -110,9 +122,9 @@ class BaseSource(object):
         return source_schema
 
     @classmethod
-    def build_if_me(cls, name, details):
+    def build_if_me(cls, name, details, manifest_manager=None):
         """Returns source if details are matched, otherwise returns None"""
-        return cls(details) if cls.is_me(name, details) else None
+        return cls(details, manifest_manager=manifest_manager) if cls.is_me(name, details) else None
 
     @property
     def source_details(self):

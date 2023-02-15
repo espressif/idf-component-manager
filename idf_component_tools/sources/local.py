@@ -4,8 +4,6 @@
 import os
 from pathlib import Path
 
-from idf_component_manager.context_manager import get_ctx
-
 from ..errors import SourceError, warn
 from ..manifest import MANIFEST_FILENAME, ComponentWithVersions, HashedComponentVersion, ManifestManager
 from .base import BaseSource
@@ -32,18 +30,13 @@ class LocalSource(BaseSource):
 
         self.is_overrider = 'override_path' in source_details
         self._raw_path = Path(source_details.get('override_path' if self.is_overrider else 'path'))
-        self._manifest_path = None
-        try:
-            self._manifest_path = Path(get_ctx('manifest')['manifest_path'])
-        except TypeError:
-            pass
 
     @property
     def _path(self):  # type: () -> Path
         try:
-            if self._manifest_path:
-                path = (self._manifest_path.parent / self._raw_path).resolve()
-            elif not self._manifest_path and self._raw_path.is_absolute():
+            if self._manifest_manager:
+                path = (Path(self._manifest_manager.path).parent / self._raw_path).resolve()
+            elif not self._manifest_manager and self._raw_path.is_absolute():
                 path = self._raw_path.resolve()
             else:
                 raise ManifestContextError(
