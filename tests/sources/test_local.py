@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -8,8 +8,7 @@ import warnings
 
 from pytest import raises
 
-from idf_component_manager.context_manager import make_ctx
-from idf_component_tools.manifest import MANIFEST_FILENAME, ComponentVersion, SolvedComponent
+from idf_component_tools.manifest import ComponentVersion, ManifestManager, SolvedComponent
 from idf_component_tools.sources import LocalSource
 from idf_component_tools.sources.local import ManifestContextError, SourcePathError
 
@@ -66,11 +65,11 @@ def test_local_relative_path_not_exists(tmp_path):
     sub_component_path = tmp_path / 'sub'
     os.makedirs(str(sub_component_path))
 
-    with make_ctx('manifest', manifest_path=str(main_component_path / MANIFEST_FILENAME)):
-        with raises(SourcePathError):
-            source = LocalSource(source_details={'path': '../sub'})
-            cmp = SolvedComponent('test/cmp', '1.0.1', source)
-            source.download(cmp, str(main_component_path))
+    with raises(SourcePathError):
+        source = LocalSource(
+            source_details={'path': '../sub'}, manifest_manager=ManifestManager(str(main_component_path), 'main'))
+        cmp = SolvedComponent('test/cmp', '1.0.1', source)
+        source.download(cmp, str(main_component_path))
 
 
 def test_local_relative_path_success(tmp_path):
@@ -79,11 +78,11 @@ def test_local_relative_path_success(tmp_path):
     sub_component_path = tmp_path / 'sub'
     os.makedirs(str(sub_component_path))
 
-    with make_ctx('manifest', manifest_path=str(main_component_path / MANIFEST_FILENAME)):
-        source = LocalSource(source_details={'path': '../../sub'})
-        cmp = SolvedComponent('test/cmp', '1.0.1', source)
-        assert source.download(cmp, str(main_component_path))
-        assert source._path.name == sub_component_path.name  # Path.name for Python <3.6 compatibility
+    source = LocalSource(
+        source_details={'path': '../../sub'}, manifest_manager=ManifestManager(str(main_component_path), 'main'))
+    cmp = SolvedComponent('test/cmp', '1.0.1', source)
+    assert source.download(cmp, str(main_component_path))
+    assert source._path.name == sub_component_path.name  # Path.name for Python <3.6 compatibility
 
 
 def test_local_path_name_warning(release_component_path):
