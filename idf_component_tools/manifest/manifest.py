@@ -114,7 +114,7 @@ class Manifest(object):
             if not isinstance(details, Mapping):
                 details = {'version': details}
 
-            source = tools.sources.BaseSource.fromdict(name, details)
+            source = tools.sources.BaseSource.fromdict(name, details, manifest_manager)
             component = ComponentRequirement(
                 name,
                 source,
