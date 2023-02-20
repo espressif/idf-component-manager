@@ -14,24 +14,16 @@ packages = [
 [tool.poetry.dependencies]
 python = ">=3.7,<4.0"
 cachecontrol = {version = '*', extras = ["filecache"]}
-click = [
-    {version = "==7.0", python = "3.4.*"},
-    {version = "<8.0.0", python = "3.5.*"},
-    {version = "<8.1.0", python = "3.6.*"}
-]
 colorama = '*'
 future = '*'
-pyyaml = [
-    {version = "<5.3", python = "<=3.4"},
-    {version = "*", python = ">3.4"}
-    ] # Last version with Python 3.4 support is 5.2
+pyyaml = "*" # Last version with Python 3.4 support is 5.2
 requests = "*"
 requests-file = "*"
 requests-toolbelt = "*"
 schema = "*"
 six = "*"
 tqdm = '*'
-poetry-dynamic-versioning = {extras = ["plugin"], version = "^0.21.3"}
+poetry-dynamic-versioning = {extras = ["plugin"], version = "^0.21.4"}
 
 
 [tool.poetry.dev-dependencies]
@@ -58,9 +50,11 @@ thefuzz = "*"
 jsonschema = "*"
 pexpect = "*"
 pytest-rerunfailures = "*"
+
+[tool.poetry.group.docs.dependencies]
 sphinx-rtd-theme = "==1.1.1"
-sphinx-copybutton = "*"
-sphinx-tabs = "*"
+sphinx-copybutton = "==0.5.1"
+sphinx-tabs = "==3.4.0"
 
 [tool.poetry.scripts]
 compote = { callable = "idf_component_manager.cli:safe_cli"}

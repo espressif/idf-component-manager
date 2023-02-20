@@ -27,15 +27,17 @@ integration_test:
         PYTHON_IMAGE_TAG: [3.7-bullseye, 3.10-bullseye]
         REQ_FILE: ["tools/requirements/requirements.core.txt"]
   before_script:
+    # Get the version of component manager
+    - version=$(grep '__version__' idf_component_tools/__version__.py | cut -d "'" -f 2)
     - UNESCAPED_IDF_BRANCH=$(echo $IDF_BRANCH | sed -e "s/release-v/release\/v/g")
     - git clone ${IDF_REPO:-https://github.com/espressif/esp-idf.git} --recursive -b $UNESCAPED_IDF_BRANCH --depth 1
     - cd ./esp-idf/
     - ORIGINAL_REQ=$(grep idf-component-manager ${REQ_FILE:-requirements.txt})
     # Replace component manager in the requirements file with local copy
-    - sed -i "\+${ORIGINAL_REQ}+c${CI_PROJECT_DIR}" ${REQ_FILE:-requirements.txt}
+    - sed -i "\+${ORIGINAL_REQ}+c${CI_PROJECT_DIR}/dist/idf_component_manager-${version}-py2.py3-none-any.whl" ${REQ_FILE:-requirements.txt}
     - ./install.sh
     # And replace it back to avoid export.sh check dependecies error
-    - sed -i "\+${CI_PROJECT_DIR}+c${ORIGINAL_REQ}" ${REQ_FILE:-requirements.txt}
+    - sed -i "\+${CI_PROJECT_DIR}/dist/idf_component_manager-${version}-py2.py3-none-any.whl+c${ORIGINAL_REQ}" ${REQ_FILE:-requirements.txt}
     - . ./export.sh
     - cd ..
     - apt update && apt install -y fish zsh
