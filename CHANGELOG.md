@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Pin urllib version to <2 to avoid incompatibility with older python versions
+- Components with optional dependencies could be uploaded normally
 
 ## [1.2.2] 2023-01-17
 
