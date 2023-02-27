@@ -29,8 +29,8 @@ def list_dir(folder):
     return res
 
 
-def test_init_project():
-    tempdir = tempfile.mkdtemp()
+def test_init_project(tmp_path):
+    tempdir = str(tmp_path)
     try:
         os.makedirs(os.path.join(tempdir, 'main'))
         os.makedirs(os.path.join(tempdir, 'components', 'foo'))
@@ -52,6 +52,42 @@ def test_init_project():
         manager.add_dependency('idf/comp<=1.0.0', component='foo')
         manifest_manager = ManifestManager(foo_manifest_path, 'foo')
         assert manifest_manager.manifest_tree['dependencies']['idf/comp'] == '<=1.0.0'
+
+    finally:
+        shutil.rmtree(tempdir)
+
+
+def test_init_project_with_path(tmp_path):
+    tempdir = str(tmp_path)
+    try:
+        os.makedirs(os.path.join(tempdir, 'src'))
+        src_path = os.path.join(tempdir, 'src')
+        src_manifest_path = os.path.join(src_path, MANIFEST_FILENAME)
+
+        outside_project_path = str(Path(tempdir).parent)
+        outside_project_path_error_match = 'Directory ".*" is not under project directory!'
+        component_and_path_error_match = 'Cannot determine manifest directory.'
+
+        manager = ComponentManager(path=tempdir)
+        manager.create_manifest(path=src_path)
+
+        with pytest.raises(FatalError, match=outside_project_path_error_match):
+            manager.create_manifest(path=outside_project_path)
+
+        with pytest.raises(FatalError, match=component_and_path_error_match):
+            manager.create_manifest(component='src', path=src_path)
+
+        manager.add_dependency('idf/comp<=1.0.0', path=src_path)
+        manifest_manager = ManifestManager(src_manifest_path, 'src')
+
+        assert manifest_manager.manifest_tree['dependencies']['idf/comp'] == '<=1.0.0'
+
+        with pytest.raises(FatalError, match=outside_project_path_error_match):
+            manager.create_manifest(path=outside_project_path)
+
+        with pytest.raises(FatalError, match=component_and_path_error_match):
+            manager.add_dependency('idf/comp<=1.0.0', component='src', path=src_path)
+
     finally:
         shutil.rmtree(tempdir)
 

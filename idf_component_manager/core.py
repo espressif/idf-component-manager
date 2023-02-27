@@ -19,7 +19,7 @@ import requests
 from idf_component_manager.utils import print_info, print_warn
 from idf_component_tools.api_client_errors import APIClientError, NetworkConnectionError, VersionNotFound
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
-from idf_component_tools.build_system_tools import build_name
+from idf_component_tools.build_system_tools import build_name, is_component
 from idf_component_tools.environment import getenv_int
 from idf_component_tools.errors import (
     FatalError, GitError, ManifestError, NothingToDoError, VersionAlreadyExistsError, VersionNotFoundError)
@@ -74,6 +74,17 @@ def general_error_handler(func):
     return wrapper
 
 
+def _create_manifest_if_missing(manifest_dir):  # type: (str) -> bool
+    manifest_filepath = os.path.join(manifest_dir, MANIFEST_FILENAME)
+    if os.path.exists(manifest_filepath):
+        return False
+    example_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'templates', 'idf_component_template.yml')
+    create_directory(manifest_dir)
+    shutil.copyfile(example_path, manifest_filepath)
+    print_info('Created "{}"'.format(manifest_filepath))
+    return True
+
+
 class ComponentManager(object):
     def __init__(self, path, lock_path=None, manifest_path=None, interface_version=0):
         # type: (str, Optional[str], Optional[str], int) -> None
@@ -112,30 +123,42 @@ class ComponentManager(object):
 
         self.interface_version = interface_version
 
-    def _get_manifest(self, component='main'):  # type: (str) -> Tuple[str, bool]
-        base_dir = self.path if component == 'main' else self.components_path
-        manifest_dir = os.path.join(base_dir, component)
+    def _get_manifest_dir(self, component='main', path=None):  # type: (str, Optional[str]) -> str
+        if component != 'main' and path is not None:
+            raise FatalError('Cannot determine manifest directory. Please specify either component or path.')
+
+        # If path is specified
+        if path is not None:
+            manifest_dir = os.path.abspath(path)
+        # If the current working directory is in the context of a component
+        elif is_component(Path(os.getcwd())):
+            manifest_dir = os.getcwd()
+        else:
+            # If the current working directory is in the context of a project
+            base_dir = self.path if component == 'main' else self.components_path
+            manifest_dir = os.path.join(base_dir, component)
 
         if not os.path.isdir(manifest_dir):
             raise FatalError(
                 'Directory "{}" does not exist! '
+                'Please specify a valid component under {} or try to use --path'.format(manifest_dir, self.path))
+        if not manifest_dir.startswith(self.path):
+            raise FatalError(
+                'Directory "{}" is not under project directory! '
                 'Please specify a valid component under {}'.format(manifest_dir, self.path))
 
+        return manifest_dir
+
+    def _get_manifest(self, component='main', path=None):  # type: (str, Optional[str]) -> Tuple[str, bool]
+        manifest_dir = self._get_manifest_dir(component=component, path=path)
         manifest_filepath = os.path.join(manifest_dir, MANIFEST_FILENAME)
-        created = False
         # Create manifest file if it doesn't exist in work directory
-        if not os.path.exists(manifest_filepath):
-            example_path = os.path.join(
-                os.path.dirname(os.path.realpath(__file__)), 'templates', 'idf_component_template.yml')
-            create_directory(manifest_dir)
-            shutil.copyfile(example_path, manifest_filepath)
-            print_info('Created "{}"'.format(manifest_filepath))
-            created = True
-        return manifest_filepath, created
+        manifest_created = _create_manifest_if_missing(manifest_dir)
+        return manifest_filepath, manifest_created
 
     @general_error_handler
-    def create_manifest(self, component='main'):  # type: (str) -> None
-        manifest_filepath, created = self._get_manifest(component)
+    def create_manifest(self, component='main', path=None):  # type: (str, Optional[str]) -> None
+        manifest_filepath, created = self._get_manifest(component=component, path=path)
         if not created:
             print_info('"{}" already exists, skipping...'.format(manifest_filepath))
 
@@ -179,8 +202,16 @@ class ComponentManager(object):
         print_info('Example "{}" successfully downloaded to {}'.format(example_name, os.path.abspath(project_path)))
 
     @general_error_handler
-    def add_dependency(self, dependency, component='main'):  # type: (str, str) -> None
-        manifest_filepath, _ = self._get_manifest(component)
+    def add_dependency(self, dependency, component='main', path=None):  # type: (str, str, Optional[str]) -> None
+
+        manifest_filepath, _ = self._get_manifest(component=component, path=path)
+
+        if path is not None:
+            component_path = os.path.abspath(path)
+            component = os.path.basename(component_path)
+        # If the path refers to a component context we need to use the components name as the component
+        elif is_component(Path(os.getcwd())):
+            component = os.path.basename(os.path.normpath(self.path))
 
         match = re.match(WEB_DEPENDENCY_REGEX, dependency)
         if match:
@@ -198,6 +229,7 @@ class ComponentManager(object):
                 'Invalid dependency version requirement: {}. Please use format like ">=1" or "*".'.format(spec))
 
         name = WebServiceSource().normalized_name(name)
+
         manifest_manager = ManifestManager(manifest_filepath, component)
         manifest = manifest_manager.load()
 
