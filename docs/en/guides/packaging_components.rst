@@ -61,7 +61,7 @@ Here's the minimal ``idf_component.yml``:
 
    version: "0.0.1"
 
-As you can see, the ``version`` field is the only required field for uploading a component. The version scheme is described :ref:`here <versioning:Versioning Scheme>`.
+As you can see, the ``version`` field is the only required field for uploading a component. You can check the  :ref:`versioning scheme <reference/versioning:Versioning Scheme>`.
 
 It's recommended to add extra metadata information for your component. For example:
 
@@ -229,7 +229,7 @@ Files and directories that are excluded by default can be found `here <https://g
 Add Dependencies
 ^^^^^^^^^^^^^^^^
 
-When your component depends on another component, you need to add this dependency relationship in your component's manifest file as well. Our :ref:`version solver <versioning:Version Solving>` would collect all dependencies and calculate the final versioning solution. For example:
+When your component depends on another component, you need to add this dependency relationship in your component's manifest file as well. Our :ref:`version solver <reference/versioning:Version Solving>` would collect all dependencies and calculate the final versioning solution. For example:
 
 .. code-block:: yaml
 
@@ -239,11 +239,42 @@ When your component depends on another component, you need to add this dependenc
      example/cmp:
        version: "^3.0.0"
 
-Please refer to our :ref:`version range specification <versioning:Range Specifications>` for detailed information on the ``version`` field.
+Please refer to our :ref:`version range specification <reference/versioning:Range Specifications>` for detailed information on the ``version`` field.
 
 .. note::
 
    Unlike the other dependencies, ``idf`` is a keyword that points to ESP-IDF itself, not a component.
+
+Add example projects
+^^^^^^^^^^^^^^^^^^^^
+
+You may want to provide example projects to help users get started with your component. You place them in the ``examples`` directory inside your component. Examples are discovered recursively in subdirectories at this path. A directory with ``CMakeLists.txt`` that registers a project is considered as an example.
+
+When an archive with the component is uploaded to the registry all examples are repacked to individual archives and then ``examples`` directory is removed from the component archive. So every example must be self-sufficient, i.e. doesn't depend on any files in the examples directory except its own directory.
+
+Adding dependency on the component for examples
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When a component repo is cloned from a git repository, then it's essential that for the example in the ``examples`` directory to use the component that lays right here in the tree. However, when a single example is downloaded using CLI from the registry, and there is no dependency laying around it must be downloaded from the registry.
+
+This behavior can be achieved by setting ``override_path`` for dependency in the manifest file. When ``override_path`` is defined for a dependency from the registry it will be used with higher priority. When you download an example from the registry, it doesn't contain ``override_path``, because all ``override_path`` fields are automatically removed. During the build process, it won't try to look for the component nearby.
+
+I.E. for a component named ``cmp`` published in the registry as ``watman/cmp`` the ``idf_component.yml`` manifest in the ``examples/hello_world/main`` may look like:
+
+.. code-block:: yaml
+
+    version: "1.2.7"
+    description: My hello_world example
+    dependencies:
+    watman/cmp:
+      version: '~1.0.0'
+      override_path: '../../../' # three levels up, pointing the directory with the component itself
+
+
+.. note::
+
+    You shouldn't add your component's directory to ``EXTRA_COMPONENT_DIRS`` in example's ``CMakeLists.txt``, because it will break the examples downloaded with the repository.
+
 
 Upload Component with GitHub Action
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

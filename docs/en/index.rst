@@ -13,7 +13,16 @@ Getting Started
 .. toctree::
    :maxdepth: 2
 
-   getting_started
+   getting_started/index
+
+Reference
+---------
+
+.. toctree::
+   :maxdepth: 2
+
+   reference/manifest_file
+   reference/versioning
 
 Guides
 ------
@@ -21,5 +30,5 @@ Guides
 .. toctree::
    :maxdepth: 2
 
-   versioning
-   packaging_components
+   guides/packaging_components
+   guides/updating_component_manager

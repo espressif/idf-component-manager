@@ -12,11 +12,11 @@ packages = [
 
 
 [tool.poetry.dependencies]
-python = ">=3.7,<4.0"
 cachecontrol = { version = '*', extras = ["filecache"] }
-colorama = '*'
 click = '*'
+colorama = '*'
 future = '*'
+python = ">=3.7,<4.0"
 pyyaml = "*"
 requests = "*"
 requests-file = "*"
@@ -26,33 +26,34 @@ six = "*"
 tqdm = '*'
 
 [tool.poetry.dev-dependencies]
+comment-parser = "*"
 coverage = '*'
 flake8 = '*'
 flake8-quotes = '*'
+jinja2 = "*"
+jsonschema = "*"
 mypy = { extras = ["python2"], version = '*' }
+pexpect = "*"
 pre-commit = '*'
 pylint = "*"
 pytest = '*'
 pytest-cov = '*'
-requests-mock = '*'
 pytest-mock = '*'
+pytest-rerunfailures = "*"
+requests-mock = '*'
 rope = '*'
 setuptools = "*"
+thefuzz = "*"
 twine = "*"
 unify = '*'
 vcrpy = '<5'
 wheel = "*"
 yapf = '*'
-jinja2 = "*"
-comment-parser = "*"
-thefuzz = "*"
-jsonschema = "*"
-pexpect = "*"
-pytest-rerunfailures = "*"
 
 [tool.poetry.group.docs.dependencies]
-sphinx-rtd-theme = "==1.1.1"
+sphinx_collapse = "==0.1.2"
 sphinx-copybutton = "==0.5.1"
+sphinx-rtd-theme = "==1.1.1"
 sphinx-tabs = "==3.4.0"
 
 [tool.poetry.scripts]
