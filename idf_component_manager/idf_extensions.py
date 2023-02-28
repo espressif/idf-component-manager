@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import sys
@@ -91,6 +91,12 @@ def action_extensions(base_actions, project_path):
         for index, task in enumerate(copy_tasks):
             if task.name == 'fullclean':
                 tasks.insert(index + 1, ctx.invoke(ctx.command.get_command(ctx, 'remove_managed_components')))
+            elif task.name == 'update-dependencies':
+                reconfigure = ctx.invoke(ctx.command.get_command(ctx, 'reconfigure'))
+                # reсonfigure does not take any parameters.
+                # More information in the idf.py implementation (idf.py/execute_tasks)
+                reconfigure.action_args = {}
+                tasks.insert(index + 1, reconfigure)
 
     return {
         'global_action_callbacks': [global_callback],
@@ -196,5 +202,9 @@ def action_extensions(base_actions, project_path):
                     }
                 ],
             },
+            'update-dependencies': {
+                'callback': callback,
+                'help': 'Update dependencies of the project',
+            }
         },
     }

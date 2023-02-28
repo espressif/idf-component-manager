@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -9,6 +9,8 @@ from pathlib import Path
 
 import pytest
 
+from idf_component_tools.lock import LockManager
+from idf_component_tools.manifest import ManifestManager
 from idf_component_tools.manifest.validator import DEFAULT_KNOWN_TARGETS
 
 from .integration_test_helpers import (
@@ -266,3 +268,62 @@ def test_check_remove_managed_component(project):
     res = project_action(project, 'fullclean')
     assert 'Executing action: remove_managed_components' in res
     assert not path.is_dir()
+
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'cmp': {
+                            'version': '*',
+                            'path': os.path.join('..', 'cmp'),
+                            'include': 'cmp.h',
+                        }
+                    }
+                }
+            }
+        },
+    ],
+    indirect=True)
+def test_update_dependencies_outdated(project, monkeypatch):
+    shutil.copytree(fixtures_path('components', 'cmp'), os.path.join(project, 'cmp'))
+    project_action(project, 'reconfigure')
+
+    manifest_manager = ManifestManager(os.path.join(project, 'cmp'), 'cmp')
+    manifest_manager.manifest_tree['version'] = '1.2.0'
+    manifest_manager.dump(os.path.join(project, 'cmp'))
+
+    lock = LockManager(os.path.join(project, 'dependencies.lock'))
+
+    project_action(project, 'update-dependencies')
+    assert lock.load().dependencies[0].version == '1.2.0'
+
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'cmp': {
+                            'version': '*',
+                            'path': os.path.join('..', 'cmp'),
+                            'include': 'cmp.h',
+                        }
+                    }
+                }
+            }
+        },
+    ],
+    indirect=True)
+def test_update_dependencies_without_lock(project, monkeypatch):
+    shutil.copytree(fixtures_path('components', 'cmp'), os.path.join(project, 'cmp'))
+    lock = LockManager(os.path.join(project, 'dependencies.lock'))
+
+    assert not lock.load().manifest_hash  # Empty lock file
+
+    project_action(project, 'update-dependencies')
+
+    assert lock.load().dependencies[0].version == '1.0.0'

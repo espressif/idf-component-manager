@@ -524,3 +524,7 @@ class ComponentManager(object):
 
         handle_project_requirements(requirements)
         requirements_manager.dump(requirements)
+
+    def update_dependencies(self, **kwargs):
+        if os.path.isfile(self.lock_path):
+            os.remove(self.lock_path)
