@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -13,10 +13,11 @@ from yaml import safe_load
 
 import idf_component_tools as tools
 
-from ..build_system_tools import get_env_idf_target
+from ..build_system_tools import get_env_idf_target, get_idf_version
 from ..errors import LockError
-from ..manifest import SolvedManifest
+from ..manifest import ComponentVersion, SolvedComponent, SolvedManifest
 from ..manifest.validator import known_targets
+from ..sources import IDFSource
 
 FORMAT_VERSION = '1.0.0'
 
@@ -63,6 +64,13 @@ class LockManager:
 
     def dump(self, solution):  # type: (SolvedManifest) -> None
         """Writes updated lockfile to disk"""
+        # add idf version if not in solution.dependencies
+        if 'idf' not in solution.solved_components:
+            solution.dependencies.append(SolvedComponent(
+                'idf',
+                ComponentVersion(get_idf_version()),
+                IDFSource(),
+            ))
 
         try:
             with open(self._path, mode='w', encoding='utf-8') as f:
