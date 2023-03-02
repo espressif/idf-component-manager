@@ -12,10 +12,11 @@ from idf_component_manager.version_solver.mixology.package import Package
 from idf_component_manager.version_solver.version_solver import VersionSolver
 from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.environment import getenv_bool
-from idf_component_tools.errors import ComponentModifiedError, FetchingError, SolverError, hint, warn
+from idf_component_tools.errors import (
+    ComponentModifiedError, FetchingError, InvalidComponentHashError, SolverError, hint, warn)
 from idf_component_tools.hash_tools import ValidatingHashError, validate_managed_component_hash
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import ProjectRequirements, SolvedComponent, SolvedManifest
+from idf_component_tools.manifest import HashedComponentVersion, ProjectRequirements, SolvedComponent, SolvedManifest
 from idf_component_tools.sources.fetcher import ComponentFetcher
 
 
@@ -82,10 +83,18 @@ def is_solve_required(project_requirements, solution):
             continue
 
         try:
-            component_version = component.source.versions(component.name).versions[0]
+            component_version = component.source.versions(component.name).versions[0]  # type: HashedComponentVersion
 
             if component_version != component.version:
                 return True
+
+            if component_version.component_hash != component.component_hash:
+                raise InvalidComponentHashError(
+                    'The hash sum of the component "{}" does not match the one recorded in your dependencies.lock '
+                    'file. This could be due to a potential spoofing of the download server, or your lock file may '
+                    'have become corrupted. Please review the lock file and verify the download server\'s '
+                    'authenticity to ensure the component\'s security and integrity.'.format(component))
+
         except IndexError:
             return True
 
