@@ -1,14 +1,16 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import filecmp
 import os
+import textwrap
 from io import open
 from pathlib import Path
 
 import pytest
 
 from idf_component_manager.dependencies import is_solve_required
+from idf_component_tools.build_system_tools import get_idf_version
 from idf_component_tools.errors import LockError
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import (
@@ -135,20 +137,44 @@ class TestLockManager(object):
 
     def test_minimal_lock(self, tmp_path, monkeypatch):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
+        monkeypatch.setenv('IDF_VERSION', '5.1.0')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
-        solution = SolvedManifest.fromdict(dict([
-            ('version', '1.0.0'),
-            ('manifest_hash', MANIFEST_HASH),
-        ]))
+        solution = SolvedManifest.fromdict(
+            {
+                'version': '1.0.0',
+                'manifest_hash': MANIFEST_HASH,
+                'dependencies': {
+                    'idf': {
+                        'component_hash': None,
+                        'source': {
+                            'type': 'idf',
+                        },
+                        'version': get_idf_version()
+                    }
+                }
+            })
 
         parser.dump(solution)
         loaded_solution = parser.load()
 
         assert solution.manifest_hash == loaded_solution.manifest_hash
 
+        file_str = textwrap.dedent(
+            """
+            dependencies:
+              idf:
+                component_hash: null
+                source:
+                  type: idf
+                version: 5.1.0
+            manifest_hash: {}
+            target: esp32
+            version: 1.0.0
+        """).format(solution.manifest_hash).strip()
+
         with open(lock_path) as f:
-            assert f.read() == 'manifest_hash: {}\ntarget: esp32\nversion: 1.0.0\n'.format(solution.manifest_hash)
+            assert f.read().strip() == file_str
 
     def test_empty_lock_file(self, tmp_path):
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')

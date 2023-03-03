@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Correct spelling of error message for unsatisfied dependency
 - Stop injecting shell config files by default in `compote autocomplete`
 - Relative path in `override_path` now based on the directory of its `idf_component.yml`
+- Prevent possible DNS spoof when `dependencies.lock` file exists and no need to be updated.
+- Always add `idf` as a dependency to `dependencies.lock` file even without explict declaration.
 
 ## [1.2.2] 2023-01-17
 

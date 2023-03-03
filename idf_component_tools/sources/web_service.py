@@ -44,7 +44,7 @@ def download_archive(url, download_dir):  # type: (str, str) -> str
     session = api_client.create_session(cache=False)
 
     try:
-        with session.get(url, stream=True, allow_redirects=True) as r:
+        with session.get(url, stream=True, allow_redirects=True) as r:  # type: requests.Response
             # Trying to get extension from url
             original_filename = url.split('/')[-1]
 

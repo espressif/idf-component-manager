@@ -41,8 +41,11 @@ class SolvedComponent(object):
             dependencies = []
         self.dependencies = dependencies
 
+    def __repr__(self):
+        return 'SolvedComponent <{}({}) {}>'.format(self.name, self.version, self.component_hash)
+
     def __str__(self):
-        return 'SolvedComponent: %s %s %s' % (self.name, self.version, self.component_hash)
+        return '{}({})'.format(self.name, self.version)
 
     @classmethod
     def fromdict(cls, details):

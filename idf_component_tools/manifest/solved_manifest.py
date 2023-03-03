@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 from .solved_component import SolvedComponent
@@ -51,3 +51,7 @@ class SolvedManifest(object):
             solution['dependencies'] = dependencies
 
         return solution
+
+    @property
+    def solved_components(self):  # type: () -> dict[str, SolvedComponent]
+        return {cmp.name: cmp for cmp in self.dependencies}
