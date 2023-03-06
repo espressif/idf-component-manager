@@ -51,9 +51,8 @@ build-docs:
   tags:
     - internet
   script:
-    - pip install poetry
-    - poetry install --only docs
-    - poetry run sphinx-build docs/en html_output
+    - pip install -r docs/requirements.txt
+    - sphinx-build docs/en html_output
   after_script:
     - 'echo "preview link: ${GITLAB_PAGE_HTTPS_URL}/-/idf-component-manager/-/jobs/${CI_JOB_ID}/artifacts/html_output/index.html"'
   artifacts:
