@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "idf-component-manager"
-version = "0.0.0"
+version = "1.2.2"
 description = "Espressif IDF Component Manager"
 authors = []
 license = "Apache2"
@@ -23,8 +23,6 @@ requests-toolbelt = "*"
 schema = "*"
 six = "*"
 tqdm = '*'
-poetry-dynamic-versioning = {extras = ["plugin"], version = "^0.21.4"}
-
 
 [tool.poetry.dev-dependencies]
 coverage = '*'
@@ -68,5 +66,5 @@ folders = [
 ]
 
 [build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
-build-backend = "poetry_dynamic_versioning.backend"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

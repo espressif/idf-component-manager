@@ -48,3 +48,9 @@ repos:
     hooks:
       - id: check-copyright
         args: ['--ignore', 'ci/check_copyright_ignore', '--config', 'ci/check_copyright_config.yaml']
+  - repo: local
+    hooks:
+      - id: update-pyprojecttoml-version
+        name: Update version field in pyproject.toml with the version in idf-component-tools/__version__.py
+        entry: ./hooks/check_versions.sh
+        language: script
