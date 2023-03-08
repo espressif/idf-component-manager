@@ -16,8 +16,12 @@ __pycache__
 .pytest_cache
 .tox
 
+# Remove poetry.lock to run tests under different python versions
+poetry.lock
+
 # Remove Pipfile.lock to run tests under different python versions
 Pipfile.lock
+
 
 # Manifest and components
 /idf_component*.yaml

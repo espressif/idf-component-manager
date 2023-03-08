@@ -1,0 +1,63 @@
+[tool.poetry]
+name = "idf-component-manager"
+version = "1.2.2"
+description = "Espressif IDF Component Manager"
+authors = []
+license = "Apache2"
+readme = "README.md"
+packages = [
+    {include = "idf_component_manager"},
+    {include = "idf_component_tools"}
+]
+
+
+[tool.poetry.dependencies]
+python = ">=3.7,<4.0"
+cachecontrol = {version = '*', extras = ["filecache"]}
+colorama = '*'
+click = '*'
+future = '*'
+pyyaml = "*"
+requests = "*"
+requests-file = "*"
+requests-toolbelt = "*"
+schema = "*"
+six = "*"
+tqdm = '*'
+
+[tool.poetry.dev-dependencies]
+coverage = '*'
+flake8 = '*'
+flake8-quotes = '*'
+mypy = {extras = ["python2"], version = '*'}
+pre-commit = '*'
+pylint = "*"
+pytest = '*'
+pytest-cov = '*'
+requests-mock = '*'
+pytest-mock = '*'
+rope = '*'
+setuptools = "*"
+twine = "*"
+unify = '*'
+vcrpy = '<5'
+wheel = "*"
+yapf = '*'
+jinja2 = "*"
+comment-parser = "*"
+thefuzz = "*"
+jsonschema = "*"
+pexpect = "*"
+pytest-rerunfailures = "*"
+
+[tool.poetry.group.docs.dependencies]
+sphinx-rtd-theme = "==1.1.1"
+sphinx-copybutton = "==0.5.1"
+sphinx-tabs = "==3.4.0"
+
+[tool.poetry.scripts]
+compote = { callable = "idf_component_manager.cli:safe_cli"}
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
