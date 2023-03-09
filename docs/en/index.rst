@@ -7,8 +7,19 @@ The ESP Component Registry is a central repository for components that can be us
 
 With the IDF Component Manager, developers can easily install components from the ESP-IDF Component Registry, streamlining the process of adding new functionality to their projects.
 
+Getting Started
+---------------
+
 .. toctree::
-   :hidden:
+   :maxdepth: 2
 
    getting_started
+
+Guides
+------
+
+.. toctree::
+   :maxdepth: 2
+
    versioning
+   packaging_components
