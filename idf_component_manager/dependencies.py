@@ -74,11 +74,21 @@ def detect_unused_components(
 def is_solve_required(project_requirements, solution):
     # type: (ProjectRequirements, SolvedManifest) -> bool
 
-    if project_requirements.manifest_hash != solution.manifest_hash\
-            or (solution.target and project_requirements.target != solution.target):
+    if not solution.manifest_hash:
+        print_info('Dependencies lock doesn\'t exist, solving dependencies.')
+        return True
+
+    if project_requirements.manifest_hash != solution.manifest_hash:
+        print_info('Manifest hash changed, solving dependencies.')
+        return True
+
+    if solution.target and project_requirements.target != solution.target:
+        print_info(
+            'Target changed from {} to {}, solving dependencies.'.format(solution.target, project_requirements.target))
         return True
 
     for component in solution.dependencies:
+        # Handle meta components, like ESP-IDF
         if not component.source.meta:
             continue
 
@@ -86,6 +96,9 @@ def is_solve_required(project_requirements, solution):
             component_version = component.source.versions(component.name).versions[0]  # type: HashedComponentVersion
 
             if component_version != component.version:
+                print_info(
+                    'Dependency "{}" version changed from {} to {}, solving dependencies.'.format(
+                        component, component.version, component_version))
                 return True
 
             if component_version.component_hash != component.component_hash:
@@ -96,6 +109,7 @@ def is_solve_required(project_requirements, solution):
                     'authenticity to ensure the component\'s security and integrity.'.format(component))
 
         except IndexError:
+            print_info('Dependency "{}" version changed, solving dependencies.'.format(component))
             return True
 
     return False
@@ -113,7 +127,6 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
     check_manifests_targets(project_requirements)
 
     if is_solve_required(project_requirements, solution):
-        print_info('Solving dependencies requirements')
         solver = VersionSolver(project_requirements, solution, component_solved_callback=print_dot)
 
         try:
