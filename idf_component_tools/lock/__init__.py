@@ -1,8 +1,9 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
-from .manager import LockManager
+from .manager import EMPTY_LOCK, LockManager
 
 __all__ = [
     'LockManager',
+    'EMPTY_LOCK',
 ]
