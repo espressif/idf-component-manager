@@ -59,6 +59,6 @@ repos:
   - repo: local
     hooks:
       - id: update-pyprojecttoml-version
-        name: Update version field in pyproject.toml with the version in idf-component-tools/__version__.py
+        name: Check versions in pyproject.toml and idf_component_tools/__version__.py to match
         entry: ./hooks/check_versions.sh
         language: script
