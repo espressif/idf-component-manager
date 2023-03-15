@@ -132,6 +132,9 @@ class GitClient(object):
         # Checkout required branch
         checkout_command = ['--work-tree', checkout_path, '--git-dir', bare_path, 'checkout', '--force', commit_id]
         if selected_paths:
+            if '.gitmodules' not in selected_paths and self.has_gitmodules_by_ref(repo, bare_path, commit_id):
+                # avoid submodule update failed
+                selected_paths += ['.gitmodules']
             checkout_command += ['--'] + selected_paths
         self.run(checkout_command)
 
@@ -162,6 +165,11 @@ class GitClient(object):
             ref = self.run(['ls-remote', '--exit-code', 'origin', 'HEAD'], cwd=bare_path)[:40]
 
         return self.run(['rev-parse', '--verify', ref], cwd=bare_path).strip()
+
+    @_git_cmd
+    @_bare_repo
+    def has_gitmodules_by_ref(self, repo, bare_path, ref):  # type: (str, str, str) -> bool
+        return '.gitmodules' in self.run(['ls-tree', '--name-only', ref], cwd=bare_path).splitlines()
 
     def run(self, args, cwd=None, env=None):  # type: (List[str], str | None, dict | None) -> str
         if cwd is None:
