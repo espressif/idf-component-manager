@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "idf-component-manager"
-version = "1.2.2"
+version = "1.3.0-dev"
 description = "Espressif IDF Component Manager"
 authors = []
 license = "Apache2"
