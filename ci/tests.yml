@@ -30,8 +30,7 @@ test:
   needs:
     - build_wheel
   before_script:
-    - version=$(grep '__version__' idf_component_tools/__version__.py | cut -d "'" -f 2)
-    - pip install ./dist/idf_component_manager-${version}-py2.py3-none-any.whl
+    - ls ./dist/*.whl | xargs pip install
     - pip install pytest pytest-cov pytest-mock vcrpy "jsonschema==2.5.1;python_version=='3.4'" "jsonschema;python_version!='3.4'"
   script:
     - pytest --cov=. --cov-report=xml
