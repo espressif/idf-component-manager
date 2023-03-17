@@ -168,6 +168,34 @@ You can contribute by fixing bugs, adding features, adding documentation, or rep
 
 Before reporting an issue, make sure you've searched for a similar one that was already created. If you are reporting a new issue, please follow the Issue Template.
 
+## Installing a development version of the component manager
+
+You can install the development version of the component manager from the main branch of this repository:
+
+**On Linux/macOS:**
+
+Go to the directory with your ESP-IDF installation and run:
+
+```bash
+# activate ESP-IDF environment
+source ./export.sh # or . ./export.fish, if you use fish shell
+# remove old version of the component manager
+python -m pip uninstall -y idf-component-manager
+# install the development version (from the main branch)
+python -m pip install git+https://github.com/espressif/idf-component-manager.git@main
+```
+
+**On Windows:**
+
+Run `ESP-IDF PowerShell Environment` or `ESP-IDF Command Prompt (cmd.exe)` from the Start menu and run the following command:
+
+```powershell
+# remove old version of the component manager
+python -m pip uninstall -y idf-component-manager
+# install the development version (from the main branch)
+python -m pip install git+https://github.com/espressif/idf-component-manager.git@main
+```
+
 ## Resources
 
 - The Python Package Index project page https://pypi.org/project/idf-component-manager/

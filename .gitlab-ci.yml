@@ -30,9 +30,11 @@ check_changelog:
 
 check_tests:
   extends: .check
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
   script:
     - |
-      (git diff-tree --name-only -r --no-commit-id "origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}" "${CI_COMMIT_SHA}" | grep "tests/") || \
+      (git diff-tree --name-only -r --no-commit-id "origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}" "${CI_COMMIT_SHA}" | (grep "tests/" || grep "integration_tests/")) || \
         [[ "${CI_MERGE_REQUEST_LABELS}" =~ ^(.*,)*no_tests(,.*)*$ ]] || \
         (echo "Please either cover changes with tests or add 'no_tests' label" && exit 1)
 
