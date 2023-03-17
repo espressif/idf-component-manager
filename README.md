@@ -4,28 +4,7 @@ The IDF Component manager is a tool that downloads dependencies for any [ESP-IDF
 
 **A list of components can be found at https://components.espressif.com/**
 
-## Installing the IDF Component Manager
-
-IDF component manager can be used with ESP-IDF v4.1 and later.
-It is installed by default with ESP-IDF v4.4+ and recent bug-fix releases of ESP-IDF 4.1+.
-
-To check the installed version of the IDF component manager, first, activate [ESP-IDF environment](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#installation). On macOS and Linux:
-
-```bash
-source $IDF_PATH/export.sh
-```
-
-Then run the command:
-
-```bash
-python -m idf_component_manager -h
-```
-
-To update to the most recent version:
-
-```bash
-pip install idf-component-manager --upgrade
-```
+## [Official documentation](https://docs.espressif.com/projects/idf-component-manager/en/latest/)
 
 ## Disabling the Component Manager
 
@@ -94,20 +73,6 @@ dependencies:
   namespace/pre_release_component:
     version: "*"
     pre_release: true # Allow downloading of pre-release versions
-```
-
-## Environment variables in manifest
-
-You can use environment variables in values in `idf_component.yml` manifests. `$VAR` or `${VAR}` is replaced with the value of the `VAR` environment variable. If the environment variable is not defined, the component manager will raise an error.
-
-Variable name should be ASCII alphanumeric string (including underscores) and start with an underscore or ASCII letter. The first non-identifier character after the `$` terminates this placeholder specification. You can escape `$` with one more`$` character, i.e., `$$` is replaced with `$`.
-
-One possible use-case is providing authentication to git repositories accessed through HTTPS:
-
-```yaml
-dependencies:
-  my_component:
-    git: https://git:${ACCESS_TOKEN}@git.my_git.com/my_component.git
 ```
 
 ## Component metadata caching
@@ -198,5 +163,6 @@ python -m pip install git+https://github.com/espressif/idf-component-manager.git
 
 ## Resources
 
+- The Component manager [Documentation](https://docs.espressif.com/projects/idf-component-manager/en/latest/)
 - The Python Package Index project page https://pypi.org/project/idf-component-manager/
 - The Component Manager section in the [ESP-IDF Programming Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/tools/idf-component-manager.html)

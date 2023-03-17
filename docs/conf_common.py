@@ -21,6 +21,7 @@ languages = ['en']
 
 extensions = [
     'sphinx_rtd_theme',
+    'sphinx_collapse',
     'sphinx_copybutton',
     'sphinx_tabs.tabs',
     'sphinx.ext.autosectionlabel',
