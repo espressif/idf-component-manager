@@ -28,6 +28,14 @@ check_changelog:
         [[ "${CI_MERGE_REQUEST_LABELS}" =~ ^(.*,)*no_changelog(,.*)*$ ]] || \
         (echo "Please either update CHANGELOG.md file or add 'no_chagelog' label" && exit 1)
 
+check_tests:
+  extends: .check
+  script:
+    - |
+      (git diff-tree --name-only -r --no-commit-id "origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}" "${CI_COMMIT_SHA}" | grep "tests/") || \
+        [[ "${CI_MERGE_REQUEST_LABELS}" =~ ^(.*,)*no_tests(,.*)*$ ]] || \
+        (echo "Please either cover changes with tests or add 'no_tests' label" && exit 1)
+
 check_pre_commit:
   extends: .check
   rules:
