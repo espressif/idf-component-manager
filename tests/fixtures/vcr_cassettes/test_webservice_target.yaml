@@ -9,27 +9,27 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
     method: GET
-    uri: http://localhost:5000/
+    uri: http://localhost:5000/api
   response:
     body:
-      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\"\
-        , \n  \"info\": \"Espressif Component Manager Service HTTP JSON API\", \n\
-        \  \"status\": \"ok\", \n  \"version\": \"0.2.0\"\n}\n"
+      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",\n
+        \ \"info\": \"Espressif Component Manager Service HTTP JSON API\",\n  \"status\":
+        \"ok\",\n  \"version\": \"0.2.0\"\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '171'
+      - '168'
       Content-Type:
       - application/json
       Date:
-      - Mon, 05 Sep 2022 12:22:46 GMT
+      - Wed, 22 Mar 2023 08:54:08 GMT
       Server:
-      - Werkzeug/2.1.2 Python/3.10.0
+      - Werkzeug/2.2.3 Python/3.11.1
     status:
       code: 200
       message: OK
@@ -43,34 +43,47 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
     method: GET
     uri: http://localhost:9000/test-public/components/example/cmp.json
   response:
     body:
-      string: '{"versions": [{"version": "0.0.6", "description": null, "targets":
-        ["esp32"], "created_at": "2022-09-05T12:20:04.561479+00:00", "docs": {}, "homepage":
-        "", "repository": "", "discussion": "", "url": "ea453afd-3e04-43f2-8bda-cbbbd5a77b07.tgz",
-        "component_hash": "c9812707cb83130df41747a38d49c6f007bf6cb080c2d5640e2411df9db34659",
-        "examples": [], "issues": "", "documentation": "", "tags": [], "dependencies":
-        [], "downloads_total": 0, "uploader": "dmitry", "license": null}], "created_at":
-        "2022-09-01T14:48:07.020336+00:00", "namespace": "example", "name": "cmp",
-        "featured": false}'
+      string: '{"created_at": "2023-03-21T14:14:02.141163+00:00", "name": "cmp", "namespace":
+        "example", "versions": [{"url": "8241246f-ad29-435e-94af-c6da11bd19ee.tgz",
+        "targets": ["esp32s2"], "docs": {"readme": "8241246f-ad29-435e-94af-c6da11bd19ee/readme.md"},
+        "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
+        "yanked_at": null, "description": "This component is an example, to be used
+        with the IDF component manager.", "downloads_total": 0, "issues": "", "tags":
+        [], "documentation": "", "exclusion_list": ["**/__pycache__", "**/*.pyc",
+        "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*", "**/dist/**/*",
+        "**/build/**/*", "**/managed_components/**/*", "**/dependencies.lock", "**/.github/**/*",
+        "**/.gitlab-ci.yml", "**/.idea/**/*", "**/.vscode/**/*", "**/.settings/**/*",
+        "**/sdkconfig", "**/sdkconfig.old", "**/.component_hash"], "dependencies":
+        [{"source": "service", "is_public": false, "name": "size-prove-besxcwe", "spec":
+        "9.8.4", "namespace": "rachael80dyw"}, {"source": "idf", "is_public": false,
+        "name": null, "spec": ">=4.1", "namespace": null}], "examples": [], "license":
+        {"url": "8241246f-ad29-435e-94af-c6da11bd19ee/license.txt", "name": "Unknown
+        license"}, "repository": "", "created_at": "2023-03-21T16:22:04.779802+00:00",
+        "uploader": "dmitry", "discussion": "", "version": "0.0.5-alpha1", "component_hash":
+        "238350fb0231815d477b99a10d87aa45f593dd46b635c5d8406d81b5347ac2de", "yanked_message":
+        null}], "featured": false}'
     headers:
       Accept-Ranges:
       - bytes
+      Cache-Control:
+      - max-age=300
       Content-Length:
-      - '582'
+      - '1475'
       Content-Security-Policy:
       - block-all-mixed-content
       Content-Type:
       - binary/octet-stream
       Date:
-      - Mon, 05 Sep 2022 12:22:46 GMT
+      - Wed, 22 Mar 2023 08:54:08 GMT
       ETag:
-      - '"62a79b1b0abeeafac4200da1cf10deb1"'
+      - '"e2b41b5f9bf1a5a3e35f77e82ea90574"'
       Last-Modified:
-      - Mon, 05 Sep 2022 12:20:04 GMT
+      - Wed, 22 Mar 2023 08:53:44 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -79,7 +92,7 @@ interactions:
       - Origin
       - Accept-Encoding
       X-Amz-Request-Id:
-      - 1711F6514F894C2D
+      - 174EB1D7297E3DB9
       X-Content-Type-Options:
       - nosniff
       X-Xss-Protection:

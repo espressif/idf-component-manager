@@ -14,7 +14,7 @@ from idf_component_tools.config import component_registry_url
 
 @pytest.fixture
 def base_url():
-    return 'http://localhost:5000'
+    return 'http://localhost:5000/api'
 
 
 class TestAPIClient(object):
@@ -114,7 +114,7 @@ class TestAPIClient(object):
         client = APIClient(base_url, storage_url=storage_url)
 
         assert client.component(component_name='example/cmp').download_url == os.path.join(
-            storage_url, '86f07b70-bb83-45f0-99c7-a10f82781f5a.tgz')
+            storage_url, '5390a837-5bc7-4564-b747-3adb22ad55f8.tgz')
 
     def test_no_registry_url_error(self, monkeypatch):
         monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'http://localhost:9000/test-public')

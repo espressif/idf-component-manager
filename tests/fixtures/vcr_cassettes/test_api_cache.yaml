@@ -9,27 +9,27 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
     method: GET
-    uri: http://localhost:5000/
+    uri: http://localhost:5000/api
   response:
     body:
-      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",
-        \n  \"info\": \"Espressif Component Manager Service HTTP JSON API\", \n  \"status\":
-        \"ok\", \n  \"version\": \"0.2.0\"\n}\n"
+      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",\n
+        \ \"info\": \"Espressif Component Manager Service HTTP JSON API\",\n  \"status\":
+        \"ok\",\n  \"version\": \"0.2.0\"\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '171'
+      - '168'
       Content-Type:
       - application/json
       Date:
-      - Mon, 08 Aug 2022 17:18:55 GMT
+      - Tue, 21 Mar 2023 15:47:39 GMT
       Server:
-      - Werkzeug/2.1.2 Python/3.10.0
+      - Werkzeug/2.2.3 Python/3.11.1
     status:
       code: 200
       message: OK
@@ -43,50 +43,71 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
     method: GET
     uri: http://localhost:9000/test-public/components/test/cmp.json
   response:
     body:
-      string: '{"name": "cmp", "versions": [{"examples": [{"name": "sample_project",
-        "url": "05675538-4ace-4821-b09d-ea21b7f062bf/examples/ad378616-1432-40db-b343-e73c47c741bc.tgz"}],
-        "url": "05675538-4ace-4821-b09d-ea21b7f062bf.tgz", "repository": "", "issues":
-        "", "tags": [], "docs": {"readme": "05675538-4ace-4821-b09d-ea21b7f062bf/readme.md"},
-        "description": "Test Component", "version": "1.0.1", "discussion": "", "uploader":
-        "dmitry", "created_at": "2022-08-08T16:29:29.450916+00:00", "dependencies":
-        [{"spec": ">=4.0", "name": null, "is_public": false, "source": "idf", "namespace":
-        null}], "documentation": "", "license": null, "component_hash": "3245e6ba01df4a6a7323af71afc73640b296e89c1d083f094f0b9a2f76667a42",
-        "homepage": "", "targets": ["esp32"]}, {"examples": [], "url": "507f0e57-c9b9-45ff-a024-7bd1ad336e92.tgz",
-        "repository": "", "issues": "", "tags": [], "docs": {"readme": "507f0e57-c9b9-45ff-a024-7bd1ad336e92/readme.md"},
-        "description": "Test Component", "version": "1.0.0", "discussion": "", "uploader":
-        "dmitry", "created_at": "2022-08-08T15:52:11.805598+00:00", "dependencies":
-        [{"spec": ">=4.0", "name": null, "is_public": false, "source": "idf", "namespace":
-        null}], "documentation": "", "license": null, "component_hash": "e603c6d848a22fc1a4651c5e297dcf53b3d3eeba6e20c7589e14a6a4345b0415",
-        "homepage": "", "targets": ["esp32"]}], "created_at": "2022-08-08T15:52:11.672772+00:00",
-        "featured": false, "namespace": "test"}'
+      string: '{"versions": [{"targets": [], "component_hash": "238350fb0231815d477b99a10d87aa45f593dd46b635c5d8406d81b5347ac2de",
+        "uploader": "dmitry", "description": "This component is an example, to be
+        used with the IDF component manager.", "discussion": "", "exclusion_list":
+        ["**/__pycache__", "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*",
+        "**/.svn/**/*", "**/dist/**/*", "**/build/**/*", "**/managed_components/**/*",
+        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
+        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
+        "**/.component_hash"], "documentation": "", "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
+        "version": "1.0.6", "downloads_total": 0, "tags": [], "repository": "", "url":
+        "9156de2c-9d9e-4447-95fc-6152176199dc.tgz", "yanked_at": null, "issues": "",
+        "license": {"name": "Unknown license", "url": "9156de2c-9d9e-4447-95fc-6152176199dc/license.txt"},
+        "yanked_message": null, "examples": [], "created_at": "2023-03-21T15:18:58.095248+00:00",
+        "docs": {"readme": "9156de2c-9d9e-4447-95fc-6152176199dc/readme.md"}, "dependencies":
+        [{"source": "service", "is_public": false, "spec": "9.8.4", "namespace": "rachael80dyw",
+        "name": "size-prove-besxcwe"}, {"source": "idf", "is_public": false, "spec":
+        ">=4.1", "namespace": null, "name": null}]}, {"targets": [], "component_hash":
+        "15a658f759a13f1767ca3810cd822e010aba1e36b3a980d140cc5e80e823f422", "uploader":
+        "dmitry", "description": "Test BSP filter", "discussion": "", "exclusion_list":
+        ["**/__pycache__", "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*",
+        "**/.svn/**/*", "**/dist/**/*", "**/build/**/*", "**/managed_components/**/*",
+        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
+        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
+        "**/.component_hash"], "documentation": "", "homepage": "", "version": "1.0.1",
+        "downloads_total": 0, "tags": [], "repository": "", "url": "303622c0-fb30-4b24-a86d-37dc7ecf3788.tgz",
+        "yanked_at": null, "issues": "", "license": {"name": "Unknown license", "url":
+        "303622c0-fb30-4b24-a86d-37dc7ecf3788/license.txt"}, "yanked_message": null,
+        "examples": [{"docs": {"readme": "303622c0-fb30-4b24-a86d-37dc7ecf3788/examples/4b4ac39b-6b5b-4c5c-9689-0ba32cca2354/readme.md"},
+        "name": "custom_examples", "url": "303622c0-fb30-4b24-a86d-37dc7ecf3788/examples/4b4ac39b-6b5b-4c5c-9689-0ba32cca2354.tgz"},
+        {"docs": {"readme": "303622c0-fb30-4b24-a86d-37dc7ecf3788/examples/e5aee41b-6d57-4010-ad4a-294389d69ab0/readme.md"},
+        "name": "sample_project", "url": "303622c0-fb30-4b24-a86d-37dc7ecf3788/examples/e5aee41b-6d57-4010-ad4a-294389d69ab0.tgz"}],
+        "created_at": "2023-03-21T13:47:11.714530+00:00", "docs": {"readme": "303622c0-fb30-4b24-a86d-37dc7ecf3788/readme.md"},
+        "dependencies": [{"source": "service", "is_public": false, "spec": "3.3.8",
+        "namespace": "example", "name": "gg47"}]}], "created_at": "2023-03-21T13:47:11.319392+00:00",
+        "featured": false, "namespace": "test", "name": "cmp"}'
     headers:
       Accept-Ranges:
       - bytes
+      Cache-Control:
+      - max-age=300
       Content-Length:
-      - '1432'
+      - '3048'
       Content-Security-Policy:
       - block-all-mixed-content
       Content-Type:
       - binary/octet-stream
       Date:
-      - Mon, 08 Aug 2022 17:18:55 GMT
+      - Tue, 21 Mar 2023 15:47:39 GMT
       ETag:
-      - '"1331931b7d283a34363420143764d03a"'
+      - '"f1016d1e0966e927cc22cf2abcf9cfa6"'
       Last-Modified:
-      - Mon, 08 Aug 2022 16:29:29 GMT
+      - Tue, 21 Mar 2023 15:18:58 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains
       Vary:
       - Origin
+      - Accept-Encoding
       X-Amz-Request-Id:
-      - 17096E3A996B584D
+      - 174E79D36557F239
       X-Content-Type-Options:
       - nosniff
       X-Xss-Protection:
