@@ -343,8 +343,19 @@ class APIClient(object):
         if version and version != '*':
             requested_version = SimpleSpec(str(version))
             filtered_versions = [v for v in versions if requested_version.match(Version(v['version']))]
+            # ^ doesn't have an .operator attribute
+            if not hasattr(requested_version.clause, 'operator') or requested_version.clause.operator != '==':
+                filtered_versions = [v for v in filtered_versions if not v['yanked_at']]
+            elif requested_version.clause.operator == '==' and filtered_versions and filtered_versions[0]['yanked_at']:
+                warn(
+                    'The version "{}" of the "{}" component you have selected has been yanked from the repository '
+                    'due to the following reason: "{}". We recommend that you update to a different version. '
+                    'Please note that continuing to use a yanked version can result in unexpected behavior and '
+                    'issues with your project.'.format(
+                        requested_version.clause.target, component_name.lower(),
+                        filtered_versions[0]['yanked_message']))
         else:
-            filtered_versions = versions
+            filtered_versions = [v for v in versions if not v['yanked_at']]
 
         if not filtered_versions:
             raise VersionNotFound(
