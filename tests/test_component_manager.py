@@ -243,3 +243,16 @@ def test_create_example_not_exist(mock_registry, tmp_path):
 def test_create_example_success(mock_registry, tmp_path):
     manager = ComponentManager(path=str(tmp_path))
     manager.create_project_from_example('test/cmp>=1.0.0:sample_project')
+
+
+@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_yank_version_success.yaml')
+def test_yank_component_version(mock_registry, tmp_path):
+    manager = ComponentManager(path=str(tmp_path))
+    manager.yank_version('cmp', '1.1.0', 'critical test', namespace='test')
+
+
+@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_yank_version_success.yaml')
+def test_yank_component_version_not_exists(mock_registry, tmp_path):
+    manager = ComponentManager(path=str(tmp_path))
+    with raises(FatalError, match='Version 1.2.0 of the component \"test/cmp\" is not on the registry'):
+        manager.yank_version('cmp', '1.2.0', 'critical test', namespace='test')

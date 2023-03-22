@@ -20,7 +20,8 @@ from idf_component_manager.utils import print_info, print_warn
 from idf_component_tools.api_client_errors import APIClientError, NetworkConnectionError, VersionNotFound
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name
-from idf_component_tools.errors import FatalError, GitError, ManifestError, NothingToDoError
+from idf_component_tools.errors import (
+    FatalError, GitError, ManifestError, NothingToDoError, VersionAlreadyExistsError, VersionNotFoundError)
 from idf_component_tools.file_tools import check_unexpected_component_files, copy_filtered_directory, create_directory
 from idf_component_tools.git_client import GitClient
 from idf_component_tools.hash_tools import (
@@ -275,11 +276,33 @@ class ComponentManager(object):
         versions = client.versions(component_name=component_name).versions
 
         if version not in versions:
-            raise NothingToDoError(
-                'Version {} of the component "{}" is not on the service'.format(version, component_name))
+            raise VersionNotFoundError(
+                'Version {} of the component "{}" is not on the registry'.format(version, component_name))
 
         client.delete_version(component_name=component_name, component_version=version)
         print_info('Deleted version {} of the component {}'.format(component_name, version))
+
+    @general_error_handler
+    def yank_version(
+            self,
+            name,  # type: str
+            version,  # type: str
+            message,  # type: str
+            service_profile=None,  # type: str | None
+            namespace=None  # type: str | None
+    ):
+        client, namespace = service_details(namespace, service_profile)
+        component_name = '/'.join([namespace, name])
+
+        versions = client.versions(component_name=component_name).versions
+
+        if version not in versions:
+            raise VersionNotFoundError(
+                'Version {} of the component "{}" is not on the registry'.format(version, component_name))
+
+        client.yank_version(component_name=component_name, component_version=version, yank_message=message)
+        print_info(
+            'Version {} of the component {} was yanked due to reason "{}"'.format(component_name, version, message))
 
     @general_error_handler
     def remove_managed_components(self, **kwargs):  # kwargs here to keep idf_extension.py compatibility
@@ -352,8 +375,8 @@ class ComponentManager(object):
             if allow_existing:
                 return
 
-            raise NothingToDoError(
-                'Version {} of the component "{}" is already on the service'.format(manifest.version, component_name))
+            raise VersionAlreadyExistsError(
+                'Version {} of the component "{}" is already on the registry'.format(manifest.version, component_name))
 
         # Exit if check flag was set
         if check_only:

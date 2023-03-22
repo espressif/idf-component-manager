@@ -1,0 +1,116 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
+    method: GET
+    uri: http://localhost:5000/api
+  response:
+    body:
+      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",\n
+        \ \"info\": \"Espressif Component Manager Service HTTP JSON API\",\n  \"status\":
+        \"ok\",\n  \"version\": \"0.2.0\"\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '168'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 29 Mar 2023 08:28:42 GMT
+      Server:
+      - Werkzeug/2.2.3 Python/3.11.1
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
+    method: GET
+    uri: http://localhost:9000/test-public/components/example/cmp_yanked.json
+  response:
+    body:
+      string: '{"featured": false, "name": "cmp_yanked", "created_at": "2023-03-22T10:14:57.290315+00:00",
+        "namespace": "example", "versions": [{"downloads_total": 0, "uploader": "dmitry",
+        "yanked_at": "2023-03-22T13:15:43.064000+00:00", "examples": [{"name": "sample_project",
+        "url": "c7a3c418-1ee6-47c2-9230-6dee5699346a/examples/111406c6-c5f6-411e-8cc7-d0b47cbb6362.tgz",
+        "docs": {"readme": "c7a3c418-1ee6-47c2-9230-6dee5699346a/examples/111406c6-c5f6-411e-8cc7-d0b47cbb6362/readme.md"}}],
+        "targets": [], "description": "This component is an example, to be used with
+        the IDF component manager.", "exclusion_list": ["**/__pycache__", "**/*.pyc",
+        "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*", "**/dist/**/*",
+        "**/build/**/*", "**/managed_components/**/*", "**/dependencies.lock", "**/.github/**/*",
+        "**/.gitlab-ci.yml", "**/.idea/**/*", "**/.vscode/**/*", "**/y.settings/**/*",
+        "**/sdkconfig", "**/sdkconfig.old", "**/.component_hash"], "dependencies":
+        [{"source": "service", "spec": "9.8.4", "name": "size-prove-besxcwe", "is_public":
+        false, "namespace": "rachael80dyw"}, {"source": "idf", "spec": ">=4.1", "name":
+        null, "is_public": false, "namespace": null}], "url": "c7a3c418-1ee6-47c2-9230-6dee5699346a.tgz",
+        "tags": [], "repository": "", "created_at": "2023-03-22T10:14:57.535492+00:00",
+        "component_hash": "3b25c8f1057f4c1bd75e54f1dea7c233bf8940ba9ef22e62e5ff454e0f05a893",
+        "docs": {"readme": "c7a3c418-1ee6-47c2-9230-6dee5699346a/readme.md"}, "version":
+        "1.1.0", "discussion": "", "issues": "", "documentation": "", "yanked_message":
+        "Critical", "license": {"name": "Unknown license", "url": "c7a3c418-1ee6-47c2-9230-6dee5699346a/license.txt"},
+        "homepage": "https://github.com/espressif/example_components/tree/main/cmp"},
+        {"downloads_total": 0, "uploader": "dmitry", "examples":
+        [], "targets": [], "description": "This component is an example, to be used
+        with the IDF component manager.", "exclusion_list": ["**/__pycache__", "**/*.pyc",
+        "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*", "**/dist/**/*",
+        "**/build/**/*", "**/managed_components/**/*", "**/dependencies.lock", "**/.github/**/*",
+        "**/.gitlab-ci.yml", "**/.idea/**/*", "**/.vscode/**/*", "**/.settings/**/*",
+        "**/sdkconfig", "**/sdkconfig.old", "**/.component_hash"], "dependencies":
+        [], "url": "c7a3c418-1ee6-47c2-9230-6dee5699346a.tgz", "tags": [], "repository":
+        "", "created_at": "2023-03-22T10:14:57.535492+00:00", "component_hash": "3b25c8f1057f4c1bd75e54f1dea7c233bf8940ba9ef22e62e5ff454e0f05a893",
+        "docs": {"readme": "c7a3c418-1ee6-47c2-9230-6dee5699346a/readme.md"}, "version":
+        "1.0.1", "discussion": "", "issues": "", "documentation": "", "license": {"name": "Unknown license", "url": "c7a3c418-1ee6-47c2-9230-6dee5699346a/license.txt"},
+        "homepage": "https://github.com/espressif/example_components/tree/main/cmp"}]}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Cache-Control:
+      - max-age=300
+      Content-Length:
+      - '2870'
+      Content-Security-Policy:
+      - block-all-mixed-content
+      Content-Type:
+      - binary/octet-stream
+      Date:
+      - Wed, 29 Mar 2023 08:28:42 GMT
+      ETag:
+      - '"a00a7a7e82e875d73bbe8d5bfab835d9"'
+      Last-Modified:
+      - Wed, 29 Mar 2023 08:28:24 GMT
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      - Accept-Encoding
+      X-Amz-Request-Id:
+      - 1750D683BC628F02
+      X-Content-Type-Options:
+      - nosniff
+      X-Xss-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

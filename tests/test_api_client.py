@@ -8,7 +8,7 @@ import vcr
 
 from idf_component_manager import version
 from idf_component_tools.api_client import APIClient, env_cache_time, join_url, user_agent
-from idf_component_tools.api_client_errors import NoRegistrySet, VersionNotFound
+from idf_component_tools.api_client_errors import NoRegistrySet
 from idf_component_tools.config import component_registry_url
 
 
@@ -132,18 +132,15 @@ class TestAPIClient(object):
         client = APIClient(base_url=registry_url, storage_url=storage_url, auth_token='test')
         client.component(component_name='espressif/cmp')  # no errors
 
-    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_only_yanked_version.yaml')
-    @pytest.mark.parametrize('version', [
-        '=1.1.0',
-        '1.1.0',
-    ])
+    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
+    @pytest.mark.parametrize('version', ['=1.1.0', '1.1.0', '==1.1.0,==1.1.0'])
     def test_only_yanked_version_warning(self, base_url, version):
         client = APIClient(base_url=base_url)
 
         with pytest.warns(UserWarning, match='component you have selected has been yanked'):
             client.component(component_name='example/cmp_yanked', version=version)
 
-    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_only_yanked_version.yaml')
+    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
     @pytest.mark.parametrize('version', [
         '>1.0.0',
         '^1.0.0',
@@ -151,8 +148,8 @@ class TestAPIClient(object):
         '*',
         None,
     ])
-    def test_only_yanked_version_any(self, base_url, version):
+    def test_filter_yanked_version(self, base_url, version):
         client = APIClient(base_url=base_url)
+        result = client.component(component_name='example/cmp_yanked', version=version)
 
-        with pytest.raises(VersionNotFound, match='satisfying the spec .* was not found.'):
-            client.component(component_name='example/cmp_yanked', version=version)
+        assert result.version == '1.0.1'
