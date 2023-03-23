@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 
 from ..errors import SourceError, warn
+from ..hash_tools import hash_dir
 from ..manifest import MANIFEST_FILENAME, ComponentWithVersions, HashedComponentVersion, ManifestManager
 from .base import BaseSource
 
@@ -54,6 +55,10 @@ class LocalSource(BaseSource):
 
         return path
 
+    @property
+    def component_hash_required(self):  # type: () -> bool
+        return True
+
     @classmethod
     def required_keys(cls):
         return {'path': 'str'}
@@ -69,6 +74,10 @@ class LocalSource(BaseSource):
     @property
     def hash_key(self):
         return self.source_details.get('path')
+
+    @property
+    def volatile(self):  # type: () -> bool
+        return True
 
     def download(self, component, download_path):
         directory_name = os.path.basename(str(self._path))
@@ -110,8 +119,14 @@ class LocalSource(BaseSource):
 
             dependencies = manifest.dependencies
 
+        component_hash = hash_dir(self._path)
+
         return ComponentWithVersions(
-            name=name, versions=[HashedComponentVersion(version_str, targets=targets, dependencies=dependencies)])
+            name=name,
+            versions=[
+                HashedComponentVersion(
+                    version_str, targets=targets, dependencies=dependencies, component_hash=component_hash)
+            ])
 
     def serialize(self):  # type: () -> Dict
         return {

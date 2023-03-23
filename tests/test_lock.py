@@ -3,6 +3,7 @@
 
 import filecmp
 import os
+import shutil
 import textwrap
 from io import open
 from pathlib import Path
@@ -16,7 +17,7 @@ from idf_component_tools.lock import EMPTY_LOCK, LockManager
 from idf_component_tools.manifest import (
     ComponentVersion, Manifest, ManifestManager, ProjectRequirements, SolvedComponent, SolvedManifest)
 from idf_component_tools.manifest.if_parser import parse_if_clause
-from idf_component_tools.sources import IDFSource, WebServiceSource
+from idf_component_tools.sources import IDFSource, LocalSource, WebServiceSource
 
 dependencies = {
     'idf': {
@@ -219,7 +220,7 @@ class TestLockManager(object):
         captured = capsys.readouterr()
         assert 'solving dependencies.' not in captured.out
 
-    def test_change_manifest_file_dependencies_rules(self, monkeypatch, capsys):
+    def test_change_manifest_file_dependencies_rules(self, monkeypatch, capsys, release_component_path):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         monkeypatch.setenv('IDF_VERSION', '4.4.0')
         manifest_dict = {
@@ -239,9 +240,10 @@ class TestLockManager(object):
                     (
                         'dependencies', {
                             'foo': {
-                                'component_hash': 'foo',
+                                'component_hash': 'e43b40c01119fab87b3c6acc616889d271497934d585d28debc42142f58a0b04',
                                 'source': {
-                                    'type': 'local'
+                                    'type': 'local',
+                                    'path': release_component_path
                                 },
                                 'version': '1.0.0',
                             }
@@ -309,3 +311,62 @@ class TestLockManager(object):
         captured = capsys.readouterr()
 
         assert "Dependencies lock doesn\'t exist, solving dependencies" in captured.out
+
+    def test_update_local_dependency_change_version(self, release_component_path, tmp_path, capsys):
+        project_dir = str(tmp_path / 'cmp')
+        shutil.copytree(release_component_path, project_dir)
+
+        manifest_dict = {'dependencies': {'cmp': {'path': project_dir}}}
+        manifest = Manifest.fromdict(manifest_dict, name='test_manifest')
+        project_requirements = ProjectRequirements([manifest])
+
+        components = [
+            SolvedComponent(
+                name='cmp',
+                version=ComponentVersion('1.0.0'),
+                source=LocalSource({'path': project_dir}),
+                component_hash='e43b40c01119fab87b3c6acc616889d271497934d585d28debc42142f58a0b04',
+            ),
+        ]
+
+        solution = SolvedManifest(components, manifest_hash=project_requirements.manifest_hash)
+
+        assert not is_solve_required(project_requirements, solution)
+
+        manifest_manager = ManifestManager(project_dir, 'cmp', check_required_fields=True)
+        manifest_manager.manifest_tree['version'] = '1.0.1'
+        manifest_manager.dump(str(project_dir))
+
+        assert is_solve_required(project_requirements, solution)
+        captured = capsys.readouterr()
+
+        assert 'version changed from 1.0.0 to 1.0.1, solving dependencies' in captured.out
+
+    def test_update_local_dependency_change_file(self, release_component_path, tmp_path, capsys):
+        project_dir = str(tmp_path / 'cmp')
+        shutil.copytree(release_component_path, project_dir)
+
+        manifest_dict = {'dependencies': {'cmp': {'path': project_dir}}}
+        manifest = Manifest.fromdict(manifest_dict, name='test_manifest')
+        project_requirements = ProjectRequirements([manifest])
+
+        components = [
+            SolvedComponent(
+                name='cmp',
+                version=ComponentVersion('1.0.0'),
+                source=LocalSource({'path': project_dir}),
+                component_hash='e43b40c01119fab87b3c6acc616889d271497934d585d28debc42142f58a0b04',
+            ),
+        ]
+
+        solution = SolvedManifest(components, manifest_hash=project_requirements.manifest_hash)
+
+        assert not is_solve_required(project_requirements, solution)
+
+        with open(os.path.join(project_dir, 'cmp.c'), 'w') as f:
+            f.write(u'File Changed')
+
+        assert is_solve_required(project_requirements, solution)
+        captured = capsys.readouterr()
+
+        assert 'was changed, solving dependencies.' in captured.out

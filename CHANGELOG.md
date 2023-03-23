@@ -34,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Prevent possible DNS spoof when `dependencies.lock` file exists and no need to be updated.
 - Always add `idf` as a dependency to `dependencies.lock` file even without explict declaration.
 - Fix git submodule update error when using submodule exists in the `path` field specified in the corresponding git dependency
+- Fixed a bug where dependencies of the component weren't updating when local component changed
+
 
 ## [1.2.2] 2023-01-17
 

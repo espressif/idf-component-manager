@@ -154,6 +154,14 @@ class BaseSource(object):
         """Returns True for meta components. Meta components are not included in the build directly"""
         return False
 
+    @property
+    def volatile(self):  # type: () -> bool
+        """
+        If it's a volatile source, update the dependency if the component_hash is different from the lock file.
+        If it's not, check the component integrity if the component_hash mismatched.
+        """
+        return False
+
     def normalized_name(self, name):  # type: (str) -> str
         return name
 
