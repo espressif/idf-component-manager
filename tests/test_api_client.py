@@ -14,7 +14,7 @@ from idf_component_tools.config import component_registry_url
 
 @pytest.fixture
 def base_url():
-    return 'http://localhost:5000'
+    return 'http://localhost:5000/api'
 
 
 class TestAPIClient(object):
@@ -114,7 +114,7 @@ class TestAPIClient(object):
         client = APIClient(base_url, storage_url=storage_url)
 
         assert client.component(component_name='example/cmp').download_url == os.path.join(
-            storage_url, '86f07b70-bb83-45f0-99c7-a10f82781f5a.tgz')
+            storage_url, '5390a837-5bc7-4564-b747-3adb22ad55f8.tgz')
 
     def test_no_registry_url_error(self, monkeypatch):
         monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'http://localhost:9000/test-public')
@@ -131,3 +131,25 @@ class TestAPIClient(object):
         registry_url, storage_url = component_registry_url()
         client = APIClient(base_url=registry_url, storage_url=storage_url, auth_token='test')
         client.component(component_name='espressif/cmp')  # no errors
+
+    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
+    @pytest.mark.parametrize('version', ['=1.1.0', '1.1.0', '==1.1.0,==1.1.0'])
+    def test_only_yanked_version_warning(self, base_url, version):
+        client = APIClient(base_url=base_url)
+
+        with pytest.warns(UserWarning, match='component you have selected has been yanked'):
+            client.component(component_name='example/cmp_yanked', version=version)
+
+    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
+    @pytest.mark.parametrize('version', [
+        '>1.0.0',
+        '^1.0.0',
+        '1.*.*',
+        '*',
+        None,
+    ])
+    def test_filter_yanked_version(self, base_url, version):
+        client = APIClient(base_url=base_url)
+        result = client.component(component_name='example/cmp_yanked', version=version)
+
+        assert result.version == '1.0.1'

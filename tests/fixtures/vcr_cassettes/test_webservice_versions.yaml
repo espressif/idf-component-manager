@@ -9,27 +9,27 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
     method: GET
-    uri: http://localhost:5000/
+    uri: http://localhost:5000/api
   response:
     body:
-      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\"\
-        , \n  \"info\": \"Espressif Component Manager Service HTTP JSON API\", \n\
-        \  \"status\": \"ok\", \n  \"version\": \"0.2.0\"\n}\n"
+      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",\n
+        \ \"info\": \"Espressif Component Manager Service HTTP JSON API\",\n  \"status\":
+        \"ok\",\n  \"version\": \"0.2.0\"\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '171'
+      - '168'
       Content-Type:
       - application/json
       Date:
-      - Fri, 02 Sep 2022 09:03:32 GMT
+      - Tue, 21 Mar 2023 16:23:38 GMT
       Server:
-      - Werkzeug/2.1.2 Python/3.10.0
+      - Werkzeug/2.2.3 Python/3.11.1
     status:
       code: 200
       message: OK
@@ -43,39 +43,63 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
     method: GET
     uri: http://localhost:9000/test-public/components/example/cmp.json
   response:
     body:
-      string: '{"versions": [{"discussion": "", "docs": {}, "license": null, "documentation":
-        "", "url": "a4bc6071-63d9-4f21-ad7d-ef73ce651fbb.tgz", "issues": "", "version":
-        "0.0.5-alpha1", "homepage": "", "created_at": "2022-09-01T16:22:36.563938+00:00",
-        "uploader": "dmitry", "tags": [], "downloads_total": 0, "repository": "",
-        "component_hash": "034c3c5dddedd5b4afa3ebc23e04af4808a9a4e75fd8eaf9a3fc4027273f5310",
-        "examples": [], "description": null, "dependencies": [], "targets": []}, {"discussion":
-        "", "docs": {}, "license": null, "documentation": "", "url": "3f493bd8-5077-45e3-8c40-700b2f43510c.tgz",
-        "issues": "", "version": "0.0.4", "homepage": "", "created_at": "2022-09-02T09:01:02.789957+00:00",
-        "uploader": "dmitry", "tags": [], "downloads_total": 0, "repository": "",
-        "component_hash": "3f7ff82c7b2d5dec138a4f25570c3e54a3dbb2ec31f12180955c1edcec0bf958",
-        "examples": [], "description": null, "dependencies": [], "targets": []}],
-        "namespace": "example", "created_at": "2022-09-01T14:48:07.020336+00:00",
-        "featured": false, "name": "cmp"}'
+      string: '{"created_at": "2023-03-21T14:14:02.141163+00:00", "name": "cmp", "namespace":
+        "example", "versions": [{"url": "8241246f-ad29-435e-94af-c6da11bd19ee.tgz",
+        "targets": [], "docs": {"readme": "8241246f-ad29-435e-94af-c6da11bd19ee/readme.md"},
+        "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
+        "yanked_at": null, "description": "This component is an example, to be used
+        with the IDF component manager.", "downloads_total": 0, "issues": "", "tags":
+        [], "documentation": "", "exclusion_list": ["**/__pycache__", "**/*.pyc",
+        "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*", "**/dist/**/*",
+        "**/build/**/*", "**/managed_components/**/*", "**/dependencies.lock", "**/.github/**/*",
+        "**/.gitlab-ci.yml", "**/.idea/**/*", "**/.vscode/**/*", "**/.settings/**/*",
+        "**/sdkconfig", "**/sdkconfig.old", "**/.component_hash"], "dependencies":
+        [{"source": "service", "is_public": false, "name": "size-prove-besxcwe", "spec":
+        "9.8.4", "namespace": "rachael80dyw"}, {"source": "idf", "is_public": false,
+        "name": null, "spec": ">=4.1", "namespace": null}], "examples": [], "license":
+        {"url": "8241246f-ad29-435e-94af-c6da11bd19ee/license.txt", "name": "Unknown
+        license"}, "repository": "", "created_at": "2023-03-21T16:22:04.779802+00:00",
+        "uploader": "dmitry", "discussion": "", "version": "1.0.6-pre-1", "component_hash":
+        "238350fb0231815d477b99a10d87aa45f593dd46b635c5d8406d81b5347ac2de", "yanked_message":
+        null}, {"url": "5390a837-5bc7-4564-b747-3adb22ad55f8.tgz", "targets": [],
+        "docs": {"readme": "5390a837-5bc7-4564-b747-3adb22ad55f8/readme.md"}, "homepage":
+        "https://github.com/espressif/example_components/tree/main/cmp", "yanked_at":
+        null, "description": "This component is an example, to be used with the IDF
+        component manager.", "downloads_total": 0, "issues": "", "tags": [], "documentation":
+        "", "exclusion_list": ["**/__pycache__", "**/*.pyc", "**/*.pyd", "**/*.pyo",
+        "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*", "**/dist/**/*", "**/build/**/*",
+        "**/managed_components/**/*", "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml",
+        "**/.idea/**/*", "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
+        "**/.component_hash"], "dependencies": [{"source": "service", "is_public":
+        false, "name": "size-prove-besxcwe", "spec": "9.8.4", "namespace": "rachael80dyw"},
+        {"source": "idf", "is_public": false, "name": null, "spec": ">=4.1", "namespace":
+        null}], "examples": [], "license": {"url": "5390a837-5bc7-4564-b747-3adb22ad55f8/license.txt",
+        "name": "Unknown license"}, "repository": "", "created_at": "2023-03-21T14:14:02.361698+00:00",
+        "uploader": "dmitry", "discussion": "", "version": "1.0.0", "component_hash":
+        "504486bd41aee8dc87a68c23ba5666403b41ed4f4385c74950b0a49946a3c773", "yanked_message":
+        null}], "featured": false}'
     headers:
       Accept-Ranges:
       - bytes
+      Cache-Control:
+      - max-age=300
       Content-Length:
-      - '1035'
+      - '2802'
       Content-Security-Policy:
       - block-all-mixed-content
       Content-Type:
       - binary/octet-stream
       Date:
-      - Fri, 02 Sep 2022 09:03:32 GMT
+      - Tue, 21 Mar 2023 16:23:38 GMT
       ETag:
-      - '"aade7e58bcca50ef779cc1303ef0a228"'
+      - '"ab612f99af4e849fb54278ecd660f27a"'
       Last-Modified:
-      - Fri, 02 Sep 2022 09:01:02 GMT
+      - Tue, 21 Mar 2023 16:23:37 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -84,7 +108,7 @@ interactions:
       - Origin
       - Accept-Encoding
       X-Amz-Request-Id:
-      - 1710FFB458FCC2C5
+      - 174E7BC9E8E59FDD
       X-Content-Type-Options:
       - nosniff
       X-Xss-Protection:

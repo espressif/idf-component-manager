@@ -7,31 +7,31 @@ interactions:
       Accept-Encoding:
       - gzip, deflate
       Authorization:
-      - Bearer SoP1gZLb4GZUnT-xHs4zxucO8aKpPpNEF4PAYU45DqKl1R1XgjaWEpUkHFXAtIu_
+      - Bearer L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
     method: GET
-    uri: http://localhost:5000/
+    uri: http://localhost:5000/api
   response:
     body:
-      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",
-        \n  \"info\": \"Espressif Component Manager Service HTTP JSON API\", \n  \"status\":
-        \"ok\", \n  \"version\": \"0.2.0\"\n}\n"
+      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",\n
+        \ \"info\": \"Espressif Component Manager Service HTTP JSON API\",\n  \"status\":
+        \"ok\",\n  \"version\": \"0.2.0\"\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '171'
+      - '168'
       Content-Type:
       - application/json
       Date:
-      - Mon, 08 Aug 2022 17:37:50 GMT
+      - Tue, 21 Mar 2023 18:05:41 GMT
       Server:
-      - Werkzeug/2.1.2 Python/3.10.0
+      - Werkzeug/2.2.3 Python/3.11.1
     status:
       code: 200
       message: OK
@@ -43,53 +43,60 @@ interactions:
       Accept-Encoding:
       - gzip, deflate
       Authorization:
-      - Bearer SoP1gZLb4GZUnT-xHs4zxucO8aKpPpNEF4PAYU45DqKl1R1XgjaWEpUkHFXAtIu_
+      - Bearer L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
     method: GET
     uri: http://localhost:9000/test-public/components/espressif/cmp.json
   response:
     body:
-      string: '{"featured": false, "created_at": "2022-08-08T15:39:31.655332+00:00",
-        "versions": [{"homepage": "", "docs": {"readme": "c302ba35-9750-4b39-8e0a-54d20c5e4d06/readme.md"},
-        "version": "3.0.4", "component_hash": "ec0069763f87c38724e16369423863ff6b2d09d767691929b5f8f09c056fc320",
-        "description": "Test Component", "repository": "", "examples": [], "uploader":
-        "dmitry", "tags": [], "targets": ["esp32"], "created_at": "2022-08-08T15:39:31.906540+00:00",
-        "documentation": "", "issues": "", "url": "c302ba35-9750-4b39-8e0a-54d20c5e4d06.tgz",
-        "license": null, "discussion": "", "dependencies": [{"is_public": false, "source":
-        "idf", "spec": ">=4.0", "name": null, "namespace": null}]}, {"homepage": "",
-        "docs": {}, "version": "1.0.0", "component_hash": "5e17a5e31cf23d6f5ea8126ae409ab081f4467aaad6cb4ca78e70b1a7dbaf366",
-        "description": null, "repository": "", "examples": [], "uploader": "dmitry",
-        "tags": [], "targets": ["esp32"], "created_at": "2022-08-08T15:43:40.897343+00:00",
-        "documentation": "", "issues": "", "url": "246e76a3-9104-4c7b-8b55-0d2ffaa011fc.tgz",
-        "license": null, "discussion": "", "dependencies": [{"is_public": false, "source":
-        "idf", "spec": ">=4.0", "name": null, "namespace": null}]}], "name": "cmp",
-        "namespace": "espressif"}'
+      string: '{"created_at": "2023-03-21T15:15:02.245808+00:00", "name": "cmp", "namespace":
+        "espressif", "versions": [{"url": "3ce48021-7d8b-43ef-896e-53b88c338da5.tgz",
+        "targets": [], "docs": {"readme": "3ce48021-7d8b-43ef-896e-53b88c338da5/readme.md"},
+        "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
+        "yanked_at": null, "description": "This component is an example, to be used
+        with the IDF component manager.", "downloads_total": 0, "issues": "", "tags":
+        [], "documentation": "", "exclusion_list": ["**/__pycache__", "**/*.pyc",
+        "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*", "**/dist/**/*",
+        "**/build/**/*", "**/managed_components/**/*", "**/dependencies.lock", "**/.github/**/*",
+        "**/.gitlab-ci.yml", "**/.idea/**/*", "**/.vscode/**/*", "**/.settings/**/*",
+        "**/sdkconfig", "**/sdkconfig.old", "**/.component_hash"], "dependencies":
+        [{"source": "service", "is_public": false, "name": "size-prove-besxcwe", "spec":
+        "9.8.4", "namespace": "rachael80dyw"}, {"source": "idf", "is_public": false,
+        "name": null, "spec": ">=4.1", "namespace": null}], "examples": [], "license":
+        {"url": "3ce48021-7d8b-43ef-896e-53b88c338da5/license.txt", "name": "Unknown
+        license"}, "repository": "", "created_at": "2023-03-21T15:15:02.408210+00:00",
+        "uploader": "dmitry", "discussion": "", "version": "1.0.0", "component_hash":
+        "504486bd41aee8dc87a68c23ba5666403b41ed4f4385c74950b0a49946a3c773", "yanked_message":
+        null}], "featured": false}'
     headers:
       Accept-Ranges:
       - bytes
+      Cache-Control:
+      - max-age=300
       Content-Length:
-      - '1244'
+      - '1461'
       Content-Security-Policy:
       - block-all-mixed-content
       Content-Type:
       - binary/octet-stream
       Date:
-      - Mon, 08 Aug 2022 17:37:50 GMT
+      - Tue, 21 Mar 2023 18:05:41 GMT
       ETag:
-      - '"6467fd55fdaf2166f311a61027779368"'
+      - '"201b1165a0512b143bf515566dfb4fbd"'
       Last-Modified:
-      - Mon, 08 Aug 2022 17:37:31 GMT
+      - Tue, 21 Mar 2023 16:23:35 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains
       Vary:
       - Origin
+      - Accept-Encoding
       X-Amz-Request-Id:
-      - 17096F42EC60DB70
+      - 174E815BA1AFFEA9
       X-Content-Type-Options:
       - nosniff
       X-Xss-Protection:
@@ -101,24 +108,24 @@ interactions:
     body: !!python/object/new:_io.BytesIO
       state: !!python/tuple
       - !!binary |
-        LS1iZDAzY2Q2YzA2N2E0NWRlYjFhMDk3MmEzMGFkZTYwYw0KQ29udGVudC1EaXNwb3NpdGlvbjog
+        LS01NTdiNzVlNDUzMTk0YzViODllYWQ1ODFiODhiMTdlYQ0KQ29udGVudC1EaXNwb3NpdGlvbjog
         Zm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImNtcF8xLjAuMC1hbHBoYS50Z3oiDQpD
-        b250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL29jdGV0LXN0cmVhbQ0KDQofiwgI7knxYgL/Y21wXzEu
-        MC4wLWFscGhhLnRnegDtme9r2kAYx32dv+JwL6oFz/uVRO0PWtRRoVWpbuzFQEJymmNekiWxWMb+
-        9120rJushQ5MS30+oBdzDwmYe77fPM/hJm5ejL31lfQCmVb2Atny1EgIF4/HxXlKGGUVtK6UwCrL
-        vdTcvnKYsBbSudLyjDp2u90izCW45QiHUGFVgHdPs4R7FEnt2vZ2dLYjYX/nPBXMFUwI13ZN/tNi
-        Gtll5r/2Fsr3Us3Yv+NM2Hz+/p4/Bv0H/d/qP2/zdluwFuaU07YD+n8IdG+8b/JaZXmG83W+v/x3
-        hHhS/6nrGP2ntu0I88ucp1y4pIJImfl/oPrva/P8Z1pFSq/0LJXfVyqVQe1z/3YyGA0Rx5TXLSuT
-        ea07uhmPhv3hdDa57fYGtxOE6zsTl73ebDDsXn/q9TcBVRX5y1Ugq+YSqVyYVSbTmR/rJI5klNfq
-        oDDg/+D/b6b+s13qiDY3/k9dQR3IzgPA1wn2S6j/nvN/zjb1ny0Itxm1i/qvCAf/L6P+P7bQMZqM
-        e18aH9VSduPkPlWLMJ/Kdd5BjDCG+lmSyixTczS5Nw6uM1SbhF60CD1VR90Rup72zDV+X+Za+TLK
-        ZGMQGI9XcyXTDrpMPD+UDYaJCWtaHx7eC9BplgcqxuG5Zd3FKkBmNc5CuVzG5t3gh4UeSFIV5fNa
-        9aqYQfM01qh7M0Z3Ms1UHCGKCSZfo2r9xPoJmgX+D/7/n/7/2P+1ud2C+v8QUMH8sSLD93r5GvW/
-        Q3f6v4IX+Q/+v38CmcjIOLWvZNYxjmvWQwcdnZ8JTI4s7RnjNR9jtB2rgaYyyzdfMkWnuRkv5NrT
-        yVJis4LOLfM/LmS+iZRZwpn1YNCdrUM3vGUSeiAq4P/g/2/d/4XTogxS9RD8f1uJ7XUb+OX7v4wX
-        /X/Y/wX9B/0vT///6P+2bIeD/h+Q/hd94HCP+v9c/ceIu9P/5ZzA/m8pvEr/d7fXewJSAwAAAAAA
-        AAAAAAAAAAAAAAAAAAAAAAAAAAAA8FJ+ATGsuG8AUAAADQotLWJkMDNjZDZjMDY3YTQ1ZGViMWEw
-        OTcyYTMwYWRlNjBjLS0NCg==
+        b250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL29jdGV0LXN0cmVhbQ0KDQofiwgI9fEZZAL/Y21wXzEu
+        MC4wLWFscGhhLnRnegDtmWtv2jAUhvmcX2GxD4VKGN+SEHpRJ2AqEgVU2LQPk1CUGGKNXJaEimra
+        f59Tqt62Vuok0mo5jwQOseVIxOd9fY5xG7fPpu72XLq+TGt7gex4riWEs/vr4j4ljJIa2tZKYJPl
+        bqofX6smzEJhrkJ5Qi3bEYw6gmKz06HUqAEVoF3CM4qgtk1z11q7ljDxKOapEMTitu63dPwXAlBD
+        ZpnxH7or5blpyNjfx+lhy+X/9/7xu9B/8af+M9D/UvS/c6f/3OGOtoAO5pRTxxLgABWgd+F+lyOV
+        5RnOt/n+4t8S4ln9p7al9Z+apiX0L32fcmHr/R8pM/4rqv9eqN//IlSRCjfhIpU/NiqVfuPL4HI2
+        nIwRx5Q3DSOTeaM3uZhOxoPxfDG77PWHlzOEm086Pvb7i+G4N/rcH9wMqKvIW298WddTpHKlV5lM
+        F14cJnEko7zRBIUB/wf/fy/+b5o2tYTDtf9TW1ALorMCeGGCvRLyv5f8n7Mi/2OmINxk1Czyv2I4
+        +H8Z+f+hgQ7RbNr/2vqk1rIXJ9epWgX5XG7zLmKEMTTIklRmmVqi2bV28DBDjVngRqvAVU3Um6DR
+        vK/nuJtmpDwZZbI19LXHq6WSaRd9TFwvkC2GiR7WNj7c7gvQcZb7KsbBqWFcxcpHejUuArlex3pv
+        8NNAtySpivJlo35e9KBlGoeodzFFVzLNVBwhigkm36J688j4BZoF/g/+/2/+/7D+a3PLhFiqAMpf
+        3mdk+Dpcv0X+b9En9V/BiQ3+Xwa+TGSkndpTMutqx9XroYsOTk8EJgdG6Grj1R9ttF2jheYyy2++
+        ZIqOc92eya0bJmuJ9Qo6NfT/uJL5zUiZJZwZtwbd3Tl0y10ngQuiAv4P/v/u/Z86ZgdCtQr+v8vE
+        9noM/PrzX6a3n3D+C/oP+l+i/j+s/3ZMi4P+V0j/izpwsEf9fyn/YzrZe1z/5ZzA+W8pvEn992mt
+        9wikBgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4LX8BtxNg4IAUAAADQotLTU1N2I3NWU0NTMx
+        OTRjNWI4OWVhZDU4MWI4OGIxN2VhLS0NCg==
       - 0
       - null
     headers:
@@ -127,34 +134,34 @@ interactions:
       Accept-Encoding:
       - gzip, deflate
       Authorization:
-      - Bearer SoP1gZLb4GZUnT-xHs4zxucO8aKpPpNEF4PAYU45DqKl1R1XgjaWEpUkHFXAtIu_
+      - Bearer L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ
       Connection:
       - keep-alive
       Content-Length:
-      - '985'
+      - '994'
       Content-Type:
-      - multipart/form-data; boundary=bd03cd6c067a45deb1a0972a30ade60c
+      - multipart/form-data; boundary=557b75e453194c5b89ead581b88b17ea
       User-Agent:
-      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
     method: POST
-    uri: http://localhost:5000/components/espressif/cmp/versions
+    uri: http://localhost:5000/api/components/espressif/cmp/versions
   response:
     body:
-      string: "{\n  \"job_id\": \"59608962-16fe-4838-af9e-0a0c174ea319\", \n  \"upload_format\":
-        \"tgz\", \n  \"upload_id\": \"ba5592c5-920a-4954-a86a-75168a17bb05\"\n}\n"
+      string: "{\n  \"job_id\": \"42426816-3ef3-432e-8026-02b4a45aed4a\",\n  \"upload_format\":
+        \"tgz\",\n  \"upload_id\": \"32636665-f9d4-4daa-8ca5-823aa9c2de64\"\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '138'
+      - '136'
       Content-Type:
       - application/json
       Date:
-      - Mon, 08 Aug 2022 17:37:51 GMT
+      - Tue, 21 Mar 2023 18:05:41 GMT
       Server:
-      - Werkzeug/2.1.2 Python/3.10.0
+      - Werkzeug/2.2.3 Python/3.11.1
     status:
       code: 201
       message: CREATED
@@ -166,30 +173,31 @@ interactions:
       Accept-Encoding:
       - gzip, deflate
       Authorization:
-      - Bearer SoP1gZLb4GZUnT-xHs4zxucO8aKpPpNEF4PAYU45DqKl1R1XgjaWEpUkHFXAtIu_
+      - Bearer L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
     method: GET
-    uri: http://localhost:5000/tasks/59608962-16fe-4838-af9e-0a0c174ea319
+    uri: http://localhost:5000/api/tasks/42426816-3ef3-432e-8026-02b4a45aed4a
   response:
     body:
-      string: "{\n  \"id\": \"59608962-16fe-4838-af9e-0a0c174ea319\", \n  \"message\":
-        \"Processing license file\", \n  \"progress\": 80.0, \n  \"status\": \"processing\"\n}\n"
+      string: '{"id": "42426816-3ef3-432e-8026-02b4a45aed4a", "message": "Processing
+        examples", "progress": 80.0, "status": "processing", "warnings": ["URL field
+        is missing in the manifest file", "URL field is missing in the manifest file"]}'
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '140'
+      - '226'
       Content-Type:
       - application/json
       Date:
-      - Mon, 08 Aug 2022 17:37:51 GMT
+      - Tue, 21 Mar 2023 18:05:42 GMT
       Server:
-      - Werkzeug/2.1.2 Python/3.10.0
+      - Werkzeug/2.2.3 Python/3.11.1
     status:
       code: 200
       message: OK
@@ -201,31 +209,33 @@ interactions:
       Accept-Encoding:
       - gzip, deflate
       Authorization:
-      - Bearer SoP1gZLb4GZUnT-xHs4zxucO8aKpPpNEF4PAYU45DqKl1R1XgjaWEpUkHFXAtIu_
+      - Bearer L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.1.4 (Darwin/20.6.0 arm64; python/3.9.13)
+      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
     method: GET
-    uri: http://localhost:5000/tasks/59608962-16fe-4838-af9e-0a0c174ea319
+    uri: http://localhost:5000/api/tasks/42426816-3ef3-432e-8026-02b4a45aed4a
   response:
     body:
-      string: "{\n  \"id\": \"59608962-16fe-4838-af9e-0a0c174ea319\", \n  \"message\":
-        \"Uploaded archive successfully processed\", \n  \"progress\": 100.0, \n  \"status\":
-        \"success\"\n}\n"
+      string: '{"id": "42426816-3ef3-432e-8026-02b4a45aed4a", "message": "The uploaded
+        component was successfully processed. It may take up to 5 minutes for the
+        new version to be available globally.", "progress": 100.0, "status": "success",
+        "warnings": ["URL field is missing in the manifest file", "URL field is missing
+        in the manifest file"]}'
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '154'
+      - '329'
       Content-Type:
       - application/json
       Date:
-      - Mon, 08 Aug 2022 17:37:54 GMT
+      - Tue, 21 Mar 2023 18:05:45 GMT
       Server:
-      - Werkzeug/2.1.2 Python/3.10.0
+      - Werkzeug/2.2.3 Python/3.11.1
     status:
       code: 200
       message: OK

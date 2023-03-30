@@ -91,6 +91,31 @@ def create_session(
     return session
 
 
+def filter_versions(versions, version_filter, component_name):  # type: (list[dict], str, str) -> list[dict]
+    if version_filter and version_filter != '*':
+        requested_version = SimpleSpec(str(version_filter))
+        filtered_versions = [v for v in versions if requested_version.match(Version(v['version']))]
+
+        if not filtered_versions or not any([bool(v.get('yanked_at')) for v in filtered_versions]):
+            return filtered_versions
+
+        clause = requested_version.clause.simplify()
+        # Some clauses don't have an operator attribute, need to check
+        if hasattr(clause, 'operator') and clause.operator == '==' and filtered_versions[0]['yanked_at']:
+            warn(
+                'The version "{}" of the "{}" component you have selected has been yanked from the repository '
+                'due to the following reason: "{}". We recommend that you update to a different version. '
+                'Please note that continuing to use a yanked version can result in unexpected behavior and '
+                'issues with your project.'.format(
+                    clause.target, component_name.lower(), filtered_versions[0]['yanked_message']))
+        else:
+            filtered_versions = [v for v in filtered_versions if not v.get('yanked_at')]
+    else:
+        filtered_versions = [v for v in versions if not v.get('yanked_at')]
+
+    return filtered_versions
+
+
 class ComponentDetails(Manifest):
     def __init__(
             self,
@@ -197,6 +222,7 @@ class APIClient(object):
             method,  # type: str
             path,  # type: list[str]
             data=None,  # type: dict | None
+            json=None,  # type: dict | None
             headers=None,  # type: dict | None
             schema=None,  # type: Schema | None
             use_storage=False,  # type: bool
@@ -217,6 +243,7 @@ class APIClient(object):
                 method,
                 endpoint,
                 data=data,
+                json=json,
                 headers=headers,
                 timeout=timeout,
                 allow_redirects=True,
@@ -237,7 +264,7 @@ class APIClient(object):
                     'Internal server error happended while processing requrest to:\n{}\nStatus code: {}'.format(
                         endpoint, response.status_code))
 
-            json = response.json()
+            response_json = response.json()
         except requests.exceptions.ConnectionError as e:
             raise NetworkConnectionError(str(e))
         except requests.exceptions.RequestException:
@@ -245,14 +272,14 @@ class APIClient(object):
 
         try:
             if schema is not None:
-                schema.validate(json)
+                schema.validate(response_json)
         except SchemaError as e:
             raise APIClientError('API Endpoint "{}: returned unexpected JSON:\n{}'.format(endpoint, str(e)))
 
         except (ValueError, KeyError, IndexError):
             raise APIClientError('Unexpected component server response')
 
-        return json
+        return response_json
 
     @property
     def storage_url(self):
@@ -279,11 +306,19 @@ class APIClient(object):
 
                 session = create_session(cache=cache, token=self.auth_token)
 
-                def request(method, path, data=None, headers=None, schema=None):
+                def request(method, path, data=None, json=None, headers=None, schema=None):
                     if use_storage:
                         path[-1] += '.json'
                     return self._base_request(
-                        url, session, method, path, data=data, headers=headers, schema=schema, use_storage=use_storage)
+                        url,
+                        session,
+                        method,
+                        path,
+                        data=data,
+                        json=json,
+                        headers=headers,
+                        schema=schema,
+                        use_storage=use_storage)
 
                 return f(self, request=request, *args, **kwargs)
 
@@ -340,11 +375,7 @@ class APIClient(object):
         )
         versions = response['versions']
 
-        if version and version != '*':
-            requested_version = SimpleSpec(str(version))
-            filtered_versions = [v for v in versions if requested_version.match(Version(v['version']))]
-        else:
-            filtered_versions = versions
+        filtered_versions = filter_versions(versions, version, component_name)
 
         if not filtered_versions:
             raise VersionNotFound(
@@ -408,6 +439,12 @@ class APIClient(object):
     @_request(cache=False)
     def delete_version(self, request, component_name, component_version):
         request('delete', ['components', component_name.lower(), component_version])
+
+    @auth_required
+    @_request(cache=False)
+    def yank_version(self, request, component_name, component_version, yank_message):
+        request(
+            'post', ['components', component_name.lower(), component_version, 'yank'], json={'message': yank_message})
 
     @_request(cache=False)
     def task_status(self, request, job_id):  # type: (Callable, str) -> TaskStatus

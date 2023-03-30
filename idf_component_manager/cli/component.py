@@ -82,3 +82,15 @@ def delete(manager, service_profile, namespace, name, version):
     The deleted version cannot be restored or re-uploaded.
     """
     manager.delete_version(name, version, service_profile=service_profile, namespace=namespace)
+
+
+@component.command()
+@add_options(PROJECT_OPTIONS + NAMESPACE_NAME_OPTIONS)
+@click.option('--version', required=True, help='Component version to yank version')
+@click.option('--message', required=True, help='Message why component version will be removed from the registry')
+def yank(manager, service_profile, namespace, name, version, message):
+    """
+    Yank specified version of the component from the component registry.
+    Yanked version can be downloaded from the registry with warning message
+    """
+    manager.yank_version(name, version, message, service_profile=service_profile, namespace=namespace)

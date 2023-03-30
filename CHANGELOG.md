@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Print message with the reason why the component manager desided to solve dependencies again
 - Add `update-dependencies` command to `idf.py` for updating dependencies of the project
 - Add manifest format reference to the documentation
+- Add `compote component yank` CLI command to yank version of the component from the registry
 
 ### Fixed
 

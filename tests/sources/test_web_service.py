@@ -18,7 +18,7 @@ from idf_component_tools.sources.web_service import download_archive
 class TestComponentWebServiceSource(object):
     EXAMPLE_HASH = 'ed55692af0eed2feb68f6d7a2ef95a0142b20518a53a0ceb7c699795359d7dc5'
     LOCALHOST_HASH = '02d9269ed8690352e6bfc5f6a6c60e859fa6cbfc56efe75a1199b35bdd6c54c8'
-    CMP_HASH = 'c8ac77c6e836c722feb8d48ec7a22a784c1e6c9c9b666650d80c73488211e768'
+    CMP_HASH = '15a658f759a13f1767ca3810cd822e010aba1e36b3a980d140cc5e80e823f422'
 
     def test_service_is_me(self):
         assert WebServiceSource.is_me('test', None)
@@ -84,7 +84,7 @@ class TestComponentWebServiceSource(object):
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_pre_release.yaml')
     def test_pre_release_exists(self, capsys):
-        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/'})
+        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/api/'})
 
         captured = capsys.readouterr()
         with pytest.raises(FetchingError):
@@ -101,23 +101,23 @@ class TestComponentWebServiceSource(object):
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_pre_release.yaml')
     def test_pre_release_exists_with_pre_release_spec(self, monkeypatch):
-        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/'})
+        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/api/'})
 
         source.versions('example/cmp', spec='^0.0.5-alpha1')
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_versions.yaml')
     def test_skip_pre_release(self):
-        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/', 'pre_release': False})
+        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/api/', 'pre_release': False})
         assert len(source.versions('example/cmp').versions) == 1
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_versions.yaml')
     def test_select_pre_release(self):
-        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/', 'pre_release': True})
+        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/api/', 'pre_release': True})
         assert len(source.versions('example/cmp').versions) == 2
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_target.yaml')
     def test_target_exists(self, monkeypatch, capsys):
-        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/'})
+        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/api/'})
 
         captured = capsys.readouterr()
         with pytest.raises(FetchingError):

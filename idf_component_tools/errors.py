@@ -85,3 +85,11 @@ class ComponentModifiedError(ProcessingError):
 
 class InvalidComponentHashError(ProcessingError):
     pass
+
+
+class VersionNotFoundError(FatalError):
+    pass
+
+
+class VersionAlreadyExistsError(FatalError):
+    pass
