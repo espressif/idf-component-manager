@@ -21,8 +21,11 @@ def warn(message):  # type: (Exception | str) -> None
     warnings.warn(str(message))
 
 
-def hint(message):  # type: (Exception | str) -> None
-    warnings.warn(str(message), category=UserHint)
+def hint(message):  # type: (Warning | Exception | str) -> None
+    if isinstance(message, Warning):
+        warnings.warn(message)
+    else:
+        warnings.warn(str(message), category=UserHint)
 
 
 class FatalError(RuntimeError):
