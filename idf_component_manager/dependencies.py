@@ -88,25 +88,28 @@ def is_solve_required(project_requirements, solution):
         return True
 
     for component in solution.dependencies:
-        # Handle meta components, like ESP-IDF
-        if not component.source.meta:
-            continue
-
         try:
             component_version = component.source.versions(component.name).versions[0]  # type: HashedComponentVersion
 
-            if component_version != component.version:
-                print_info(
-                    'Dependency "{}" version changed from {} to {}, solving dependencies.'.format(
-                        component, component.version, component_version))
-                return True
+            # Handle meta components, like ESP-IDF, and volatile components, like local
+            if component.source.meta or component.source.volatile:
+                if component_version != component.version:
+                    print_info(
+                        'Dependency "{}" version changed from {} to {}, solving dependencies.'.format(
+                            component, component.version, component_version))
+                    return True
 
+            # Should check for all types of source, but after version checking
             if component_version.component_hash != component.component_hash:
-                raise InvalidComponentHashError(
-                    'The hash sum of the component "{}" does not match the one recorded in your dependencies.lock '
-                    'file. This could be due to a potential spoofing of the download server, or your lock file may '
-                    'have become corrupted. Please review the lock file and verify the download server\'s '
-                    'authenticity to ensure the component\'s security and integrity.'.format(component))
+                if component.source.volatile:
+                    print_info('Dependency "{}" was changed, solving dependencies.'.format(component))
+                    return True
+                else:
+                    raise InvalidComponentHashError(
+                        'The hash sum of the component "{}" does not match the one recorded in your dependencies.lock '
+                        'file. This could be due to a potential spoofing of the download server, or your lock file may '
+                        'have become corrupted. Please review the lock file and verify the download server\'s '
+                        'authenticity to ensure the component\'s security and integrity.'.format(component))
 
         except IndexError:
             print_info('Dependency "{}" version changed, solving dependencies.'.format(component))

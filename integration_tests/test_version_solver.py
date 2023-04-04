@@ -282,7 +282,7 @@ def test_version_solver_on_local_components_higher_priority(project, result):
     with open(os.path.join(project, 'dependencies.lock')) as fr:
         d = yaml.safe_load(fr)
         assert d['dependencies']['test/circular_dependency_a'] == {
-            'component_hash': None,
+            'component_hash': 'eb1c6a4cd9290c12f9b3bede1cfdd63fe26cdae77d6a48d37794d77a2b3e10eb',
             'source': {
                 'path': os.path.join(project, 'test__circular_dependency_a'),
                 'type': 'local',
