@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 import vcr
+import yaml
 from pytest import raises
 
 from idf_component_manager.core import ComponentManager
@@ -157,6 +158,16 @@ def test_pack_component_with_examples(tmp_path, example_component_path):
     assert (tmp_path / 'unpack' / 'examples' / 'cmp_ex').is_dir()
     assert 'cmake_minimum_required(VERSION 3.16)' in (tmp_path / 'unpack' / 'examples' / 'cmp_ex' /
                                                       'CMakeLists.txt').read_text()
+
+
+def test_pack_component_with_rules_if(tmp_path, release_component_path, valid_optional_dependency_manifest):
+    project_path = tmp_path / 'cmp'
+    copy_tree(release_component_path, str(project_path))
+    with open(str(project_path / MANIFEST_FILENAME), 'w') as fw:
+        yaml.dump(valid_optional_dependency_manifest, fw)
+
+    component_manager = ComponentManager(path=str(project_path))
+    component_manager.pack_component('cmp', '2.3.4')
 
 
 @pytest.mark.parametrize(
