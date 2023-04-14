@@ -46,7 +46,12 @@ class LocalSource(BaseSource):
                 raise OSError()
 
         except OSError:
-            raise SourcePathError('Invalid source path, should be a directory: %s' % str(self._raw_path))
+            raise SourcePathError(
+                "The 'override_path' field in the manifest file '{}' does not point to a directory. You can safely "
+                'remove this field from the manifest if this project is an example copied from a component '
+                'repository. The dependency will be downloaded from the ESP component registry. Documentation: '
+                'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/manifest_file.html'
+                '#override-path'.format(str(self._raw_path / 'idf_component.yml')))
 
         if self.is_overrider and path / 'CMakeLists.txt' not in path.iterdir():
             raise SourcePathError(
