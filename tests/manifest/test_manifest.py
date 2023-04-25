@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import filecmp
 import os
@@ -404,6 +404,17 @@ class TestManifestValidator(object):
             assert len(w) == 1
             assert issubclass(w[-1].category, UserWarning)
             assert 'Content of the managed components directory is managed automatically' in str(w[-1].message)
+
+    def test_env_ignore_unknown_files_empty(self, monkeypatch, tmp_path):
+        monkeypatch.setenv('IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS', '')
+        managed_components_path = tmp_path / 'managed_components'
+        managed_components_path.mkdir()
+
+        unused_file = managed_components_path / 'unused_file'
+        unused_file.write_text(u'test')
+
+        with pytest.warns(UserWarning, match='1 unexpected files and directories were found*'):
+            detect_unused_components([], str(managed_components_path))
 
     @pytest.mark.parametrize(
         'if_clause, bool_value', [

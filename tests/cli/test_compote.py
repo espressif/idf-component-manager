@@ -90,6 +90,12 @@ def test_cache_path():
     assert FileCache().path() == output.decode('utf-8').strip()
 
 
+def test_env_cache_path_empty(monkeypatch):
+    monkeypatch.setenv('IDF_COMPONENT_CACHE_PATH', '')
+    output = subprocess.check_output(['compote', 'cache', 'path'])
+    assert FileCache().path() == output.decode('utf-8').strip()
+
+
 def test_cache_size(monkeypatch, tmp_path, file_with_size):
     monkeypatch.setenv('IDF_COMPONENT_CACHE_PATH', str(tmp_path))
 

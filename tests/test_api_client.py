@@ -10,6 +10,7 @@ from idf_component_manager import version
 from idf_component_tools.api_client import APIClient, env_cache_time, join_url, user_agent
 from idf_component_tools.api_client_errors import NoRegistrySet
 from idf_component_tools.config import component_registry_url
+from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL
 
 
 @pytest.fixture
@@ -71,6 +72,10 @@ class TestAPIClient(object):
         ua = user_agent()
         assert str(version) in ua
 
+    def test_env_cache_time_empty(self, monkeypatch):
+        monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '')
+        assert env_cache_time() == 5
+
     def test_env_cache_time_env_var(self, monkeypatch):
         monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '10')
         assert env_cache_time() == 10
@@ -123,6 +128,15 @@ class TestAPIClient(object):
         client = APIClient(base_url=registry_url, storage_url=storage_url, auth_token='test')
         with pytest.raises(NoRegistrySet):
             client.upload_version(component_name='example/cmp')
+
+    def test_env_var_for_upload_empty(self, monkeypatch):
+        monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', '')
+        monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', '')
+        monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', '')
+
+        registry_url, storage_url = component_registry_url()
+        assert registry_url == IDF_COMPONENT_REGISTRY_URL + 'api/'
+        assert storage_url == IDF_COMPONENT_STORAGE_URL
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_no_registry_url_use_static.yaml')
     def test_no_registry_url_use_static(self, monkeypatch):

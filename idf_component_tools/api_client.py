@@ -20,6 +20,7 @@ from tqdm import tqdm
 # Import whole module to avoid circular dependencies
 import idf_component_tools as tools
 from idf_component_tools.__version__ import __version__
+from idf_component_tools.environment import getenv_int
 from idf_component_tools.errors import warn
 from idf_component_tools.file_cache import FileCache as ComponentFileCache
 from idf_component_tools.semver import SimpleSpec, Version
@@ -52,7 +53,7 @@ MAX_RETRIES = 3
 
 def env_cache_time():
     try:
-        return int(os.environ.get('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', DEFAULT_API_CACHE_EXPIRATION_MINUTES))
+        return getenv_int('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', DEFAULT_API_CACHE_EXPIRATION_MINUTES)
     except ValueError:
         warn(
             'IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES is set to a non-numeric value. '

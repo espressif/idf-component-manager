@@ -20,6 +20,7 @@ from idf_component_manager.utils import print_info, print_warn
 from idf_component_tools.api_client_errors import APIClientError, NetworkConnectionError, VersionNotFound
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name
+from idf_component_tools.environment import getenv_int
 from idf_component_tools.errors import (
     FatalError, GitError, ManifestError, NothingToDoError, VersionAlreadyExistsError, VersionNotFoundError)
 from idf_component_tools.file_tools import check_unexpected_component_files, copy_filtered_directory, create_directory
@@ -43,13 +44,17 @@ try:
 except ImportError:
     pass
 
-try:
-    PROCESSING_TIMEOUT = int(os.getenv('COMPONENT_MANAGER_JOB_TIMEOUT', 300))
-except TypeError:
-    print_warn(
-        'Cannot parse value of COMPONENT_MANAGER_JOB_TIMEOUT.'
-        ' It should be number of seconds to wait for job result.')
-    PROCESSING_TIMEOUT = 300
+
+# PROCESSING_TIMEOUT
+def get_processing_timeout():
+    try:
+        return getenv_int('COMPONENT_MANAGER_JOB_TIMEOUT', 300)
+    except ValueError:
+        print_warn(
+            'Cannot parse value of COMPONENT_MANAGER_JOB_TIMEOUT.'
+            ' It should be number of seconds to wait for job result.')
+        return 300
+
 
 CHECK_INTERVAL = 3
 MAX_PROGRESS = 100  # Expected progress is in percent
@@ -392,7 +397,7 @@ class ComponentManager(object):
             'You can check the state of processing by running CLI command '
             '"compote component upload-status --job=%s"' % job_id)
 
-        timeout_at = datetime.now() + timedelta(seconds=PROCESSING_TIMEOUT)
+        timeout_at = datetime.now() + timedelta(seconds=get_processing_timeout())
 
         try:
             with ProgressBar(total=MAX_PROGRESS, unit='%') as progress_bar:
@@ -411,7 +416,8 @@ class ComponentManager(object):
                     time.sleep(CHECK_INTERVAL)
         except TimeoutError:
             raise FatalError(
-                "Component wasn't processed in {} seconds. Check processing status later.".format(PROCESSING_TIMEOUT))
+                "Component wasn't processed in {} seconds. Check processing status later.".format(
+                    get_processing_timeout()))
 
     @general_error_handler
     def upload_component_status(self, job_id, service_profile=None):  # type: (str, str | None) -> None
