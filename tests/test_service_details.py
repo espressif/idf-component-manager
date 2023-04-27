@@ -71,6 +71,18 @@ def test_get_token_env(service_config, monkeypatch):
     assert get_token(service_config) == 'some_token'
 
 
+def test_empty_env_API_Token(service_config, monkeypatch):
+    monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', '')
+    with raises(FatalError, match='Failed to get API Token from the config file'):
+        get_token(service_config, token_required=True)
+
+
+def test_empty_env_registry_profile(monkeypatch):
+    monkeypatch.setenv('IDF_COMPONENT_REGISTRY_PROFILE', '')
+    with raises(NoSuchProfile, match="Profile \"not_exists\" not found in the idf_component_manager.yml config file"):
+        service_details(service_profile='not_exists')
+
+
 def test_get_token_profile(config_path, monkeypatch):
     profile = ConfigManager(path=config_path).load().profiles['test']
     assert get_token(profile) == 'token'

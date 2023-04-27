@@ -71,6 +71,12 @@ class TestValidateManagedComponent(object):
         # expect it won't raise exception
         validate_managed_component_hash(str(tmp_path))
 
+    def test_env_overwrite_managed_components_empty(self, tmp_path, monkeypatch):
+        # Treated as false
+        monkeypatch.setenv('IDF_COMPONENT_OVERWRITE_MANAGED_COMPONENTS', '')
+        with pytest.raises(HashDoesNotExistError):
+            validate_managed_component_hash(str(tmp_path))
+
     def test_doesnt_exist(self, tmp_path):
         with pytest.raises(HashDoesNotExistError):
             validate_managed_component_hash(str(tmp_path))
