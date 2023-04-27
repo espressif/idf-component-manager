@@ -60,3 +60,25 @@ def test_reconfigure_with_invalid_override_path(project):
 def test_reconfigure_with_multi_override_paths(project):
     res = project_action(project, 'reconfigure')
     assert 'Configuring done' in res
+
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'cmp': {
+                            'version': '*',
+                            'path': fixtures_path('components', 'cmp'),
+                            'override_path': '../../not_exists'
+                        },
+                    }
+                }
+            }
+        },
+    ],
+    indirect=True)
+def test_reconfigure_with_override_path_not_a_folder(project):
+    res = project_action(project, 'reconfigure')
+    assert 'does not point to a directory' in res

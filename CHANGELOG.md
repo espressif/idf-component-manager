@@ -38,6 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a bug where dependencies of the component weren't updating when local component changed
 - Components with optional dependencies could be uploaded normally
 
+### Changed
+
+- Updated error message if override_path is not a folder
+
 ## [1.2.2] 2023-01-17
 
 ### Fixed
