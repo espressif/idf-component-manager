@@ -79,14 +79,16 @@ class ComponentManager(object):
         # type: (str, Optional[str], Optional[str], int) -> None
 
         # Working directory
-        self.path = os.path.abspath(path)
+        path = os.path.abspath(path)
+        self.path = path
 
         # Set path of the project's main component
-        self.main_component_path = os.path.join(self.path, 'main')
+        self.main_component_path = os.path.join(path, 'main')
 
         # Set path of the manifest file for the project's main component
         self.main_manifest_path = manifest_path or (
             os.path.join(path, 'main', MANIFEST_FILENAME) if os.path.isdir(path) else path)
+        self.main_component_path = os.path.normpath(self.main_component_path)
 
         # Lock path
         if not lock_path:
@@ -98,6 +100,8 @@ class ComponentManager(object):
             self.lock_path = lock_path
         else:
             self.lock_path = os.path.join(path, lock_path)
+
+        self.lock_path = os.path.abspath(self.lock_path)
 
         # Components directories
         self.components_path = os.path.join(self.path, 'components')
