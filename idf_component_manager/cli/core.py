@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import sys
+import warnings
 
 import click
 
@@ -28,8 +29,10 @@ if CLICK_SUPPORTS_SHOW_DEFAULT:
 
 
 @click.group(context_settings=DEFAULT_SETTINGS)
-def cli():
-    pass
+@click.option('--warnings-as-errors', '-W', is_flag=True, default=False, help='Raise exception on warnings')
+def cli(warnings_as_errors):
+    if warnings_as_errors:
+        warnings.filterwarnings('error', category=UserWarning)
 
 
 @cli.command()
@@ -53,6 +56,9 @@ def safe_cli():
     """
     try:
         cli()
+    except UserWarning as e:
+        print_error(e)
+        sys.exit(1)
     except FatalError as e:
         print_error(e)
         sys.exit(e.exit_code)

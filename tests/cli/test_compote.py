@@ -20,6 +20,22 @@ def mock_token(monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
 
 
+def test_raise_exception_on_warnings(monkeypatch):
+    # Raises warning in api_client.py in env_cache_time()
+    monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', 'test')
+
+    process = subprocess.Popen(
+        ['compote', '--warnings-as-errors', 'project', 'create-from-example', 'example/cmp=3.3.8:cmp'],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE)
+    _, stderr = process.communicate()
+    decoded = stderr.decode('utf-8')
+
+    assert process.returncode == 1
+    assert 'ERROR: IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES is set to a non-numeric value.' in decoded
+    assert 'Please set the variable to the number of minutes. Using the default value of 5 minutes.' in decoded
+
+
 def test_manifest_create_add_dependency(tmp_path):
     tempdir = str(tmp_path)
 
