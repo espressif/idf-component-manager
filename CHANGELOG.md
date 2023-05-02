@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Treat local source dependency priority higher
 - Add `--install` flag to `compote autocomplete` to create the completion files and append the sourcing code into the rc files. By default, print the completion functions to the console.
 - Add `--dry-run` flag to `compote autocomplete --install` to simulate the install script.
+- Add `--dry-run` flag to `compote component upload` to simulate the upload process
 - Print message with the reason why the component manager desided to solve dependencies again
 - Add `update-dependencies` command to `idf.py` for updating dependencies of the project
 - Add manifest format reference to the documentation

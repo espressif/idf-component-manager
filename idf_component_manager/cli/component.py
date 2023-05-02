@@ -45,7 +45,14 @@ def pack(manager, namespace, name, version):  # noqa: namespace is not used
     '--check-only', is_flag=True, default=False, help='Check if given component version is already uploaded and exit.')
 @click.option(
     '--allow-existing', is_flag=True, default=False, help='Return success if existing version is already uploaded.')
-def upload(manager, service_profile, namespace, name, version, archive, skip_pre_release, check_only, allow_existing):
+@click.option(
+    '--dry-run',
+    is_flag=True,
+    default=False,
+    help='Upload component for validation without creating a version in the registry.')
+def upload(
+        manager, service_profile, namespace, name, version, archive, skip_pre_release, check_only, allow_existing,
+        dry_run):
     """
     Upload component to the component registry.
 
@@ -60,6 +67,7 @@ def upload(manager, service_profile, namespace, name, version, archive, skip_pre
         skip_pre_release=skip_pre_release,
         check_only=check_only,
         allow_existing=allow_existing,
+        dry_run=dry_run,
     )
 
 

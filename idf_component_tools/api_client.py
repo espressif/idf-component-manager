@@ -420,7 +420,7 @@ class APIClient(object):
 
     @auth_required
     @_request(cache=False)
-    def upload_version(self, request, component_name, file_path):
+    def upload_version(self, request, component_name, file_path, validate_only=False):
         with open(file_path, 'rb') as file:
             filename = os.path.basename(file_path)
 
@@ -435,10 +435,15 @@ class APIClient(object):
 
             data = MultipartEncoderMonitor(encoder, callback)
 
+            if validate_only:
+                endpoint = ['components', 'validate']
+            else:
+                endpoint = ['components', component_name.lower(), 'versions']
+
             try:
                 return request(
                     'post',
-                    ['components', component_name.lower(), 'versions'],
+                    endpoint,
                     data=data,
                     headers=headers,
                     schema=VERSION_UPLOAD_SCHEMA,
