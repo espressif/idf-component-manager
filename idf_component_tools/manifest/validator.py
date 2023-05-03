@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -34,7 +34,7 @@ KNOWN_ROOT_KEYS = [
     'examples'
 ] + LINKS
 
-DEFAULT_KNOWN_TARGETS = ['esp32', 'esp32s2', 'esp32c3', 'esp32s3', 'linux', 'esp32h2', 'esp32h4', 'esp32c2', 'esp32c6']
+DEFAULT_KNOWN_TARGETS = ['esp32', 'esp32s2', 'esp32c3', 'esp32s3', 'esp32c2', 'esp32c6', 'esp32h2', 'linux']
 
 KNOWN_FILES_KEYS = [
     'include',
