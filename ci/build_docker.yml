@@ -9,17 +9,17 @@ build:
   timeout: 2h
   parallel:
     matrix:
-      - IDF_BRANCH: [release/v4.1, release/v4.2]
-        PYTHON_IMAGE_TAG: [2.7-buster, 3.4-stretch, 3.10-bullseye]
-      - IDF_BRANCH: [release/v4.3]
-        PYTHON_IMAGE_TAG: [3.5-stretch, 3.10-bullseye]
-      - IDF_BRANCH: [release/v4.4]
-        PYTHON_IMAGE_TAG: [3.6-bullseye, 3.10-bullseye]
-      - IDF_BRANCH: [release/v5.0, master]
-        PYTHON_IMAGE_TAG: [3.7-bullseye, 3.10-bullseye]
+      - IDF_BRANCH: [release-v4.1, release-v4.2]
+        PYTHON_IMAGE_TAG: [2.7-buster, 3.5-buster, 3.11-bullseye]
+      - IDF_BRANCH: [release-v4.3]
+        PYTHON_IMAGE_TAG: [3.5-buster, 3.11-bullseye]
+      - IDF_BRANCH: [release-v4.4]
+        PYTHON_IMAGE_TAG: [3.6-bullseye, 3.11-bullseye]
+      - IDF_BRANCH: [release-v5.0, release-v5.1, master]
+        PYTHON_IMAGE_TAG: [3.7-bullseye, 3.11-bullseye]
   script:
-    - ESCAPED_IDF_BRANCH=$(echo $IDF_BRANCH | sed -e "s/\//-/g")
-    - IMAGE_TAG="${DOCKER_REGISTRY}/component-manager-integration-tests:${PYTHON_IMAGE_TAG}-${ESCAPED_IDF_BRANCH}"
+    - UNESCAPED_IDF_BRANCH=$(echo $IDF_BRANCH | sed -e "s/release-v/release\/v/g")
+    - IMAGE_TAG="${DOCKER_REGISTRY}/component-manager-integration-tests:${PYTHON_IMAGE_TAG}-${IDF_BRANCH}"
     - mkdir -p /kaniko/.docker
     - echo "${DOCKER_AUTH_CONFIG}" > /kaniko/.docker/config.json
     - /kaniko/executor
@@ -28,6 +28,6 @@ build:
       --build-arg IDF_FILE_API_URL=https://${GITLAB_HTTPS_SERVER}/api/v4/projects/${IDF_PROJ_ID}/repository/files
       --build-arg API_TOKEN="${IDF_API_TOKEN}"
       --build-arg PYTHON_IMAGE_TAG="${PYTHON_IMAGE_TAG}"
-      --build-arg IDF_BRANCH="${IDF_BRANCH}"
+      --build-arg IDF_BRANCH="${UNESCAPED_IDF_BRANCH}"
       --cache=true
       --cache-ttl=720h
