@@ -34,6 +34,7 @@ REQUIRES = [
     'pyyaml>5.2;python_version>="3.5"',
     'pyyaml<=5.2;python_version=="2.7.*"',
     'requests<3',
+    'urllib3<2',
     'requests-file',
     'requests-toolbelt',
     'schema',
