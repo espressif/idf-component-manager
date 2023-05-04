@@ -15,7 +15,7 @@ integration_test:
     when: always
   parallel:
     matrix:
-      - IDF_BRANCH: [release-v4.1, release-v4.2]
+      - IDF_BRANCH: [release-v4.2]
         PYTHON_IMAGE_TAG: [2.7-buster, 3.5-buster, 3.11-bullseye]
       - IDF_BRANCH: [release-v4.3]
         PYTHON_IMAGE_TAG: [3.5-buster, 3.11-bullseye]
