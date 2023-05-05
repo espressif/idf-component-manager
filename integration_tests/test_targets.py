@@ -5,7 +5,7 @@ from io import open
 
 import pytest
 
-from .integration_test_helpers import set_target, skip_for_idf_versions
+from .integration_test_helpers import set_target
 
 
 @pytest.mark.parametrize(
@@ -23,9 +23,6 @@ from .integration_test_helpers import set_target, skip_for_idf_versions
         },
     ], indirect=True)
 def test_changing_target(project):
-    if skip_for_idf_versions('v4.1'):
-        return
-
     lock_path = os.path.join(project, 'dependencies.lock')
     res = set_target(project, 'esp32')
     assert 'Building ESP-IDF components for target esp32' in res

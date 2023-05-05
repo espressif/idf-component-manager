@@ -138,7 +138,7 @@ def test_env_var(project, monkeypatch):
     ],
     indirect=True)
 def test_build_pure_cmake(project):
-    if skip_for_idf_versions('v4.1', 'v4.2', 'v4.3'):
+    if skip_for_idf_versions('v4.2', 'v4.3'):
         return
 
     build_dir = os.path.join(project, 'build')
