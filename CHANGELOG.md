@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a bug where dependencies of the component weren't updating when local component changed
 - Components with optional dependencies could be uploaded normally
 - Pin urllib version to <2 to avoid incompatibility with older python versions
+- Fix mixed slashes in paths on Windows
 
 ### Changed
 
