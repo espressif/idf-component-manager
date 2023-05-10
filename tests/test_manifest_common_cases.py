@@ -45,7 +45,7 @@ def test_validator_broken_deps():
     }
     errors = ManifestValidator(manifest).validate_normalize()
     assert len(errors) == 6
-    assert errors[0] == 'Unknown keys that may affect build result: dependencies-*-type:number'
+    assert errors[0] == 'Unknown number field "dependencies:*" in the manifest file that may affect build result'
 
 
 def test_validator_valid_manifest(valid_manifest):

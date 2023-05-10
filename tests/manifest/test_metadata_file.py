@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+import pytest
 
 from idf_component_tools.manifest.metadata import Metadata
 
@@ -25,3 +26,13 @@ def test_metadata(tmp_path, valid_manifest):
         'tags-type:array-type:string',
         'url-type:string',
     ]
+
+
+@pytest.mark.parametrize(
+    's, key, types', [
+        ('files-exclude-type:array-type:string', 'exclude', 'array of string'),
+        ('dependencies-*-public-type:boolean', 'public', 'boolean'),
+        ('maintainers-type:array-type:string', 'maintainers', 'array of string'),
+    ])
+def test_metadata_get_key_and_types(s, key, types):
+    assert key, types == Metadata.get_closest_manifest_key_and_type(s)

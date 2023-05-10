@@ -1,7 +1,9 @@
 # SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
-from ..errors import MetadataError
+from six import reraise
+
+from ..errors import InternalError, MetadataError, MetadataKeyError
 from .constants import KNOWN_BUILD_METADATA_FIELDS, KNOWN_INFO_METADATA_FIELDS
 from .schemas import serialize_list_of_list_of_strings
 
@@ -60,8 +62,8 @@ class Metadata(object):
 
         return cls(build_metadata_keys, info_metadata_keys)
 
-    @staticmethod
-    def _parse_metadata_from_manifest(manifest_tree):  # type: (t.Any) -> tuple[list[str], list[str]]
+    @classmethod
+    def _parse_metadata_from_manifest(cls, manifest_tree):  # type: (t.Any) -> tuple[list[str], list[str]]
         metadata_keys = _flatten_manifest_file_keys(manifest_tree)
         build_metadata_keys = []
         info_metadata_keys = []
@@ -76,10 +78,43 @@ class Metadata(object):
                 if _k not in info_metadata_keys:
                     info_metadata_keys.append(_k)
             else:
-                errors.append('Unknown key {}'.format('-'.join(_k)))
+                _manifest_key, _manifest_type = cls.get_closest_manifest_key_and_type(_k)
+                errors.append(str(MetadataKeyError(_manifest_key, _manifest_type)))
 
         if errors:
             raise MetadataError(*errors)
 
         return serialize_list_of_list_of_strings(build_metadata_keys), serialize_list_of_list_of_strings(
             info_metadata_keys)
+
+    @staticmethod
+    def get_closest_manifest_key_and_type(metadata_key):  # type: (str | list[str]) -> t.Tuple[str, str]
+        """
+        One metadata key should look like "dependencies-*-rules-type:array-if-type:string",
+        or ['dependencies', '*', 'rules', 'type:array', 'if', 'type:string'] if it's a list
+
+        `type:...` is the type of this field
+
+        The output of the above example should be `if`, `string`,
+        """
+        if isinstance(metadata_key, list):
+            parts = metadata_key
+        else:
+            parts = metadata_key.split('-')
+
+        types = []
+        key = None
+        for i, part in enumerate(parts[::-1]):
+            if 'type:' in part:
+                types.append(part)
+            elif part == '*':  # any str could be the key
+                key = '{}:*'.format(parts[i - 1])
+                break
+            else:
+                key = part
+                break
+
+        if not key:
+            reraise(InternalError, ValueError('manifest key is not found in metadata key: "{}"'.format(metadata_key)))
+
+        return key, ' of '.join([_t.split('type:')[-1] for _t in types[::-1]])

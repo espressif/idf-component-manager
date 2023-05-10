@@ -7,6 +7,7 @@
 # Originally released under the MIT License.
 
 import re
+import sys
 
 URL_RE = (
     r'^https?://'  # http:// or https://
@@ -25,3 +26,8 @@ COMPILED_GIT_URL_RE = re.compile(GIT_URL_RE, re.IGNORECASE)
 DEFAULT_NAMESPACE = 'espressif'
 IDF_COMPONENT_REGISTRY_URL = 'https://components.espressif.com/'
 IDF_COMPONENT_STORAGE_URL = 'https://components-file.espressif.com/'
+
+UPDATE_SUGGESTION = """SUGGESTION: This component may be using a newer version of the component manager.
+You can try to update the component manager by running:
+    {} -m pip install --upgrade idf-component-manager
+""".format(sys.executable)

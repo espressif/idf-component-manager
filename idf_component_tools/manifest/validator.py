@@ -7,7 +7,7 @@ from schema import SchemaError
 
 import idf_component_tools as tools
 
-from ..errors import MetadataError, MetadataWarning, SourceError, hint
+from ..errors import MetadataError, MetadataKeyError, MetadataKeyWarning, SourceError, hint
 from .constants import FULL_SLUG_REGEX, known_targets
 from .metadata import Metadata
 from .schemas import BUILD_METADATA_KEYS, INFO_METADATA_KEYS, KNOWN_FILES_KEYS, MANIFEST_SCHEMA
@@ -49,15 +49,14 @@ class ManifestValidator(object):
 
         for key in self.metadata.build_metadata_keys:
             if key not in BUILD_METADATA_KEYS:
-                self.add_error('Unknown keys that may affect build result: %s' % key)
+                _k, _type = Metadata.get_closest_manifest_key_and_type(key)
+                self.add_error(str(MetadataKeyError(_k, _type)))
 
         for key in self.metadata.info_metadata_keys:
             if key not in INFO_METADATA_KEYS:
                 manifest_root_key = key.split('-')[0]
-                hint(
-                    MetadataWarning(
-                        'Unknown metadata info keys: "{}". Please consider upgrade idf-component-manager version. '
-                        'Dropping metadata info key "{}" in manifest if exists.'.format(key, manifest_root_key)))
+                _k, _type = Metadata.get_closest_manifest_key_and_type(key)
+                hint(MetadataKeyWarning(_k, _type))
                 if manifest_root_key in self.manifest_tree:
                     self.manifest_tree.pop(manifest_root_key)
 

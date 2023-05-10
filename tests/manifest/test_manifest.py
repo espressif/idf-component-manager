@@ -11,7 +11,7 @@ import pytest
 import yaml
 
 from idf_component_manager.dependencies import detect_unused_components
-from idf_component_tools.errors import ManifestError, MetadataWarning
+from idf_component_tools.errors import ManifestError, MetadataKeyWarning
 from idf_component_tools.manifest import (
     JSON_SCHEMA, SLUG_REGEX, ComponentVersion, ManifestManager, ManifestValidator, SolvedComponent)
 from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS, known_targets
@@ -128,8 +128,13 @@ class TestManifestValidator(object):
         errors = validator.validate_normalize()
 
         assert len(errors) == 3
-        assert errors[0].startswith('Unknown key unknown-type:string')
-        assert errors[1].startswith('Unknown key test-type:number')
+
+        # manifest_tree is not sorted. compare set not list
+        assert set(errors) == {
+            'Unknown string field "unknown" in the manifest file that may affect build result',
+            'Unknown number field "test" in the manifest file that may affect build result',
+            'Invalid manifest format',
+        }
 
     def test_validate_unknown_root_values(self, valid_manifest):
         valid_manifest['version'] = '1!.3.3'
@@ -188,7 +193,7 @@ class TestManifestValidator(object):
         errors = validator.validate_normalize()
 
         assert len(errors) == 5
-        assert errors[0] == 'Unknown keys that may affect build result: dependencies-*-persion-type:string'
+        assert errors[0] == 'Unknown string field "persion" in the manifest file that may affect build result'
         assert errors[-1] == 'Unknown keys in dependency details: persion'
 
     def test_validate_component_versions_invalid_name(self, valid_manifest):
@@ -264,7 +269,7 @@ class TestManifestValidator(object):
         errors = validator.validate_normalize()
 
         assert len(errors) == 2
-        assert errors[0] == 'Unknown keys that may affect build result: files-include-type:number'
+        assert errors[0] == 'Unknown number field "include" in the manifest file that may affect build result'
 
     def test_validate_tags_invalid_length(self, valid_manifest):
         valid_manifest['tags'].append('sm')
@@ -462,15 +467,11 @@ class TestManifestValidator(object):
         assert len(validator._errors) == 2
 
     def test_validate_examples_empty_element(self, valid_manifest):
-        valid_manifest['examples'] = [{'path: test'}, {}]
+        valid_manifest['examples'] = [{'path, test'}]  # list of set of string
         validator = ManifestValidator(valid_manifest)
 
-        with pytest.warns(
-                MetadataWarning,
-                match='Unknown metadata info keys: "examples-type:array-type:array-type:string". '
-                'Please consider upgrade idf-component-manager version. '
-                'Dropping metadata info key "examples" in manifest if exists.',
-        ):
+        with pytest.warns(MetadataKeyWarning,
+                          match='Unknown array of array of string field "examples" in the manifest file'):
             validator.validate_normalize()
 
         assert len(validator._errors) == 0

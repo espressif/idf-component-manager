@@ -3,11 +3,11 @@
 
 import copy
 import os
-import sys
 from io import open
 
 import yaml
 
+from ..constants import UPDATE_SUGGESTION
 from ..errors import ManifestError, MetadataError
 from .constants import MANIFEST_FILENAME
 from .env_expander import dump_yaml, expand_env_vars
@@ -21,12 +21,6 @@ except ImportError:
     pass
 
 EMPTY_MANIFEST = dict()  # type: Dict[str, Any]
-
-UPDATE_SUGGESTION = """
-SUGGESTION: This component may be using a newer version of the component manager.
-You can try to update the component manager by running:
-    {} -m pip install --upgrade idf-component-manager
-""".format(sys.executable)
 
 
 def dump_tree(path, manifest_tree):  # type: (str, dict) -> None

@@ -4,11 +4,12 @@
 import re
 
 from schema import And, Optional, Or, Regex, Schema, Use
-from six import string_types
+from six import reraise, string_types
 
 from idf_component_manager.utils import RE_PATTERN
 
 from ..constants import COMPILED_GIT_URL_RE, COMPILED_URL_RE
+from ..errors import InternalError
 from ..semver import SimpleSpec, Version
 from .constants import (
     FULL_SLUG_REGEX, KNOWN_BUILD_METADATA_FIELDS, KNOWN_INFO_METADATA_FIELDS, TAGS_REGEX, known_targets)
@@ -225,7 +226,7 @@ for _key in sorted(_flatten_json_schema_keys(JSON_SCHEMA)):
     elif _key[0] in KNOWN_INFO_METADATA_FIELDS:
         _info_metadata_keys.append(_key)
     else:
-        raise ValueError('Unknown key {}'.format(_key[0]))
+        reraise(InternalError, ValueError('Unknown JSON Schema key {}'.format(_key[0])))
 
 BUILD_METADATA_KEYS = serialize_list_of_list_of_strings(_build_metadata_keys)
 INFO_METADATA_KEYS = serialize_list_of_list_of_strings(_info_metadata_keys)
