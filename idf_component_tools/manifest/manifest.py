@@ -285,11 +285,13 @@ class HashedComponentVersion(ComponentVersion):
         component_hash = kwargs.pop('component_hash', None)
         dependencies = kwargs.pop('dependencies', []) or []
         targets = kwargs.pop('targets', [])
+        all_build_keys_known = kwargs.pop('all_build_keys_known', True)
         super(HashedComponentVersion, self).__init__(*args, **kwargs)
 
         self.component_hash = component_hash
         self.dependencies = dependencies  # type: list[ComponentRequirement]
         self.targets = targets
+        self.all_build_keys_known = all_build_keys_known
 
     def __hash__(self):
         return hash(self.component_hash) if self.component_hash else hash(str(self))

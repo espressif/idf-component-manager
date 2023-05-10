@@ -16,7 +16,7 @@ from idf_component_tools.semver import SimpleSpec
 
 from ..archive_tools import ArchiveError, get_format_from_path, unpack_archive
 from ..config import component_registry_url
-from ..constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL
+from ..constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL, UPDATE_SUGGESTION
 from ..errors import FetchingError, hint
 from ..file_tools import copy_directory
 from ..hash_tools import validate_filtered_dir
@@ -144,6 +144,7 @@ class WebServiceSource(BaseSource):
         versions = []
         other_targets_versions = []
         pre_release_versions = []
+        newer_component_manager_versions = []
 
         for version in cmp_with_versions.versions:
             if target and version.targets and target not in version.targets:
@@ -152,6 +153,10 @@ class WebServiceSource(BaseSource):
 
             if not self.pre_release and version.semver.prerelease and not SimpleSpec(spec).contains_prerelease:
                 pre_release_versions.append(str(version))
+                continue
+
+            if not version.all_build_keys_known:
+                newer_component_manager_versions.append(str(version))
                 continue
 
             versions.append(version)
@@ -171,6 +176,12 @@ class WebServiceSource(BaseSource):
                 hint(
                     'Component "{}" has suitable versions for other targets: "{}". '
                     'Is your current target {} set correctly?'.format(name, '", "'.join(targets), current_target))
+
+            if newer_component_manager_versions:
+                hint(
+                    'Component "{}" has versions "{}" that support only newer version of idf-component-manager '
+                    'that satisfy your requirements.\n'
+                    '{}'.format(name, '", "'.join(newer_component_manager_versions), UPDATE_SUGGESTION))
 
             raise FetchingError(
                 'Cannot find versions of "{}" satisfying "{}" '
