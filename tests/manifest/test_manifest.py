@@ -1,18 +1,21 @@
 # SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import filecmp
+import json
 import os
 import re
 import warnings
 
+import jsonschema
 import pytest
 import yaml
 
 from idf_component_manager.dependencies import detect_unused_components
-from idf_component_tools.errors import ManifestError
+from idf_component_tools.errors import ManifestError, MetadataWarning
 from idf_component_tools.manifest import (
-    SLUG_REGEX, ComponentVersion, ManifestManager, ManifestValidator, SolvedComponent)
-from idf_component_tools.manifest.validator import DEFAULT_KNOWN_TARGETS, known_targets, parse_if_clause
+    JSON_SCHEMA, SLUG_REGEX, ComponentVersion, ManifestManager, ManifestValidator, SolvedComponent)
+from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS, known_targets
+from idf_component_tools.manifest.if_parser import parse_if_clause
 from idf_component_tools.sources import LocalSource
 
 
@@ -119,13 +122,14 @@ class TestManifestPipeline(object):
 class TestManifestValidator(object):
     def test_validate_unknown_root_key(self, valid_manifest):
         valid_manifest['unknown'] = 'test'
-        valid_manifest['test'] = 'test'
+        valid_manifest['test'] = 3.1415926
         validator = ManifestValidator(valid_manifest)
 
         errors = validator.validate_normalize()
 
-        assert len(errors) == 2
-        assert errors[1].startswith('Unknown keys: test, unknown')
+        assert len(errors) == 3
+        assert errors[0].startswith('Unknown key unknown-type:string')
+        assert errors[1].startswith('Unknown key test-type:number')
 
     def test_validate_unknown_root_values(self, valid_manifest):
         valid_manifest['version'] = '1!.3.3'
@@ -175,7 +179,7 @@ class TestManifestValidator(object):
         errors = validator.validate_normalize()
 
         assert len(errors) == 2
-        assert errors[1].startswith('List of dependencies should be a dictionary')
+        assert errors[0].startswith('List of dependencies should be a dictionary')
 
     def test_validate_component_versions_unknown_key(self, valid_manifest):
         valid_manifest['dependencies'] = {'test-component': {'version': '^1.2.3', 'persion': 'asdf'}}
@@ -183,8 +187,9 @@ class TestManifestValidator(object):
 
         errors = validator.validate_normalize()
 
-        assert len(errors) == 4
-        assert errors[3] == 'Unknown keys in dependency details: persion'
+        assert len(errors) == 5
+        assert errors[0] == 'Unknown keys that may affect build result: dependencies-*-persion-type:string'
+        assert errors[-1] == 'Unknown keys in dependency details: persion'
 
     def test_validate_component_versions_invalid_name(self, valid_manifest):
         valid_manifest['dependencies'] = {'asdf!fdsa': {'version': '^1.2.3'}}
@@ -258,14 +263,8 @@ class TestManifestValidator(object):
         validator = ManifestValidator(valid_manifest)
         errors = validator.validate_normalize()
 
-        assert len(errors) == 1
-
-    def test_validate_files_invalid_path(self, valid_manifest):
-        valid_manifest['files']['include'] = 34
-        validator = ManifestValidator(valid_manifest)
-        errors = validator.validate_normalize()
-
-        assert len(errors) == 1
+        assert len(errors) == 2
+        assert errors[0] == 'Unknown keys that may affect build result: files-include-type:number'
 
     def test_validate_tags_invalid_length(self, valid_manifest):
         valid_manifest['tags'].append('sm')
@@ -465,6 +464,24 @@ class TestManifestValidator(object):
     def test_validate_examples_empty_element(self, valid_manifest):
         valid_manifest['examples'] = [{'path: test'}, {}]
         validator = ManifestValidator(valid_manifest)
-        validator.validate_normalize()
 
-        assert len(validator._errors) == 1
+        with pytest.warns(
+                MetadataWarning,
+                match='Unknown metadata info keys: "examples-type:array-type:array-type:string". '
+                'Please consider upgrade idf-component-manager version. '
+                'Dropping metadata info key "examples" in manifest if exists.',
+        ):
+            validator.validate_normalize()
+
+        assert len(validator._errors) == 0
+
+
+def test_json_schema():
+    schema_str = json.dumps(JSON_SCHEMA)
+
+    try:
+        validator = jsonschema.Draft7Validator
+    except AttributeError:
+        validator = jsonschema.Draft4Validator  # python 3.4
+
+    validator.check_schema(json.loads(schema_str))

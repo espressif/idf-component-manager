@@ -1,216 +1,75 @@
 # SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
-import os
 import re
-import sys
 
-from schema import And, Optional, Or, Regex, Schema, SchemaError, Use
-from six import string_types
+from schema import SchemaError
 
 import idf_component_tools as tools
-from idf_component_manager.utils import RE_PATTERN
 
-from ..constants import COMPILED_GIT_URL_RE, COMPILED_URL_RE
-from ..errors import SourceError
-from ..semver import SimpleSpec, Version
-from .constants import FULL_SLUG_REGEX, LINKS, TAGS_REGEX
-from .if_parser import IfClause, parse_if_clause
+from ..errors import MetadataError, MetadataWarning, SourceError, hint
+from .constants import FULL_SLUG_REGEX, known_targets
+from .metadata import Metadata
+from .schemas import BUILD_METADATA_KEYS, INFO_METADATA_KEYS, KNOWN_FILES_KEYS, MANIFEST_SCHEMA
 
 try:
-    from typing import Any, Callable, Iterable, List
+    from typing import List
 except ImportError:
     pass
 
-KNOWN_ROOT_KEYS = [
-    'name',  # Name key is ignored
-    'maintainers',
-    'dependencies',
-    'targets',
-    'version',
-    'description',
-    'files',
-    'tags',
-    'examples'
-] + LINKS
-
-DEFAULT_KNOWN_TARGETS = ['esp32', 'esp32s2', 'esp32c3', 'esp32s3', 'esp32c2', 'esp32c6', 'esp32h2', 'linux']
-
-KNOWN_FILES_KEYS = [
-    'include',
-    'exclude',
-]
-
-KNOWN_EXAMPLES_KEYS = ['path']
-
-KNOWN_IF_CLAUSE_KEYWORDS = ['IDF_TARGET', 'IDF_VERSION']
-
-NONEMPTY_STRING = And(Or(*string_types), len, error='Non-empty string is required here')
-SLUG_REGEX_COMPILED = re.compile(FULL_SLUG_REGEX)
-
-LINKS_URL_ERROR = 'Invalid URL in the "{}" field. Check that link is a correct HTTP(S) URL. '
-LINKS_GIT_ERROR = 'Invalid URL in the "{}" field. Check that link is a valid Git remote URL'
-
-
-def known_targets():  # type: () -> list[str]
-    try:
-        targets = os.environ['IDF_COMPONENT_MANAGER_KNOWN_TARGETS'].split(',')
-        if any(targets):
-            return targets
-    except KeyError:
-        pass
-
-    try:
-        idf_path = os.environ['IDF_PATH']
-    except KeyError:
-        return DEFAULT_KNOWN_TARGETS
-
-    try:
-        sys.path.append(os.path.join(idf_path, 'tools'))
-        from idf_py_actions.constants import PREVIEW_TARGETS, SUPPORTED_TARGETS
-        return SUPPORTED_TARGETS + PREVIEW_TARGETS
-    except ImportError:
-        return DEFAULT_KNOWN_TARGETS
-
-
-def known_component_keys():
-    from idf_component_tools.sources import KNOWN_SOURCES
-    return set(key for source in KNOWN_SOURCES for key in source.known_keys())
-
-
-def dependency_schema():  # type: () -> Or
-    return Or(
-        Or(None, *string_types, error='Dependency version spec format is invalid'),
-        {
-            Optional('version'): Or(None, *string_types, error='Dependency version spec format is invalid'),
-            Optional('public'): Use(bool, error='Invalid format of dependency public flag'),
-            Optional('path'): NONEMPTY_STRING,
-            Optional('git'): NONEMPTY_STRING,
-            Optional('service_url'): NONEMPTY_STRING,
-            Optional('rules'): [{
-                'if': Use(parse_if_clause)
-            }],
-            Optional('override_path'): NONEMPTY_STRING,
-            Optional('require'): Or(
-                'public',
-                'private',
-                'no',
-                False,
-                error='Invalid format of dependency require field format. '
-                'Should be "public", "private" or "no"'),
-            Optional('pre_release'): Use(bool, error='Invalid format of dependency pre_release flag'),
-        },
-        error='Invalid dependency format',
-    )
-
-
-def manifest_schema():  # type: () -> Schema
-    return Schema(
-        {
-            Optional('name'): Or(*string_types),
-            Optional('version'): Or(Version.parse, error='Component version should be valid semantic version'),
-            Optional('targets'): known_targets(),
-            Optional('maintainers'): [NONEMPTY_STRING],
-            Optional('description'): NONEMPTY_STRING,
-            Optional('tags'): [
-                Regex(
-                    TAGS_REGEX,
-                    error='Invalid tag. Tags may be between 3 and 32 symbols long and may contain '
-                    'letters, numbers, _ and -')
-            ],
-            Optional('dependencies'): {
-                Optional(Regex(FULL_SLUG_REGEX, error='Invalid dependency name')): dependency_schema()
-            },
-            Optional('files'): {Optional(key): [NONEMPTY_STRING]
-                                for key in KNOWN_FILES_KEYS},
-            Optional('examples'): [{key: NONEMPTY_STRING
-                                    for key in KNOWN_EXAMPLES_KEYS}],
-            # Links of the project
-            Optional('url'): Regex(COMPILED_URL_RE, error=LINKS_URL_ERROR.format('url')),
-            Optional('repository'): Regex(COMPILED_GIT_URL_RE, error=LINKS_GIT_ERROR.format('repository')),
-            Optional('documentation'): Regex(COMPILED_URL_RE, error=LINKS_URL_ERROR.format('documentation')),
-            Optional('issues'): Regex(COMPILED_URL_RE, error=LINKS_URL_ERROR.format('issues')),
-            Optional('discussion'): Regex(COMPILED_URL_RE, error=LINKS_URL_ERROR.format('discussion')),
-        },
-        error='Invalid manifest format',
-    )
-
-
-def manifest_json_schema():  # type: () -> dict
-    def replace_regex_pattern_with_pattern_str(pat):  # type: (re.Pattern) -> Any
-        return pat.pattern
-
-    def process_nested_regex(
-            obj,  # type: dict[str, Any] | list | str | Any
-            func  # type: Callable[[re.Pattern], Any]
-    ):
-        # type: (...) -> dict[str, Any] | list | str | Any
-
-        if isinstance(obj, dict):
-            if not obj.get('required', []):
-                obj.pop('required', None)  # jsonschema 2.5.1 for python 3.4 does not support empty `required` field
-            return {k: process_nested_regex(v, func) for k, v in obj.items()}
-        elif isinstance(obj, RE_PATTERN):
-            return func(obj)
-        elif isinstance(obj, (list, tuple)):
-            # yaml dict won't have other iterable data types
-            return [process_nested_regex(i, func) for i in obj]
-
-        # we don't process other data types, like numbers
-        return obj
-
-    json_schema = manifest_schema().json_schema(
-        'idf-component-manager')  # here id should be an url to use $ref in the future
-    # `version` field is too complicated to be auto-generated. we use an approx regex instead
-    json_schema['properties']['version'] = {'type': 'string', 'pattern': SimpleSpec.regex_str()}
-    # `dependency` field we're using arbitrary string as key
-    json_schema['properties']['dependencies']['additionalProperties'] = {
-        'anyOf': Schema(dependency_schema()).json_schema('#dependency')['anyOf']
-    }
-    # the IfClause should be a string as well
-    _anyof = json_schema['properties']['dependencies']['additionalProperties']['anyOf']
-    _anyof[1]['properties']['rules']['items']['properties']['if'] = {'type': 'string', 'pattern': IfClause.regex_str()}
-    # `re.Pattern` should use the pattern string instead
-    json_schema = process_nested_regex(json_schema, replace_regex_pattern_with_pattern_str)
-
-    return json_schema
-
 
 class ManifestValidator(object):
+    SLUG_REGEX_COMPILED = re.compile(FULL_SLUG_REGEX)
     """Validator for manifest object, checks for structure, known fields and valid values"""
     def __init__(
-            self, parsed_manifest, check_required_fields=False, version=None):  # type: (dict, bool, str | None) -> None
+            self,
+            parsed_manifest,  # type: dict
+            check_required_fields=False,  # type: bool
+            version=None,  # type: str | None
+            metadata=None,  # type: Metadata | None
+    ):  # type: (...) -> None
         self.manifest_tree = parsed_manifest
+        self.metadata = metadata
         self.version = version
         self._errors = []  # type: List[str]
         # Check for required fields when upload to the registry
         self.check_required_fields = check_required_fields
 
-    @staticmethod
-    def _validate_keys(manifest, known_keys):  # type: (dict, Iterable[str]) ->  List[str]
-        unknown_keys = []
-        for key in manifest.keys():
-            if key not in known_keys:
-                unknown_keys.append(key)
-        return unknown_keys
-
     def add_error(self, message):
-        self._errors.append(message)
+        if message not in self._errors:
+            self._errors.append(message)
 
-    def validate_root_keys(self):  # type: () -> None
-        unknown = sorted(self._validate_keys(self.manifest_tree, KNOWN_ROOT_KEYS))
-        if unknown:
-            self.add_error('Unknown keys: %s' % ', '.join(unknown))
+    def validate_normalize_root_keys(self):  # type: () -> None
+        if self.metadata is None:
+            try:
+                self.metadata = Metadata.load(manifest_tree=self.manifest_tree)
+            except MetadataError as e:
+                self._errors.extend(e.args)
+                return
 
-    def _check_name(self, component):  # type: (str) -> None
-        if not SLUG_REGEX_COMPILED.match(component):
-            self.add_error(
-                'Component\'s name is not valid "%s", should contain only letters, numbers, /, _ and -.' % component)
+        for key in self.metadata.build_metadata_keys:
+            if key not in BUILD_METADATA_KEYS:
+                self.add_error('Unknown keys that may affect build result: %s' % key)
 
-        if '__' in component:
-            self.add_error('Component\'s name "%s" should not contain two consecutive underscores.' % component)
+        for key in self.metadata.info_metadata_keys:
+            if key not in INFO_METADATA_KEYS:
+                manifest_root_key = key.split('-')[0]
+                hint(
+                    MetadataWarning(
+                        'Unknown metadata info keys: "{}". Please consider upgrade idf-component-manager version. '
+                        'Dropping metadata info key "{}" in manifest if exists.'.format(key, manifest_root_key)))
+                if manifest_root_key in self.manifest_tree:
+                    self.manifest_tree.pop(manifest_root_key)
 
     def validate_normalize_dependencies(self):  # type: () -> None
+        def _check_name(name):  # type: (str) -> None
+            if not self.SLUG_REGEX_COMPILED.match(name):
+                self.add_error(
+                    'Component\'s name is not valid "%s", should contain only letters, numbers, /, _ and -.' % name)
+
+            if '__' in name:
+                self.add_error('Component\'s name "%s" should not contain two consecutive underscores.' % name)
+
         if 'dependencies' not in self.manifest_tree.keys() or not self.manifest_tree['dependencies']:
             return
 
@@ -225,14 +84,14 @@ class ManifestValidator(object):
             return
 
         for component, details in dependencies.items():
-            self._check_name(component)
+            _check_name(component)
 
             if isinstance(details, str):
                 dependencies[component] = details = {'version': details}
 
             if isinstance(details, dict):
                 try:
-                    source = tools.sources.BaseSource.fromdict(component, details)
+                    source = tools.sources.BaseSource.fromdict(component, details)  # type: ignore
 
                     if not source.validate_version_spec(str(details.get('version', ''))):
                         self.add_error('Version specifications for "%s" are invalid.' % component)
@@ -248,13 +107,13 @@ class ManifestValidator(object):
                 continue
 
     def validate_normalize_required_keys(self):  # type: () -> None
-        '''Check for required keys in the manifest, if necessary'''
+        """Check for required keys in the manifest, if necessary"""
         if self.version:
             manifest_version = self.manifest_tree.get('version')
             if manifest_version and manifest_version != self.version:
                 self.add_error(
                     'Manifest version ({}) does not match the version specified in the command line ({}). '
-                    'Please either remove `--version` CLI parameter or update verson in the manifest.'.format(
+                    'Please either remove `--version` CLI parameter or update version in the manifest.'.format(
                         manifest_version, self.version))
             else:
                 self.manifest_tree['version'] = str(self.version)
@@ -287,7 +146,7 @@ class ManifestValidator(object):
             self.add_error('Unknown targets: %s' % ', '.join(unknown_targets))
 
     def validate_files(self):  # type: () -> None
-        '''Check include/exclude patterns'''
+        """Check include/exclude patterns"""
         files = self.manifest_tree.get('files', {})
         for key in files:
             if key not in KNOWN_FILES_KEYS:
@@ -295,7 +154,7 @@ class ManifestValidator(object):
 
     def validate_normalize_schema(self):
         try:
-            self.manifest_tree = manifest_schema().validate(self.manifest_tree)
+            self.manifest_tree = MANIFEST_SCHEMA.validate(self.manifest_tree)
         except SchemaError as e:
             # Some format errors may not have detailed description, so avoid duplications
             errors = list(filter(None, e.errors))
@@ -313,8 +172,8 @@ class ManifestValidator(object):
                 self.validate_duplicates(v)
 
     def validate_normalize(self):
+        self.validate_normalize_root_keys()
         self.validate_normalize_schema()
-        self.validate_root_keys()
         self.validate_normalize_dependencies()
         self.validate_targets()
         self.validate_normalize_required_keys()

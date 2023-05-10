@@ -13,6 +13,10 @@ class UserHint(Warning):
     pass
 
 
+class MetadataWarning(UserHint):
+    pass
+
+
 class UserDeprecationWarning(UserWarning):
     pass
 
@@ -71,6 +75,10 @@ class SourceError(ProcessingError):
 
 
 class ManifestError(ProcessingError):
+    pass
+
+
+class MetadataError(ProcessingError):
     pass
 
 
