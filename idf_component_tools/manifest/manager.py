@@ -3,15 +3,16 @@
 
 import copy
 import os
-import sys
 from io import open
 
 import yaml
 
-from ..errors import ManifestError
+from ..constants import UPDATE_SUGGESTION
+from ..errors import ManifestError, MetadataError
 from .constants import MANIFEST_FILENAME
 from .env_expander import dump_yaml, expand_env_vars
 from .manifest import Manifest
+from .metadata import Metadata
 from .validator import ManifestValidator
 
 try:
@@ -20,12 +21,6 @@ except ImportError:
     pass
 
 EMPTY_MANIFEST = dict()  # type: Dict[str, Any]
-
-UPDATE_SUGGESTION = """
-SUGGESTION: This component may be using a newer version of the component manager.
-You can try to update the component manager by running:
-    {} -m pip install --upgrade idf-component-manager
-""".format(sys.executable)
 
 
 def dump_tree(path, manifest_tree):  # type: (str, dict) -> None
@@ -52,11 +47,20 @@ class ManifestManager(object):
         self.check_required_fields = check_required_fields
 
     def validate(self):
-        validator = ManifestValidator(
-            self.manifest_tree, check_required_fields=self.check_required_fields, version=self.version)
-        self._validation_errors = validator.validate_normalize()
-        self._is_valid = not self._validation_errors
-        self._normalized_manifest_tree = copy.deepcopy(validator.manifest_tree)
+        try:
+            metadata = Metadata.load(self.manifest_tree)
+        except MetadataError as e:
+            self._validation_errors = e.args
+        else:
+            validator = ManifestValidator(
+                self.manifest_tree,
+                check_required_fields=self.check_required_fields,
+                version=self.version,
+                metadata=metadata)
+            self._validation_errors = validator.validate_normalize()
+            self._is_valid = not self._validation_errors
+            self._normalized_manifest_tree = copy.deepcopy(validator.manifest_tree)
+
         return self
 
     @property
@@ -71,7 +75,7 @@ class ManifestManager(object):
         return self._validation_errors
 
     @property
-    def path(self):
+    def path(self):  # type: () -> str
         if self._path_checked:
             return self._path
 

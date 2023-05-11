@@ -43,13 +43,13 @@ def valid_manifest():
             },
             'test-1': '^1.2.7',
             'test-8': {
-                'version': '',
+                'version': '*',
                 'public': True,
             },
             'test-9': {
                 'public': True,
             },
-            'test-2': '',
+            'test-2': '*',
             'test-4': '*',
             'some_component': {
                 'version': '!=1.2.7'

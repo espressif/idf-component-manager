@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-
 import warnings
 
 try:
@@ -13,6 +12,16 @@ class UserHint(Warning):
     pass
 
 
+class MetadataWarning(UserHint):
+    pass
+
+
+class MetadataKeyWarning(MetadataWarning):
+    def __init__(self, field_name, field_type):
+        super(MetadataKeyWarning,
+              self).__init__('Unknown {} field "{}" in the manifest file'.format(field_type, field_name))
+
+
 class UserDeprecationWarning(UserWarning):
     pass
 
@@ -21,8 +30,11 @@ def warn(message):  # type: (Exception | str) -> None
     warnings.warn(str(message))
 
 
-def hint(message):  # type: (Exception | str) -> None
-    warnings.warn(str(message), category=UserHint)
+def hint(message):  # type: (Warning | Exception | str) -> None
+    if isinstance(message, Warning):
+        warnings.warn(message)
+    else:
+        warnings.warn(str(message), category=UserHint)
 
 
 class FatalError(RuntimeError):
@@ -34,6 +46,14 @@ class FatalError(RuntimeError):
         exit_code = kwargs.pop('exit_code', None)
         if exit_code:
             self.exit_code = exit_code
+
+
+class InternalError(RuntimeError):
+    """Internal Error, should report to us"""
+    def __init__(self):
+        super(InternalError, self).__init__(
+            'This is an internal error. Please report on `https://github.com/espressif/idf-component-manager/issues '
+            'with your operating system, idf-component-manager version, and the traceback log. Thanks for reporting!')
 
 
 class NothingToDoError(FatalError):
@@ -69,6 +89,16 @@ class SourceError(ProcessingError):
 
 class ManifestError(ProcessingError):
     pass
+
+
+class MetadataError(ProcessingError):
+    pass
+
+
+class MetadataKeyError(ProcessingError):
+    def __init__(self, field_name, field_type):
+        super(MetadataKeyError, self).__init__(
+            'Unknown {} field "{}" in the manifest file that may affect build result'.format(field_type, field_name))
 
 
 class LockError(ProcessingError):

@@ -30,7 +30,7 @@ from .api_client_errors import (
     VersionNotFound)
 from .api_schemas import (
     API_INFORMATION_SCHEMA, COMPONENT_SCHEMA, ERROR_SCHEMA, TASK_STATUS_SCHEMA, VERSION_UPLOAD_SCHEMA)
-from .manifest import Manifest
+from .manifest import BUILD_METADATA_KEYS, Manifest
 
 try:
     from typing import TYPE_CHECKING, Any, Callable
@@ -351,8 +351,18 @@ class APIClient(object):
         else:
             versions = []
             for version in body['versions']:
-                if semantic_spec.match(Version(version['version'])):
-                    versions.append(version)
+                if not semantic_spec.match(Version(version['version'])):
+                    continue
+
+                all_build_keys_known = True
+                if version.get('build_metadata_keys', None) is not None:
+                    for build_key in version.get('build_metadata_keys'):
+                        if build_key not in BUILD_METADATA_KEYS:
+                            all_build_keys_known = False
+                            break
+
+                if all_build_keys_known:
+                    versions.append((version, all_build_keys_known))
 
         return tools.manifest.ComponentWithVersions(
             name=component_name,
@@ -362,7 +372,7 @@ class APIClient(object):
                     component_hash=version['component_hash'],
                     dependencies=self._version_dependencies(version),
                     targets=version['targets'],
-                ) for version in versions
+                    all_build_keys_known=all_build_keys_known) for version, all_build_keys_known in versions
             ],
         )
 

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import pytest
 
@@ -44,7 +44,8 @@ def test_validator_broken_deps():
         },
     }
     errors = ManifestValidator(manifest).validate_normalize()
-    assert len(errors) == 5
+    assert len(errors) == 6
+    assert errors[0] == 'Unknown number field "dependencies:*" in the manifest file that may affect build result'
 
 
 def test_validator_valid_manifest(valid_manifest):

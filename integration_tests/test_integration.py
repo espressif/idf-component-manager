@@ -11,7 +11,7 @@ import pytest
 
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import ManifestManager
-from idf_component_tools.manifest.validator import DEFAULT_KNOWN_TARGETS
+from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS
 
 from .integration_test_helpers import (
     build_project, fixtures_path, live_print_call, project_action, skip_for_idf_versions)
