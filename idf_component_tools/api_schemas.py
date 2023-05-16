@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 from schema import Optional, Or, Schema, Use
@@ -49,7 +49,7 @@ VERSION_UPLOAD_SCHEMA = Schema(
         'job_id': STRING,
         Optional(STRING): object,
     },
-    error='Unexpected response to version upload',
+    error='Unexpected response during archive processing',
 )
 
 TASK_STATUS_SCHEMA = Schema(

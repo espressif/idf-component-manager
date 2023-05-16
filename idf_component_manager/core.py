@@ -350,8 +350,10 @@ class ComponentManager(object):
             archive=None,  # type: str | None
             skip_pre_release=False,  # type: bool
             check_only=False,  # type: bool
-            allow_existing=False):  # type: (...) -> None
+            allow_existing=False,  # type: bool
+            dry_run=False):  # type: (...) -> None
         client, namespace = service_details(namespace, service_profile)
+
         if archive:
             if not os.path.isfile(archive):
                 raise FatalError('Cannot find archive to upload: {}'.format(archive))
@@ -391,9 +393,10 @@ class ComponentManager(object):
         if check_only:
             return
 
-        # Uploading the component
-        print_info('Uploading archive: %s' % archive)
-        job_id = client.upload_version(component_name=component_name, file_path=archive)
+        # Uploading/validating the component
+        info_message = 'Uploading' if not dry_run else 'Validating'
+        print_info('%s archive %s' % (info_message, archive))
+        job_id = client.upload_version(component_name=component_name, file_path=archive, validate_only=dry_run)
 
         # Wait for processing
         print_info(
@@ -419,7 +422,11 @@ class ComponentManager(object):
                             warnings.add(warning)
 
                     if status.status == 'failure':
-                        raise FatalError("Uploaded version wasn't processed successfully.\n%s" % status.message)
+                        if dry_run:
+                            raise FatalError(
+                                'Uploaded version did not pass validation successfully.\n%s' % status.message)
+                        else:
+                            raise FatalError("Uploaded version wasn't processed successfully.\n%s" % status.message)
                     elif status.status == 'success':
                         return
 
