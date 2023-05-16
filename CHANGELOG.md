@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `update-dependencies` command to `idf.py` for updating dependencies of the project
 - Add manifest format reference to the documentation
 - Add `compote component yank` CLI command to yank version of the component from the registry
+- Show warnings from the component registry during uploading components
 
 ### Fixed
 

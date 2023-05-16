@@ -40,7 +40,7 @@ try:
 except ImportError:
     pass
 
-TaskStatus = namedtuple('TaskStatus', ['message', 'status', 'progress'])
+TaskStatus = namedtuple('TaskStatus', ['message', 'status', 'progress', 'warnings'])
 
 DEFAULT_TIMEOUT = (
     6.05,  # Connect timeout
@@ -460,4 +460,4 @@ class APIClient(object):
     @_request(cache=False)
     def task_status(self, request, job_id):  # type: (Callable, str) -> TaskStatus
         body = request('get', ['tasks', job_id], schema=TASK_STATUS_SCHEMA)
-        return TaskStatus(body['message'], body['status'], body['progress'])
+        return TaskStatus(body['message'], body['status'], body['progress'], body.get('warnings', []))

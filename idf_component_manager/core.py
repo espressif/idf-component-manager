@@ -404,6 +404,7 @@ class ComponentManager(object):
         timeout_at = datetime.now() + timedelta(seconds=get_processing_timeout())
 
         try:
+            warnings = set()
             with ProgressBar(total=MAX_PROGRESS, unit='%') as progress_bar:
                 while True:
                     if datetime.now() > timeout_at:
@@ -411,6 +412,11 @@ class ComponentManager(object):
                     status = client.task_status(job_id=job_id)
                     progress_bar.set_description(status.message)
                     progress_bar.update_to(status.progress)
+
+                    for warning in status.warnings:
+                        if warning not in warnings:
+                            print_warn(warning)
+                            warnings.add(warning)
 
                     if status.status == 'failure':
                         raise FatalError("Uploaded version wasn't processed successfully.\n%s" % status.message)

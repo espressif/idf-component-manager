@@ -57,10 +57,13 @@ def test_init_project():
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_upload_component.yaml')
-def test_upload_component(mock_registry, pre_release_component_path):
+def test_upload_component(mock_registry, pre_release_component_path, capsys):
     manager = ComponentManager(path=pre_release_component_path)
 
     manager.upload_component('cmp')
+    captured = capsys.readouterr()
+
+    assert 'WARNING: URL field is missing in the manifest file' in captured.err
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_check_only_component.yaml')
