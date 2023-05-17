@@ -1,8 +1,10 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
+import os
 import re
 
+from idf_component_tools.build_system_tools import CMAKE_PROJECT_LINE, is_component
 from idf_component_tools.manifest import WEB_DEPENDENCY_REGEX
 
 
@@ -24,3 +26,25 @@ def test_web_dep_re():
 
     for name in invalid_names:
         assert not re.match(WEB_DEPENDENCY_REGEX, name)
+
+
+def test_is_component(tmp_path):
+
+    tempdir = str(tmp_path)
+
+    open(os.path.join(tempdir, 'CMakeLists.txt'), 'w').write('\n')
+    assert is_component(tmp_path)
+
+    open(os.path.join(tempdir, 'idf_component.yml'), 'w').write('\n')
+    assert is_component(tmp_path)
+
+
+def test_is_not_component(tmp_path):
+    tempdir = str(tmp_path)
+
+    # No CMakeLists.txt
+    assert not is_component(tmp_path)
+
+    # CMakeLists.txt with CMAKE_PROJECT_LINE is a project
+    open(os.path.join(tempdir, 'CMakeLists.txt'), 'w').write(CMAKE_PROJECT_LINE)
+    assert not is_component(tmp_path)

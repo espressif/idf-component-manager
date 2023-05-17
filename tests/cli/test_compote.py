@@ -41,13 +41,25 @@ def test_manifest_create_add_dependency(tmp_path):
 
     os.makedirs(os.path.join(tempdir, 'main'))
     os.makedirs(os.path.join(tempdir, 'components', 'foo'))
+    os.makedirs(os.path.join(tempdir, 'components', 'bar'))
+    os.makedirs(os.path.join(tempdir, 'src'))
     main_manifest_path = os.path.join(tempdir, 'main', MANIFEST_FILENAME)
     foo_manifest_path = os.path.join(tempdir, 'components', 'foo', MANIFEST_FILENAME)
+    bar_manifest_path = os.path.join(tempdir, 'components', 'bar', MANIFEST_FILENAME)
+    src_path = os.path.join(tempdir, 'src')
+    src_manifest_path = os.path.join(src_path, MANIFEST_FILENAME)
 
     subprocess.check_output(['compote', 'manifest', 'create'], cwd=tempdir)
     subprocess.check_output(['compote', 'manifest', 'create', '--component', 'foo'], cwd=tempdir)
+    subprocess.check_output(['compote', 'manifest', 'create', '--path', src_path], cwd=tempdir)
 
-    for filepath in [main_manifest_path, foo_manifest_path]:
+    with open(os.path.join(tempdir, 'components', 'bar', 'CMakeLists.txt'), mode='w') as file:
+        subprocess.check_output(['compote', 'manifest', 'create'], cwd=os.path.join(tempdir, 'components', 'bar'))
+
+    assert subprocess.call(
+        ['compote', 'manifest', 'create', '--component', 'src', '--path', src_path], cwd=tempdir) == 2
+
+    for filepath in [main_manifest_path, foo_manifest_path, bar_manifest_path]:
         with open(filepath, mode='r') as file:
             assert file.readline().startswith('## IDF Component Manager')
 
@@ -58,6 +70,16 @@ def test_manifest_create_add_dependency(tmp_path):
     subprocess.check_output(
         ['compote', 'manifest', 'add-dependency', 'idf/comp<=1.0.0', '--component', 'foo'], cwd=tempdir)
     manifest_manager = ManifestManager(foo_manifest_path, 'foo')
+    assert manifest_manager.manifest_tree['dependencies']['idf/comp'] == '<=1.0.0'
+
+    subprocess.check_output(
+        ['compote', 'manifest', 'add-dependency', 'idf/comp<=1.0.0', '--path', src_path], cwd=tempdir)
+    manifest_manager = ManifestManager(src_manifest_path, 'src')
+    assert manifest_manager.manifest_tree['dependencies']['idf/comp'] == '<=1.0.0'
+
+    subprocess.check_output(
+        ['compote', 'manifest', 'add-dependency', 'idf/comp<=1.0.0'], cwd=os.path.join(tempdir, 'components', 'bar'))
+    manifest_manager = ManifestManager(bar_manifest_path, 'bar')
     assert manifest_manager.manifest_tree['dependencies']['idf/comp'] == '<=1.0.0'
 
 

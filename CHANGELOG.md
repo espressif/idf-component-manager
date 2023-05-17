@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Extend the behavior of `compote manifest create` and `compote manifest add-dependency` to create a manifest file based on the context of the current working directory (context of a project or a component)
+
 ### Added
 
 - Add `-W | --warnings-as-errors` flag to `compote` to treat warnings as errors
+- Add `-p | --path` flag to `compote manifest create` and `compote manifest add-dependency` to specify the path to the manifest file
 - Add `compote manifest schema` to generate the json schema file of the `idf_component.yml`
 - Add `compote cache clear` to drop system-wide cache of components and API cache
 - Make file cache path configurable via `IDF_COMPONENT_CACHE_PATH` environment variable

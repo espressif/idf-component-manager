@@ -45,7 +45,11 @@ LOCAL_MANIFEST_OPTIONS = [
         'names': ['--component'],
         'default': 'main',
         'help': 'Name of the component in the project.',
-    },
+    }, {
+        'names': ['-p', '--path'],
+        'help': 'Path to the component. The component name is ignored when path the is specified.',
+        'default': None
+    }
 ]  # type: list[dict[str, Any]]
 
 if CLICK_SUPPORTS_SHOW_DEFAULT:
@@ -103,14 +107,26 @@ def action_extensions(base_actions, project_path):
         'actions': {
             'create-manifest': {
                 'callback': callback,
-                'help': 'Create manifest for specified component.',
+                'help': (
+                    'Create manifest for specified component.\n'
+                    'By default:\n'
+                    'If you run the command in the directory with project, the manifest'
+                    ' will be created in the "main" directory.\n'
+                    'If you run the command in the directory with a component, '
+                    'the manifest will be created right in that directory.\n'
+                    'You can explicitly specify directory using the --path option.'),
                 'options': LOCAL_MANIFEST_OPTIONS,
             },
             'add-dependency': {
                 'callback': callback,
                 'help': (
-                    'Add dependency to the manifest file. '
-                    'For now we only support adding dependencies from the component registry.'),
+                    'Add dependency to the manifest file.\n'
+                    'By default:\n'
+                    'If you run the command in the directory with project, the dependency'
+                    ' will be added to the manifest in the "main" directory.\n'
+                    'If you run the command in the directory with a component, '
+                    'the dependency will be added to the manifest right in that directory.\n'
+                    'You can explicitly specify directory using the --path option.'),
                 'arguments': [
                     {
                         'names': ['dependency'],
