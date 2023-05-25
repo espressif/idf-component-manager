@@ -15,14 +15,14 @@ integration_test:
     when: always
   parallel:
     matrix:
-      - IDF_BRANCH: [release-v4.1, release-v4.2]
-        PYTHON_IMAGE_TAG: [2.7-buster, 3.4-stretch, 3.10-bullseye]
+      - IDF_BRANCH: [release-v4.2]
+        PYTHON_IMAGE_TAG: [2.7-buster, 3.5-buster, 3.11-bullseye]
       - IDF_BRANCH: [release-v4.3]
-        PYTHON_IMAGE_TAG: [3.5-stretch, 3.10-bullseye]
+        PYTHON_IMAGE_TAG: [3.5-buster, 3.11-bullseye]
       - IDF_BRANCH: [release-v4.4]
-        PYTHON_IMAGE_TAG: [3.6-bullseye, 3.10-bullseye]
-      - IDF_BRANCH: [release-v5.0, master]
-        PYTHON_IMAGE_TAG: [3.7-bullseye, 3.10-bullseye]
+        PYTHON_IMAGE_TAG: [3.6-bullseye, 3.11-bullseye]
+      - IDF_BRANCH: [release-v5.0, release-v5.1, master]
+        PYTHON_IMAGE_TAG: [3.7-bullseye, 3.11-bullseye]
         REQ_FILE: ["tools/requirements/requirements.core.txt"]
   before_script:
     - UNESCAPED_IDF_BRANCH=$(echo $IDF_BRANCH | sed -e "s/release-v/release\/v/g")
