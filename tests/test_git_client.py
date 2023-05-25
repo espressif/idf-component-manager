@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -8,7 +8,7 @@ from io import open
 import pytest
 
 from idf_component_tools.errors import GitError
-from idf_component_tools.git_client import GitClient, GitCommandError
+from idf_component_tools.git_client import GitClient
 
 
 @pytest.fixture(scope='session')
@@ -54,7 +54,7 @@ def test_bare_repository_in_cache(tmpdir_factory):
     cache_path = tmpdir_factory.mktemp('cache_folder').strpath
     try:
         client.prepare_ref(repo=git_repo, bare_path=cache_path, checkout_path=checkout_path, with_submodules=True)
-    except GitCommandError:
+    except GitError:
         config_file = os.path.join(cache_path, 'config')
 
         with open(config_file, 'r', encoding='utf-8') as f:
@@ -100,3 +100,18 @@ def test_git_branch_does_not_exist(git_repository_with_two_branches, tmpdir_fact
             ref='branch_not_exists',
             with_submodules=True,
             selected_paths=['component2'])
+
+
+def test_git_path_does_not_exist(git_repository_with_two_branches, tmpdir_factory):
+    client = GitClient()
+    git_repo = git_repository_with_two_branches['path']
+    checkout_path = tmpdir_factory.mktemp('checkout_folder').strpath
+    cache_path = tmpdir_factory.mktemp('cache_folder').strpath
+    with pytest.raises(GitError, match=r"pathspec 'path_not_exists' did not match any file\(s\) known to git"):
+        client.prepare_ref(
+            repo=git_repo,
+            bare_path=cache_path,
+            checkout_path=checkout_path,
+            ref='new_branch',
+            with_submodules=True,
+            selected_paths=['path_not_exists'])

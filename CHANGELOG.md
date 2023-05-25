@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Pin urllib version to <2 to avoid incompatibility with older python versions
 - Components with optional dependencies could be uploaded normally
+- Relative path in `override_path` now based on the directory of its `idf_component.yml`
+- Correct spelling of error message for unsatisfied dependency
 
 ## [1.2.2] 2023-01-17
 

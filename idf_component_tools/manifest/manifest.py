@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Classes to work with manifest file"""
 import re
@@ -24,6 +24,7 @@ try:
 
     if TYPE_CHECKING:
         from ..sources import BaseSource
+        from . import ManifestManager
 except ImportError:
     pass
 
@@ -60,6 +61,7 @@ class Manifest(object):
             tags=None,  # type: list[str] | None # List of tags
             links=None,  # type: ComponentLinks | None # Links of the component
             examples=None,  # type: list[dict[str, str]] | None # List of paths to the examples
+            manifest_manager=None,  # type: ManifestManager | None  # manifest manager who generate this manifest
     ):
         # type: (...) -> None
 
@@ -92,8 +94,15 @@ class Manifest(object):
         self.links = links
         self.examples = examples
 
+        self._manifest_manager = manifest_manager
+
     @classmethod
-    def fromdict(cls, manifest_tree, name):  # type: (dict, str) -> Manifest
+    def fromdict(
+            cls,
+            manifest_tree,  # type: dict
+            name,  # type: str
+            manifest_manager=None,  # type: ManifestManager | None
+    ):  # type: (...) -> Manifest
         """Coverts manifest dict to manifest object"""
         manifest = cls(
             name=name,
@@ -104,6 +113,7 @@ class Manifest(object):
             include_files=manifest_tree.get('files', {}).get('include'),
             exclude_files=manifest_tree.get('files', {}).get('exclude'),
             examples=manifest_tree.get('examples', []),
+            manifest_manager=manifest_manager,
         )
 
         version = manifest_tree.get('version')
@@ -114,7 +124,7 @@ class Manifest(object):
             if not isinstance(details, Mapping):
                 details = {'version': details}
 
-            source = tools.sources.BaseSource.fromdict(name, details)
+            source = tools.sources.BaseSource.fromdict(name, details, manifest_manager)
             component = ComponentRequirement(
                 name,
                 source,
@@ -144,6 +154,10 @@ class Manifest(object):
 
         serialized = self.serialize(serialize_default=False)  # type: ignore
         return hash_object(serialized)
+
+    @property
+    def path(self):  # type: () -> str
+        return self._manifest_manager.path if self._manifest_manager else ''
 
 
 @serializable
