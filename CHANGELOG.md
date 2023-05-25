@@ -36,20 +36,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix deprecation warnings not showing up in the terminal
 - Fix regular expression for repository URL validation
-- Correct spelling of error message for unsatisfied dependency
 - Stop injecting shell config files by default in `compote autocomplete`
-- Relative path in `override_path` now based on the directory of its `idf_component.yml`
 - Prevent possible DNS spoof when `dependencies.lock` file exists and no need to be updated.
 - Always add `idf` as a dependency to `dependencies.lock` file even without explict declaration.
 - Fix git submodule update error when using submodule exists in the `path` field specified in the corresponding git dependency
 - Fixed a bug where dependencies of the component weren't updating when local component changed
-- Components with optional dependencies could be uploaded normally
-- Pin urllib version to <2 to avoid incompatibility with older python versions
 - Fix mixed slashes in paths on Windows
 
 ### Changed
 
 - Updated error message if override_path is not a folder
+
+## [1.2.3] 2023-05-25
+
+### Fixed
+
+- Pin urllib version to <2 to avoid incompatibility with older python versions
+- Components with optional dependencies could be uploaded normally
+- Relative path in `override_path` now based on the directory of its `idf_component.yml`
+- Correct spelling of error message for unsatisfied dependency
 
 ## [1.2.2] 2023-01-17
 
