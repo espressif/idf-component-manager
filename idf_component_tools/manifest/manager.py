@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
+import copy
 import os
 import sys
 from io import open
@@ -55,7 +56,7 @@ class ManifestManager(object):
             self.manifest_tree, check_required_fields=self.check_required_fields, version=self.version)
         self._validation_errors = validator.validate_normalize()
         self._is_valid = not self._validation_errors
-        self._normalized_manifest_tree = validator.manifest_tree
+        self._normalized_manifest_tree = copy.deepcopy(validator.manifest_tree)
         return self
 
     @property
@@ -139,9 +140,9 @@ class ManifestManager(object):
 
         for name, details in self.normalized_manifest_tree.get('dependencies', {}).items():
             if 'rules' in details:
-                self.manifest_tree['dependencies'][name]['rules'] = [rule['if'] for rule in details['rules']]
+                self.normalized_manifest_tree['dependencies'][name]['rules'] = [rule['if'] for rule in details['rules']]
 
-        return Manifest.fromdict(self.manifest_tree, name=self.name)
+        return Manifest.fromdict(self.normalized_manifest_tree, name=self.name)
 
     def dump(self, path=None):  # type: (str | None) -> None
         if path is None:
