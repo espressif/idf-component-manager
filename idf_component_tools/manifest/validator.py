@@ -7,7 +7,7 @@ from schema import SchemaError
 
 import idf_component_tools as tools
 
-from ..errors import MetadataError, MetadataKeyError, MetadataKeyWarning, SourceError, hint
+from ..errors import MetadataError, MetadataKeyError, MetadataKeyWarning, MetadataWarning, SourceError, hint
 from .constants import FULL_SLUG_REGEX, known_targets
 from .metadata import Metadata
 from .schemas import BUILD_METADATA_KEYS, INFO_METADATA_KEYS, KNOWN_FILES_KEYS, MANIFEST_SCHEMA
@@ -53,11 +53,14 @@ class ManifestValidator(object):
                 self.add_error(str(MetadataKeyError(_k, _type)))
 
         for key in self.metadata.info_metadata_keys:
+            manifest_root_key = key.split('-')[0]
+
+            # check if the info key is known
             if key not in INFO_METADATA_KEYS:
-                manifest_root_key = key.split('-')[0]
                 _k, _type = Metadata.get_closest_manifest_key_and_type(key)
                 hint(MetadataKeyWarning(_k, _type))
                 if manifest_root_key in self.manifest_tree:
+                    hint(MetadataWarning('Dropping key "{}" from manifest.'.format(manifest_root_key)))
                     self.manifest_tree.pop(manifest_root_key)
 
     def validate_normalize_dependencies(self):  # type: () -> None

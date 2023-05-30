@@ -91,6 +91,9 @@ def _manifest_schema():  # type: () -> Schema
             Optional('documentation'): Regex(COMPILED_URL_RE, error=LINKS_URL_ERROR.format('documentation')),
             Optional('issues'): Regex(COMPILED_URL_RE, error=LINKS_URL_ERROR.format('issues')),
             Optional('discussion'): Regex(COMPILED_URL_RE, error=LINKS_URL_ERROR.format('discussion')),
+
+            # allow any other fields
+            Optional(str): object,
         },
         error='Invalid manifest format',
     )
@@ -196,7 +199,10 @@ def _flatten_json_schema_keys(schema, stack=None):
                     res.append(cur + ['type:' + v['type']])
 
         if 'additionalProperties' in schema and schema['additionalProperties']:
-            res.extend(_flatten_json_schema_keys(schema['additionalProperties'], stack + ['*']))
+            if schema['additionalProperties'] is True:  # arbitrary key value "str: object"
+                pass
+            else:
+                res.extend(_flatten_json_schema_keys(schema['additionalProperties'], stack + ['*']))
 
         return res
     else:

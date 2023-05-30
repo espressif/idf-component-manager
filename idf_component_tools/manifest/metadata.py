@@ -3,7 +3,7 @@
 
 from six import reraise
 
-from ..errors import InternalError, MetadataError, MetadataKeyError
+from ..errors import InternalError, MetadataError, MetadataKeyWarning, warn
 from .constants import KNOWN_BUILD_METADATA_FIELDS, KNOWN_INFO_METADATA_FIELDS
 from .schemas import serialize_list_of_list_of_strings
 
@@ -68,8 +68,6 @@ class Metadata(object):
         build_metadata_keys = []
         info_metadata_keys = []
 
-        errors = []
-
         for _k in metadata_keys:
             if _k[0] in KNOWN_BUILD_METADATA_FIELDS:
                 if _k not in build_metadata_keys:
@@ -77,12 +75,9 @@ class Metadata(object):
             elif _k[0] in KNOWN_INFO_METADATA_FIELDS:
                 if _k not in info_metadata_keys:
                     info_metadata_keys.append(_k)
-            else:
+            else:  # assume it's a info metadata key
                 _manifest_key, _manifest_type = cls.get_closest_manifest_key_and_type(_k)
-                errors.append(str(MetadataKeyError(_manifest_key, _manifest_type)))
-
-        if errors:
-            raise MetadataError(*errors)
+                warn(MetadataKeyWarning(_manifest_key, _manifest_type))
 
         return serialize_list_of_list_of_strings(build_metadata_keys), serialize_list_of_list_of_strings(
             info_metadata_keys)
