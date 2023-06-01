@@ -314,8 +314,8 @@ class TestManifestValidator(object):
         assert errors[0].startswith('Duplicate item in "{}":'.format(key))
         assert value in errors[0]
 
-    def test_validate_optional_dependency_success(self, valid_optional_dependency_manifest, monkeypatch):
-        validator = ManifestValidator(valid_optional_dependency_manifest)
+    def test_validate_optional_dependency_success(self, valid_optional_dependency_manifest_with_idf, monkeypatch):
+        validator = ManifestValidator(valid_optional_dependency_manifest_with_idf)
         errors = validator.validate_normalize()
 
         assert not errors
@@ -326,9 +326,9 @@ class TestManifestValidator(object):
             ('target is esp32', 'Invalid if clause'),
         ])
     def test_validate_optional_dependency_invalid_base(
-            self, valid_optional_dependency_manifest, invalid_str, error_message):
-        valid_optional_dependency_manifest['dependencies']['optional']['rules'][0]['if'] = invalid_str
-        validator = ManifestValidator(valid_optional_dependency_manifest)
+            self, valid_optional_dependency_manifest_with_idf, invalid_str, error_message):
+        valid_optional_dependency_manifest_with_idf['dependencies']['optional']['rules'][0]['if'] = invalid_str
+        validator = ManifestValidator(valid_optional_dependency_manifest_with_idf)
         errors = validator.validate_normalize()
 
         assert len(errors) == 4
@@ -336,18 +336,19 @@ class TestManifestValidator(object):
 
     @pytest.mark.parametrize(
         'invalid_str, error_message', [
-            ('idf_version >= 4.4!@#', 'Invalid simple block'),
-            ('idf_version >= 4.4, <= "3.3"', 'Invalid simple block'),
+            ('idf_version >= 4.4!@#', 'Dependency version spec format is invalid'),
+            ('idf_version >= 4.4, <= "3.3"', 'Dependency version spec format is invalid'),
         ])
     def test_validate_optional_dependency_invalid_derived(
-            self, valid_optional_dependency_manifest, invalid_str, error_message):
-        valid_optional_dependency_manifest['dependencies']['optional']['rules'][0]['if'] = invalid_str
-        validator = ManifestValidator(valid_optional_dependency_manifest)
+            self, valid_optional_dependency_manifest_with_idf, invalid_str, error_message):
+        valid_optional_dependency_manifest_with_idf['dependencies']['optional']['rules'][0]['if'] = invalid_str
+        validator = ManifestValidator(valid_optional_dependency_manifest_with_idf)
         errors = validator.validate_normalize()
 
-        assert len(errors) == 5
+        assert len(errors) == 4
+        print(errors)
         assert errors[-2].startswith(error_message)
-        assert errors[-1].startswith('Invalid if clause')
+        assert errors[-1].startswith('Invalid version specification')
 
     def test_known_targets_env(self, monkeypatch):
         monkeypatch.setenv(
@@ -475,6 +476,12 @@ class TestManifestValidator(object):
             validator.validate_normalize()
 
         assert len(validator._errors) == 0
+
+    def test_validate_rules_without_idf(self, valid_optional_dependency_manifest, monkeypatch):
+        validator = ManifestValidator(valid_optional_dependency_manifest)
+        errors = validator.validate_normalize()
+
+        assert not errors
 
 
 def test_json_schema():

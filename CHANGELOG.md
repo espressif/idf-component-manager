@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a bug where dependencies of the component weren't updating when local component changed
 - Fix mixed slashes in paths on Windows
 - Make different error messages for non-existing Version and Component
+- Fixed a bug where it was required to set IDF version and target for non-IDF dependent actions
 
 ### Changed
 

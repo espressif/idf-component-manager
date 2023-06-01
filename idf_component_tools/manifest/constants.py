@@ -12,7 +12,7 @@ TAGS_REGEX = r'^[A-Za-z0-9\_\-]{3,32}$'
 WEB_DEPENDENCY_REGEX = r'^((?:{slug}/{slug})|(?:{slug}))(.*)$'.format(slug=SLUG_BODY_REGEX)
 COMMIT_ID_RE = r'[0-9a-f]{40}'
 IF_IDF_VERSION_REGEX = r'^(?P<keyword>idf_version) *(?P<comparison>[\^=~<>!]+)(?P<spec>.+)$'
-IF_TARGET_REGEX = r'^(?P<keyword>target) *(?P<comparison>!=|==|not in|in)(?P<versions>.+)$'
+IF_TARGET_REGEX = r'^(?P<keyword>target) *(?P<comparison>!=|==|not in|in)(?P<targets>.+)$'
 
 LINKS = ['repository', 'documentation', 'issues', 'discussion', 'url']
 KNOWN_INFO_METADATA_FIELDS = ['maintainers', 'description', 'tags', 'examples'] + LINKS
