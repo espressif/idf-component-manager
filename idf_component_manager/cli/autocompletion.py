@@ -124,58 +124,62 @@ def _doc(docstring):
     return wrapper
 
 
-@click.command()
-@click.option('--shell', required=True, type=click.Choice(['bash', 'zsh', 'fish']), help='Shell type.')
-@click.option(
-    '--install',
-    is_flag=True,
-    default=False,
-    help='Create the completion files and inject the sourcing script into your rc files if this flag is set.')
-@click.option(
-    '--dry-run',
-    is_flag=True,
-    default=False,
-    help='Only useful when flag "--install" is set. Print the log instead of making any real file system changes.')
-@_doc(_DOC_STRSTRING)
-def autocomplete(shell, install, dry_run):
-    if shell == 'fish':
-        if CLICK_VERSION < Version('7.1.0'):  # fish support was added in 7.1
-            raise FatalError(
-                'Autocomplete for the fish shell is only supported by library `click` version 7.1 and higher. '
-                'An older version is installed on your machine due to an outdated version of python. '
-                'We recommend using python 3.7 and higher with compote CLI.')
+def init_autocomplete():
+    @click.command()
+    @click.option('--shell', required=True, type=click.Choice(['bash', 'zsh', 'fish']), help='Shell type')
+    @click.option(
+        '--install',
+        is_flag=True,
+        default=False,
+        help='Create the completion files and inject the sourcing script into your rc files if this flag is set.')
+    @click.option(
+        '--dry-run',
+        is_flag=True,
+        default=False,
+        help='Only useful when flag "--install" is set. Instead of real file system changes, '
+        'log would be printed if this flag is set.')
+    @_doc(_DOC_STRSTRING)
+    def autocomplete(shell, install, dry_run):
+        if shell == 'fish':
+            if CLICK_VERSION < Version('7.1.0'):  # fish support was added in 7.1
+                raise FatalError(
+                    'Autocomplete for the fish shell is only supported by library `click` version 7.1 and higher. '
+                    'An older version is installed on your machine due to an outdated version of python. '
+                    'We recommend using python 3.7 and higher with compote CLI.')
 
-    # the return code could be 1 even succeeded
-    # use || true to swallow the return code
-    autocomplete_script_str = subprocess.check_output(
-        '_{}_COMPLETE={} {} || true'.format(CLI_NAME.upper(), _get_shell_completion(shell), CLI_NAME),
-        shell=True).decode('utf8')  # nosec
+        # the return code could be 1 even succeeded
+        # use || true to swallow the return code
+        autocomplete_script_str = subprocess.check_output(
+            '_{}_COMPLETE={} {} || true'.format(CLI_NAME.upper(), _get_shell_completion(shell), CLI_NAME),
+            shell=True).decode('utf8')  # nosec
 
-    if not install:  # print the autocomplete script only
-        print(autocomplete_script_str)
-        return
+        if not install:  # print the autocomplete script only
+            print(autocomplete_script_str)
+            return
 
-    # write autocomplete script
-    completion_filepath = os.path.realpath(os.path.expanduser(_COMPLETE_FILE_PATH[shell]))
-    if not os.path.isdir(os.path.dirname(completion_filepath)):
-        if not dry_run:
-            os.makedirs(os.path.dirname(completion_filepath))
+        # write autocomplete script
+        completion_filepath = os.path.realpath(os.path.expanduser(_COMPLETE_FILE_PATH[shell]))
+        if not os.path.isdir(os.path.dirname(completion_filepath)):
+            if not dry_run:
+                os.makedirs(os.path.dirname(completion_filepath))
 
-    if dry_run:
-        print_info('Completion file would be created at: {}'.format(completion_filepath))
-    else:
-        with open(completion_filepath, 'w') as fw:
-            fw.write(autocomplete_script_str)
+        if dry_run:
+            print_info('Completion file would be created at: {}'.format(completion_filepath))
+        else:
+            with open(completion_filepath, 'w') as fw:
+                fw.write(autocomplete_script_str)
 
-    # write sourcing autocomplete script statements
-    if _RC_FILE_PATH[shell] and _SOURCING_STR[shell]:
-        rc_filepath = os.path.realpath(os.path.expanduser(_RC_FILE_PATH[shell]))
-        # enable zsh autocomplete
-        if shell == 'zsh':
-            _append_text_line('autoload -Uz compinit', rc_filepath, dry_run=dry_run)
-            _append_text_line(['compinit', 'compinit -u'], rc_filepath, dry_run=dry_run)
+        # write sourcing autocomplete script statements
+        if _RC_FILE_PATH[shell] and _SOURCING_STR[shell]:
+            rc_filepath = os.path.realpath(os.path.expanduser(_RC_FILE_PATH[shell]))
+            # enable zsh autocomplete
+            if shell == 'zsh':
+                _append_text_line('autoload -Uz compinit', rc_filepath, dry_run=dry_run)
+                _append_text_line(['compinit', 'compinit -u'], rc_filepath, dry_run=dry_run)
 
-        _append_text_line(
-            '# ESP-IDF component manager compote CLI autocompletion\n{}'.format(_SOURCING_STR[shell]),
-            rc_filepath,
-            dry_run=dry_run)
+            _append_text_line(
+                '# ESP-IDF component manager compote CLI autocompletion\n{}'.format(_SOURCING_STR[shell]),
+                rc_filepath,
+                dry_run=dry_run)
+
+    return autocomplete
