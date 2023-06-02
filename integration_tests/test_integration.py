@@ -342,3 +342,23 @@ def test_update_dependencies_without_lock(project, monkeypatch):
     project_action(project, 'update-dependencies')
 
     assert lock.load().dependencies[0].version == '1.0.0'
+
+
+@pytest.mark.parametrize(
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'example/boobobobob': {
+                            'version': '0.0.1',
+                        },
+                    }
+                }
+            }
+        },
+    ],
+    indirect=True)
+def test_idf_reconfigure_dependency_doesnt_exist(project):
+    res = project_action(project, 'reconfigure')
+    assert 'Component "example/boobobobob" not found' in res
