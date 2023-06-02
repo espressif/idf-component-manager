@@ -43,9 +43,10 @@ check_pre_commit:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
   before_script:
-    - pip install pre-commit
+    - pip install poetry
+    - poetry install
   script:
-    - git diff --name-only --no-commit-id "origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}" "${CI_COMMIT_SHA}" | xargs pre-commit run --files
+    - git diff --name-only --no-commit-id "origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}" "${CI_COMMIT_SHA}" | xargs poetry run pre-commit run --files
 
 prepare_tests:
   extends: .check

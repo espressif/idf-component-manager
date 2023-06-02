@@ -27,7 +27,6 @@ REQUIRES = [
     'colorama;python_version>="3.5"',
     'contextlib2<=0.6.0;python_version<"3.6"',
     'contextlib2>0.6.0;python_version>="3.6"',
-    'future',
     'packaging',
     'pathlib;python_version<"3.4"',
     'pyyaml<=5.2;python_version=="3.4.*"',
