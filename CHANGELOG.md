@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+
 - Extend the behavior of `compote manifest create` and `compote manifest add-dependency` to create a manifest file based on the context of the current working directory (context of a project or a component)
 
 ### Added
@@ -42,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix git submodule update error when using submodule exists in the `path` field specified in the corresponding git dependency
 - Fixed a bug where dependencies of the component weren't updating when local component changed
 - Fix mixed slashes in paths on Windows
+- Make different error messages for non-existing Version and Component
 
 ### Changed
 

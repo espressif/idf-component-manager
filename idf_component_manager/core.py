@@ -17,7 +17,7 @@ from pathlib import Path
 import requests
 
 from idf_component_manager.utils import print_info, print_warn
-from idf_component_tools.api_client_errors import APIClientError, NetworkConnectionError, VersionNotFound
+from idf_component_tools.api_client_errors import APIClientError, ComponentNotFound, NetworkConnectionError
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name, is_component
 from idf_component_tools.environment import getenv_int
@@ -182,12 +182,7 @@ class ComponentManager(object):
                 'choose a different path.'.format(project_path),
                 exit_code=3)
 
-        try:
-            component_details = client.component(component_name=component_name, version=version_spec)
-        except VersionNotFound as e:
-            raise FatalError(e)
-        except APIClientError:
-            raise FatalError('Selected component "{}" doesn\'t exist.'.format(component_name))
+        component_details = client.component(component_name=component_name, version=version_spec)
 
         try:
             example_url = [example for example in component_details.examples if example_name == example['name']][-1]
@@ -413,13 +408,19 @@ class ComponentManager(object):
 
         component_name = '/'.join([namespace, manifest.name])
         # Checking if current version already uploaded
-        versions = client.versions(component_name=component_name, spec='*').versions
-        if manifest.version in versions:
-            if allow_existing:
-                return
+        try:
+            versions = client.versions(component_name=component_name, spec='*').versions
 
-            raise VersionAlreadyExistsError(
-                'Version {} of the component "{}" is already on the registry'.format(manifest.version, component_name))
+            if manifest.version in versions:
+                if allow_existing:
+                    return
+
+                raise VersionAlreadyExistsError(
+                    'Version {} of the component "{}" is already on the registry'.format(
+                        manifest.version, component_name))
+        except ComponentNotFound:
+            # It's ok if component doesn't exist yet
+            pass
 
         # Exit if check flag was set
         if check_only:

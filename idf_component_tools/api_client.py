@@ -189,6 +189,18 @@ def user_agent():  # type: () -> str
     )
 
 
+def _component_request(request, component_name):
+    """Get component information from storage. Used by `versions` and `component`."""
+    try:
+        return request(
+            'get',
+            ['components', component_name.lower()],
+            schema=COMPONENT_SCHEMA,
+        )
+    except StorageFileNotFound:
+        raise ComponentNotFound('Component "{}" not found'.format(component_name))
+
+
 class APIClient(object):
     def __init__(self, base_url=None, storage_url=None, source=None, auth_token=None):
         # type: (str | None, str | None, BaseSource | None, str | None) -> None
@@ -338,31 +350,25 @@ class APIClient(object):
     @_request(cache=True, use_storage=True)
     def versions(self, request, component_name, spec='*'):
         """List of versions for given component with required spec"""
-        semantic_spec = SimpleSpec(spec or '*')
+
         component_name = component_name.lower()
-        try:
-            body = request(
-                'get',
-                ['components', component_name],
-                schema=COMPONENT_SCHEMA,
-            )
-        except (ComponentNotFound, StorageFileNotFound):
-            versions = []
-        else:
-            versions = []
-            for version in body['versions']:
-                if not semantic_spec.match(Version(version['version'])):
-                    continue
+        semantic_spec = SimpleSpec(spec or '*')
+        body = _component_request(request, component_name)
 
-                all_build_keys_known = True
-                if version.get('build_metadata_keys', None) is not None:
-                    for build_key in version.get('build_metadata_keys'):
-                        if build_key not in BUILD_METADATA_KEYS:
-                            all_build_keys_known = False
-                            break
+        versions = []
+        for version in body['versions']:
+            if not semantic_spec.match(Version(version['version'])):
+                continue
 
-                if all_build_keys_known:
-                    versions.append((version, all_build_keys_known))
+            all_build_keys_known = True
+            if version.get('build_metadata_keys', None) is not None:
+                for build_key in version.get('build_metadata_keys'):
+                    if build_key not in BUILD_METADATA_KEYS:
+                        all_build_keys_known = False
+                        break
+
+            if all_build_keys_known:
+                versions.append((version, all_build_keys_known))
 
         return tools.manifest.ComponentWithVersions(
             name=component_name,
@@ -379,13 +385,10 @@ class APIClient(object):
     @_request(cache=True, use_storage=True)
     def component(self, request, component_name, version=None):
         """Manifest for given version of component, if version is None highest version is returned"""
-        response = request(
-            'get',
-            ['components', component_name.lower()],
-            schema=COMPONENT_SCHEMA,
-        )
-        versions = response['versions']
 
+        component_name = component_name.lower()
+        response = _component_request(request, component_name)
+        versions = response['versions']
         filtered_versions = filter_versions(versions, version, component_name)
 
         if not filtered_versions:

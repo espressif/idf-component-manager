@@ -281,7 +281,7 @@ def test_create_example_project_path_not_empty(tmp_path):
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_create_example_component_not_exist.yaml')
 def test_create_example_component_not_exist(tmp_path):
     manager = ComponentManager(path=str(tmp_path))
-    with raises(FatalError, match='Selected component "espressif/test" doesn\'t exist.'):
+    with raises(FatalError, match='Component "espressif/test" not found'):
         manager.create_project_from_example('test:example')
 
 
