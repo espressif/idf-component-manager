@@ -61,17 +61,32 @@ Here's the minimal ``idf_component.yml``:
 
    version: "0.0.1"
 
-As you can see, the ``version`` field is the only required field for uploading a component. You can check the  :ref:`versioning scheme <reference/versioning:Versioning Scheme>`.
+The Component registry only requires the ``version`` of the component in the `idf_component.yml`.
+``version`` must follow :ref:`versioning scheme <reference/versioning:Versioning Scheme>`.
 
-It's recommended to add extra metadata information for your component. For example:
+However, we recommend adding ``url`` and ``description``. Otherwise, a warning will be printed
 
 .. code-block:: yaml
 
    version: "0.0.1"
    description: "This is a test component"
-   url: "[YOUR URL]"  # could be a github repo.
+   url: "[YOUR URL]"  # The homepage of the component. It can be a GitHub repository page.
 
-For detailed information about the manifest file and all supported metadata, please refer to the :doc:`/reference/manifest_file`.
+For information about additional fields in the manifest please check the :ref:`manifest format reference <reference/manifest_file:Manifest File \`\`idf_component.yml\`\` Format Reference>`.
+
+Create License File
+^^^^^^^^^^^^^^^^^^^
+
+Once you've uploaded your component, other users can discover, download, and use it. Including a license with your component is crucial to ensure proper usage.
+
+If you need help choosing a license for your component, you can check the `<https://choosealicense.com>`_ website. Once you've selected your license, be sure to include the full text of the license in the ``LICENSE`` or ``LICENSE.txt`` file in your component's root directory. Better to check the "How to apply this license" section to see if there's additional action items to apply the license.
+
+After selecting a license, you can add the ``license`` field in your ``idf_component.yml`` file. The value should be the SPDX license identifier of the chosen license. You may check the identifier list at `<https://spdx.org/licenses/>`_. For example, if you choose MIT license, the ``idf_component.yml`` should look like:
+
+.. code-block:: yaml
+
+   version: "0.0.1"
+   license: "MIT"
 
 Create README.md
 ^^^^^^^^^^^^^^^^
@@ -94,19 +109,6 @@ A README file would help users know better about your component. Usually it incl
    - step 1
    - step 2
 
-Create License File
-^^^^^^^^^^^^^^^^^^^
-
-Once you've uploaded your component, other users can discover, download, and use it. Including a license with your component is crucial to ensure proper usage.
-
-If you need help choosing a license for your component, you can check the `<https://choosealicense.com>`_ website. Once you've selected your license, be sure to include the full text of the license in the ``LICENSE`` or ``LICENSE.txt`` file in your component's root directory. Better to check the "How to apply this license" section to see if there's additional action items to apply the license.
-
-After selecting a license, you can add the ``license`` field in your ``idf_component.yml`` file. The value should be the SPDX license identifier of the chosen license. You may check the identifier list at `<https://spdx.org/licenses/>`_. For example, if you choose MIT license, the ``idf_component.yml`` should look like:
-
-.. code-block:: yaml
-
-   version: "0.0.1"
-   license: "MIT"
 
 Publish the Component
 ---------------------
