@@ -56,6 +56,10 @@ repos:
             "--config",
             "ci/check_copyright_config.yaml",
           ]
+  - repo: https://github.com/fpgmaas/deptry.git
+    rev: "0.11.0"
+    hooks:
+      - id: deptry
   - repo: local
     hooks:
       - id: update-pyprojecttoml-version
