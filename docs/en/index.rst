@@ -21,6 +21,7 @@ Reference
 .. toctree::
    :maxdepth: 2
 
+   reference/compote_cli
    reference/manifest_file
    reference/versioning
 

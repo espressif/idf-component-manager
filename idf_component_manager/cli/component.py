@@ -10,7 +10,7 @@ from .utils import add_options
 @click.group()
 def component():
     """
-    Group of component related commands
+    Group of commands to interact with components.
     """
     pass
 
@@ -83,7 +83,7 @@ def upload_status(manager, service_profile, job):
 
 @component.command()
 @add_options(PROJECT_OPTIONS + NAMESPACE_NAME_OPTIONS)
-@click.option('--version', required=True, help='Component version to delete')
+@click.option('--version', required=True, help='Component version to delete.')
 def delete(manager, service_profile, namespace, name, version):
     """
     Delete specified version of the component from the component registry.
@@ -94,11 +94,12 @@ def delete(manager, service_profile, namespace, name, version):
 
 @component.command()
 @add_options(PROJECT_OPTIONS + NAMESPACE_NAME_OPTIONS)
-@click.option('--version', required=True, help='Component version to yank version')
-@click.option('--message', required=True, help='Message why component version will be removed from the registry')
+@click.option('--version', required=True, help='Component version to yank version.')
+@click.option(
+    '--message', required=True, help='Message explaining why the component version is being removed from the registry.')
 def yank(manager, service_profile, namespace, name, version, message):
     """
     Yank specified version of the component from the component registry.
-    Yanked version can be downloaded from the registry with warning message
+    Yanked version can be downloaded from the registry with warning message.
     """
     manager.yank_version(name, version, message, service_profile=service_profile, namespace=namespace)

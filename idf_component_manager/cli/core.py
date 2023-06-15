@@ -29,7 +29,7 @@ if CLICK_SUPPORTS_SHOW_DEFAULT:
 
 
 @click.group(context_settings=DEFAULT_SETTINGS)
-@click.option('--warnings-as-errors', '-W', is_flag=True, default=False, help='Raise exception on warnings')
+@click.option('--warnings-as-errors', '-W', is_flag=True, default=False, help='Treat warnings as errors.')
 def cli(warnings_as_errors):
     if warnings_as_errors:
         warnings.filterwarnings('error', category=UserWarning)
@@ -38,7 +38,7 @@ def cli(warnings_as_errors):
 @cli.command()
 def version():
     """
-    Print version of the IDF Component Manager
+    Print version of the IDF Component Manager.
     """
     print_info(str(idf_component_manager_version))
 
@@ -52,7 +52,7 @@ cli.add_command(project)
 
 def safe_cli():
     """
-    CLI entrypoint with error handling
+    CLI entrypoint with error handling.
     """
     try:
         cli()

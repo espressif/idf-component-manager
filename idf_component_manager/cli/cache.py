@@ -10,7 +10,7 @@ from idf_component_tools.file_tools import human_readable_size
 @click.group()
 def cache():
     """
-    Group of cache related commands
+    Group of commands to manage cache of the IDF Component Manager.
     """
     pass
 
@@ -18,7 +18,7 @@ def cache():
 @cache.command()
 def clear():
     """
-    Clear cache of components and API client cache
+    Clear the cache of components and API client cache.
     """
     FileCache().clear()
     print_info('Successfully cleared cache at\n\t{}'.format(FileCache().path()))
@@ -27,7 +27,7 @@ def clear():
 @cache.command()
 def path():
     """
-    Print cache path
+    Print the cache path.
     """
     print_info(FileCache().path())
 
@@ -36,7 +36,7 @@ def path():
 @click.option('--bytes', is_flag=True, default=False, help='Print size in bytes')
 def size(bytes):
     """
-    Print cache size of cache in human readable format
+    Print the cache size in human readable format.
     """
     size = FileCache().size()
     if bytes:
