@@ -74,10 +74,7 @@ def disable_cache(monkeypatch):
 
 
 @pytest.fixture
-def valid_optional_dependency_manifest(valid_manifest, monkeypatch):
-    monkeypatch.setenv('IDF_VERSION', '5.0.0')
-    monkeypatch.setenv('IDF_TARGET', 'esp32')
-
+def valid_optional_dependency_manifest(valid_manifest):
     valid_manifest['dependencies']['optional'] = {
         'version': '1.0.0',
         'rules': [
@@ -90,6 +87,14 @@ def valid_optional_dependency_manifest(valid_manifest, monkeypatch):
         ]
     }
     return valid_manifest
+
+
+@pytest.fixture
+def valid_optional_dependency_manifest_with_idf(valid_optional_dependency_manifest, monkeypatch):
+    monkeypatch.setenv('IDF_VERSION', '5.0.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32')
+
+    return valid_optional_dependency_manifest
 
 
 @pytest.fixture()

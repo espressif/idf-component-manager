@@ -1,30 +1,18 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-
-import inspect
 import re
 from ast import literal_eval
 
 from schema import SchemaError
 
 from idf_component_tools.build_system_tools import get_env_idf_target, get_idf_version
+from idf_component_tools.errors import FetchingError, ProcessingError
 from idf_component_tools.manifest.constants import IF_IDF_VERSION_REGEX, IF_TARGET_REGEX
 from idf_component_tools.semver import SimpleSpec, Version
 from idf_component_tools.serialization import serializable
 
 IF_IDF_VERSION_REGEX_COMPILED = re.compile(IF_IDF_VERSION_REGEX)
 IF_TARGET_REGEX_COMPILED = re.compile(IF_TARGET_REGEX)
-
-COMMON_ERR_MSG = inspect.cleandoc(
-    """
-Invalid if clause. Here are some valid examples:
-    For keyword "idf_version", you could use:
-        - if: "idf_version ~= 5.0.0"
-        - if: "idf_version >=3.3,<5.0"
-    For keyword "target", you could use:
-        - if: "target not in [esp32, esp32c3]"
-        - if: "target != esp32"
-""")
 
 
 @serializable
@@ -66,7 +54,7 @@ def _eval_str(s):  # type: (str) -> str
     try:
         return literal_eval(_s)
     except (ValueError, SyntaxError):
-        raise SchemaError(None, ['Invalid string `{}`'.format(s), COMMON_ERR_MSG])
+        raise SchemaError(None, 'Invalid string "{}" in "if" clause'.format(s))
 
 
 def _eval_list(s):  # type: (str) -> list[str]
@@ -78,7 +66,7 @@ def _eval_list(s):  # type: (str) -> list[str]
     try:
         return [_eval_str(part) for part in _s.split(',')]
     except (ValueError, SyntaxError):
-        raise SchemaError(None, ['Invalid list `{}`'.format(s), COMMON_ERR_MSG])
+        raise SchemaError(None, 'Invalid list "{}" in "if" clause'.format(s))
 
 
 def _parse_if_idf_version_clause(mat):  # type: (re.Match) -> IfClause
@@ -88,42 +76,65 @@ def _parse_if_idf_version_clause(mat):  # type: (re.Match) -> IfClause
 
     try:
         simple_spec = SimpleSpec('{}{}'.format(_eval_str(comparison), _eval_str(spec)))
-    except ValueError as e:
-        raise SchemaError(None, [str(e), COMMON_ERR_MSG])
+    except ValueError:
+        raise SchemaError(
+            None, 'Invalid version specification for "idf_version": {clause}. Please use a format like '
+            '"idf_version >=4.4,<5.3"\nDocumentation: '
+            'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/manifest_file.html#rules'.
+            format(clause=mat.string))
 
-    idf_version = get_idf_version()
-    return IfClause('{} {}'.format(idf_version, simple_spec.expression), simple_spec.match(Version(idf_version)))
+    try:
+        idf_version = get_idf_version()
+    except FetchingError:
+        idf_version = None
+        bool_value = False
+    else:
+        bool_value = simple_spec.match(Version(idf_version))
+
+    return IfClause('{} {}'.format(idf_version, simple_spec.expression), bool_value)
 
 
 def _parser_if_target_clause(mat):  # type: (re.Match) -> IfClause
     comparison = mat.group('comparison')
-    versions = mat.group('versions').strip()
+    targets = mat.group('targets').strip()
 
-    env_target = get_env_idf_target()
-    if comparison == '!=':
-        bool_value = env_target != _eval_str(versions)
-    elif comparison == '==':
-        bool_value = env_target == _eval_str(versions)
-    elif comparison == 'not in':
-        bool_value = env_target not in _eval_list(versions)
-    elif comparison == 'in':
-        bool_value = env_target in _eval_list(versions)
+    try:
+        env_target = get_env_idf_target()
+    except ProcessingError:
+        env_target = None
+        bool_value = False
     else:
-        raise SchemaError(None, COMMON_ERR_MSG)
+        if comparison == '!=':
+            bool_value = env_target != _eval_str(targets)
+        elif comparison == '==':
+            bool_value = env_target == _eval_str(targets)
+        elif comparison == 'not in':
+            bool_value = env_target not in _eval_list(targets)
+        elif comparison == 'in':
+            bool_value = env_target in _eval_list(targets)
+        else:
+            raise SchemaError(
+                None, 'Invalid if clause format for target: {clause}. You can specify rules based on target using '
+                '"==", "!=", "in" or "not in" like: "target in [esp32, esp32c3]", "target == esp32"\n'
+                'Documentation: '
+                'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference'
+                '/manifest_file.html#rules'.format(clause=mat.string))
 
-    return IfClause('{} {} {}'.format(env_target, comparison, versions), bool_value)
+    return IfClause('{} {} {}'.format(env_target, comparison, targets), bool_value)
 
 
 def parse_if_clause(if_clause):  # type: (str) -> IfClause
-    is_idf_version = True
     res = IF_IDF_VERSION_REGEX_COMPILED.match(if_clause)
-    if not res:
-        is_idf_version = False
-        res = IF_TARGET_REGEX_COMPILED.match(if_clause)
-    if not res:
-        raise SchemaError(None, COMMON_ERR_MSG)
-
-    if is_idf_version:
+    if res:
         return _parse_if_idf_version_clause(res)
-    else:
+
+    res = IF_TARGET_REGEX_COMPILED.match(if_clause)
+    if res:
         return _parser_if_target_clause(res)
+
+    raise SchemaError(
+        None,
+        'Invalid if clause format "{clause}". You can specify rules based on current ESP-IDF version or target like: '
+        '"idf_version >=3.3,<5.0" or "target in [esp32, esp32c3]"\nDocumentation: '
+        'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/manifest_file.html#rules'.format(
+            clause=if_clause))
