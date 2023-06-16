@@ -133,7 +133,7 @@ def action_extensions(base_actions, project_path):
                         'required': True,
                     },
                 ],
-                'options': LOCAL_MANIFEST_OPTIONS,
+                'options': LOCAL_MANIFEST_OPTIONS + SERVICE_PROFILE,
             },
             'remove_managed_components': {
                 'callback': callback,

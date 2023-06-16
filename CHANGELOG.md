@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add documentation for compote CLI
+- Add a check for the existence of a dependency in the registry when using the `compote manifest add-dependency` command
 - Add `-W | --warnings-as-errors` flag to `compote` to treat warnings as errors
 - Add `-p | --path` flag to `compote manifest create` and `compote manifest add-dependency` to specify the path to the manifest file
 - Add `compote manifest schema` to generate the json schema file of the `idf_component.yml`

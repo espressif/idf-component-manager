@@ -9,11 +9,11 @@ from idf_component_manager import version as idf_component_manager_version
 from idf_component_manager.utils import CLICK_SUPPORTS_SHOW_DEFAULT, print_error, print_info
 from idf_component_tools.errors import FatalError
 
-from .autocompletion import autocomplete
-from .cache import cache
-from .component import component
-from .manifest import manifest
-from .project import project
+from .autocompletion import init_autocomplete
+from .cache import init_cache
+from .component import init_component
+from .manifest import init_manifest
+from .project import init_project
 
 try:
     from typing import Any
@@ -28,26 +28,30 @@ if CLICK_SUPPORTS_SHOW_DEFAULT:
     DEFAULT_SETTINGS['show_default'] = True
 
 
-@click.group(context_settings=DEFAULT_SETTINGS)
-@click.option('--warnings-as-errors', '-W', is_flag=True, default=False, help='Treat warnings as errors.')
-def cli(warnings_as_errors):
-    if warnings_as_errors:
-        warnings.filterwarnings('error', category=UserWarning)
-
-
-@cli.command()
-def version():
+def initialize_cli():
     """
-    Print version of the IDF Component Manager.
+    Initialize CLI
     """
-    print_info(str(idf_component_manager_version))
+    @click.group(context_settings=DEFAULT_SETTINGS)
+    @click.option('--warnings-as-errors', '-W', is_flag=True, default=False, help='Treat warnings as errors.')
+    def cli(warnings_as_errors):
+        if warnings_as_errors:
+            warnings.filterwarnings('error', category=UserWarning)
 
+    @cli.command()
+    def version():
+        """
+        Print version of the IDF Component Manager.
+        """
+        print_info(str(idf_component_manager_version))
 
-cli.add_command(autocomplete)
-cli.add_command(cache)
-cli.add_command(component)
-cli.add_command(manifest)
-cli.add_command(project)
+    cli.add_command(init_autocomplete())
+    cli.add_command(init_cache())
+    cli.add_command(init_component())
+    cli.add_command(init_manifest())
+    cli.add_command(init_project())
+
+    return cli
 
 
 def safe_cli():
@@ -55,6 +59,7 @@ def safe_cli():
     CLI entrypoint with error handling.
     """
     try:
+        cli = initialize_cli()
         cli()
     except UserWarning as e:
         print_error(e)

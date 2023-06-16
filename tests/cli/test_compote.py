@@ -7,8 +7,11 @@ from copy import deepcopy
 
 import jsonschema
 import pytest
+import vcr
+from click.testing import CliRunner
 from jsonschema.exceptions import ValidationError
 
+from idf_component_manager.cli.core import initialize_cli
 from idf_component_tools.__version__ import __version__
 from idf_component_tools.file_cache import FileCache
 from idf_component_tools.file_tools import directory_size
@@ -36,51 +39,43 @@ def test_raise_exception_on_warnings(monkeypatch):
     assert 'Please set the variable to the number of minutes. Using the default value of 5 minutes.' in decoded
 
 
-def test_manifest_create_add_dependency(tmp_path):
-    tempdir = str(tmp_path)
+@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_manifest_create_add_dependency.yaml')
+def test_manifest_create_add_dependency(mock_registry):
 
-    os.makedirs(os.path.join(tempdir, 'main'))
-    os.makedirs(os.path.join(tempdir, 'components', 'foo'))
-    os.makedirs(os.path.join(tempdir, 'components', 'bar'))
-    os.makedirs(os.path.join(tempdir, 'src'))
-    main_manifest_path = os.path.join(tempdir, 'main', MANIFEST_FILENAME)
-    foo_manifest_path = os.path.join(tempdir, 'components', 'foo', MANIFEST_FILENAME)
-    bar_manifest_path = os.path.join(tempdir, 'components', 'bar', MANIFEST_FILENAME)
-    src_path = os.path.join(tempdir, 'src')
-    src_manifest_path = os.path.join(src_path, MANIFEST_FILENAME)
+    runner = CliRunner()
+    with runner.isolated_filesystem() as tempdir:
 
-    subprocess.check_output(['compote', 'manifest', 'create'], cwd=tempdir)
-    subprocess.check_output(['compote', 'manifest', 'create', '--component', 'foo'], cwd=tempdir)
-    subprocess.check_output(['compote', 'manifest', 'create', '--path', src_path], cwd=tempdir)
+        os.makedirs(os.path.join(tempdir, 'main'))
+        os.makedirs(os.path.join(tempdir, 'components', 'foo'))
+        os.makedirs(os.path.join(tempdir, 'src'))
 
-    with open(os.path.join(tempdir, 'components', 'bar', 'CMakeLists.txt'), mode='w') as file:
-        subprocess.check_output(['compote', 'manifest', 'create'], cwd=os.path.join(tempdir, 'components', 'bar'))
+        main_manifest_path = os.path.join(tempdir, 'main', MANIFEST_FILENAME)
+        foo_manifest_path = os.path.join(tempdir, 'components', 'foo', MANIFEST_FILENAME)
+        src_path = os.path.join(tempdir, 'src')
+        src_manifest_path = os.path.join(src_path, MANIFEST_FILENAME)
 
-    assert subprocess.call(
-        ['compote', 'manifest', 'create', '--component', 'src', '--path', src_path], cwd=tempdir) == 2
+        cli = initialize_cli()
+        assert 'Created' in runner.invoke(cli, ['manifest', 'create']).output
+        assert 'Created' in runner.invoke(cli, ['manifest', 'create', '--component', 'foo']).output
+        assert 'Created' in runner.invoke(cli, ['manifest', 'create', '--path', src_path]).output
 
-    for filepath in [main_manifest_path, foo_manifest_path, bar_manifest_path]:
-        with open(filepath, mode='r') as file:
-            assert file.readline().startswith('## IDF Component Manager')
+        assert runner.invoke(cli, ['manifest', 'create', '--component', 'src', '--path', src_path]).exit_code == 1
+        for filepath in [main_manifest_path, foo_manifest_path]:
+            with open(filepath, mode='r') as file:
+                assert file.readline().startswith('## IDF Component Manager')
 
-    subprocess.check_output(['compote', 'manifest', 'add-dependency', 'comp<=1.0.0'], cwd=tempdir)
-    manifest_manager = ManifestManager(main_manifest_path, 'main')
-    assert manifest_manager.manifest_tree['dependencies']['espressif/comp'] == '<=1.0.0'
-
-    subprocess.check_output(
-        ['compote', 'manifest', 'add-dependency', 'idf/comp<=1.0.0', '--component', 'foo'], cwd=tempdir)
-    manifest_manager = ManifestManager(foo_manifest_path, 'foo')
-    assert manifest_manager.manifest_tree['dependencies']['idf/comp'] == '<=1.0.0'
-
-    subprocess.check_output(
-        ['compote', 'manifest', 'add-dependency', 'idf/comp<=1.0.0', '--path', src_path], cwd=tempdir)
-    manifest_manager = ManifestManager(src_manifest_path, 'src')
-    assert manifest_manager.manifest_tree['dependencies']['idf/comp'] == '<=1.0.0'
-
-    subprocess.check_output(
-        ['compote', 'manifest', 'add-dependency', 'idf/comp<=1.0.0'], cwd=os.path.join(tempdir, 'components', 'bar'))
-    manifest_manager = ManifestManager(bar_manifest_path, 'bar')
-    assert manifest_manager.manifest_tree['dependencies']['idf/comp'] == '<=1.0.0'
+        assert 'Successfully added dependency' in runner.invoke(
+            cli, ['manifest', 'add-dependency', 'espressif/cmp']).output
+        manifest_manager = ManifestManager(main_manifest_path, 'main')
+        assert manifest_manager.manifest_tree['dependencies']['espressif/cmp'] == '*'
+        assert 'Successfully added dependency' in runner.invoke(
+            cli, ['manifest', 'add-dependency', 'espressif/cmp', '--component', 'foo']).output
+        manifest_manager = ManifestManager(foo_manifest_path, 'foo')
+        assert manifest_manager.manifest_tree['dependencies']['espressif/cmp'] == '*'
+        assert 'Successfully added dependency' in runner.invoke(
+            cli, ['manifest', 'add-dependency', 'espressif/cmp', '--path', src_path]).output
+        manifest_manager = ManifestManager(src_manifest_path, 'src')
+        assert manifest_manager.manifest_tree['dependencies']['espressif/cmp'] == '*'
 
 
 def test_manifest_schema(tmp_path, valid_manifest):

@@ -197,7 +197,14 @@ class ComponentManager(object):
         print_info('Example "{}" successfully downloaded to {}'.format(example_name, os.path.abspath(project_path)))
 
     @general_error_handler
-    def add_dependency(self, dependency, component='main', path=None):  # type: (str, str, Optional[str]) -> None
+    def add_dependency(
+            self,
+            dependency,
+            component='main',
+            path=None,
+            service_profile=None):  # type: (str, str, Optional[str], str | None) -> None
+
+        client, _ = service_details(None, service_profile, token_required=False)
 
         manifest_filepath, _ = self._get_manifest(component=component, path=path)
 
@@ -224,6 +231,9 @@ class ComponentManager(object):
                 'Invalid dependency version requirement: {}. Please use format like ">=1" or "*".'.format(spec))
 
         name = WebServiceSource().normalized_name(name)
+
+        # Check if dependency exists in the registry
+        client.component(component_name=name, version=spec)
 
         manifest_manager = ManifestManager(manifest_filepath, component)
         manifest = manifest_manager.load()

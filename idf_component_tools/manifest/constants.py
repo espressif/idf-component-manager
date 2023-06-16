@@ -18,7 +18,7 @@ LINKS = ['repository', 'documentation', 'issues', 'discussion', 'url']
 KNOWN_INFO_METADATA_FIELDS = ['maintainers', 'description', 'tags', 'examples'] + LINKS
 KNOWN_BUILD_METADATA_FIELDS = ['name', 'dependencies', 'targets', 'version', 'files']
 
-DEFAULT_KNOWN_TARGETS = ['esp32', 'esp32s2', 'esp32c3', 'esp32s3', 'esp32c2', 'esp32c6', 'esp32h2', 'linux']
+DEFAULT_KNOWN_TARGETS = ['esp32', 'esp32s2', 'esp32c3', 'esp32s3', 'esp32c2', 'esp32c6', 'esp32h2', 'esp32p4', 'linux']
 
 
 def known_targets():  # type: () -> list[str]

@@ -29,7 +29,8 @@ def list_dir(folder):
     return res
 
 
-def test_init_project(tmp_path):
+@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_init_project.yaml')
+def test_init_project(mock_registry, tmp_path):
     tempdir = str(tmp_path)
     try:
         os.makedirs(os.path.join(tempdir, 'main'))
@@ -45,19 +46,20 @@ def test_init_project(tmp_path):
             with open(filepath, mode='r') as file:
                 assert file.readline().startswith('## IDF Component Manager')
 
-        manager.add_dependency('comp<=1.0.0')
+        manager.add_dependency('cmp==4.0.3')
         manifest_manager = ManifestManager(main_manifest_path, 'main')
-        assert manifest_manager.manifest_tree['dependencies']['espressif/comp'] == '<=1.0.0'
+        assert manifest_manager.manifest_tree['dependencies']['espressif/cmp'] == '==4.0.3'
 
-        manager.add_dependency('idf/comp<=1.0.0', component='foo')
+        manager.add_dependency('espressif/cmp==4.0.3', component='foo')
         manifest_manager = ManifestManager(foo_manifest_path, 'foo')
-        assert manifest_manager.manifest_tree['dependencies']['idf/comp'] == '<=1.0.0'
+        assert manifest_manager.manifest_tree['dependencies']['espressif/cmp'] == '==4.0.3'
 
     finally:
         shutil.rmtree(tempdir)
 
 
-def test_init_project_with_path(tmp_path):
+@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_init_project_with_path.yaml')
+def test_init_project_with_path(mock_registry, tmp_path):
     tempdir = str(tmp_path)
     try:
         os.makedirs(os.path.join(tempdir, 'src'))
@@ -77,16 +79,16 @@ def test_init_project_with_path(tmp_path):
         with pytest.raises(FatalError, match=component_and_path_error_match):
             manager.create_manifest(component='src', path=src_path)
 
-        manager.add_dependency('idf/comp<=1.0.0', path=src_path)
+        manager.add_dependency('espressif/cmp==4.0.3', path=src_path)
         manifest_manager = ManifestManager(src_manifest_path, 'src')
 
-        assert manifest_manager.manifest_tree['dependencies']['idf/comp'] == '<=1.0.0'
+        assert manifest_manager.manifest_tree['dependencies']['espressif/cmp'] == '==4.0.3'
 
         with pytest.raises(FatalError, match=outside_project_path_error_match):
             manager.create_manifest(path=outside_project_path)
 
         with pytest.raises(FatalError, match=component_and_path_error_match):
-            manager.add_dependency('idf/comp<=1.0.0', component='src', path=src_path)
+            manager.add_dependency('espressif/cmp==4.0.3', component='src', path=src_path)
 
     finally:
         shutil.rmtree(tempdir)
