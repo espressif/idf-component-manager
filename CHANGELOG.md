@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add manifest format reference to the documentation
 - Add `compote component yank` CLI command to yank version of the component from the registry
 - Show warnings from the component registry during uploading components
+- Add config for ReadTheDocs
 
 ### Fixed
 
