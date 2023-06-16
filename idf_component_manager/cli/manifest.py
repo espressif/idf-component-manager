@@ -14,7 +14,7 @@ from .utils import add_options
 @click.group()
 def manifest():
     """
-    Group of manifest related commands
+    Group of commands to manage manifest of the project.
     """
     pass
 
@@ -28,7 +28,7 @@ def schema():
 
 
 MANIFEST_OPTION = [
-    click.option('--component', default='main', help='Component name in the project'),
+    click.option('--component', default='main', help='Component name in the project.'),
     click.option(
         '-p',
         '--path',
@@ -51,7 +51,7 @@ def create(manager, component, path):
     If you run the command in the directory with a component, the manifest
     will be created right in that directory.
 
-    You can explicitly specify directory using the --path option.
+    You can explicitly specify directory using the ``--path`` option.
     """
     manager.create_manifest(component=component, path=path)
 
@@ -61,7 +61,7 @@ def create(manager, component, path):
 @click.argument('dependency', required=True)
 def add_dependency(manager, component, path, dependency):
     """
-    Add dependency to the manifest file.
+    Add a dependency to the manifest file.
 
     By default:
 
@@ -71,13 +71,13 @@ def add_dependency(manager, component, path, dependency):
     If you run the command in the directory with a component,
     the dependency will be added to the manifest right in that directory.
 
-    You can explicitly specify directory using the --path option.
+    You can explicitly specify directory using the ``--path`` option.
 
     \b
     Examples:
     - $ compote manifest add-dependency example/cmp
-      would add component `example/cmp` with constraint `*`
-    - $ compote manifest add-dependency example/cmp<=2.0.0
-      would add component `example/cmp` with constraint `<=2.0.0`
+      Will add a component `example/cmp` with constraint `*`
+    - $ compote manifest add-dependency example/cmp<=3.3.3
+      Will add a component `example/cmp` with constraint `<=3.3.3`
     """
     manager.add_dependency(dependency, component=component, path=path)

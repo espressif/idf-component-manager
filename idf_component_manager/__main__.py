@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
@@ -35,13 +35,13 @@ def main(command_args=None):  # type: (list[str] | None) -> None
     parser = argparse.ArgumentParser(description='IDF component manager v{}'.format(version))
     parser.add_argument('command', choices=KNOWN_ACTIONS, help='Command to execute')
     parser.add_argument('--path', help='Working directory (default: current directory).', default=os.getcwd())
-    parser.add_argument('--namespace', help='Namespace for the component. Can be set in config file.')
+    parser.add_argument('--namespace', help='Namespace for the component. Can be set in the config file.')
     parser.add_argument(
         '--service-profile',
-        help='Profile for component registry to use. By default profile named "default" will be used.',
+        help='Profile for the component registry to use. By default profile named "default" will be used.',
         default='default',
     )
-    parser.add_argument('--name', help='Component name')
+    parser.add_argument('--name', help='Component name.')
     parser.add_argument('--archive', help='Path of the archive with component to upload.')
     parser.add_argument('--job', help='Background job ID.')
     parser.add_argument('--version', help='Version for upload or deletion.')
@@ -50,7 +50,7 @@ def main(command_args=None):  # type: (list[str] | None) -> None
         '--check-only', help='Check if given component version is already uploaded and exit.', action='store_true')
     parser.add_argument(
         '--allow-existing', help='Return success if existing version is already uploaded.', action='store_true')
-    parser.add_argument('--example', help='Example name')
+    parser.add_argument('--example', help='Example name.')
 
     args = parser.parse_args(args=command_args)
 

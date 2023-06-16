@@ -17,7 +17,7 @@ except ImportError:
 SERVICE_PROFILE = [
     {
         'names': ['--service-profile'],
-        'help': 'Profile for component registry to use. By default profile named "default" will be used.',
+        'help': 'Profile for the component registry to use. By default profile named "default" will be used.',
         'envvar': 'IDF_COMPONENT_SERVICE_PROFILE',
     },
 ]  # type: List[Dict[str, Any]]
@@ -25,7 +25,7 @@ SERVICE_PROFILE = [
 NAMESPACE = [
     {
         'names': ['--namespace'],
-        'help': 'Namespace for the component. Can be set in config file.',
+        'help': 'Namespace for the component. Can be set in the config file.',
         'envvar': 'IDF_COMPONENT_NAMESPACE',
     },
 ]  # type: List[Dict[str, Any]]

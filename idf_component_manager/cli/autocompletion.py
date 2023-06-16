@@ -125,7 +125,7 @@ def _doc(docstring):
 
 
 @click.command()
-@click.option('--shell', required=True, type=click.Choice(['bash', 'zsh', 'fish']), help='Shell type')
+@click.option('--shell', required=True, type=click.Choice(['bash', 'zsh', 'fish']), help='Shell type.')
 @click.option(
     '--install',
     is_flag=True,
@@ -135,8 +135,7 @@ def _doc(docstring):
     '--dry-run',
     is_flag=True,
     default=False,
-    help='Only useful when flag "--install" is set. Instead of real file system changes, '
-    'log would be printed if this flag is set.')
+    help='Only useful when flag "--install" is set. Print the log instead of making any real file system changes.')
 @_doc(_DOC_STRSTRING)
 def autocomplete(shell, install, dry_run):
     if shell == 'fish':
