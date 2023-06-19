@@ -30,7 +30,7 @@ tqdm = '*'
 [tool.poetry.dev-dependencies]
 comment-parser = "*"
 coverage = '*'
-deptry = { version = "*", python = ">=3.9,<4.0" }
+deptry = { version = ">=0.12.0", python = ">=3.9,<4.0" }
 flake8 = '*'
 flake8-quotes = '*'
 jinja2 = "*"
@@ -73,8 +73,11 @@ extend_exclude = [
     "integration_tests",
     "idf_component_tools/file_cache.py", # Tries a number of ways to detect paths on Windows
 ]
-ignore_missing = ["urlparse", "idf_py_actions"]
-ignore_unused = ["colorama", "urllib3"]
+
+[tool.deptry.per_rule_ignores]
+DEP001 = ["urlparse", "idf_py_actions"]
+DEP002 = ["colorama", "urllib3"]
 
 [tool.deptry.package_module_name_map]
 pyyaml = ["yaml"]
+
