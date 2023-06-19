@@ -80,4 +80,3 @@ DEP002 = ["colorama", "urllib3"]
 
 [tool.deptry.package_module_name_map]
 pyyaml = ["yaml"]
-
