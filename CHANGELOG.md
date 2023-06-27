@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `compote component yank` CLI command to yank version of the component from the registry
 - Show warnings from the component registry during uploading components
 - Add config for ReadTheDocs
+- Add `dest-dir` option to `compote component pack` command to specify the destination directory for the archive
 
 ### Fixed
 
