@@ -183,6 +183,24 @@ def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_comp
         ])
 
 
+def test_pack_component_with_dest_dir(tmp_path, release_component_path):
+    copy_tree(release_component_path, str(tmp_path))
+    component_manager = ComponentManager(path=str(tmp_path))
+
+    dest_path = tmp_path / 'dest_dir'
+    os.mkdir(str(dest_path))
+
+    # remove the first version line
+    remove_version_line(tmp_path)
+
+    component_manager.pack_component('cmp', '2.3.4', 'dest_dir')
+
+    tempdir = os.path.join(tempfile.tempdir, 'cmp')
+    unpack_archive(os.path.join(str(dest_path), 'cmp_2.3.4.tgz'), tempdir)
+    manifest = ManifestManager(tempdir, 'cmp', check_required_fields=True).load()
+    assert manifest.version == '2.3.4'
+
+
 def test_pack_component_with_version(tmp_path, release_component_path):
     copy_tree(release_component_path, str(tmp_path))
     component_manager = ComponentManager(path=str(tmp_path))

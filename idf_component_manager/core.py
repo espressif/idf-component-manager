@@ -273,7 +273,10 @@ class ComponentManager(object):
         print_info('Successfully added dependency "{}{}" to component "{}"'.format(name, spec, manifest_manager.name))
 
     @general_error_handler
-    def pack_component(self, name, version):  # type: (str, str) -> Tuple[str, Manifest]
+    def pack_component(self, name, version, dest_dir=None):  # type: (str, str, Optional[str]) -> Tuple[str, Manifest]
+
+        dest_path = os.path.join(self.path, dest_dir) if dest_dir else self.dist_path
+
         if version == 'git':
             try:
                 version = str(GitClient().get_tag_version())
@@ -287,21 +290,21 @@ class ComponentManager(object):
 
         manifest_manager = ManifestManager(self.path, name, check_required_fields=True, version=version)
         manifest = manifest_manager.load()
-        dist_temp_dir = Path(self.dist_path, dist_name(manifest))
+        dest_temp_dir = Path(dest_path, dist_name(manifest))
         include = set(manifest.files['include'])
         exclude = set(manifest.files['exclude'])
-        copy_filtered_directory(self.path, str(dist_temp_dir), include=include, exclude=exclude)
+        copy_filtered_directory(self.path, str(dest_temp_dir), include=include, exclude=exclude)
 
         if manifest.examples:
-            copy_examples_folders(manifest.examples, Path(self.path), dist_temp_dir, include=include, exclude=exclude)
+            copy_examples_folders(manifest.examples, Path(self.path), dest_temp_dir, include=include, exclude=exclude)
 
-        manifest_manager.dump(str(dist_temp_dir))
+        manifest_manager.dump(str(dest_temp_dir))
 
-        check_unexpected_component_files(str(dist_temp_dir))
+        check_unexpected_component_files(str(dest_temp_dir))
 
-        archive_filepath = os.path.join(self.dist_path, archive_filename(manifest))
+        archive_filepath = os.path.join(dest_path, archive_filename(manifest))
         print_info('Saving archive to "{}"'.format(archive_filepath))
-        pack_archive(str(dist_temp_dir), archive_filepath)
+        pack_archive(str(dest_temp_dir), archive_filepath)
         return archive_filepath, manifest
 
     @general_error_handler
@@ -388,7 +391,8 @@ class ComponentManager(object):
             skip_pre_release=False,  # type: bool
             check_only=False,  # type: bool
             allow_existing=False,  # type: bool
-            dry_run=False):  # type: (...) -> None
+            dry_run=False,  # type: bool
+            dest_dir=None):  # type: (...) -> None
         client, namespace = service_details(namespace, service_profile)
 
         if archive:
@@ -405,7 +409,7 @@ class ComponentManager(object):
             finally:
                 shutil.rmtree(tempdir)
         else:
-            archive, manifest = self.pack_component(name, version)
+            archive, manifest = self.pack_component(name=name, version=version, dest_dir=dest_dir)
 
         if not manifest.version:
             raise FatalError('"version" field is required when uploading the component')

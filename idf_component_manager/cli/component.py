@@ -3,7 +3,7 @@
 
 import click
 
-from .constants import get_namespace_name_options, get_project_dir_option, get_project_options
+from .constants import get_dest_dir_option, get_namespace_name_options, get_project_dir_option, get_project_options
 from .utils import add_options
 
 
@@ -12,6 +12,7 @@ def init_component():
     PROJECT_DIR_OPTION = get_project_dir_option()
     PROJECT_OPTIONS = get_project_options()
     NAMESPACE_NAME_OPTIONS = get_namespace_name_options()
+    DEST_DIR_OPTION = get_dest_dir_option()
 
     @click.group()
     def component():
@@ -29,15 +30,15 @@ def init_component():
     ]
 
     @component.command()
-    @add_options(PROJECT_DIR_OPTION + NAMESPACE_NAME_OPTIONS + COMPONENT_VERSION_OPTION)
-    def pack(manager, namespace, name, version):  # noqa: namespace is not used
+    @add_options(PROJECT_DIR_OPTION + NAMESPACE_NAME_OPTIONS + COMPONENT_VERSION_OPTION + DEST_DIR_OPTION)
+    def pack(manager, namespace, name, version, dest_dir):  # noqa: namespace is not used
         """
         Create component archive and store it in the dist directory.
         """
-        manager.pack_component(name, version)
+        manager.pack_component(name=name, version=version, dest_dir=dest_dir)
 
     @component.command()
-    @add_options(PROJECT_OPTIONS + NAMESPACE_NAME_OPTIONS + COMPONENT_VERSION_OPTION)
+    @add_options(PROJECT_OPTIONS + NAMESPACE_NAME_OPTIONS + COMPONENT_VERSION_OPTION + DEST_DIR_OPTION)
     @click.option(
         '--archive',
         help='Path of the archive with a component to upload. '
@@ -58,7 +59,7 @@ def init_component():
         help='Upload component for validation without creating a version in the registry.')
     def upload(
             manager, service_profile, namespace, name, version, archive, skip_pre_release, check_only, allow_existing,
-            dry_run):
+            dry_run, dest_dir):
         """
         Upload component to the component registry.
 
@@ -74,6 +75,7 @@ def init_component():
             check_only=check_only,
             allow_existing=allow_existing,
             dry_run=dry_run,
+            dest_dir=dest_dir,
         )
 
     @component.command()
