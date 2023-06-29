@@ -120,20 +120,18 @@ class TestManifestPipeline(object):
 
 
 class TestManifestValidator(object):
-    def test_validate_unknown_root_key(self, valid_manifest):
+    def test_validate_unknown_root_key(self, valid_manifest, recwarn):
         valid_manifest['unknown'] = 'test'
         valid_manifest['test'] = 3.1415926
         validator = ManifestValidator(valid_manifest)
 
         errors = validator.validate_normalize()
-
-        assert len(errors) == 3
+        assert len(errors) == 0
 
         # manifest_tree is not sorted. compare set not list
-        assert set(errors) == {
-            'Unknown string field "unknown" in the manifest file that may affect build result',
-            'Unknown number field "test" in the manifest file that may affect build result',
-            'Invalid manifest format',
+        assert set(warning.message.args[0] for warning in recwarn) == {
+            'Unknown string field "unknown" in the manifest file',
+            'Unknown number field "test" in the manifest file',
         }
 
     def test_validate_unknown_root_values(self, valid_manifest):
