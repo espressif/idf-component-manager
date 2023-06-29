@@ -29,8 +29,8 @@ class LocalSource(BaseSource):
     def __init__(self, source_details, **kwargs):
         super(LocalSource, self).__init__(source_details=source_details, **kwargs)
 
-        self.is_overrider = 'override_path' in source_details
-        self._raw_path = Path(source_details.get('override_path' if self.is_overrider else 'path'))
+        self.is_overrider = 'override_path' in self.source_details
+        self._raw_path = Path(self.source_details.get('override_path' if self.is_overrider else 'path'))
 
     @property
     def _path(self):  # type: () -> Path

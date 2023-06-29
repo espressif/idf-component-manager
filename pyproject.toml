@@ -27,7 +27,18 @@ schema = "*"
 six = "*"
 tqdm = '*'
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.docs.dependencies]
+sphinx_collapse = "==0.1.2"
+sphinx-copybutton = "==0.5.1"
+sphinx-rtd-theme = "==1.1.1"
+sphinx-click = "==4.4.0"
+sphinx-tabs = "==3.4.0"
+
+[tool.poetry.group.dev.dependencies]
+types-requests = "^2.31.0.1"
+types-six = "^1.16.21.8"
+types-pyyaml = "^6.0.12.10"
+requests-mock = "^1.11.0"
 comment-parser = "*"
 coverage = '*'
 deptry = { version = ">=0.12.0", python = ">=3.9,<4.0" }
@@ -43,7 +54,6 @@ pytest = '*'
 pytest-cov = '*'
 pytest-mock = '*'
 pytest-rerunfailures = "*"
-requests-mock = '*'
 rope = '*'
 setuptools = "*"
 thefuzz = "*"
@@ -52,13 +62,6 @@ unify = '*'
 vcrpy = '<5'
 wheel = "*"
 yapf = '*'
-
-[tool.poetry.group.docs.dependencies]
-sphinx_collapse = "==0.1.2"
-sphinx-copybutton = "==0.5.1"
-sphinx-rtd-theme = "==1.1.1"
-sphinx-click = "==4.4.0"
-sphinx-tabs = "==3.4.0"
 
 [tool.poetry.scripts]
 compote = { callable = "idf_component_manager.cli:safe_cli" }

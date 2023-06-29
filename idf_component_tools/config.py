@@ -14,8 +14,12 @@ from idf_component_tools.errors import FatalError, UserDeprecationWarning
 
 from .constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL
 
+try:
+    from typing import Any, Iterator
+except ImportError:
+    pass
+
 DEFAULT_CONFIG_DIR = os.path.join('~', '.espressif')
-CONFIG_DIR = os.environ.get('IDF_TOOLS_PATH') or os.path.expanduser(DEFAULT_CONFIG_DIR)
 
 CONFIG_SCHEMA = Schema(
     {
@@ -29,22 +33,41 @@ CONFIG_SCHEMA = Schema(
     })
 
 
+def config_dir():
+    return os.environ.get('IDF_TOOLS_PATH') or os.path.expanduser(DEFAULT_CONFIG_DIR)
+
+
 class ConfigError(FatalError):
     pass
 
 
 class Config(object):
-    def __init__(self, config=None):
+    def __init__(self, config=None):  # type: (dict | None) -> None
         self._config = config or {}
 
-    def __iter__(self):
+    def __getitem__(self, key):  # type: (Any) -> Any
+        return self._config[key]
+
+    def __setitem__(self, key, value):  # type: (Any, Any) -> None
+        self._config[key] = value
+
+    def __delitem__(self, key):  # type: (Any) -> None
+        del self._config[key]
+
+    def __len__(self):  # type: () -> int
+        return len(self._config)
+
+    def __iter__(self):  # type: () -> Iterator[Any]
         return iter(self._config.items())
 
+    def __contains__(self, item):  # type: (Any) -> bool
+        return item in self._config
+
     @property
-    def profiles(self):
+    def profiles(self):  # type: () -> dict
         return self._config.setdefault('profiles', {})
 
-    def validate(self):
+    def validate(self):  # type: () -> Config
         try:
             self._config = CONFIG_SCHEMA.validate(self._config)
             return self
@@ -54,7 +77,7 @@ class Config(object):
 
 class ConfigManager(object):
     def __init__(self, path=None):
-        self.config_path = path or os.path.join(CONFIG_DIR, 'idf_component_manager.yml')
+        self.config_path = path or os.path.join(config_dir(), 'idf_component_manager.yml')
 
     def load(self):  # type: () -> Config
         """Loads config from disk"""

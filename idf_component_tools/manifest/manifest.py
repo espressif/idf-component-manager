@@ -23,6 +23,8 @@ try:
     from typing import TYPE_CHECKING
 
     if TYPE_CHECKING:
+        from typing import Any
+
         from ..sources import BaseSource
         from . import ManifestManager
 except ImportError:
@@ -281,7 +283,7 @@ class ComponentVersion(object):
 
 
 class HashedComponentVersion(ComponentVersion):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):  # type: (Any, Any) -> None
         component_hash = kwargs.pop('component_hash', None)
         dependencies = kwargs.pop('dependencies', []) or []
         targets = kwargs.pop('targets', [])

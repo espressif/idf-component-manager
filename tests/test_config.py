@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import json
@@ -11,7 +11,10 @@ from idf_component_tools.config import Config, ConfigError, ConfigManager, compo
 
 
 def test_config_validation():
-    assert Config({}).validate()
+    # Expect no errors
+    Config({}).validate()
+
+    # Assert non-empty object
     assert Config(
         {
             'profiles': {
@@ -77,6 +80,21 @@ def test_load_config(tmp_path):
 
     assert loaded_config.profiles['in_office']['default_namespace'] == 'asdf'
     assert config_json == json.dumps(dict(loaded_config), sort_keys=True, indent=2)
+
+
+def test_config_dump(tmp_path):
+    config_path = str(tmp_path / 'idf_component_manager.yml')
+    config = Config({'profiles': {
+        'default': {
+            'registry_url': 'default',
+        },
+    }})
+    config.profiles.setdefault('in_office', {})['registry_url'] = 'http://api.localserver.local:5000/'
+
+    ConfigManager(path=config_path).dump(config)
+
+    loaded_config = ConfigManager(path=config_path).load()
+    assert loaded_config.profiles['in_office']['registry_url'] == 'http://api.localserver.local:5000/'
 
 
 def test_component_registry_url_storage_env(monkeypatch):

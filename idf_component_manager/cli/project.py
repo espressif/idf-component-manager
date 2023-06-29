@@ -13,8 +13,8 @@ def init_project():
     @click.group()
     def project():
         """
-      Group of project related commands
-      """
+        Group of project related commands
+        """
         pass
 
     @project.command()
@@ -27,27 +27,27 @@ def init_project():
     @click.argument('example', required=True)
     def create_from_example(manager, example, path):
         """
-      Create a project from an example.
+        Create a project from an example.
 
-      You can specify EXAMPLE in the format like:
+        You can specify EXAMPLE in the format like:
         namespace/name=1.0.0:example
 
-      where "=1.0.0" is a version specification.
+        where "=1.0.0" is a version specification.
 
-      An example command:
+        An example command:
 
         compote project create-from-example example/cmp^3.3.8:cmp_ex
 
-      Namespace and version are optional in the EXAMPLE argument.
-      """
+        Namespace and version are optional in the EXAMPLE argument.
+        """
         manager.create_project_from_example(example, path=path)
 
     @project.command()
     @add_options(PROJECT_DIR_OPTION)
     def remove_managed_components(manager):
         """
-      Remove the managed_components folder.
-      """
+        Remove the managed_components folder.
+        """
         manager.remove_managed_components()
 
     return project

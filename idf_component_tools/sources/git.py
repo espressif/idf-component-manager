@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -36,8 +36,8 @@ class GitSource(BaseSource):
 
     def __init__(self, source_details=None, **kwargs):
         super(GitSource, self).__init__(source_details=source_details, **kwargs)
-        self.git_repo = source_details['git']
-        self.component_path = source_details.get('path') or '.'
+        self.git_repo = self.source_details['git']
+        self.component_path = self.source_details.get('path') or '.'
 
         self._client = GitClient()
 
