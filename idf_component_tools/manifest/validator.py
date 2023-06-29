@@ -32,7 +32,7 @@ class ManifestValidator(object):
         self.metadata = metadata
         self.version = version
         self._errors = []  # type: List[str]
-        # Check for required fields when upload to the registry
+
         self.check_required_fields = check_required_fields
 
     def add_error(self, message):
@@ -137,6 +137,10 @@ class ManifestValidator(object):
             self.add_error(
                 'Unknown format for list of supported targets. '
                 'It should be a list of targets, like [esp32, esp32s2]')
+            return
+
+        # Check fields only during uploads to the registry
+        if not self.check_required_fields:
             return
 
         unknown_targets = []

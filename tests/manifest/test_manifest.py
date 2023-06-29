@@ -227,8 +227,13 @@ class TestManifestValidator(object):
 
         errors = validator.validate_normalize()
 
-        assert len(errors) == 2
-        assert errors[1].startswith('Unknown targets: esp123, asdf')
+        assert not errors
+
+        validator.check_required_fields = True
+        errors = validator.validate_normalize()
+
+        assert len(errors) == 1
+        assert errors[-1].startswith('Unknown targets: esp123, asdf')
 
     def test_slug_re(self):
         valid_names = ('asdf-fadsf', '123', 'asdf_erw', 'as_df_erw', 'test-stse-sdf_sfd')

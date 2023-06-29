@@ -11,8 +11,7 @@ from idf_component_manager.utils import RE_PATTERN
 from ..constants import COMPILED_GIT_URL_RE, COMPILED_URL_RE
 from ..errors import InternalError
 from ..semver import SimpleSpec, Version
-from .constants import (
-    FULL_SLUG_REGEX, KNOWN_BUILD_METADATA_FIELDS, KNOWN_INFO_METADATA_FIELDS, TAGS_REGEX, known_targets)
+from .constants import FULL_SLUG_REGEX, KNOWN_BUILD_METADATA_FIELDS, KNOWN_INFO_METADATA_FIELDS, TAGS_REGEX
 from .if_parser import IfClause, parse_if_clause
 
 try:
@@ -68,7 +67,7 @@ def _manifest_schema():  # type: () -> Schema
         {
             Optional('name'): Or(*string_types),
             Optional('version'): Or(Version.parse, error='Component version should be valid semantic version'),
-            Optional('targets'): known_targets(),
+            Optional('targets'): [NONEMPTY_STRING],
             Optional('maintainers'): [NONEMPTY_STRING],
             Optional('description'): NONEMPTY_STRING,
             Optional('tags'): [
