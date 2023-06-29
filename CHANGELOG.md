@@ -51,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix mixed slashes in paths on Windows
 - Make different error messages for non-existing Version and Component
 - Fixed a bug where it was required to set IDF version and target for non-IDF dependent actions
+- Fix checks for targets in manifest validator, to make sure newer targets don't cause errors on older ESP-IDF versions
 
 ### Changed
 
