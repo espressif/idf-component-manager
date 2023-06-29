@@ -7,10 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2023-06-30
+
 ### Changed
 
 - Extend the behavior of `compote manifest create` and `compote manifest add-dependency` to create a manifest file based on the context of the current working directory (context of a project or a component)
 - Disable API cache by default
+- Updated error message if override_path is not a folder
 
 ### Added
 
@@ -53,11 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a bug where it was required to set IDF version and target for non-IDF dependent actions
 - Fix checks for targets in manifest validator, to make sure newer targets don't cause errors on older ESP-IDF versions
 
-### Changed
-
-- Updated error message if override_path is not a folder
-
-## [1.2.3] 2023-05-25
+## [1.2.3] - 2023-05-25
 
 ### Fixed
 
@@ -68,7 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix manifest hash calculation for dependencies from git repositories
 - Keep local components non-hashable
 
-## [1.2.2] 2023-01-17
+## [1.2.2] - 2023-01-17
 
 ### Fixed
 
@@ -78,14 +77,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix nondeterministic order of components passed to IDF build system (https://github.com/espressif/esp-idf/issues/10419)
 - Fix hash validation for components uploaded with older versions of the component manager
 
-## [1.2.1] 2022-12-12
+## [1.2.1] - 2022-12-12
 
 ### Fixed
 
 - Fix `idf.py add-dependency` crash for any argument
 - Fix regression in `python -m idf_component_manager upload-component` command
 
-## [1.2.0] 2022-12-08 [YANKED]
+## [1.2.0] - 2022-12-08 [YANKED]
 
 ### Fixed
 
@@ -93,7 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Set default API responses cache time to 5 minutes
 - Fix support of python 3.4
 
-## [1.2.0-rc0] 2022-12-02
+## [1.2.0-rc0] - 2022-12-02
 
 ### Added
 
@@ -128,13 +127,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dump manifest file inconsistency with escaped dollar sign
 - Fix schema validation of the `idf_component_manager.yml` config file
 
-## [1.1.4] 2022-07-04
+## [1.1.4] - 2022-07-04
 
 ### Fixed
 
 - Loose the restrictions for pyyaml on python 2.7 and 3.4
 
-## [1.1.3] 2022-06-21
+## [1.1.3] - 2022-06-21
 
 ### Fixed
 
@@ -142,7 +141,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - colorama version incompatible with python 3.4
 - pyyaml version incompatible with python 3.4
 
-## [1.1.2] 2022-06-10
+## [1.1.2] - 2022-06-10
 
 ### Added
 
@@ -153,7 +152,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix crash on malformed env variables
 - Support revision numbers in `version` and `dependencies` -> `version`
 
-## [1.1.1] 2022-05-31
+## [1.1.1] - 2022-05-31
 
 ### Added
 
@@ -164,7 +163,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix expansion of environment variables in manifest for `rules`
 - Fix inject optional dependencies even if they are excluded
 
-## [1.1.0] 2022-05-19
+## [1.1.0] - 2022-05-19
 
 ### Added
 
@@ -205,7 +204,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix support of REQUIRES by the project's main component
 - Allow transient dependencies for the main component
 
-## [1.0.1] 2022-01-12
+## [1.0.1] - 2022-01-12
 
 ### Fixed
 
@@ -214,7 +213,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix error message when the directory didn't find in a git repository
 - Get the list of known targets from ESP-IDF, when possible
 
-## [1.0.0] 2021-12-21
+## [1.0.0] - 2021-12-21
 
 ### Added
 
