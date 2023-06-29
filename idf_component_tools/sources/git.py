@@ -47,6 +47,7 @@ class GitSource(BaseSource):
             path,  # type: str
             selected_paths=None  # type: list[str] | None
     ):  # type: (...) -> str
+
         if version is not None:
             version = None if version == '*' else str(version)
         return self._client.prepare_ref(
@@ -86,6 +87,10 @@ class GitSource(BaseSource):
             normalized_path = '/'.join([netloc, path])
             self._hash_key = sha256(normalized_path.encode('utf-8')).hexdigest()
         return self._hash_key
+
+    @property
+    def volatile(self):  # type: () -> bool
+        return True
 
     def cache_path(self):
         # Using `b_` prefix for bare git repos in cache

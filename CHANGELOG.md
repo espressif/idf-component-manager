@@ -64,6 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Components with optional dependencies could be uploaded normally
 - Relative path in `override_path` now based on the directory of its `idf_component.yml`
 - Correct spelling of error message for unsatisfied dependency
+- Fix manifest hash calculation for dependencies from git repositories
+- Keep local components non-hashable
 
 ## [1.2.2] 2023-01-17
 

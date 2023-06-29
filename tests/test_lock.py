@@ -212,7 +212,7 @@ class TestLockManager(object):
         solution.manifest_hash = 'bff084ca418bd07bbb3f7b0a6713f45e802be72a006a5f30ac70ac755639683c'
         assert is_solve_required(project_requirements, solution)  # Wrong manifest hash
         captured = capsys.readouterr()
-        assert 'Manifest hash changed' in captured.out
+        assert 'Manifest files have changed, solving dependencies' in captured.out
 
         monkeypatch.setenv('IDF_VERSION', '4.2.0')
         solution.manifest_hash = '1c97a887068943d87050f7b553361967d1f0af2ddbd61400869e060fceffa704'
@@ -240,7 +240,7 @@ class TestLockManager(object):
                     (
                         'dependencies', {
                             'foo': {
-                                'component_hash': 'e43b40c01119fab87b3c6acc616889d271497934d585d28debc42142f58a0b04',
+                                'component_hash': None,
                                 'source': {
                                     'type': 'local',
                                     'path': release_component_path
@@ -276,11 +276,15 @@ class TestLockManager(object):
                     ('version', '1.0.0'),
                     ('manifest_hash', 'ab2a358655efaa744089844e6dc66b2a6488db87b2a4a7584dbfbbac008d6462'),
                 ]))
+        project_requirements = ProjectRequirements([manifest])
+        assert not is_solve_required(project_requirements, solution)  # change it back
 
+        manifest = Manifest.fromdict({'targets': ['esp32']}, name='test_manifest')
         manifest.targets = ['esp32s2', 'esp32s3']
         project_requirements = ProjectRequirements([manifest])
         assert is_solve_required(project_requirements, solution)  # Different idf target
 
+        manifest = Manifest.fromdict({'targets': ['esp32']}, name='test_manifest')
         manifest.targets = ['esp32']
         project_requirements = ProjectRequirements([manifest])
         assert not is_solve_required(project_requirements, solution)  # change it back
@@ -325,7 +329,7 @@ class TestLockManager(object):
                 name='cmp',
                 version=ComponentVersion('1.0.0'),
                 source=LocalSource({'path': project_dir}),
-                component_hash='e43b40c01119fab87b3c6acc616889d271497934d585d28debc42142f58a0b04',
+                component_hash=None,
             ),
         ]
 
@@ -340,9 +344,10 @@ class TestLockManager(object):
         assert is_solve_required(project_requirements, solution)
         captured = capsys.readouterr()
 
-        assert 'version changed from 1.0.0 to 1.0.1, solving dependencies' in captured.out
+        assert 'version has changed from 1.0.0 to 1.0.1, solving dependencies' in captured.out
 
-    def test_update_local_dependency_change_file(self, release_component_path, tmp_path, capsys):
+    def test_update_local_dependency_change_file_not_trigger(self, release_component_path, tmp_path, capsys):
+        """Check that change in local dependency file doesn't trigger solve"""
         project_dir = str(tmp_path / 'cmp')
         shutil.copytree(release_component_path, project_dir)
 
@@ -355,7 +360,7 @@ class TestLockManager(object):
                 name='cmp',
                 version=ComponentVersion('1.0.0'),
                 source=LocalSource({'path': project_dir}),
-                component_hash='e43b40c01119fab87b3c6acc616889d271497934d585d28debc42142f58a0b04',
+                component_hash=None,
             ),
         ]
 
@@ -366,7 +371,4 @@ class TestLockManager(object):
         with open(os.path.join(project_dir, 'cmp.c'), 'w') as f:
             f.write(u'File Changed')
 
-        assert is_solve_required(project_requirements, solution)
-        captured = capsys.readouterr()
-
-        assert 'was changed, solving dependencies.' in captured.out
+        assert not is_solve_required(project_requirements, solution)

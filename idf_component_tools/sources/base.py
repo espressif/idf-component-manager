@@ -157,8 +157,8 @@ class BaseSource(object):
     @property
     def volatile(self):  # type: () -> bool
         """
-        If it's a volatile source, update the dependency if the component_hash is different from the lock file.
-        If it's not, check the component integrity if the component_hash mismatched.
+        Returns True for volatile components.
+        Volatile components may change their content, even if their version stays the same.
         """
         return False
 

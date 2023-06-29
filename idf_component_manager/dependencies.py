@@ -79,7 +79,7 @@ def is_solve_required(project_requirements, solution):
         return True
 
     if project_requirements.manifest_hash != solution.manifest_hash:
-        print_info('Manifest hash changed, solving dependencies.')
+        print_info('Manifest files have changed, solving dependencies.')
         return True
 
     if solution.target and project_requirements.target != solution.target:
@@ -89,20 +89,24 @@ def is_solve_required(project_requirements, solution):
 
     for component in solution.dependencies:
         try:
+            # For downloadable volatile dependencies, like ones from git, if manifest didn't change, no need to solve
+            if component.source.downloadable and component.source.volatile:
+                continue
+
             component_version = component.source.versions(component.name).versions[0]  # type: HashedComponentVersion
 
             # Handle meta components, like ESP-IDF, and volatile components, like local
             if component.source.meta or component.source.volatile:
                 if component_version != component.version:
                     print_info(
-                        'Dependency "{}" version changed from {} to {}, solving dependencies.'.format(
+                        'Dependency "{}" version has changed from {} to {}, solving dependencies.'.format(
                             component, component.version, component_version))
                     return True
 
             # Should check for all types of source, but after version checking
             if component_version.component_hash != component.component_hash:
                 if component.source.volatile:
-                    print_info('Dependency "{}" was changed, solving dependencies.'.format(component))
+                    print_info('Dependency "{}" has changed, solving dependencies.'.format(component))
                     return True
                 else:
                     raise InvalidComponentHashError(

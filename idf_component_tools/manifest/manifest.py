@@ -152,10 +152,11 @@ class Manifest(object):
     @property
     def manifest_hash(self):  # type: () -> str
         if self._manifest_hash:
-            return self.manifest_hash
+            return self._manifest_hash
 
         serialized = self.serialize(serialize_default=False)  # type: ignore
-        return hash_object(serialized)
+        self._manifest_hash = hash_object(serialized)
+        return self._manifest_hash
 
     @property
     def path(self):  # type: () -> str
@@ -187,7 +188,7 @@ class ComponentRequirement(object):
             require=None,  # type: str | bool | None
     ):
         # type: (...) -> None
-        self._version_spec = version_spec
+        self.version_spec = version_spec
         self.source = source
         self._name = name
         self.public = None  # type: bool | None
@@ -207,10 +208,6 @@ class ComponentRequirement(object):
         return self.source.normalized_name(self._name)
 
     @property
-    def version_spec(self):
-        return self.source.normalize_spec(self._version_spec)
-
-    @property
     def meet_optional_dependencies(self):
         if not self.if_clauses:
             return True
@@ -222,11 +219,7 @@ class ComponentRequirement(object):
             self._name, self.source, self.version_spec, self.public)
 
     def __str__(self):  # type: () -> str
-        # if local source, avoid circular dependency
-        if self.source.name == 'local':
-            return '{}({})'.format(self._name, self.source._path)  # type: ignore
-        else:
-            return '{}({})'.format(self._name, self._version_spec)
+        return '{}({})'.format(self._name, self.version_spec)
 
 
 @total_ordering
@@ -313,7 +306,7 @@ class ProjectRequirements(object):
     '''Representation of all manifests required by project'''
     def __init__(self, manifests):  # type: (list[Manifest]) -> None
         self.manifests = manifests
-        self._manifest_hash = None
+        self._manifest_hash = None  # type: str | None
         self._target = None  # type: str | None
 
     @property
@@ -333,4 +326,5 @@ class ProjectRequirements(object):
             return self._manifest_hash
 
         manifest_hashes = [manifest.manifest_hash for manifest in self.manifests]
-        return hash_object(manifest_hashes)
+        self._manifest_hash = hash_object(manifest_hashes)
+        return self._manifest_hash
