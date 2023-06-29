@@ -36,7 +36,7 @@ def test_raise_exception_on_warnings(monkeypatch):
 
     assert process.returncode == 1
     assert 'ERROR: IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES is set to a non-numeric value.' in decoded
-    assert 'Please set the variable to the number of minutes. Using the default value of 5 minutes.' in decoded
+    assert 'Please set the variable to the number of minutes. Disabling caching.' in decoded
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_manifest_create_add_dependency.yaml')
