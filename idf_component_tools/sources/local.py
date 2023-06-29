@@ -5,7 +5,6 @@ import os
 from pathlib import Path
 
 from ..errors import SourceError, warn
-from ..hash_tools import hash_dir
 from ..manifest import MANIFEST_FILENAME, ComponentWithVersions, HashedComponentVersion, ManifestManager
 from .base import BaseSource
 
@@ -62,7 +61,7 @@ class LocalSource(BaseSource):
 
     @property
     def component_hash_required(self):  # type: () -> bool
-        return True
+        return False
 
     @classmethod
     def required_keys(cls):
@@ -124,14 +123,8 @@ class LocalSource(BaseSource):
 
             dependencies = manifest.dependencies
 
-        component_hash = hash_dir(self._path)
-
         return ComponentWithVersions(
-            name=name,
-            versions=[
-                HashedComponentVersion(
-                    version_str, targets=targets, dependencies=dependencies, component_hash=component_hash)
-            ])
+            name=name, versions=[HashedComponentVersion(version_str, targets=targets, dependencies=dependencies)])
 
     def serialize(self):  # type: () -> Dict
         return {

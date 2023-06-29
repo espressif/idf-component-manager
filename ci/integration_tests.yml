@@ -22,7 +22,7 @@ integration_test:
       - IDF_BRANCH: [release-v4.3]
         PYTHON_IMAGE_TAG: [3.5-buster, 3.11-bullseye]
       - IDF_BRANCH: [release-v4.4]
-        PYTHON_IMAGE_TAG: [3.6-bullseye, 3.11-bullseye]
+        PYTHON_IMAGE_TAG: [3.7-bullseye, 3.11-bullseye]
       - IDF_BRANCH: [release-v5.0, release-v5.1, master]
         PYTHON_IMAGE_TAG: [3.7-bullseye, 3.11-bullseye]
         REQ_FILE: ["tools/requirements/requirements.core.txt"]
@@ -35,6 +35,7 @@ integration_test:
     - ORIGINAL_REQ=$(grep idf-component-manager ${REQ_FILE:-requirements.txt})
     # Replace component manager in the requirements file with local copy
     - sed -i "\+${ORIGINAL_REQ}+c${WHEEL}" ${REQ_FILE:-requirements.txt}
+    - pip install -U pip
     - ./install.sh
     # And replace it back to avoid export.sh check dependecies error
     - sed -i "\+${WHEEL}+c${ORIGINAL_REQ}" ${REQ_FILE:-requirements.txt}

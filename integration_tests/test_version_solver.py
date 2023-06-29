@@ -162,90 +162,84 @@ def test_idf_version_dependency_failed(project):
 
 
 @pytest.mark.parametrize(
-    'project', [
-        {
-            'components': {
-                'main': {
-                    'dependencies': {
-                        'idf': {
-                            'version': '>=4.1',
-                        }
+    'project', [{
+        'components': {
+            'main': {
+                'dependencies': {
+                    'idf': {
+                        'version': '>=4.1',
                     }
                 }
             }
-        },
-    ], indirect=True)
+        }
+    }], indirect=True)
 def test_idf_version_dependency_passed(project):
     res = build_project(project)
     assert 'Project build complete.' in res
 
 
 @pytest.mark.parametrize(
-    'project, result', [
-        (
-            {
-                'components': {
-                    'main': {
-                        'dependencies': {
-                            'component_foo': {
-                                'version': '1.0.0',
-                                'path': '../../component_foo',
-                            }
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'component_foo': {
+                            'version': '1.0.0',
+                            'path': '../../component_foo',
                         }
-                    },
-                    'component_foo': {
-                        'version': '1.0.0',
-                        'dependencies': {
-                            'git-only-cmp': {
-                                'version': 'main',
-                                'git': 'https://github.com/espressif/example_components.git',
-                                'path': 'git-only-cmp',
-                            },
-                        },
-                    },
+                    }
+                },
+                'component_foo': {
+                    'version': '1.0.0',
+                    'dependencies': {
+                        'git-only-cmp': {
+                            'version': 'main',
+                            'git': 'https://github.com/espressif/example_components.git',
+                            'path': 'git-only-cmp',
+                        }
+                    }
                 }
-            }, [
-                '[1/4] component_foo',
-                '[2/4] example/cmp',
-                '[3/4] git-only-cmp',
-                '[4/4] idf',
-            ]),
+            }
+        }
     ],
     indirect=True)
-def test_version_solver_on_local_components(project, result):
+def test_version_solver_on_local_components(project):
     # need to move to another folder, not under the default `components/`
     os.rename(os.path.join(project, 'components', 'component_foo'), os.path.join(project, '..', 'component_foo'))
     real_result = project_action(project, 'fullclean', 'reconfigure')
-    for line in result:
+    for line in [
+            '[1/4] component_foo',
+            '[2/4] example/cmp',
+            '[3/4] git-only-cmp',
+            '[4/4] idf',
+    ]:
         assert line in real_result
 
 
 @pytest.mark.parametrize(
-    'project, result', [
-        (
-            {
-                'components': {
-                    'main': {
-                        'dependencies': {
-                            'es8311': {
-                                'version': '^0.0.2-alpha',
-                            }
-                        },
-                    }
+    'project', [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'es8311': {
+                            'version': '^0.0.2-alpha',
+                        }
+                    },
                 }
-            },
-            ['[1/2] espressif/es8311', '[2/2] idf'],
-        ),
+            }
+        },
     ],
     indirect=True)
-def test_version_solver_with_caret_and_prerelease(project, result):
+def test_version_solver_with_caret_and_prerelease(project):
     real_result = project_action(project, 'fullclean', 'reconfigure')
-    for line in result:
+    for line in ['[1/2] espressif/es8311', '[2/2] idf']:
         assert line in real_result
 
 
 @pytest.mark.parametrize(
-    'project, result', [
+    'project', [
         (
             {
                 'components': {
@@ -263,26 +257,26 @@ def test_version_solver_with_caret_and_prerelease(project, result):
                         'version': '1.0.0',
                     },
                 }
-            }, [
-                '[1/3] idf',
-                '[2/3] test/circular_dependency_a (*)',
-                '[3/3] test/circular_dependency_b (1.0.0)',
-            ]),
+            }),
     ],
     indirect=True)
-def test_version_solver_on_local_components_higher_priority(project, result):
+def test_version_solver_on_local_components_higher_priority(project):
     # need to move to another folder, not under the default `components/`
     os.rename(
         os.path.join(project, 'components', 'test__circular_dependency_a'),
         os.path.join(project, 'test__circular_dependency_a'))
     real_result = project_action(project, 'fullclean', 'reconfigure')
-    for line in result:
+    for line in [
+            '[1/3] idf',
+            '[2/3] test/circular_dependency_a (*)',
+            '[3/3] test/circular_dependency_b (1.0.0)',
+    ]:
         assert line in real_result
 
     with open(os.path.join(project, 'dependencies.lock')) as fr:
         d = yaml.safe_load(fr)
         assert d['dependencies']['test/circular_dependency_a'] == {
-            'component_hash': 'eb1c6a4cd9290c12f9b3bede1cfdd63fe26cdae77d6a48d37794d77a2b3e10eb',
+            'component_hash': None,
             'source': {
                 'path': os.path.join(project, 'test__circular_dependency_a'),
                 'type': 'local',
