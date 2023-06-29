@@ -70,3 +70,15 @@ API_INFORMATION_SCHEMA = Schema(
     },
     error='Unexpected response to API information',
 )
+
+API_TOKEN_SCHEMA = Schema(
+    {
+        'id': STRING,
+        'scope': STRING,
+        'created_at': OPTIONAL_STRING,
+        'expires_at': OPTIONAL_STRING,
+        'description': OPTIONAL_STRING,
+        'access_token_prefix': STRING,
+    },
+    error='Unexpected response to current token information',
+)

@@ -3,6 +3,7 @@
 """Classes to work with Espressif Component Web Service"""
 import os
 import platform
+import re
 from collections import namedtuple
 from functools import wraps
 from io import open
@@ -29,7 +30,7 @@ from .api_client_errors import (
     KNOWN_API_ERRORS, APIClientError, ComponentNotFound, NetworkConnectionError, NoRegistrySet, StorageFileNotFound,
     VersionNotFound)
 from .api_schemas import (
-    API_INFORMATION_SCHEMA, COMPONENT_SCHEMA, ERROR_SCHEMA, TASK_STATUS_SCHEMA, VERSION_UPLOAD_SCHEMA)
+    API_INFORMATION_SCHEMA, API_TOKEN_SCHEMA, COMPONENT_SCHEMA, ERROR_SCHEMA, TASK_STATUS_SCHEMA, VERSION_UPLOAD_SCHEMA)
 from .manifest import BUILD_METADATA_KEYS, Manifest
 
 try:
@@ -206,6 +207,7 @@ class APIClient(object):
         # type: (str | None, str | None, BaseSource | None, str | None) -> None
         self.base_url = base_url
         self._storage_url = storage_url
+        self._frontend_url = None
         self.source = source
         self.auth_token = auth_token
 
@@ -300,6 +302,13 @@ class APIClient(object):
             self._storage_url = self.api_information()['components_base_url']
         return self._storage_url
 
+    @property
+    def frontend_url(self):
+        if not self._frontend_url:
+            self._frontend_url = re.sub(r'/api/?$', '', self.base_url)
+
+        return self._frontend_url
+
     def _request(cache=False, use_storage=False):  # type: (APIClient | bool, bool) -> Callable
         def decorator(f):  # type: (Callable[..., Any]) -> Callable
             @wraps(f)  # type: ignore
@@ -345,6 +354,15 @@ class APIClient(object):
             'get',
             [],
             schema=API_INFORMATION_SCHEMA,
+        )
+
+    @auth_required
+    @_request(cache=False)
+    def token_information(self, request):
+        return request(
+            'get',
+            ['tokens', 'current'],
+            schema=API_TOKEN_SCHEMA,
         )
 
     @_request(cache=True, use_storage=True)

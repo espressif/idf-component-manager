@@ -14,6 +14,7 @@ from .cache import init_cache
 from .component import init_component
 from .manifest import init_manifest
 from .project import init_project
+from .registry import init_registry
 
 try:
     from typing import Any
@@ -50,6 +51,7 @@ def initialize_cli():
     cli.add_command(init_component())
     cli.add_command(init_manifest())
     cli.add_command(init_project())
+    cli.add_command(init_registry())
 
     return cli
 

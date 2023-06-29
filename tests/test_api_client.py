@@ -167,3 +167,23 @@ class TestAPIClient(object):
         result = client.component(component_name='example/cmp_yanked', version=version)
 
         assert result.version == '1.0.1'
+
+    def test_token_information(self, base_url, mock_registry, mock_token_information):
+        client = APIClient(base_url=base_url, auth_token='test')
+        response = client.token_information()
+
+        for k, v in {
+                'access_token_prefix': 'abc123',
+                'scope': 'user',
+                'description': 'test token',
+                'expires_at': None,
+                'created_at': '2022-01-01T00:00:00Z',
+                'id': '123',
+        }.items():
+            assert response[k] == v
+
+    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_token_information_with_exception.yaml')
+    def test_token_information_with_exception(self, base_url):
+        client = APIClient(base_url=base_url)
+        with pytest.raises(Exception):
+            client.token_information()

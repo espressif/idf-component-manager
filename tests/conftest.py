@@ -6,6 +6,7 @@ from io import open
 from pathlib import Path
 
 import pytest
+import requests_mock
 
 from idf_component_tools.hash_tools import HASH_FILENAME
 
@@ -154,3 +155,19 @@ def example_component_path(fixtures_path):
 def mock_registry(monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
     monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
+
+
+@pytest.fixture
+def mock_token_information():
+    with requests_mock.Mocker() as m:
+        m.get(
+            'http://localhost:5000/api/tokens/current',
+            json={
+                'id': '123',
+                'description': 'test token',
+                'created_at': '2022-01-01T00:00:00Z',
+                'expires_at': None,
+                'scope': 'user',
+                'access_token_prefix': 'abc123',
+            })
+        yield m

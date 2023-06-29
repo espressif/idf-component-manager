@@ -13,6 +13,7 @@ from jsonschema.exceptions import ValidationError
 
 from idf_component_manager.cli.core import initialize_cli
 from idf_component_tools.__version__ import __version__
+from idf_component_tools.config import Config, ConfigManager
 from idf_component_tools.file_cache import FileCache
 from idf_component_tools.file_tools import directory_size
 from idf_component_tools.manifest import MANIFEST_FILENAME, ManifestManager
@@ -39,9 +40,43 @@ def test_raise_exception_on_warnings(monkeypatch):
     assert 'Please set the variable to the number of minutes. Using the default value of 5 minutes.' in decoded
 
 
+def test_login_to_registry(monkeypatch, tmp_path, mock_registry, mock_token_information):
+    monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
+
+    runner = CliRunner()
+    cli = initialize_cli()
+    output = runner.invoke(
+        cli,
+        ['registry', 'login', '--no-browser'],
+        input='test_token',
+        env={'IDF_TOOLS_PATH': str(tmp_path)},
+    )
+
+    assert output.exit_code == 0
+    # assert that login url is printed
+    assert 'http://localhost:5000/tokens/?' in output.output
+    assert 'Successfully logged in' in output.output
+
+
+def test_logout_from_registry(monkeypatch, tmp_path):
+    monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
+    config = Config({'profiles': {
+        'default': {
+            'api_token': 'asdf',
+        },
+    }})
+    ConfigManager().dump(config)
+
+    runner = CliRunner()
+    cli = initialize_cli()
+    output = runner.invoke(cli, ['registry', 'logout'], env={'IDF_TOOLS_PATH': str(tmp_path)})
+
+    # assert '' in output.stderr
+    assert 'Successfully logged out' in output.stdout
+
+
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_manifest_create_add_dependency.yaml')
 def test_manifest_create_add_dependency(mock_registry):
-
     runner = CliRunner()
     with runner.isolated_filesystem() as tempdir:
 
