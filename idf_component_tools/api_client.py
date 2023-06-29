@@ -47,7 +47,7 @@ DEFAULT_TIMEOUT = (
     30.1,  # Read timeout
 )
 
-DEFAULT_API_CACHE_EXPIRATION_MINUTES = 5
+DEFAULT_API_CACHE_EXPIRATION_MINUTES = 0
 MAX_RETRIES = 3
 
 
@@ -57,8 +57,7 @@ def env_cache_time():
     except ValueError:
         warn(
             'IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES is set to a non-numeric value. '
-            'Please set the variable to the number of minutes. '
-            'Using the default value of {} minutes.'.format(DEFAULT_API_CACHE_EXPIRATION_MINUTES))
+            'Please set the variable to the number of minutes. Disabling caching.')
         return DEFAULT_API_CACHE_EXPIRATION_MINUTES
 
 

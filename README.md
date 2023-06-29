@@ -77,7 +77,7 @@ dependencies:
 
 ## Component metadata caching
 
-By default information about available versions of components is cached for 5 minutes. You can adjust caching period by setting the duration in minutes to `IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES` environment variable or disable the cache entirely by setting it to 0.
+By default, information about available versions of components not cached. If you make many requests to the registry from one machine, you can enable caching by setting `IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES` environment variable to the number of minutes to cache the data.
 
 ## External links
 
@@ -96,7 +96,7 @@ it is expected to be a valid [Git remote](https://git-scm.com/book/en/v2/Git-Bas
 
 ## Add examples to the component
 
-To add examples to your component place them in the `examples` directory inside your component.
+To add examples to your component, place them in the `examples` directory inside your component.
 Examples are discovered recursively in subdirectories at this path.
 A directory with `CMakeLists.txt` that registers a project is considered as an example.
 
@@ -119,7 +119,7 @@ examples:
 | IDF_COMPONENT_REGISTRY_URL                  | https://components.espressif.com/       | no        | URL of the default component registry                                                           |
 | IDF_COMPONENT_STORAGE_URL                   | https://components-file.espressif.com/  | no        | URL of the default file storage server                                                          |
 | IDF_COMPONENT_REGISTRY_PROFILE              | default                                 | no        | Profile in the config file to use for component registry                                        |
-| IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES  | 5                                       | no        | API Cache expiration time in minutes                                                            |
+| IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES  | 0                                       | no        | API Cache expiration time in minutes                                                            |
 | IDF_COMPONENT_CACHE_PATH                    | \* Depends on OS                        | no        | Cache directory for component manager                                                           |
 | COMPONENT_MANAGER_JOB_TIMEOUT               | 300                                     | no        | Timeout in seconds to wait for component processing                                             |
 | IDF_COMPONENT_OVERWRITE_MANAGED_COMPONENTS  | 0                                       | no        | Overwrite files in the managed_component directory, even if they have been modified by the user |
@@ -129,7 +129,7 @@ examples:
 
 We welcome all contributions to the Component Manager project.
 
-You can contribute by fixing bugs, adding features, adding documentation, or reporting an [issue](https://github.com/espressif/idf-component-manager/issues). We accept contributions via [Github Pull Requests](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests).
+You can contribute by fixing bugs, adding features, adding documentation, or reporting an [issue](https://github.com/espressif/idf-component-manager/issues). We accept contributions via [GitHub Pull Requests](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests).
 
 Before reporting an issue, make sure you've searched for a similar one that was already created. If you are reporting a new issue, please follow the Issue Template.
 

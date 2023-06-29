@@ -74,7 +74,7 @@ class TestAPIClient(object):
 
     def test_env_cache_time_empty(self, monkeypatch):
         monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '')
-        assert env_cache_time() == 5
+        assert env_cache_time() == 0
 
     def test_env_cache_time_env_var(self, monkeypatch):
         monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '10')
@@ -82,7 +82,7 @@ class TestAPIClient(object):
 
     def test_env_cache_time(self, monkeypatch):
         monkeypatch.delenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES')
-        assert env_cache_time() == 5
+        assert env_cache_time() == 0
 
     @vcr.use_cassette(
         'tests/fixtures/vcr_cassettes/test_api_cache.yaml',
