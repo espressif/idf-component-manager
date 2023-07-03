@@ -283,3 +283,30 @@ def test_version_solver_on_local_components_higher_priority(project):
             },
             'version': '*',
         }
+
+
+@pytest.mark.parametrize(
+    'project', [{
+        'components': {
+            'main': {
+                'dependencies': {
+                    'example/cmp': {
+                        'version': '==3.3.3'
+                    },
+                }
+            },
+        },
+    }],
+    indirect=True)
+def test_version_is_not_updated_when_not_necessary(project):
+    output = project_action(project, 'reconfigure')
+    assert 'example/cmp (3.3.3)' in output
+    assert 'Configuring done' in output
+    with open(os.path.join(project, 'dependencies.lock')) as fr:
+        d = yaml.safe_load(fr)
+        assert d['dependencies']['example/cmp']['version'] == '3.3.3'
+
+    # Check that the version is not updated when it is not necessary
+    output = project_action(project, 'reconfigure')
+    assert 'example/cmp (3.3.3)' in output
+    assert 'Configuring done' in output

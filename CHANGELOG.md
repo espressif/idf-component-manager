@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fetch the same version as the lock file does while checking solved dependencies
+
 ## [1.3.0] - 2023-06-30
 
 ### Changed

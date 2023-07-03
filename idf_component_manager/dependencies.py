@@ -5,7 +5,7 @@ import os
 import shutil
 
 from idf_component_manager.core_utils import raise_component_modified_error
-from idf_component_manager.utils import print_info
+from idf_component_manager.utils import print_info, print_warn
 from idf_component_manager.version_solver.helper import parse_root_dep_conflict_constraints
 from idf_component_manager.version_solver.mixology.failure import SolverFailure
 from idf_component_manager.version_solver.mixology.package import Package
@@ -16,7 +16,7 @@ from idf_component_tools.errors import (
     ComponentModifiedError, FetchingError, InvalidComponentHashError, SolverError, hint, warn)
 from idf_component_tools.hash_tools import ValidatingHashError, validate_managed_component_hash
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import HashedComponentVersion, ProjectRequirements, SolvedComponent, SolvedManifest
+from idf_component_tools.manifest import ProjectRequirements, SolvedComponent, SolvedManifest
 from idf_component_tools.sources.fetcher import ComponentFetcher
 
 
@@ -93,7 +93,17 @@ def is_solve_required(project_requirements, solution):
             if component.source.downloadable and component.source.volatile:
                 continue
 
-            component_version = component.source.versions(component.name).versions[0]  # type: HashedComponentVersion
+            # get the same version one
+            try:
+                component_versions = component.source.versions(
+                    component.name, spec='=={}'.format(component.version.semver))
+            except FetchingError:
+                print_warn(
+                    'Version {} of dependency {} not found, probably it was deleted, solving dependencies.'.format(
+                        component.version, component.name))
+                return True
+
+            component_version = component_versions.versions[0]
 
             # Handle meta components, like ESP-IDF, and volatile components, like local
             if component.source.meta or component.source.volatile:
