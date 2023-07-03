@@ -12,5 +12,5 @@ done < <(curl https://pypi.org/pypi/idf-component-manager/json 2>/dev/null | jq 
 
 echo "Packaging and publishing new version: ${CURRENT_VERSION}"
 rm -rf dist
-python setup.py sdist bdist_wheel
+python setup.py sdist bdist_wheel --universal
 twine upload dist/*
