@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 from idf_component_tools.manifest import HashedComponentVersion
@@ -106,6 +106,9 @@ class PackageSource(BasePackageSource):
 
         dependencies = []
         for dep_package, spec in deps.items():
+            if dep_package.source:
+                spec = dep_package.source.normalize_spec(spec)
+
             dependencies.append(Dependency(dep_package, spec))
 
         self._packages[package][version] = dependencies
@@ -123,6 +126,9 @@ class PackageSource(BasePackageSource):
                 ]
 
     def root_dep(self, package, spec):  # type: (Package, str) -> None
+        if package.source:
+            spec = package.source.normalize_spec(spec)
+
         self._root_dependencies.append(Dependency(package, spec))
 
     def _versions_for(self, package, constraint=None):  # type: (Package, Any) -> List[HashedComponentVersion]
