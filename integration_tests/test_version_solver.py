@@ -93,6 +93,7 @@ def test_version_solver(project, result):
                 'main': {
                     'dependencies': {
                         'git-only-cmp': {
+                            'version': 'main',
                             'git': 'https://github.com/espressif/example_components.git',
                             'path': 'git-only-cmp',
                             'include': 'git-only-cmp.h'

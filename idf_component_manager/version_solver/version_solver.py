@@ -117,7 +117,7 @@ class VersionSolver(object):
                 else:
                     _req = req
 
-                deps[Package(_req.name, _req.source)] = _req.source.normalize_spec(_req.version_spec)
+                deps[Package(_req.name, _req.source)] = _req.version_spec
 
             self._source.add(
                 Package(requirement.name, requirement.source),
