@@ -135,10 +135,7 @@ class Manifest(object):
                 if_clauses=details.get('rules'),
                 require=details.get('require', None),
             )
-            if component.meet_optional_dependencies:
-                manifest._dependencies.append(component)
-            else:
-                print('Skipping optional dependency: {}'.format(name))
+            manifest._dependencies.append(component)
 
         links = {link: manifest_tree.get(link, '') for link in LINKS}
         manifest.links = ComponentLinks(**links)
@@ -147,7 +144,7 @@ class Manifest(object):
 
     @property
     def dependencies(self):  # type: () -> list[ComponentRequirement]
-        return sorted(self._dependencies, key=lambda d: d.name)
+        return sorted([dep for dep in self._dependencies if dep.meet_optional_dependencies], key=lambda d: d.name)
 
     @property
     def manifest_hash(self):  # type: () -> str
@@ -196,7 +193,7 @@ class ComponentRequirement(object):
             self.public = True
         elif public is False or require == 'private':
             self.public = False
-        self.if_clauses = if_clauses
+        self.if_clauses = if_clauses or []
         self.require = True if require in ['private', 'public', None] else False
 
     @property
@@ -212,7 +209,10 @@ class ComponentRequirement(object):
         if not self.if_clauses:
             return True
 
-        return all(if_clause.bool_value for if_clause in self.if_clauses)
+        res = all(if_clause.bool_value for if_clause in self.if_clauses)
+        if not res:
+            print('Skipping optional dependency: {}'.format(self.name))
+        return res
 
     def __repr__(self):  # type: () -> str
         return 'ComponentRequirement("{}", {}, version_spec="{}", public={})'.format(

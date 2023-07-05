@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Set of tools to work with archives"""
 
@@ -94,7 +94,7 @@ def unpack_zip(file, destination_directory):
             archive.extract(item, destination_directory)
 
 
-def unpack_archive(file, destination_directory):
+def unpack_archive(file, destination_directory):  # type: (Union[Text, Path], Text) -> None
     prepare_empty_directory(destination_directory)
     archive_format, ext, handler = get_format_from_path(file)
     if not is_known_format(archive_format):
