@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.2] - 2023-07-05
+
 ### Fixed
 
 - Keep original if statement in the `IfClause` object
