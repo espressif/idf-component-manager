@@ -250,7 +250,7 @@ Add example projects
 
 You may want to provide example projects to help users get started with your component. You place them in the ``examples`` directory inside your component. Examples are discovered recursively in subdirectories at this path. A directory with ``CMakeLists.txt`` that registers a project is considered as an example.
 
-When an archive with the component is uploaded to the registry all examples are repacked to individual archives and then ``examples`` directory is removed from the component archive. So every example must be self-sufficient, i.e. doesn't depend on any files in the examples directory except its own directory.
+When an archive with the component is uploaded to the registry all examples are repacked to individual archives. So every example must be self-sufficient, i.e. doesn't depend on any files in the examples directory except its own directory. For convenience the ``examples`` directory is available in the component archive too.
 
 Adding dependency on the component for examples
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
