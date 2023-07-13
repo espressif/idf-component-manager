@@ -107,7 +107,8 @@ def init_component():
     def yank(manager, service_profile, namespace, name, version, message):
         """
         Yank specified version of the component from the component registry.
-        Yanked version can be downloaded from the registry with warning message.
+        Yanked version will only be downloaded if the exact version is specified in the component manifest or lock file.
+        A warning message is printed every time a yanked version is downloaded.
         """
         manager.yank_version(name, version, message, service_profile=service_profile, namespace=namespace)
 
