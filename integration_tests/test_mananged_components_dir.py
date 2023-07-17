@@ -11,7 +11,8 @@ from .integration_test_helpers import project_action
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
@@ -24,7 +25,8 @@ from .integration_test_helpers import project_action
             }
         },
     ],
-    indirect=True)
+    indirect=True,
+)
 def test_changes_in_component(project):
     res = project_action(project, 'reconfigure')
     assert 'Build files have been written to' in res
@@ -38,19 +40,24 @@ def test_changes_in_component(project):
 
     shutil.move(
         os.path.join(project, 'managed_components', 'example__cmp'),
-        os.path.join(project, 'components', 'example__cmp'))
+        os.path.join(project, 'components', 'example__cmp'),
+    )
     res = project_action(project, 'reconfigure')
 
     assert 'Build files have been written to' in res
 
-    shutil.move(os.path.join(project, 'components', 'example__cmp'), os.path.join(project, 'components', 'cmp'))
+    shutil.move(
+        os.path.join(project, 'components', 'example__cmp'),
+        os.path.join(project, 'components', 'cmp'),
+    )
     res = project_action(project, 'reconfigure')
 
     assert 'Build files have been written to' in res
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
@@ -62,7 +69,9 @@ def test_changes_in_component(project):
                 }
             }
         },
-    ], indirect=True)
+    ],
+    indirect=True,
+)
 def test_fullclean_managed_components(project):
     project_action(project, 'reconfigure')
     assert Path(project, 'managed_components').is_dir()

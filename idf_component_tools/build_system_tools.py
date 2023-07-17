@@ -27,7 +27,9 @@ def get_env_idf_target():  # type: () -> str
     """
     env_idf_target = os.getenv('IDF_TARGET')
     if not env_idf_target:
-        raise ProcessingError('IDF_TARGET is not set, should be set by CMake, please check your configuration')
+        raise ProcessingError(
+            'IDF_TARGET is not set, should be set by CMake, please check your configuration'
+        )
     return env_idf_target
 
 
@@ -42,7 +44,8 @@ def get_idf_version():
     except subprocess.CalledProcessError:
         raise FetchingError(
             'Could not get IDF version from calling "idf.py --version".\n'
-            'idf.py path: {}'.format(idf_py_path))
+            'idf.py path: {}'.format(idf_py_path)
+        )
     else:
         try:
             string_type = basestring  # type: ignore
@@ -58,7 +61,8 @@ def get_idf_version():
     else:
         raise FetchingError(
             'Could not parse IDF version from calling "idf.py --version".\n'
-            'Output: {}'.format(idf_version))
+            'Output: {}'.format(idf_version)
+        )
 
 
 def get_idf_path():  # type: () -> str
@@ -70,12 +74,15 @@ def get_idf_path():  # type: () -> str
 
 def is_component(path):  # type: (Path) -> bool
     '''
-    This function is being used in the manifest processing to determine if the given path is a component or not.
+    This function is used in the manifest processing to determine,
+    if the given path is a component or not.
     If the directory on the path:
-        - Does not contain CMakeLists.txt, it is not considered as a component (nor a project).
-        - Contains idf_component.yml, it is considered as a component, as projects do not contain it.
-        - Contains CMakeLists.txt and this file contains CMAKE_PROJECT_LINE, it is considered as a project,
-        otherwise it is considered as a component.
+        - Does not contain CMakeLists.txt, it is not considered as a component
+        (nor a project).
+        - Contains idf_component.yml, it is considered as a component, as projects
+        do not contain it.
+        - Contains CMakeLists.txt and this file contains CMAKE_PROJECT_LINE,
+        it is considered as a project, otherwise it is considered as a component.
     Note that this function may be adequate only for the manifest processing.
     '''
 

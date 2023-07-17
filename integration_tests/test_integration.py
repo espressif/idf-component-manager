@@ -14,11 +14,17 @@ from idf_component_tools.manifest import ManifestManager
 from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS
 
 from .integration_test_helpers import (
-    build_project, fixtures_path, live_print_call, project_action, skip_for_idf_versions)
+    build_project,
+    fixtures_path,
+    live_print_call,
+    project_action,
+    skip_for_idf_versions,
+)
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
@@ -26,21 +32,23 @@ from .integration_test_helpers import (
                         'git-only-cmp': {
                             'git': 'https://github.com/espressif/example_components.git',
                             'path': 'folder-not-exist',
-                            'include': 'git-only-cmp.h'
+                            'include': 'git-only-cmp.h',
                         }
                     }
                 }
             }
         }
     ],
-    indirect=True)
+    indirect=True,
+)
 def test_git_folder_does_not_exists(project):
     res = build_project(project)
     assert 'pathspec \'folder-not-exist\' did not match any file(s) known to git' in res
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
@@ -55,7 +63,8 @@ def test_git_folder_does_not_exists(project):
             }
         },
     ],
-    indirect=True)
+    indirect=True,
+)
 def test_local_dependency_with_relative_path(project):
     shutil.copytree(fixtures_path('components', 'cmp'), os.path.join(project, 'cmp'))
     res = build_project(project)
@@ -63,7 +72,8 @@ def test_local_dependency_with_relative_path(project):
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
@@ -76,12 +86,13 @@ def test_local_dependency_with_relative_path(project):
                             'path': fixtures_path('components', 'cmp'),
                             'include': 'cmp.h',
                         },
-                    }
+                    },
                 }
             }
         },
     ],
-    indirect=True)
+    indirect=True,
+)
 def test_local_dependency_main_requires(project):
     res = build_project(project)
     assert 'Project build complete.' in res
@@ -93,11 +104,13 @@ def test_known_targets():
         idf_path = os.environ['IDF_PATH']
         sys.path.append(os.path.join(idf_path, 'tools'))
         from idf_py_actions.constants import PREVIEW_TARGETS, SUPPORTED_TARGETS
+
         assert set(SUPPORTED_TARGETS + PREVIEW_TARGETS) == set(DEFAULT_KNOWN_TARGETS)
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
@@ -110,7 +123,8 @@ def test_known_targets():
             }
         },
     ],
-    indirect=True)
+    indirect=True,
+)
 def test_env_var(project, monkeypatch):
     monkeypatch.setenv('CMP_VERSION', '3.0.3')
     real_result = project_action(project, 'reconfigure')
@@ -122,7 +136,8 @@ def test_env_var(project, monkeypatch):
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
@@ -136,7 +151,8 @@ def test_env_var(project, monkeypatch):
             }
         },
     ],
-    indirect=True)
+    indirect=True,
+)
 def test_build_pure_cmake(project):
     if skip_for_idf_versions('v4.2', 'v4.3'):
         return
@@ -149,7 +165,8 @@ def test_build_pure_cmake(project):
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
@@ -159,17 +176,16 @@ def test_build_pure_cmake(project):
                             'path': fixtures_path('components', 'cmp'),
                             'include': 'cmp.h',
                             'rules': [
-                                {
-                                    'if': 'idf_version < 3.0'
-                                },
-                            ]
+                                {'if': 'idf_version < 3.0'},
+                            ],
                         },
                     }
                 }
             }
         },
     ],
-    indirect=True)
+    indirect=True,
+)
 def test_inject_requirements_with_optional_dependency(project):
     res = project_action(project, 'reconfigure')
     assert 'Skipping optional dependency: cmp' in res
@@ -178,7 +194,8 @@ def test_inject_requirements_with_optional_dependency(project):
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
@@ -190,7 +207,9 @@ def test_inject_requirements_with_optional_dependency(project):
                 }
             }
         },
-    ], indirect=True)
+    ],
+    indirect=True,
+)
 def test_set_component_version(project):
     with open(os.path.join(project, 'CMakeLists.txt'), 'a') as fw:
         fw.write(u'\n')
@@ -203,7 +222,8 @@ def test_set_component_version(project):
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
@@ -224,7 +244,8 @@ def test_set_component_version(project):
             }
         }
     ],
-    indirect=True)
+    indirect=True,
+)
 def test_root_dep_failed(project):
     res = project_action(project, 'reconfigure')
     assert 'ERROR: Because project depends on idf (^6.1) which doesn\'t match any' in res
@@ -262,19 +283,20 @@ def test_create_manifest_with_path(project):
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
                     'dependencies': {
-                        'example/cmp': {
-                            'version': '*'
-                        },
+                        'example/cmp': {'version': '*'},
                     }
                 }
             }
         },
-    ], indirect=True)
+    ],
+    indirect=True,
+)
 def test_check_remove_managed_component(project):
     path = Path(project) / 'managed_components'
     res = project_action(project, 'reconfigure')
@@ -286,7 +308,8 @@ def test_check_remove_managed_component(project):
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
@@ -301,7 +324,8 @@ def test_check_remove_managed_component(project):
             }
         },
     ],
-    indirect=True)
+    indirect=True,
+)
 def test_update_dependencies_outdated(project, monkeypatch):
     shutil.copytree(fixtures_path('components', 'cmp'), os.path.join(project, 'cmp'))
     project_action(project, 'reconfigure')
@@ -317,7 +341,8 @@ def test_update_dependencies_outdated(project, monkeypatch):
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
@@ -332,7 +357,8 @@ def test_update_dependencies_outdated(project, monkeypatch):
             }
         },
     ],
-    indirect=True)
+    indirect=True,
+)
 def test_update_dependencies_without_lock(project, monkeypatch):
     shutil.copytree(fixtures_path('components', 'cmp'), os.path.join(project, 'cmp'))
     lock = LockManager(os.path.join(project, 'dependencies.lock'))
@@ -345,7 +371,8 @@ def test_update_dependencies_without_lock(project, monkeypatch):
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
@@ -358,7 +385,8 @@ def test_update_dependencies_without_lock(project, monkeypatch):
             }
         },
     ],
-    indirect=True)
+    indirect=True,
+)
 def test_idf_reconfigure_dependency_doesnt_exist(project):
     res = project_action(project, 'reconfigure')
     assert 'Component "example/boobobobob" not found' in res

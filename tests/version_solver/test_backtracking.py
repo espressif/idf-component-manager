@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 from idf_component_manager.version_solver.mixology.package import Package
 
@@ -27,7 +27,9 @@ def test_diamond_dependency_graph(source, check_solver_result):
     source.add(Package('c'), '2.0.0')
     source.add(Package('c'), '1.0.0')
 
-    check_solver_result(source, {Package('a'): '1.0.0', Package('b'): '2.0.0', Package('c'): '3.0.0'})
+    check_solver_result(
+        source, {Package('a'): '1.0.0', Package('b'): '2.0.0', Package('c'): '3.0.0'}
+    )
 
 
 def test_backjumps_after_partial_satisfier(source, check_solver_result):
@@ -66,7 +68,9 @@ def test_rolls_back_leaf_versions_first(source, check_solver_result):
     source.add(Package('c'), '1.0.0')
     source.add(Package('c'), '2.0.0')
 
-    check_solver_result(source, {Package('a'): '2.0.0', Package('b'): '1.0.0', Package('c'): '2.0.0'})
+    check_solver_result(
+        source, {Package('a'): '2.0.0', Package('b'): '1.0.0', Package('c'): '2.0.0'}
+    )
 
 
 def test_simple_transitive(source, check_solver_result):
@@ -84,7 +88,9 @@ def test_simple_transitive(source, check_solver_result):
 
     source.add(Package('baz'), '1.0.0')
 
-    check_solver_result(source, {Package('foo'): '1.0.0', Package('bar'): '1.0.0', Package('baz'): '1.0.0'}, tries=3)
+    check_solver_result(
+        source, {Package('foo'): '1.0.0', Package('bar'): '1.0.0', Package('baz'): '1.0.0'}, tries=3
+    )
 
 
 def test_backjump_to_nearer_unsatisfied_package(source, check_solver_result):
@@ -102,7 +108,9 @@ def test_backjump_to_nearer_unsatisfied_package(source, check_solver_result):
     source.add(Package('b'), '3.0.0')
     source.add(Package('c'), '1.0.0')
 
-    check_solver_result(source, {Package('a'): '1.0.0', Package('b'): '3.0.0', Package('c'): '1.0.0'}, tries=2)
+    check_solver_result(
+        source, {Package('a'): '1.0.0', Package('b'): '3.0.0', Package('c'): '1.0.0'}, tries=2
+    )
 
 
 def test_traverse_into_package_with_fewer_versions_first(source, check_solver_result):
@@ -126,7 +134,9 @@ def test_traverse_into_package_with_fewer_versions_first(source, check_solver_re
     source.add(Package('c'), '1.0.0')
     source.add(Package('c'), '2.0.0')
 
-    check_solver_result(source, {Package('a'): '4.0.0', Package('b'): '4.0.0', Package('c'): '2.0.0'})
+    check_solver_result(
+        source, {Package('a'): '4.0.0', Package('b'): '4.0.0', Package('c'): '2.0.0'}
+    )
 
 
 def test_backjump_past_failed_package_on_disjoint_constraint(source, check_solver_result):
@@ -134,7 +144,9 @@ def test_backjump_past_failed_package_on_disjoint_constraint(source, check_solve
     source.root_dep(Package('foo'), '>2.0.0')
 
     source.add(Package('a'), '1.0.0', deps={Package('foo'): '*'})  # ok
-    source.add(Package('a'), '2.0.0', deps={Package('foo'): '<1.0.0'})  # disjoint with myapp's constraint on foo
+    source.add(
+        Package('a'), '2.0.0', deps={Package('foo'): '<1.0.0'}
+    )  # disjoint with myapp's constraint on foo
 
     source.add(Package('foo'), '2.0.0')
     source.add(Package('foo'), '2.0.1')

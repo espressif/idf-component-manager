@@ -11,7 +11,12 @@ from idf_component_manager.utils import RE_PATTERN
 from ..constants import COMPILED_GIT_URL_RE, COMPILED_URL_RE
 from ..errors import InternalError
 from ..semver import SimpleSpec, Version
-from .constants import FULL_SLUG_REGEX, KNOWN_BUILD_METADATA_FIELDS, KNOWN_INFO_METADATA_FIELDS, TAGS_REGEX
+from .constants import (
+    FULL_SLUG_REGEX,
+    KNOWN_BUILD_METADATA_FIELDS,
+    KNOWN_INFO_METADATA_FIELDS,
+    TAGS_REGEX,
+)
 from .if_parser import IfClause, parse_if_clause
 
 try:
@@ -36,14 +41,14 @@ def _dependency_schema():  # type: () -> Or
     return Or(
         Or(None, *string_types, error='Dependency version spec format is invalid'),
         {
-            Optional('version'): Or(None, *string_types, error='Dependency version spec format is invalid'),
+            Optional('version'): Or(
+                None, *string_types, error='Dependency version spec format is invalid'
+            ),
             Optional('public'): Use(bool, error='Invalid format of dependency public flag'),
             Optional('path'): NONEMPTY_STRING,
             Optional('git'): NONEMPTY_STRING,
             Optional('service_url'): NONEMPTY_STRING,
-            Optional('rules'): [{
-                'if': Use(parse_if_clause)
-            }],
+            Optional('rules'): [{'if': Use(parse_if_clause)}],
             Optional('override_path'): NONEMPTY_STRING,
             Optional('require'): Or(
                 'public',
@@ -53,7 +58,9 @@ def _dependency_schema():  # type: () -> Or
                 error='Invalid format of dependency require field format. '
                 'Should be "public", "private" or "no"',
             ),
-            Optional('pre_release'): Use(bool, error='Invalid format of dependency pre_release flag'),
+            Optional('pre_release'): Use(
+                bool, error='Invalid format of dependency pre_release flag'
+            ),
         },
         error='Invalid dependency format',
     )
@@ -66,7 +73,9 @@ def _manifest_schema():  # type: () -> Schema
     return Schema(
         {
             Optional('name'): Or(*string_types),
-            Optional('version'): Or(Version.parse, error='Component version should be valid semantic version'),
+            Optional('version'): Or(
+                Version.parse, error='Component version should be valid semantic version'
+            ),
             Optional('targets'): [NONEMPTY_STRING],
             Optional('maintainers'): [NONEMPTY_STRING],
             Optional('description'): NONEMPTY_STRING,
@@ -78,19 +87,24 @@ def _manifest_schema():  # type: () -> Schema
                 )
             ],
             Optional('dependencies'): {
-                Optional(Regex(FULL_SLUG_REGEX, error='Invalid dependency name')): DEPENDENCY_SCHEMA,
+                Optional(
+                    Regex(FULL_SLUG_REGEX, error='Invalid dependency name')
+                ): DEPENDENCY_SCHEMA,
             },
-            Optional('files'): {Optional(key): [NONEMPTY_STRING]
-                                for key in KNOWN_FILES_KEYS},
-            Optional('examples'): [{key: NONEMPTY_STRING
-                                    for key in KNOWN_EXAMPLES_KEYS}],
+            Optional('files'): {Optional(key): [NONEMPTY_STRING] for key in KNOWN_FILES_KEYS},
+            Optional('examples'): [{key: NONEMPTY_STRING for key in KNOWN_EXAMPLES_KEYS}],
             # Links of the project
             Optional('url'): Regex(COMPILED_URL_RE, error=LINKS_URL_ERROR.format('url')),
-            Optional('repository'): Regex(COMPILED_GIT_URL_RE, error=LINKS_GIT_ERROR.format('repository')),
-            Optional('documentation'): Regex(COMPILED_URL_RE, error=LINKS_URL_ERROR.format('documentation')),
+            Optional('repository'): Regex(
+                COMPILED_GIT_URL_RE, error=LINKS_GIT_ERROR.format('repository')
+            ),
+            Optional('documentation'): Regex(
+                COMPILED_URL_RE, error=LINKS_URL_ERROR.format('documentation')
+            ),
             Optional('issues'): Regex(COMPILED_URL_RE, error=LINKS_URL_ERROR.format('issues')),
-            Optional('discussion'): Regex(COMPILED_URL_RE, error=LINKS_URL_ERROR.format('discussion')),
-
+            Optional('discussion'): Regex(
+                COMPILED_URL_RE, error=LINKS_URL_ERROR.format('discussion')
+            ),
             # allow any other fields
             Optional(str): object,
         },
@@ -110,7 +124,7 @@ def manifest_json_schema():  # type: () -> dict
         return pat.pattern
 
     def process_json_schema(
-            obj,  # type: dict[str, Any] | list | str | Any
+        obj,  # type: dict[str, Any] | list | str | Any
     ):  # type: (...) -> dict[str, Any] | list | str | Any
         if isinstance(obj, dict):
             # jsonschema 2.5.1 for python 3.4 does not support empty `required` field
@@ -129,11 +143,13 @@ def manifest_json_schema():  # type: () -> dict
         return obj
 
     json_schema = MANIFEST_SCHEMA.json_schema(
-        'idf-component-manager')  # here id should be an url to use $ref in the future
+        'idf-component-manager'
+    )  # here id should be an url to use $ref in the future
 
     # Polish starts here
 
-    # The "schema" library we're currently using does not support auto-generate JSON Schema for nested schema.
+    # The "schema" library we're currently using does not support
+    # auto-generate JSON Schema for nested schema.
     # We need to add it back by ourselves
     #
     # `version`
@@ -142,12 +158,16 @@ def manifest_json_schema():  # type: () -> dict
     json_schema['properties']['dependencies']['additionalProperties'] = {
         'anyOf': Schema(DEPENDENCY_SCHEMA).json_schema('#dependency')['anyOf']
     }
-    # `dependencies:*:version` could be simple spec version, or git branch/commit, use string instead
+    # `dependencies:*:version` could be simple spec version,
+    # or git branch/commit, use string instead
     _anyof = json_schema['properties']['dependencies']['additionalProperties']['anyOf']
     _anyof[0] = {'type': 'string'}
     _anyof[1]['properties']['version'] = {'type': 'string'}
     # `if` clause
-    _anyof[1]['properties']['rules']['items']['properties']['if'] = {'type': 'string', 'pattern': IfClause.regex_str()}
+    _anyof[1]['properties']['rules']['items']['properties']['if'] = {
+        'type': 'string',
+        'pattern': IfClause.regex_str(),
+    }
 
     # The "schema" library is also missing the `type` for the following types
     # - enum - it's optional in JSON schema, but it's important to the error messages
@@ -236,7 +256,9 @@ for _key in sorted(_flatten_json_schema_keys(JSON_SCHEMA)):
 BUILD_METADATA_KEYS = serialize_list_of_list_of_strings(_build_metadata_keys)
 INFO_METADATA_KEYS = serialize_list_of_list_of_strings(_info_metadata_keys)
 
-METADATA_SCHEMA = Schema({
-    Optional('build_keys'): BUILD_METADATA_KEYS,
-    Optional('info_keys'): INFO_METADATA_KEYS,
-})
+METADATA_SCHEMA = Schema(
+    {
+        Optional('build_keys'): BUILD_METADATA_KEYS,
+        Optional('info_keys'): INFO_METADATA_KEYS,
+    }
+)

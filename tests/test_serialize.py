@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import pytest
 
@@ -10,11 +10,7 @@ def test_serialize_default_fields():
     class TestSerializableClass(object):
         _serialization_properties = [
             'field1',
-            {
-                'name': 'field2',
-                'default': True,
-                'serialize_default': False
-            },
+            {'name': 'field2', 'default': True, 'serialize_default': False},
         ]
 
         def __init__(self, field1, field2):
@@ -45,7 +41,9 @@ def test_serialize_object_field():
             self.field1 = field1
             self.field2 = field2
 
-    serializable_object = TestSerializableClass(another_class=TestSerializableAnotherClass('test', 12))
+    serializable_object = TestSerializableClass(
+        another_class=TestSerializableAnotherClass('test', 12)
+    )
     serialize = serializable_object.serialize()
 
     assert 'another_class' in serialize
@@ -194,7 +192,8 @@ def test_serialize_dictionary():
             'field3': 'Hello',
             'field4': 12,
             'field5': 0.56,
-        })
+        }
+    )
     serialize = serializable_object.serialize()
 
     assert 'dict_field' in serialize

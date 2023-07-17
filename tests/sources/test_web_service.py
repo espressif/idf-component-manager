@@ -27,9 +27,12 @@ class TestComponentWebServiceSource(object):
 
     def test_cache_path(self):
         source = WebServiceSource(source_details={'service_url': 'https://example.com/api'})
-        component = SolvedComponent('cmp', ComponentVersion('1.0.0'), source=source, component_hash=self.CMP_HASH)
+        component = SolvedComponent(
+            'cmp', ComponentVersion('1.0.0'), source=source, component_hash=self.CMP_HASH
+        )
         assert source.component_cache_path(component).endswith(
-            'service_{}/espressif__cmp_1.0.0_{}'.format(self.EXAMPLE_HASH[:8], self.CMP_HASH[:8]))
+            'service_{}/espressif__cmp_1.0.0_{}'.format(self.EXAMPLE_HASH[:8], self.CMP_HASH[:8])
+        )
 
     # If you re-record this cassette, make sure the file downloaded only once
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_fetch_webservice.yaml')
@@ -40,7 +43,8 @@ class TestComponentWebServiceSource(object):
         monkeypatch.setenv('IDF_COMPONENT_CACHE_PATH', cache_dir)
 
         source = WebServiceSource(
-            source_details={'service_url': 'https://example.com/api'}, system_cache_path=cache_dir)
+            source_details={'service_url': 'https://example.com/api'}, system_cache_path=cache_dir
+        )
         cmp = SolvedComponent('test/cmp', '1.0.1', source, component_hash=self.CMP_HASH)
 
         source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/api/'})
@@ -59,7 +63,9 @@ class TestComponentWebServiceSource(object):
         source.download(cmp, download_path)
 
         # Check copy from the cache (NO http request)
-        fixture_cmp = SolvedComponent('test/cmp', '1.0.0', source, component_hash=hash_dir(release_component_path))
+        fixture_cmp = SolvedComponent(
+            'test/cmp', '1.0.0', source, component_hash=hash_dir(release_component_path)
+        )
         download_path = str(tmp_path / 'test_cached')
         cache_path = source.component_cache_path(fixture_cmp)
         if os.path.exists(cache_path):
@@ -91,13 +97,19 @@ class TestComponentWebServiceSource(object):
             with pytest.warns(UserHint) as record:
                 source.versions('example/cmp')
 
-                prerelease_hint_str = 'Component "example/cmp" has a pre-release version. ' \
-                                      'To use that version, add "pre_release: True" to the dependency in the manifest.'
+                prerelease_hint_str = (
+                    'Component "example/cmp" has a pre-release version. '
+                    'To use that version, add "pre_release: True" '
+                    'to the dependency in the manifest.'
+                )
 
                 assert prerelease_hint_str in record.list[0].message.args
 
                 assert prerelease_hint_str in captured.out
-                assert 'Cannot get versions of "example/cmp" that satisfy spec "*" with all target' in captured.out
+                assert (
+                    'Cannot get versions of "example/cmp" that satisfy spec "*" with all target'
+                    in captured.out
+                )
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_pre_release.yaml')
     def test_pre_release_exists_with_pre_release_spec(self, monkeypatch):
@@ -107,12 +119,16 @@ class TestComponentWebServiceSource(object):
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_versions.yaml')
     def test_skip_pre_release(self):
-        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/api/', 'pre_release': False})
+        source = WebServiceSource(
+            source_details={'service_url': 'http://localhost:5000/api/', 'pre_release': False}
+        )
         assert len(source.versions('example/cmp').versions) == 1
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_versions.yaml')
     def test_select_pre_release(self):
-        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/api/', 'pre_release': True})
+        source = WebServiceSource(
+            source_details={'service_url': 'http://localhost:5000/api/', 'pre_release': True}
+        )
         assert len(source.versions('example/cmp').versions) == 2
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_target.yaml')
@@ -124,10 +140,15 @@ class TestComponentWebServiceSource(object):
             with pytest.warns(UserHint) as record:
                 source.versions('example/cmp', target='esp32s2')
 
-                other_targets_hint_str = 'Component "example/cmp" has versions for the different targets: esp32. ' \
-                                         'Change the target in the manifest to use that versions.'
+                other_targets_hint_str = (
+                    'Component "example/cmp" has versions for the different targets: esp32. '
+                    'Change the target in the manifest to use that versions.'
+                )
 
                 assert other_targets_hint_str in record[0].message.args
 
                 assert other_targets_hint_str in captured.out
-                assert 'Cannot get versions of "example/cmp" that satisfy spec "*" with esp32s2 target' in captured.out
+                assert (
+                    'Cannot get versions of "example/cmp" that satisfy spec "*" with esp32s2 target'
+                    in captured.out
+                )

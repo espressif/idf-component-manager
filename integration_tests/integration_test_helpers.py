@@ -25,16 +25,20 @@ def generate_from_template(file_path, template, **kwargs):
 def get_component_path(project_path, component_name):
     # type: (str, str) -> str
     """
-    Assemblies component path, if the component is `main` it is not placed in the `components` folder
+    Assemblies component path,
+    if the component is `main` it is not placed in the `components` folder
     """
-    return os.path.join(project_path, 'components' if component_name != 'main' else '', component_name)
+    return os.path.join(
+        project_path, 'components' if component_name != 'main' else '', component_name
+    )
 
 
 def create_manifest(project_path, component_dict, libraries, component_name):
     # type: (str, dict, list, str) -> None
     """
     If the component contains some dependencies
-    creates idf_component.yml file for the component and updates its value according to the test scenario
+    creates idf_component.yml file for the component and
+    updates its value according to the test scenario
     """
     if len(libraries) == 0 or 'dependencies' not in component_dict.keys():
         return
@@ -56,8 +60,9 @@ def create_manifest(project_path, component_dict, libraries, component_name):
 def create_component(project_path, component_name, component_dict, env, function_name='app_main'):
     # type: (str, str, dict, Environment, str) -> None
     """
-    Procedure creates the component in the project that contains source and header files (with same name as component),
-    and CMakeLists.txt. The default name of the function in every source and header file is `app_main`.
+    Procedure creates the component in the project that contains
+    source and header files (with same name as component), and CMakeLists.txt.
+    The default name of the function in every source and header file is `app_main`.
     """
 
     component_path = get_component_path(project_path, component_name)
@@ -70,41 +75,50 @@ def create_component(project_path, component_name, component_dict, env, function
         os.path.join(component_path, '{}.c'.format(component_name)),
         env.get_template(os.path.join('src', 'sample_src.c')),
         header_files=['{}.h'.format(component_name)] + include_list,
-        func_name=function_name)
+        func_name=function_name,
+    )
 
     generate_from_template(
         os.path.join(component_path, 'include', '{}.h'.format(component_name)),
         env.get_template(os.path.join('include', 'sample_header.h')),
-        func_name=function_name)
+        func_name=function_name,
+    )
 
     component_register_parameters = []
     if 'cmake_lists' in component_dict.keys():
         component_register_parameters = [
-            '{} {}'.format(key.upper(), value) for key, value in component_dict['cmake_lists'].items()
+            '{} {}'.format(key.upper(), value)
+            for key, value in component_dict['cmake_lists'].items()
         ]
 
     generate_from_template(
         os.path.join(component_path, 'CMakeLists.txt'),
         env.get_template(os.path.join('src', 'CMakeLists.txt')),
         parameters=component_register_parameters,
-        component=component_name)
+        component=component_name,
+    )
 
 
 def get_dependencies(component_dict):
     # type: (dict) -> tuple
     """
-    Returns tuple of two lists - dependencies for including in the source file and dependencies for adding to manifest
+    Returns tuple of two lists - dependencies for including in the source file
+    and dependencies for adding to manifest
     """
     if 'dependencies' not in component_dict.keys():
         return [], []
     dependencies = component_dict['dependencies']
     include_list = [
-        dependencies[library].pop('include', None) for library in dependencies.keys()
+        dependencies[library].pop('include', None)
+        for library in dependencies.keys()
         if dependencies[library].get('include', None)
     ]
     libraries_for_manifest = [
-        library for library in dependencies.keys() if 'git' in dependencies[library].keys()
-        or 'version' in dependencies[library].keys() or 'path' in dependencies[library].keys()
+        library
+        for library in dependencies.keys()
+        if 'git' in dependencies[library].keys()
+        or 'version' in dependencies[library].keys()
+        or 'path' in dependencies[library].keys()
     ]
 
     return include_list, libraries_for_manifest

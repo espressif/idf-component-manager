@@ -29,7 +29,6 @@ def test_web_dep_re():
 
 
 def test_is_component(tmp_path):
-
     tempdir = str(tmp_path)
 
     open(os.path.join(tempdir, 'CMakeLists.txt'), 'w').write('\n')

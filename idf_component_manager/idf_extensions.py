@@ -17,7 +17,8 @@ except ImportError:
 SERVICE_PROFILE = [
     {
         'names': ['--service-profile'],
-        'help': 'Profile for the component registry to use. By default profile named "default" will be used.',
+        'help': 'Profile for the component registry to use. '
+        'By default profile named "default" will be used.',
         'envvar': 'IDF_COMPONENT_SERVICE_PROFILE',
     },
 ]  # type: List[Dict[str, Any]]
@@ -45,11 +46,12 @@ LOCAL_MANIFEST_OPTIONS = [
         'names': ['--component'],
         'default': 'main',
         'help': 'Name of the component in the project.',
-    }, {
+    },
+    {
         'names': ['-p', '--path'],
         'help': 'Path to the component. The component name is ignored when path the is specified.',
-        'default': None
-    }
+        'default': None,
+    },
 ]  # type: list[dict[str, Any]]
 
 if CLICK_SUPPORTS_SHOW_DEFAULT:
@@ -58,7 +60,8 @@ if CLICK_SUPPORTS_SHOW_DEFAULT:
 VERSION_PARAMETER = [
     {
         'names': ['--version'],
-        'help': 'Set version, if not defined in the manifest. Use "git" to get version from git tag. '
+        'help': 'Set version, if not defined in the manifest. '
+        'Use "git" to get version from git tag. '
         "The command won\'t try uploading, if running not from a git tag.",
         'required': False,
     }
@@ -94,7 +97,10 @@ def action_extensions(base_actions, project_path):
         copy_tasks = list(tasks)
         for index, task in enumerate(copy_tasks):
             if task.name == 'fullclean':
-                tasks.insert(index + 1, ctx.invoke(ctx.command.get_command(ctx, 'remove_managed_components')))
+                tasks.insert(
+                    index + 1,
+                    ctx.invoke(ctx.command.get_command(ctx, 'remove_managed_components')),
+                )
             elif task.name == 'update-dependencies':
                 reconfigure = ctx.invoke(ctx.command.get_command(ctx, 'reconfigure'))
                 # reсonfigure does not take any parameters.
@@ -114,7 +120,8 @@ def action_extensions(base_actions, project_path):
                     ' will be created in the "main" directory.\n'
                     'If you run the command in the directory with a component, '
                     'the manifest will be created right in that directory.\n'
-                    'You can explicitly specify directory using the --path option.'),
+                    'You can explicitly specify directory using the --path option.'
+                ),
                 'options': LOCAL_MANIFEST_OPTIONS,
             },
             'add-dependency': {
@@ -126,7 +133,8 @@ def action_extensions(base_actions, project_path):
                     ' will be added to the manifest in the "main" directory.\n'
                     'If you run the command in the directory with a component, '
                     'the dependency will be added to the manifest right in that directory.\n'
-                    'You can explicitly specify directory using the --path option.'),
+                    'You can explicitly specify directory using the --path option.'
+                ),
                 'arguments': [
                     {
                         'names': ['dependency'],
@@ -135,38 +143,42 @@ def action_extensions(base_actions, project_path):
                 ],
                 'options': LOCAL_MANIFEST_OPTIONS + SERVICE_PROFILE,
             },
-            'remove_managed_components': {
-                'callback': callback,
-                'hidden': True
-            },
+            'remove_managed_components': {'callback': callback, 'hidden': True},
             'upload-component': {
                 'callback': callback,
                 'deprecated': True,
                 'help': (
                     'New CLI command: "compote component upload". '
                     'Upload component to the component registry. '
-                    'If the component doesn\'t exist in the registry it will be created automatically.'),
-                'options': SERVICE_OPTIONS + VERSION_PARAMETER + [
+                    'If the component doesn\'t exist in the registry '
+                    'it will be created automatically.'
+                ),
+                'options': SERVICE_OPTIONS
+                + VERSION_PARAMETER
+                + [
                     {
                         'names': ['--archive'],
                         'help': 'Path of the archive with a component to upload. '
                         'When not provided the component will be packed automatically.',
-                    }, {
+                    },
+                    {
                         'names': ['--skip-pre-release'],
                         'help': 'Do not upload pre-release versions.',
                         'is_flag': True,
                         'default': False,
-                    }, {
+                    },
+                    {
                         'names': ['--check-only'],
                         'help': 'Check if given component version is already uploaded and exit.',
                         'is_flag': True,
                         'default': False,
-                    }, {
+                    },
+                    {
                         'names': ['--allow-existing'],
                         'help': 'Return success if existing version is already uploaded.',
                         'is_flag': True,
                         'default': False,
-                    }
+                    },
                 ],
             },
             'delete-version': {
@@ -174,46 +186,55 @@ def action_extensions(base_actions, project_path):
                 'deprecated': True,
                 'help': (
                     'New CLI command: "compote component delete". '
-                    'Delete specified version of the component from the component registry.'),
-                'options': SERVICE_OPTIONS +
-                [{
-                    'names': ['--version'],
-                    'help': 'Component version',
-                    'required': True,
-                }],
+                    'Delete specified version of the component from the component registry.'
+                ),
+                'options': SERVICE_OPTIONS
+                + [
+                    {
+                        'names': ['--version'],
+                        'help': 'Component version',
+                        'required': True,
+                    }
+                ],
             },
             'upload-component-status': {
                 'callback': callback,
                 'deprecated': True,
                 'help': (
                     'New CLI command: "compote component upload-status". '
-                    'Check the component uploading status by the job ID.'),
-                'options': SERVICE_PROFILE + [{
-                    'names': ['--job'],
-                    'help': 'Job ID',
-                    'required': True,
-                }],
+                    'Check the component uploading status by the job ID.'
+                ),
+                'options': SERVICE_PROFILE
+                + [
+                    {
+                        'names': ['--job'],
+                        'help': 'Job ID',
+                        'required': True,
+                    }
+                ],
             },
             'pack-component': {
                 'callback': callback,
                 'deprecated': True,
                 'help': (
                     'New CLI command: "compote component pack". '
-                    'Create component archive and store it in the dist directory.'),
+                    'Create component archive and store it in the dist directory.'
+                ),
                 'options': SERVICE_PROFILE + NAME + VERSION_PARAMETER,
             },
             'create-project-from-example': {
                 'callback': callback,
                 'help': CREATE_PROJECT_FROM_EXAMPLE_DESCR,
-                'arguments': [{
-                    'names': ['example']
-                }],
-                'options': SERVICE_PROFILE + [
+                'arguments': [{'names': ['example']}],
+                'options': SERVICE_PROFILE
+                + [
                     {
                         'names': ['-p', '--path'],
                         'help': (
                             'Set the path for the new project. The project '
-                            'will be created directly in the given folder if it does not contain anything'),
+                            'will be created directly in the given folder '
+                            'if it does not contain anything'
+                        ),
                         'required': False,
                     }
                 ],
@@ -221,6 +242,6 @@ def action_extensions(base_actions, project_path):
             'update-dependencies': {
                 'callback': callback,
                 'help': 'Update dependencies of the project',
-            }
+            },
         },
     }

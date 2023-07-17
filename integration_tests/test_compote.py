@@ -15,13 +15,18 @@ import pytest
     '~/.compote-complete.bash',
 )
 @pytest.mark.parametrize(
-    'shell', [
+    'shell',
+    [
         pytest.param(
             'fish',
-            marks=pytest.mark.skipif(sys.version_info[:2] == (3, 4), reason='fish support is added in click==7.1')),
+            marks=pytest.mark.skipif(
+                sys.version_info[:2] == (3, 4), reason='fish support is added in click==7.1'
+            ),
+        ),
         'bash',
         'zsh',
-    ])
+    ],
+)
 def test_autocomplete(shell, monkeypatch):
     if shell in ['fish']:
         monkeypatch.setenv('TERM', 'screen-256color')  # var TERM is required in fish

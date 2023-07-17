@@ -33,8 +33,11 @@ def initialize_cli():
     """
     Initialize CLI
     """
+
     @click.group(context_settings=DEFAULT_SETTINGS)
-    @click.option('--warnings-as-errors', '-W', is_flag=True, default=False, help='Treat warnings as errors.')
+    @click.option(
+        '--warnings-as-errors', '-W', is_flag=True, default=False, help='Treat warnings as errors.'
+    )
     def cli(warnings_as_errors):
         if warnings_as_errors:
             warnings.filterwarnings('error', category=UserWarning)

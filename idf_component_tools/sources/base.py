@@ -33,10 +33,10 @@ class BaseSource(object):
     NAME = 'base'
 
     def __init__(
-            self,
-            source_details=None,  # type: dict | None
-            system_cache_path=None,  # type: str | None
-            manifest_manager=None,  # type: ManifestManager | None
+        self,
+        source_details=None,  # type: dict | None
+        system_cache_path=None,  # type: str | None
+        manifest_manager=None,  # type: ManifestManager | None
     ):  # type: (...) -> None
         self._source_details = source_details or {}
         self._hash_key = None
@@ -74,9 +74,9 @@ class BaseSource(object):
 
     @staticmethod
     def fromdict(
-            name,  # type: str
-            details,  # type: dict
-            manifest_manager=None,  # type: ManifestManager | None
+        name,  # type: str
+        details,  # type: dict
+        manifest_manager=None,  # type: ManifestManager | None
     ):  # type: (...) -> BaseSource
         """Build component source by dict"""
         for source_class in tools.sources.KNOWN_SOURCES:
@@ -105,8 +105,11 @@ class BaseSource(object):
     @classmethod
     def known_keys(cls):  # type: () -> list[str]
         """List of known details key"""
-        return ['version', 'public', 'rules', 'require'] + list(cls.required_keys().keys()) + list(
-            cls.optional_keys().keys())
+        return (
+            ['version', 'public', 'rules', 'require']
+            + list(cls.required_keys().keys())
+            + list(cls.optional_keys().keys())
+        )
 
     @classmethod
     def schema(cls):  # type: () -> dict
@@ -151,7 +154,10 @@ class BaseSource(object):
 
     @property
     def meta(self):  # type: () -> bool
-        """Returns True for meta components. Meta components are not included in the build directly"""
+        """
+        Returns True for meta components.
+        Meta components are not included in the build directly
+        """
         return False
 
     @property
@@ -192,11 +198,11 @@ class BaseSource(object):
 
     @abstractmethod
     def versions(
-            self,
-            name,  # type: str
-            details=None,  # type: dict | None
-            spec='*',  # type: str
-            target=None,  # type: str | None
+        self,
+        name,  # type: str
+        details=None,  # type: dict | None
+        spec='*',  # type: str
+        target=None,  # type: str | None
     ):
         # type: (...) -> ComponentWithVersions
         """List of versions for given spec"""

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2016 Python-SemanticVersion project
 # SPDX-License-Identifier: BSD 2-Clause License
-# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
 
 import itertools
 import sys
@@ -40,7 +40,7 @@ class ParsingTestCase(unittest.TestCase):
     valid_fields = [
         ('0.1.1', [0, 1, 1, (), ()]),
         ('0.1.1', [0, 1, 1, None, None]),
-        ('0.1.2-rc1', [0, 1, 2, ('rc1', ), ()]),
+        ('0.1.2-rc1', [0, 1, 2, ('rc1',), ()]),
         ('0.1.2-rc1.3.4', [0, 1, 2, ('rc1', '3', '4'), ()]),
         ('0.1.2+build42-12.2012-01-01.12h23', [0, 1, 2, (), ('build42-12', '2012-01-01', '12h23')]),
         (
@@ -99,11 +99,17 @@ class ComparisonTestCase(unittest.TestCase):
                 second_ver = semver.Version(second)
                 with self.subTest(first=first, second=second):
                     if i < j:
-                        self.assertTrue(first_ver < second_ver, '%r !< %r' % (first_ver, second_ver))
+                        self.assertTrue(
+                            first_ver < second_ver, '%r !< %r' % (first_ver, second_ver)
+                        )
                     elif i == j:
-                        self.assertTrue(first_ver == second_ver, '%r != %r' % (first_ver, second_ver))
+                        self.assertTrue(
+                            first_ver == second_ver, '%r != %r' % (first_ver, second_ver)
+                        )
                     else:
-                        self.assertTrue(first_ver > second_ver, '%r !> %r' % (first_ver, second_ver))
+                        self.assertTrue(
+                            first_ver > second_ver, '%r !> %r' % (first_ver, second_ver)
+                        )
 
                     cmp_res = -1 if i < j else (1 if i > j else 0)
                     self.assertEqual(cmp_res, semver.compare(first, second))

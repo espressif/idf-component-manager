@@ -42,7 +42,7 @@ DEFAULT_EXCLUDE = [
     '**/sdkconfig',
     '**/sdkconfig.old',
     # Hash file
-    '**/.component_hash'
+    '**/.component_hash',
 ]
 
 UNEXPECTED_FILES = {
@@ -51,10 +51,10 @@ UNEXPECTED_FILES = {
 
 
 def filtered_paths(
-        path,  # type: str | Path
-        include=None,  # type: Iterable[str] | None
-        exclude=None,  # type: Iterable[str] | None
-        exclude_default=True,  # type: bool
+    path,  # type: str | Path
+    include=None,  # type: Iterable[str] | None
+    exclude=None,  # type: Iterable[str] | None
+    exclude_default=True,  # type: bool
 ):
     # type: (...) -> set[Path]
     """Returns set of paths that should be included in component archive"""
@@ -82,7 +82,7 @@ def filtered_paths(
         for pattern in DEFAULT_EXCLUDE:
             exclude_paths(pattern)
             if pattern.endswith('/**/*'):
-                exclude_paths(pattern[:pattern.rindex('/**/*')])
+                exclude_paths(pattern[: pattern.rindex('/**/*')])
 
     # Exclude user patterns
     for pattern in exclude:
@@ -120,7 +120,9 @@ def copy_directory(source_directory, destination_directory):  # type: (str, str)
     copytree(source_directory, destination_directory)
 
 
-def copy_directories(source_directory, destination_directory, paths):  # type: (str, str, Iterable[Path]) -> None
+def copy_directories(
+    source_directory, destination_directory, paths
+):  # type: (str, str, Iterable[Path]) -> None
     for path in sorted(paths):
         path = str(path)  # type: ignore # Path backward compatibility
         rel_path = os.path.relpath(path, source_directory)
@@ -152,7 +154,9 @@ def check_unexpected_component_files(path):  # type: (str | Path) -> None
             warn(
                 'Unexpected files "{files}" found in the component directory "{path}". '
                 'Please check if these files should be ignored'.format(
-                    files=', '.join(unexpected_files), path=os.path.relpath(root, start=str(path))))
+                    files=', '.join(unexpected_files), path=os.path.relpath(root, start=str(path))
+                )
+            )
 
 
 def directory_size(dir_path):  # type: (str) -> int

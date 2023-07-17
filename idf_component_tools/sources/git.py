@@ -12,7 +12,12 @@ from ..file_tools import copy_filtered_directory
 from ..git_client import GitClient
 from ..hash_tools import hash_dir
 from ..manifest import (
-    MANIFEST_FILENAME, ComponentVersion, ComponentWithVersions, HashedComponentVersion, ManifestManager)
+    MANIFEST_FILENAME,
+    ComponentVersion,
+    ComponentWithVersions,
+    HashedComponentVersion,
+    ManifestManager,
+)
 from .base import BaseSource
 
 try:
@@ -28,7 +33,9 @@ try:
 except ImportError:
     pass
 
-BRANCH_TAG_RE = re.compile(r'^(?!.*/\.)(?!.*\.\.)(?!/)(?!.*//)(?!.*@\{)(?!.*\\)[^\177\s~^:?*\[]+[^.]$')
+BRANCH_TAG_RE = re.compile(
+    r'^(?!.*/\.)(?!.*\.\.)(?!/)(?!.*//)(?!.*@\{)(?!.*\\)[^\177\s~^:?*\[]+[^.]$'
+)
 
 
 class GitSource(BaseSource):
@@ -42,12 +49,11 @@ class GitSource(BaseSource):
         self._client = GitClient()
 
     def _checkout_git_source(
-            self,
-            version,  # type: str | ComponentVersion | None
-            path,  # type: str
-            selected_paths=None  # type: list[str] | None
+        self,
+        version,  # type: str | ComponentVersion | None
+        path,  # type: str
+        selected_paths=None,  # type: list[str] | None
     ):  # type: (...) -> str
-
         if version is not None:
             version = None if version == '*' else str(version)
         return self._client.prepare_ref(
@@ -56,7 +62,8 @@ class GitSource(BaseSource):
             checkout_path=path,
             ref=version,
             with_submodules=True,
-            selected_paths=selected_paths)
+            selected_paths=selected_paths,
+        )
 
     @staticmethod
     def is_me(name, details):  # type: (str, dict) -> bool
@@ -110,12 +117,17 @@ class GitSource(BaseSource):
 
         temp_dir = tempfile.mkdtemp()
         try:
-            self._checkout_git_source(component.version, temp_dir, selected_paths=[self.component_path])
+            self._checkout_git_source(
+                component.version, temp_dir, selected_paths=[self.component_path]
+            )
             source_path = os.path.join(str(temp_dir), self.component_path)
             if not os.path.isdir(source_path):
                 raise FetchingError(
-                    'Directory {} wasn\'t found for the commit id "{}" of the git repository "{}"'.format(
-                        self.component_path, component.version, self.git_repo))
+                    'Directory {} wasn\'t found for the commit id "{}" of the '
+                    'git repository "{}"'.format(
+                        self.component_path, component.version, self.git_repo
+                    )
+                )
 
             if os.path.isdir(download_path):
                 shutil.rmtree(download_path)
@@ -138,16 +150,22 @@ class GitSource(BaseSource):
         version = None if spec == '*' else spec
         temp_dir = tempfile.mkdtemp()
         try:
-            commit_id = self._checkout_git_source(version, temp_dir, selected_paths=[self.component_path])
+            commit_id = self._checkout_git_source(
+                version, temp_dir, selected_paths=[self.component_path]
+            )
             source_path = os.path.join(str(temp_dir), self.component_path)
 
             if not os.path.isdir(source_path):
                 dependency_description = 'commit id "{}"'.format(commit_id)
                 if version:
-                    dependency_description = 'version "{}" ({})'.format(version, dependency_description)
+                    dependency_description = 'version "{}" ({})'.format(
+                        version, dependency_description
+                    )
                 raise FetchingError(
                     'Directory {} wasn\'t found for the {} of the git repository "{}"'.format(
-                        self.component_path, dependency_description, self.git_repo))
+                        self.component_path, dependency_description, self.git_repo
+                    )
+                )
 
             manifest_path = os.path.join(source_path, MANIFEST_FILENAME)
             targets = []
@@ -160,8 +178,9 @@ class GitSource(BaseSource):
                 if manifest.targets:  # only check when exists
                     if target and target not in manifest.targets:
                         raise FetchingError(
-                            'Version "{}" (commit id "{}") of the component "{}" does not support target "{}"'.format(
-                                version, commit_id, name, target))
+                            'Version "{}" (commit id "{}") of the component "{}" '
+                            'does not support target "{}"'.format(version, commit_id, name, target)
+                        )
 
                     targets = manifest.targets
 
@@ -173,7 +192,11 @@ class GitSource(BaseSource):
             name=name,
             versions=[
                 HashedComponentVersion(
-                    commit_id, targets=targets, component_hash=component_hash, dependencies=dependencies)
+                    commit_id,
+                    targets=targets,
+                    component_hash=component_hash,
+                    dependencies=dependencies,
+                )
             ],
         )
 

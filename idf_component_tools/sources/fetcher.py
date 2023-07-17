@@ -8,7 +8,12 @@ from io import open
 from ..build_system_tools import build_name
 from ..errors import ComponentModifiedError, InvalidComponentHashError
 from ..hash_tools import (
-    HASH_FILENAME, HashDoesNotExistError, HashNotEqualError, HashNotSHA256Error, validate_managed_component_hash)
+    HASH_FILENAME,
+    HashDoesNotExistError,
+    HashNotEqualError,
+    HashNotSHA256Error,
+    validate_managed_component_hash,
+)
 from ..manifest import SolvedComponent
 
 try:
@@ -38,15 +43,16 @@ class ComponentFetcher(object):
             validate_managed_component_hash(self.managed_path)
         except HashNotEqualError:
             raise ComponentModifiedError(
-                'Component directory was modified on the disk since the last run of '
-                'the CMake')
+                'Component directory was modified on the disk since the last run of ' 'the CMake'
+            )
         except HashNotSHA256Error:
             raise InvalidComponentHashError(
                 'File .component_hash for component "{}" in the managed '
                 'components directory cannot be parsed. This file is used by the '
                 'component manager for component integrity checks. If this file '
                 'exists in the component source, please ask the component '
-                'maintainer to remove it.'.format(self.component.name))
+                'maintainer to remove it.'.format(self.component.name)
+            )
         except HashDoesNotExistError:
             pass
 

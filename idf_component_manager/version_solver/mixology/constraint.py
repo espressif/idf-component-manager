@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
 
 try:
     from typing import Union as _Union
@@ -18,6 +18,7 @@ class Constraint(object):
     """
     A term constraint.
     """
+
     def __init__(self, package, constraint):  # type: (Package, _Union[Range, Union]) -> None
         self._package = package
         self._constraint = constraint

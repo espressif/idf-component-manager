@@ -60,16 +60,17 @@ def hash_file(file_path):  # type: (Text | Path) -> str
 
 
 def hash_dir(
-        root,  # type: Text | Path
-        exclude=None,  # type: Iterable[Text] | None
-        exclude_default=True  # type: bool
+    root,  # type: Text | Path
+    exclude=None,  # type: Iterable[Text] | None
+    exclude_default=True,  # type: bool
 ):  # type: (...) -> str
     """Calculate sha256 of sha256 of all files and file names."""
     sha = sha256()
 
     paths = sorted(
         filtered_paths(root, exclude=exclude, exclude_default=exclude_default),
-        key=lambda path: path.relative_to(root).as_posix())
+        key=lambda path: path.relative_to(root).as_posix(),
+    )
     for file_path in paths:
         if file_path.is_dir():
             continue
@@ -84,14 +85,16 @@ def hash_dir(
 
 
 def validate_dir(
-        root,  # type: Text | Path
-        dir_hash,  # type: Text
-        exclude=None,  # type: Iterable[Text] | None
-        exclude_default=True  # type: bool
+    root,  # type: Text | Path
+    dir_hash,  # type: Text
+    exclude=None,  # type: Iterable[Text] | None
+    exclude_default=True,  # type: bool
 ):
     # type: (...) -> bool
     """Check if directory hash is the same as provided"""
-    current_hash = Path(root).is_dir() and hash_dir(root, exclude=exclude, exclude_default=exclude_default)
+    current_hash = Path(root).is_dir() and hash_dir(
+        root, exclude=exclude, exclude_default=exclude_default
+    )
     return current_hash == dir_hash
 
 

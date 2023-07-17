@@ -48,7 +48,9 @@ def inject_requirements(args):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Tool to be used by CMake build system to prepare components from package manager.')
+        description='Tool to be used by CMake build system to '
+        'prepare components from package manager.'
+    )
 
     parser.add_argument('--project_dir', help='Project directory')
 
@@ -71,7 +73,9 @@ def main():
     subparsers.required = True
 
     prepare_step = subparsers.add_parser(
-        'prepare_dependencies', help='Solve and download dependencies and provide directories to build system')
+        'prepare_dependencies',
+        help='Solve and download dependencies and provide directories to build system',
+    )
     prepare_step.set_defaults(func=prepare_dep_dirs)
     prepare_step.add_argument(
         '--managed_components_list_file',
@@ -82,7 +86,8 @@ def main():
         '--local_components_list_file',
         help=(
             'Path to file with list of components discovered by build system (input). '
-            'Only "components" directory will be processed if argument is not provided'),
+            'Only "components" directory will be processed if argument is not provided'
+        ),
         required=False,
     )
     prepare_step.add_argument(
@@ -96,14 +101,16 @@ def main():
             'name': 'inject_requirements',
         },
         {
-            'name': 'inject_requrements',  # Workaround for the typo in idf 4.1-4.2 (Remove after ESP-IDF 4.3 EOL)
+            # Workaround for the typo in idf 4.1-4.2 (Remove after ESP-IDF 4.3 EOL)
+            'name': 'inject_requrements',
             'extra_help': ' (alias)',
-        }
+        },
     ]
 
     for step in inject_step_data:
         inject_step = subparsers.add_parser(
-            step['name'], help='Inject requirements to CMake%s' % step.get('extra_help', ''))
+            step['name'], help='Inject requirements to CMake%s' % step.get('extra_help', '')
+        )
         inject_step.set_defaults(func=inject_requirements)
         inject_step.add_argument(
             '--component_requires_file',

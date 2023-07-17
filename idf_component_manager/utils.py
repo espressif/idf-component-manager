@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import re
 
@@ -6,11 +6,6 @@ import click
 from packaging import version
 
 from idf_component_tools.errors import UserHint
-
-try:
-    from typing import Any
-except ImportError:
-    pass
 
 CLICK_SUPPORTS_SHOW_DEFAULT = version.parse(click.__version__) >= version.parse('7.1.0')
 
@@ -40,13 +35,13 @@ def showwarning(message, category, filename, lineno, file=None, line=None):
 
 
 def print_info(
-        message,  # type: str
-        fg=None,  # type: str | None
-        bg=None,  # type: str | None
-        bold=None,  # type: str | None
-        underline=None,  # type: str | None
-        blink=None,  # type: str | None
-        **kwargs  # type: 'Any'
+    message,  # type: str
+    fg=None,  # type: str | None
+    bg=None,  # type: str | None
+    bold=None,  # type: str | None
+    underline=None,  # type: str | None
+    blink=None,  # type: str | None
+    **kwargs
 ):  # type: (...) -> None
     click.secho(message, fg=fg, bg=bg, bold=bold, underline=underline, blink=blink, **kwargs)
 

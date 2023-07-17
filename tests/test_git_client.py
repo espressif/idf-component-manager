@@ -27,7 +27,9 @@ def git_repository_with_two_branches(tmpdir_factory):
     subprocess.check_output(['git', 'add', '*'], cwd=temp_dir.strpath)
     subprocess.check_output(['git', 'commit', '-m', '"Init commit"'], cwd=temp_dir.strpath)
 
-    main_commit_id = subprocess.check_output(['git', 'rev-parse', 'default'], cwd=temp_dir.strpath).strip()
+    main_commit_id = subprocess.check_output(
+        ['git', 'rev-parse', 'default'], cwd=temp_dir.strpath
+    ).strip()
 
     subprocess.check_output(['git', 'checkout', '-b', 'new_branch'], cwd=temp_dir.strpath)
 
@@ -37,13 +39,15 @@ def git_repository_with_two_branches(tmpdir_factory):
     subprocess.check_output(['git', 'add', '*'], cwd=temp_dir.strpath)
     subprocess.check_output(['git', 'commit', '-m', '"Add new branch"'], cwd=temp_dir.strpath)
 
-    branch_commit_id = subprocess.check_output(['git', 'rev-parse', 'new_branch'], cwd=temp_dir.strpath).strip()
+    branch_commit_id = subprocess.check_output(
+        ['git', 'rev-parse', 'new_branch'], cwd=temp_dir.strpath
+    ).strip()
     subprocess.check_output(['git', 'checkout', 'default'], cwd=temp_dir.strpath)
 
     return {
         'path': temp_dir.strpath,
         'default_head': main_commit_id.decode('utf-8'),
-        'new_branch_head': branch_commit_id.decode('utf-8')
+        'new_branch_head': branch_commit_id.decode('utf-8'),
     }
 
 
@@ -53,7 +57,9 @@ def test_bare_repository_in_cache(tmpdir_factory):
     checkout_path = tmpdir_factory.mktemp('checkout_folder').strpath
     cache_path = tmpdir_factory.mktemp('cache_folder').strpath
     try:
-        client.prepare_ref(repo=git_repo, bare_path=cache_path, checkout_path=checkout_path, with_submodules=True)
+        client.prepare_ref(
+            repo=git_repo, bare_path=cache_path, checkout_path=checkout_path, with_submodules=True
+        )
     except GitError:
         config_file = os.path.join(cache_path, 'config')
 
@@ -68,7 +74,8 @@ def test_working_with_git_without_branch(git_repository_with_two_branches, tmpdi
     checkout_path = tmpdir_factory.mktemp('checkout_folder').strpath
     cache_path = tmpdir_factory.mktemp('cache_folder').strpath
     commit_id = client.prepare_ref(
-        repo=git_repo, bare_path=cache_path, checkout_path=checkout_path, with_submodules=True)
+        repo=git_repo, bare_path=cache_path, checkout_path=checkout_path, with_submodules=True
+    )
     assert commit_id == git_repository_with_two_branches['default_head']
 
 
@@ -83,7 +90,8 @@ def test_working_with_git_with_branch(git_repository_with_two_branches, tmpdir_f
         checkout_path=checkout_path,
         ref='new_branch',
         with_submodules=True,
-        selected_paths=['component2'])
+        selected_paths=['component2'],
+    )
     assert commit_id == git_repository_with_two_branches['new_branch_head']
 
 
@@ -99,7 +107,8 @@ def test_git_branch_does_not_exist(git_repository_with_two_branches, tmpdir_fact
             checkout_path=checkout_path,
             ref='branch_not_exists',
             with_submodules=True,
-            selected_paths=['component2'])
+            selected_paths=['component2'],
+        )
 
 
 def test_git_path_does_not_exist(git_repository_with_two_branches, tmpdir_factory):
@@ -107,11 +116,14 @@ def test_git_path_does_not_exist(git_repository_with_two_branches, tmpdir_factor
     git_repo = git_repository_with_two_branches['path']
     checkout_path = tmpdir_factory.mktemp('checkout_folder').strpath
     cache_path = tmpdir_factory.mktemp('cache_folder').strpath
-    with pytest.raises(GitError, match=r"pathspec 'path_not_exists' did not match any file\(s\) known to git"):
+    with pytest.raises(
+        GitError, match=r"pathspec 'path_not_exists' did not match any file\(s\) known to git"
+    ):
         client.prepare_ref(
             repo=git_repo,
             bare_path=cache_path,
             checkout_path=checkout_path,
             ref='new_branch',
             with_submodules=True,
-            selected_paths=['path_not_exists'])
+            selected_paths=['path_not_exists'],
+        )

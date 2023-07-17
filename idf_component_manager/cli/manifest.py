@@ -12,7 +12,6 @@ from .utils import add_options
 
 
 def init_manifest():
-
     PROJECT_DIR_OPTION = get_project_dir_option()
     SERVICE_PROFILE_OPTION = get_service_profile_option()
 
@@ -36,7 +35,8 @@ def init_manifest():
             '-p',
             '--path',
             default=None,
-            help='Path to the component. The component name is ignored when the path is specified.')
+            help='Path to the component. The component name is ignored when the path is specified.',
+        ),
     ]
 
     @manifest.command()
@@ -81,6 +81,8 @@ def init_manifest():
         - $ compote manifest add-dependency example/cmp<=3.3.3
           Will add a component `example/cmp` with constraint `<=3.3.3`
         """
-        manager.add_dependency(dependency, service_profile=service_profile, component=component, path=path)
+        manager.add_dependency(
+            dependency, service_profile=service_profile, component=component, path=path
+        )
 
     return manifest

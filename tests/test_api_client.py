@@ -33,10 +33,7 @@ class TestAPIClient(object):
                 'in': ['https://test.com:4323/api/', 'a/a/'],
                 'out': 'https://test.com:4323/api/a/a',
             },
-            {
-                'in': ['', 'a/a/'],
-                'out': '/a/a'
-            },
+            {'in': ['', 'a/a/'], 'out': '/a/a'},
         ]
 
         for test in tests:
@@ -119,7 +116,8 @@ class TestAPIClient(object):
         client = APIClient(base_url, storage_url=storage_url)
 
         assert client.component(component_name='example/cmp').download_url == os.path.join(
-            storage_url, '5390a837-5bc7-4564-b747-3adb22ad55f8.tgz')
+            storage_url, '5390a837-5bc7-4564-b747-3adb22ad55f8.tgz'
+        )
 
     def test_no_registry_url_error(self, monkeypatch):
         monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'http://localhost:9000/test-public')
@@ -155,13 +153,16 @@ class TestAPIClient(object):
             client.component(component_name='example/cmp_yanked', version=version)
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
-    @pytest.mark.parametrize('version', [
-        '>1.0.0',
-        '^1.0.0',
-        '1.*.*',
-        '*',
-        None,
-    ])
+    @pytest.mark.parametrize(
+        'version',
+        [
+            '>1.0.0',
+            '^1.0.0',
+            '1.*.*',
+            '*',
+            None,
+        ],
+    )
     def test_filter_yanked_version(self, base_url, version):
         client = APIClient(base_url=base_url)
         result = client.component(component_name='example/cmp_yanked', version=version)
@@ -173,12 +174,12 @@ class TestAPIClient(object):
         response = client.token_information()
 
         for k, v in {
-                'access_token_prefix': 'abc123',
-                'scope': 'user',
-                'description': 'test token',
-                'expires_at': None,
-                'created_at': '2022-01-01T00:00:00Z',
-                'id': '123',
+            'access_token_prefix': 'abc123',
+            'scope': 'user',
+            'description': 'test token',
+            'expires_at': None,
+            'created_at': '2022-01-01T00:00:00Z',
+            'id': '123',
         }.items():
             assert response[k] == v
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
 
 try:
     from typing import Optional
@@ -15,6 +15,7 @@ class Package(object):
     """
     A project's package.
     """
+
     ROOT_PACKAGE_NAME = '_root_'
 
     def __init__(self, name, source=None):  # type: (str, Optional[BaseSource]) -> None

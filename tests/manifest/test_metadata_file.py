@@ -29,10 +29,12 @@ def test_metadata(tmp_path, valid_manifest):
 
 
 @pytest.mark.parametrize(
-    's, key, types', [
+    's, key, types',
+    [
         ('files-exclude-type:array-type:string', 'exclude', 'array of string'),
         ('dependencies-*-public-type:boolean', 'public', 'boolean'),
         ('maintainers-type:array-type:string', 'maintainers', 'array of string'),
-    ])
+    ],
+)
 def test_metadata_get_key_and_types(s, key, types):
     assert key, types == Metadata.get_closest_manifest_key_and_type(s)

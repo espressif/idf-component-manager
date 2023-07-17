@@ -17,24 +17,57 @@ from pathlib import Path
 import requests
 
 from idf_component_manager.utils import print_info, print_warn
-from idf_component_tools.api_client_errors import APIClientError, ComponentNotFound, NetworkConnectionError
+from idf_component_tools.api_client_errors import (
+    APIClientError,
+    ComponentNotFound,
+    NetworkConnectionError,
+)
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name, is_component
 from idf_component_tools.environment import getenv_int
 from idf_component_tools.errors import (
-    FatalError, GitError, ManifestError, NothingToDoError, VersionAlreadyExistsError, VersionNotFoundError)
-from idf_component_tools.file_tools import check_unexpected_component_files, copy_filtered_directory, create_directory
+    FatalError,
+    GitError,
+    ManifestError,
+    NothingToDoError,
+    VersionAlreadyExistsError,
+    VersionNotFoundError,
+)
+from idf_component_tools.file_tools import (
+    check_unexpected_component_files,
+    copy_filtered_directory,
+    create_directory,
+)
 from idf_component_tools.git_client import GitClient
 from idf_component_tools.hash_tools import (
-    HashDoesNotExistError, HashNotEqualError, HashNotSHA256Error, validate_managed_component_hash)
+    HashDoesNotExistError,
+    HashNotEqualError,
+    HashNotSHA256Error,
+    validate_managed_component_hash,
+)
 from idf_component_tools.manifest import (
-    MANIFEST_FILENAME, WEB_DEPENDENCY_REGEX, Manifest, ManifestManager, ProjectRequirements)
+    MANIFEST_FILENAME,
+    WEB_DEPENDENCY_REGEX,
+    Manifest,
+    ManifestManager,
+    ProjectRequirements,
+)
 from idf_component_tools.semver import SimpleSpec, Version
 from idf_component_tools.sources import WebServiceSource
 
-from .cmake_component_requirements import CMakeRequirementsManager, ComponentName, handle_project_requirements
+from .cmake_component_requirements import (
+    CMakeRequirementsManager,
+    ComponentName,
+    handle_project_requirements,
+)
 from .core_utils import (
-    ProgressBar, archive_filename, copy_examples_folders, dist_name, parse_example, raise_component_modified_error)
+    ProgressBar,
+    archive_filename,
+    copy_examples_folders,
+    dist_name,
+    parse_example,
+    raise_component_modified_error,
+)
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
 from .service_details import service_details
@@ -52,7 +85,8 @@ def get_processing_timeout():
     except ValueError:
         print_warn(
             'Cannot parse value of COMPONENT_MANAGER_JOB_TIMEOUT.'
-            ' It should be number of seconds to wait for job result.')
+            ' It should be number of seconds to wait for job result.'
+        )
         return 300
 
 
@@ -67,7 +101,9 @@ def general_error_handler(func):
             return func(self, *args, **kwargs)
         except NetworkConnectionError:
             raise FatalError(
-                'Cannot establish a connection to the component registry. Are you connected to the internet?')
+                'Cannot establish a connection to the component registry. '
+                'Are you connected to the internet?'
+            )
         except APIClientError as e:
             raise FatalError(e)
 
@@ -78,7 +114,9 @@ def _create_manifest_if_missing(manifest_dir):  # type: (str) -> bool
     manifest_filepath = os.path.join(manifest_dir, MANIFEST_FILENAME)
     if os.path.exists(manifest_filepath):
         return False
-    example_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'templates', 'idf_component_template.yml')
+    example_path = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), 'templates', 'idf_component_template.yml'
+    )
     create_directory(manifest_dir)
     shutil.copyfile(example_path, manifest_filepath)
     print_info('Created "{}"'.format(manifest_filepath))
@@ -98,7 +136,8 @@ class ComponentManager(object):
 
         # Set path of the manifest file for the project's main component
         self.main_manifest_path = manifest_path or (
-            os.path.join(path, 'main', MANIFEST_FILENAME) if os.path.isdir(path) else path)
+            os.path.join(path, 'main', MANIFEST_FILENAME) if os.path.isdir(path) else path
+        )
         self.main_component_path = os.path.normpath(self.main_component_path)
 
         # Lock path
@@ -125,7 +164,9 @@ class ComponentManager(object):
 
     def _get_manifest_dir(self, component='main', path=None):  # type: (str, Optional[str]) -> str
         if component != 'main' and path is not None:
-            raise FatalError('Cannot determine manifest directory. Please specify either component or path.')
+            raise FatalError(
+                'Cannot determine manifest directory. Please specify either component or path.'
+            )
 
         # If path is specified
         if path is not None:
@@ -141,15 +182,21 @@ class ComponentManager(object):
         if not os.path.isdir(manifest_dir):
             raise FatalError(
                 'Directory "{}" does not exist! '
-                'Please specify a valid component under {} or try to use --path'.format(manifest_dir, self.path))
+                'Please specify a valid component under {} or try to use --path'.format(
+                    manifest_dir, self.path
+                )
+            )
         if not manifest_dir.startswith(self.path):
             raise FatalError(
                 'Directory "{}" is not under project directory! '
-                'Please specify a valid component under {}'.format(manifest_dir, self.path))
+                'Please specify a valid component under {}'.format(manifest_dir, self.path)
+            )
 
         return manifest_dir
 
-    def _get_manifest(self, component='main', path=None):  # type: (str, Optional[str]) -> Tuple[str, bool]
+    def _get_manifest(
+        self, component='main', path=None
+    ):  # type: (str, Optional[str]) -> Tuple[str, bool]
         manifest_dir = self._get_manifest_dir(component=component, path=path)
         manifest_filepath = os.path.join(manifest_dir, MANIFEST_FILENAME)
         # Create manifest file if it doesn't exist in work directory
@@ -172,38 +219,48 @@ class ComponentManager(object):
 
         if os.path.isfile(project_path):
             raise FatalError(
-                'Your target path is not a directory. Please remove the {} or use different target path.'.format(
-                    os.path.abspath(project_path)),
-                exit_code=4)
+                'Your target path is not a directory. '
+                'Please remove the {} or use different target path.'.format(
+                    os.path.abspath(project_path)
+                ),
+                exit_code=4,
+            )
 
         if os.path.isdir(project_path) and os.listdir(project_path):
             raise FatalError(
-                'The directory {} is not empty. To create an example you must empty the directory or '
+                'The directory {} is not empty. '
+                'To create an example you must empty the directory or '
                 'choose a different path.'.format(project_path),
-                exit_code=3)
+                exit_code=3,
+            )
 
         component_details = client.component(component_name=component_name, version=version_spec)
 
         try:
-            example_url = [example for example in component_details.examples if example_name == example['name']][-1]
+            example_url = [
+                example for example in component_details.examples if example_name == example['name']
+            ][-1]
         except IndexError:
             raise FatalError(
-                'Cannot find example "{}" for "{}" version "{}"'.format(example_name, component_name, version_spec),
-                exit_code=2)
+                'Cannot find example "{}" for "{}" version "{}"'.format(
+                    example_name, component_name, version_spec
+                ),
+                exit_code=2,
+            )
 
         response = requests.get(example_url['url'], stream=True)
         with tarfile.open(fileobj=response.raw, mode='r|gz') as tar:
             tar.extractall(project_path)
-        print_info('Example "{}" successfully downloaded to {}'.format(example_name, os.path.abspath(project_path)))
+        print_info(
+            'Example "{}" successfully downloaded to {}'.format(
+                example_name, os.path.abspath(project_path)
+            )
+        )
 
     @general_error_handler
     def add_dependency(
-            self,
-            dependency,
-            component='main',
-            path=None,
-            service_profile=None):  # type: (str, str, Optional[str], str | None) -> None
-
+        self, dependency, component='main', path=None, service_profile=None
+    ):  # type: (str, str, Optional[str], str | None) -> None
         client, _ = service_details(None, service_profile, token_required=False)
 
         manifest_filepath, _ = self._get_manifest(component=component, path=path)
@@ -211,7 +268,8 @@ class ComponentManager(object):
         if path is not None:
             component_path = os.path.abspath(path)
             component = os.path.basename(component_path)
-        # If the path refers to a component context we need to use the components name as the component
+        # If the path refers to a component context
+        # we need to use the components name as the component
         elif is_component(Path(os.getcwd())):
             component = os.path.basename(os.path.normpath(self.path))
 
@@ -219,7 +277,9 @@ class ComponentManager(object):
         if match:
             name, spec = match.groups()
         else:
-            raise FatalError('Invalid dependency: "{}". Please use format "namespace/name".'.format(dependency))
+            raise FatalError(
+                'Invalid dependency: "{}". Please use format "namespace/name".'.format(dependency)
+            )
 
         if not spec:
             spec = '*'
@@ -228,7 +288,9 @@ class ComponentManager(object):
             SimpleSpec(spec)
         except ValueError:
             raise FatalError(
-                'Invalid dependency version requirement: {}. Please use format like ">=1" or "*".'.format(spec))
+                'Invalid dependency version requirement: {}. '
+                'Please use format like ">=1" or "*".'.format(spec)
+            )
 
         name = WebServiceSource().normalized_name(name)
 
@@ -240,7 +302,11 @@ class ComponentManager(object):
 
         for dep in manifest.dependencies:
             if dep.name == name:
-                raise FatalError('Dependency "{}" already exists for in manifest "{}"'.format(name, manifest_filepath))
+                raise FatalError(
+                    'Dependency "{}" already exists for in manifest "{}"'.format(
+                        name, manifest_filepath
+                    )
+                )
 
         with open(manifest_filepath, 'r', encoding='utf-8') as file:
             file_lines = file.readlines()
@@ -266,15 +332,22 @@ class ComponentManager(object):
         except ManifestError:
             raise ManifestError(
                 'Cannot update manifest file. '
-                "It's likely due to the 4 spaces used for indentation we recommend using 2 spaces indent. "
-                'Please check the manifest file:\n{}'.format(manifest_filepath))
+                "It's likely due to the 4 spaces used for "
+                'indentation we recommend using 2 spaces indent. '
+                'Please check the manifest file:\n{}'.format(manifest_filepath)
+            )
 
         shutil.move(temp_manifest_file.name, manifest_filepath)
-        print_info('Successfully added dependency "{}{}" to component "{}"'.format(name, spec, manifest_manager.name))
+        print_info(
+            'Successfully added dependency "{}{}" to component "{}"'.format(
+                name, spec, manifest_manager.name
+            )
+        )
 
     @general_error_handler
-    def pack_component(self, name, version, dest_dir=None):  # type: (str, str, Optional[str]) -> Tuple[str, Manifest]
-
+    def pack_component(
+        self, name, version, dest_dir=None
+    ):  # type: (str, str, Optional[str]) -> Tuple[str, Manifest]
         dest_path = os.path.join(self.path, dest_dir) if dest_dir else self.dist_path
 
         if version == 'git':
@@ -286,9 +359,13 @@ class ComponentManager(object):
             try:
                 Version.parse(version)
             except ValueError:
-                raise FatalError('Version parameter must be either "git" or a valid semantic version')
+                raise FatalError(
+                    'Version parameter must be either "git" or a valid semantic version'
+                )
 
-        manifest_manager = ManifestManager(self.path, name, check_required_fields=True, version=version)
+        manifest_manager = ManifestManager(
+            self.path, name, check_required_fields=True, version=version
+        )
         manifest = manifest_manager.load()
         dest_temp_dir = Path(dest_path, dist_name(manifest))
         include = set(manifest.files['include'])
@@ -296,7 +373,9 @@ class ComponentManager(object):
         copy_filtered_directory(self.path, str(dest_temp_dir), include=include, exclude=exclude)
 
         if manifest.examples:
-            copy_examples_folders(manifest.examples, Path(self.path), dest_temp_dir, include=include, exclude=exclude)
+            copy_examples_folders(
+                manifest.examples, Path(self.path), dest_temp_dir, include=include, exclude=exclude
+            )
 
         manifest_manager.dump(str(dest_temp_dir))
 
@@ -309,11 +388,11 @@ class ComponentManager(object):
 
     @general_error_handler
     def delete_version(
-            self,
-            name,  # type: str
-            version,  # type: str
-            service_profile=None,  # type: str | None
-            namespace=None  # type: str | None
+        self,
+        name,  # type: str
+        version,  # type: str
+        service_profile=None,  # type: str | None
+        namespace=None,  # type: str | None
     ):  # type: (...) -> None
         client, namespace = service_details(namespace, service_profile)
 
@@ -326,19 +405,22 @@ class ComponentManager(object):
 
         if version not in versions:
             raise VersionNotFoundError(
-                'Version {} of the component "{}" is not on the registry'.format(version, component_name))
+                'Version {} of the component "{}" is not on the registry'.format(
+                    version, component_name
+                )
+            )
 
         client.delete_version(component_name=component_name, component_version=version)
         print_info('Deleted version {} of the component {}'.format(component_name, version))
 
     @general_error_handler
     def yank_version(
-            self,
-            name,  # type: str
-            version,  # type: str
-            message,  # type: str
-            service_profile=None,  # type: str | None
-            namespace=None  # type: str | None
+        self,
+        name,  # type: str
+        version,  # type: str
+        message,  # type: str
+        service_profile=None,  # type: str | None
+        namespace=None,  # type: str | None
     ):
         client, namespace = service_details(namespace, service_profile)
         component_name = '/'.join([namespace, name])
@@ -347,14 +429,24 @@ class ComponentManager(object):
 
         if version not in versions:
             raise VersionNotFoundError(
-                'Version {} of the component "{}" is not on the registry'.format(version, component_name))
+                'Version {} of the component "{}" is not on the registry'.format(
+                    version, component_name
+                )
+            )
 
-        client.yank_version(component_name=component_name, component_version=version, yank_message=message)
+        client.yank_version(
+            component_name=component_name, component_version=version, yank_message=message
+        )
         print_info(
-            'Version {} of the component {} was yanked due to reason "{}"'.format(component_name, version, message))
+            'Version {} of the component {} was yanked due to reason "{}"'.format(
+                component_name, version, message
+            )
+        )
 
     @general_error_handler
-    def remove_managed_components(self, **kwargs):  # kwargs here to keep idf_extension.py compatibility
+    def remove_managed_components(
+        self, **kwargs
+    ):  # kwargs here to keep idf_extension.py compatibility
         managed_components_dir = Path(self.path, 'managed_components')
 
         if not managed_components_dir.is_dir():
@@ -362,7 +454,6 @@ class ComponentManager(object):
 
         undeleted_components = []
         for component_dir in managed_components_dir.glob('*/'):
-
             if not (managed_components_dir / component_dir).is_dir():
                 continue
 
@@ -382,17 +473,18 @@ class ComponentManager(object):
 
     @general_error_handler
     def upload_component(
-            self,
-            name,  # type: str
-            version=None,  # type: str | None
-            service_profile=None,  # type: str | None
-            namespace=None,  # type: str | None
-            archive=None,  # type: str | None
-            skip_pre_release=False,  # type: bool
-            check_only=False,  # type: bool
-            allow_existing=False,  # type: bool
-            dry_run=False,  # type: bool
-            dest_dir=None):  # type: (...) -> None
+        self,
+        name,  # type: str
+        version=None,  # type: str | None
+        service_profile=None,  # type: str | None
+        namespace=None,  # type: str | None
+        archive=None,  # type: str | None
+        skip_pre_release=False,  # type: bool
+        check_only=False,  # type: bool
+        allow_existing=False,  # type: bool
+        dry_run=False,  # type: bool
+        dest_dir=None,
+    ):  # type: (...) -> None
         client, namespace = service_details(namespace, service_profile)
 
         if archive:
@@ -400,7 +492,9 @@ class ComponentManager(object):
                 raise FatalError('Cannot find archive to upload: {}'.format(archive))
 
             if version:
-                raise FatalError('Parameters "version" and "archive" are not supported at the same time')
+                raise FatalError(
+                    'Parameters "version" and "archive" are not supported at the same time'
+                )
 
             tempdir = tempfile.mkdtemp()
             try:
@@ -431,7 +525,9 @@ class ComponentManager(object):
 
                 raise VersionAlreadyExistsError(
                     'Version {} of the component "{}" is already on the registry'.format(
-                        manifest.version, component_name))
+                        manifest.version, component_name
+                    )
+                )
         except ComponentNotFound:
             # It's ok if component doesn't exist yet
             pass
@@ -443,13 +539,16 @@ class ComponentManager(object):
         # Uploading/validating the component
         info_message = 'Uploading' if not dry_run else 'Validating'
         print_info('%s archive %s' % (info_message, archive))
-        job_id = client.upload_version(component_name=component_name, file_path=archive, validate_only=dry_run)
+        job_id = client.upload_version(
+            component_name=component_name, file_path=archive, validate_only=dry_run
+        )
 
         # Wait for processing
         print_info(
             'Wait for processing, it is safe to press CTRL+C and exit\n'
             'You can check the state of processing by running CLI command '
-            '"compote component upload-status --job=%s"' % job_id)
+            '"compote component upload-status --job=%s"' % job_id
+        )
 
         timeout_at = datetime.now() + timedelta(seconds=get_processing_timeout())
 
@@ -471,9 +570,14 @@ class ComponentManager(object):
                     if status.status == 'failure':
                         if dry_run:
                             raise FatalError(
-                                'Uploaded version did not pass validation successfully.\n%s' % status.message)
+                                'Uploaded version did not pass validation successfully.\n%s'
+                                % status.message
+                            )
                         else:
-                            raise FatalError("Uploaded version wasn't processed successfully.\n%s" % status.message)
+                            raise FatalError(
+                                "Uploaded version wasn't processed successfully.\n%s"
+                                % status.message
+                            )
                     elif status.status == 'success':
                         return
 
@@ -481,10 +585,14 @@ class ComponentManager(object):
         except TimeoutError:
             raise FatalError(
                 "Component wasn't processed in {} seconds. Check processing status later.".format(
-                    get_processing_timeout()))
+                    get_processing_timeout()
+                )
+            )
 
     @general_error_handler
-    def upload_component_status(self, job_id, service_profile=None):  # type: (str, str | None) -> None
+    def upload_component_status(
+        self, job_id, service_profile=None
+    ):  # type: (str, str | None) -> None
         client, _ = service_details(None, service_profile)
         status = client.task_status(job_id=job_id)
         if status.status == 'failure':
@@ -493,7 +601,9 @@ class ComponentManager(object):
             print_info('Status: %s. %s' % (status.status, status.message))
 
     @general_error_handler
-    def prepare_dep_dirs(self, managed_components_list_file, component_list_file, local_components_list_file=None):
+    def prepare_dep_dirs(
+        self, managed_components_list_file, component_list_file, local_components_list_file=None
+    ):
         '''Process all manifests and download all dependencies'''
         # Find all components
         local_components = []
@@ -504,15 +614,15 @@ class ComponentManager(object):
 
             if os.path.isdir(self.components_path):
                 local_components.extend(
-                    {
-                        'name': item,
-                        'path': os.path.join(self.components_path, item)
-                    } for item in os.listdir(self.components_path)
-                    if os.path.isdir(os.path.join(self.components_path, item)))
+                    {'name': item, 'path': os.path.join(self.components_path, item)}
+                    for item in os.listdir(self.components_path)
+                    if os.path.isdir(os.path.join(self.components_path, item))
+                )
 
         # Check that CMakeLists.txt and idf_component.yml exists for all component dirs
         local_components = [
-            component for component in local_components
+            component
+            for component in local_components
             if os.path.isfile(os.path.join(component['path'], 'CMakeLists.txt'))
             and os.path.isfile(os.path.join(component['path'], MANIFEST_FILENAME))
         ]
@@ -526,35 +636,50 @@ class ComponentManager(object):
                 manifests.append(ManifestManager(component['path'], component['name']).load())
 
             project_requirements = ProjectRequirements(manifests)
-            downloaded_component_paths, downloaded_component_version_dict = download_project_dependencies(
-                project_requirements, self.lock_path, self.managed_components_path)
+            (
+                downloaded_component_paths,
+                downloaded_component_version_dict,
+            ) = download_project_dependencies(
+                project_requirements, self.lock_path, self.managed_components_path
+            )
 
         # Exclude requirements paths
         downloaded_component_paths -= {component['path'] for component in local_components}
         # Change relative paths to absolute paths
-        downloaded_component_paths = {os.path.abspath(path) for path in list(downloaded_component_paths)}
+        downloaded_component_paths = {
+            os.path.abspath(path) for path in list(downloaded_component_paths)
+        }
         # Include managed components in project directory
         with open(managed_components_list_file, mode='w', encoding='utf-8') as file:
             for component_path in sorted(downloaded_component_paths):
                 file.write(u'idf_build_component("%s")\n' % Path(component_path).as_posix())
                 component_name = Path(component_path).name
                 file.write(
-                    u'idf_component_set_property(%s %s "%s")\n' %
-                    (component_name, 'COMPONENT_VERSION', downloaded_component_version_dict[component_path]))
+                    u'idf_component_set_property(%s %s "%s")\n'
+                    % (
+                        component_name,
+                        'COMPONENT_VERSION',
+                        downloaded_component_version_dict[component_path],
+                    )
+                )
 
-            component_names = ';'.join(os.path.basename(path) for path in downloaded_component_paths)
+            component_names = ';'.join(
+                os.path.basename(path) for path in downloaded_component_paths
+            )
             file.write(u'set(managed_components "%s")\n' % component_names)
 
         # Saving list of all components with manifests for use on requirements injection step
-        all_components = sorted(downloaded_component_paths.union(component['path'] for component in local_components))
+        all_components = sorted(
+            downloaded_component_paths.union(component['path'] for component in local_components)
+        )
         with open(component_list_file, mode='w', encoding='utf-8') as file:
             file.write(u'\n'.join(all_components))
 
     @general_error_handler
     def inject_requirements(
-            self,
-            component_requires_file,  # type: Path | str
-            component_list_file,  # type: Path | str
+        self,
+        component_requires_file,  # type: Path | str
+        component_list_file,  # type: Path | str
     ):
         '''Set build dependencies for components with manifests'''
         requirements_manager = CMakeRequirementsManager(component_requires_file)
@@ -565,7 +690,10 @@ class ComponentManager(object):
                 components_with_manifests = f.readlines()
             os.remove(component_list_file)
         except FileNotFoundError:
-            raise FatalError('Cannot find component list file. Please make sure this script is executed from CMake')
+            raise FatalError(
+                'Cannot find component list file. '
+                'Please make sure this script is executed from CMake'
+            )
 
         add_all_components_to_main = False
         for component in components_with_manifests:
@@ -606,7 +734,8 @@ class ComponentManager(object):
         # If there are dependencies added to the `main` component,
         # and common components were included to the requirements file
         # then add every other component to it dependencies
-        # to reproduce convenience behavior for the standard project defined in IDF's `project.cmake`
+        # to reproduce convenience behavior
+        # for the standard project defined in IDF's `project.cmake`
         # For ESP-IDF < 5.0 (Remove after ESP-IDF 4.4 EOL)
         if add_all_components_to_main:
             main_reqs = requirements[ComponentName('idf', 'main')]['REQUIRES']

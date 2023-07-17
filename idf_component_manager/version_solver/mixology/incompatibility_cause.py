@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
 
 
 class IncompatibilityCause(Exception):
@@ -34,6 +34,7 @@ class ConflictCause(IncompatibilityCause):
     The incompatibility was derived from two existing incompatibilities
     during conflict resolution.
     """
+
     def __init__(self, conflict, other):
         self._conflict = conflict
         self._other = other
@@ -55,6 +56,7 @@ class PackageNotFoundCause(IncompatibilityCause):
     The incompatibility represents a package that couldn't be found by its
     source.
     """
+
     def __init__(self, error):
         self._error = error
 

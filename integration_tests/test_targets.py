@@ -9,7 +9,8 @@ from .integration_test_helpers import set_target
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
@@ -21,7 +22,9 @@ from .integration_test_helpers import set_target
                 }
             }
         },
-    ], indirect=True)
+    ],
+    indirect=True,
+)
 def test_changing_target(project):
     lock_path = os.path.join(project, 'dependencies.lock')
     res = set_target(project, 'esp32')
@@ -36,7 +39,8 @@ def test_changing_target(project):
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
@@ -50,14 +54,16 @@ def test_changing_target(project):
             },
         },
     ],
-    indirect=True)
+    indirect=True,
+)
 def test_idf_check_target_fail_manifest(project):
     res = set_target(project, 'esp32')
     assert 'Component "main" does not support target esp32' in res
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
@@ -69,14 +75,20 @@ def test_idf_check_target_fail_manifest(project):
                 }
             }
         },
-    ], indirect=True)
+    ],
+    indirect=True,
+)
 def test_idf_check_target_fail_dependency(project):
     res = set_target(project, 'esp32')
-    assert 'Cannot find versions of "example/cmp" satisfying "0.0.1" for the current target "esp32"' in res
+    assert (
+        'Cannot find versions of "example/cmp" satisfying "0.0.1" for the current target "esp32"'
+        in res
+    )
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
@@ -92,7 +104,8 @@ def test_idf_check_target_fail_dependency(project):
             }
         },
     ],
-    indirect=True)
+    indirect=True,
+)
 def test_idf_check_target_pass(project):
     res = set_target(project, 'esp32')
     assert 'Build files have been written to:' in res

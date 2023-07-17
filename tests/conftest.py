@@ -39,9 +39,7 @@ def valid_manifest():
         ],
         'dependencies': {
             'idf': '~4.4.4',
-            'test': {
-                'version': '>=8.2.0~1,<9.0.0'
-            },
+            'test': {'version': '>=8.2.0~1,<9.0.0'},
             'test-1': '^1.2.7',
             'test-8': {
                 'version': '*',
@@ -52,14 +50,9 @@ def valid_manifest():
             },
             'test-2': '*',
             'test-4': '*',
-            'some_component': {
-                'version': '!=1.2.7'
-            },
+            'some_component': {'version': '!=1.2.7'},
         },
-        'files': {
-            'include': ['**/*'],
-            'exclude': ['.pyc']
-        },
+        'files': {'include': ['**/*'], 'exclude': ['.pyc']},
         'url': 'https://test.com/homepage',
         'documentation': 'https://test.com/documentation',
         'repository': 'git@github.com:test_project/test.git',
@@ -79,13 +72,9 @@ def valid_optional_dependency_manifest(valid_manifest):
     valid_manifest['dependencies']['optional'] = {
         'version': '1.0.0',
         'rules': [
-            {
-                'if': 'idf_version >= 4.4'
-            },
-            {
-                'if': 'target not in [esp32, esp32s2]'
-            },
-        ]
+            {'if': 'idf_version >= 4.4'},
+            {'if': 'target not in [esp32, esp32s2]'},
+        ],
     }
     return valid_manifest
 
@@ -169,5 +158,6 @@ def mock_token_information():
                 'expires_at': None,
                 'scope': 'user',
                 'access_token_prefix': 'abc123',
-            })
+            },
+        )
         yield m

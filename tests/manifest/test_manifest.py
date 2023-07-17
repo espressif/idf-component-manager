@@ -13,7 +13,13 @@ import yaml
 from idf_component_manager.dependencies import detect_unused_components
 from idf_component_tools.errors import ManifestError, MetadataKeyWarning
 from idf_component_tools.manifest import (
-    JSON_SCHEMA, SLUG_REGEX, ComponentVersion, ManifestManager, ManifestValidator, SolvedComponent)
+    JSON_SCHEMA,
+    SLUG_REGEX,
+    ComponentVersion,
+    ManifestManager,
+    ManifestValidator,
+    SolvedComponent,
+)
 from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS, known_targets
 from idf_component_tools.manifest.if_parser import parse_if_clause
 from idf_component_tools.sources import LocalSource
@@ -105,7 +111,9 @@ class TestManifestPipeline(object):
         parser = ManifestManager(manifest_path, name='test')
         parser.dump(str(test_dump_path))
 
-        assert filecmp.cmp(manifest_path, os.path.join(test_dump_path, 'idf_component.yml'), shallow=False)
+        assert filecmp.cmp(
+            manifest_path, os.path.join(test_dump_path, 'idf_component.yml'), shallow=False
+        )
 
     def test_env_var_not_specified(self, valid_manifest, monkeypatch, tmp_path):
         valid_manifest['targets'] = ['$SUPPORT_TARGET']
@@ -159,12 +167,8 @@ class TestManifestValidator(object):
 
         assert not errors
         assert validator.manifest_tree['dependencies'] == {
-            'test': {
-                'version': '1.2.3'
-            },
-            'pest': {
-                'version': '3.2.1'
-            },
+            'test': {'version': '1.2.3'},
+            'pest': {'version': '3.2.1'},
         }
 
     def test_validate_component_versions_are_empty(self, valid_manifest):
@@ -185,13 +189,18 @@ class TestManifestValidator(object):
         assert errors[0].startswith('List of dependencies should be a dictionary')
 
     def test_validate_component_versions_unknown_key(self, valid_manifest):
-        valid_manifest['dependencies'] = {'test-component': {'version': '^1.2.3', 'persion': 'asdf'}}
+        valid_manifest['dependencies'] = {
+            'test-component': {'version': '^1.2.3', 'persion': 'asdf'}
+        }
         validator = ManifestValidator(valid_manifest)
 
         errors = validator.validate_normalize()
 
         assert len(errors) == 5
-        assert errors[0] == 'Unknown string field "persion" in the manifest file that may affect build result'
+        assert (
+            errors[0]
+            == 'Unknown string field "persion" in the manifest file that may affect build result'
+        )
         assert errors[-1] == 'Unknown keys in dependency details: persion'
 
     def test_validate_component_versions_invalid_name(self, valid_manifest):
@@ -272,7 +281,10 @@ class TestManifestValidator(object):
         errors = validator.validate_normalize()
 
         assert len(errors) == 2
-        assert errors[0] == 'Unknown number field "include" in the manifest file that may affect build result'
+        assert (
+            errors[0]
+            == 'Unknown number field "include" in the manifest file that may affect build result'
+        )
 
     def test_validate_tags_invalid_length(self, valid_manifest):
         valid_manifest['tags'].append('sm')
@@ -291,13 +303,15 @@ class TestManifestValidator(object):
         assert errors[1].startswith('Invalid tag')
 
     @pytest.mark.parametrize(
-        'key, value', [
+        'key, value',
+        [
             ('targets', 'esp32'),
             ('maintainers', 'foo@bar.com'),
             ('tags', 'foobar'),
             ('include', '*.md'),
             ('exclude', '*.md'),
-        ])
+        ],
+    )
     def test_validate_duplicates(self, valid_manifest, key, value):
         if key in ['include', 'exclude']:
             valid_manifest['files'][key].append(value)
@@ -317,20 +331,27 @@ class TestManifestValidator(object):
         assert errors[0].startswith('Duplicate item in "{}":'.format(key))
         assert value in errors[0]
 
-    def test_validate_optional_dependency_success(self, valid_optional_dependency_manifest_with_idf, monkeypatch):
+    def test_validate_optional_dependency_success(
+        self, valid_optional_dependency_manifest_with_idf, monkeypatch
+    ):
         validator = ManifestValidator(valid_optional_dependency_manifest_with_idf)
         errors = validator.validate_normalize()
 
         assert not errors
 
     @pytest.mark.parametrize(
-        'invalid_str, error_message', [
+        'invalid_str, error_message',
+        [
             ('foo >= 4.4', 'Invalid if clause'),
             ('target is esp32', 'Invalid if clause'),
-        ])
+        ],
+    )
     def test_validate_optional_dependency_invalid_base(
-            self, valid_optional_dependency_manifest_with_idf, invalid_str, error_message):
-        valid_optional_dependency_manifest_with_idf['dependencies']['optional']['rules'][0]['if'] = invalid_str
+        self, valid_optional_dependency_manifest_with_idf, invalid_str, error_message
+    ):
+        valid_optional_dependency_manifest_with_idf['dependencies']['optional']['rules'][0][
+            'if'
+        ] = invalid_str
         validator = ManifestValidator(valid_optional_dependency_manifest_with_idf)
         errors = validator.validate_normalize()
 
@@ -338,13 +359,18 @@ class TestManifestValidator(object):
         assert errors[-1].startswith(error_message)
 
     @pytest.mark.parametrize(
-        'invalid_str, error_message', [
+        'invalid_str, error_message',
+        [
             ('idf_version >= 4.4!@#', 'Dependency version spec format is invalid'),
             ('idf_version >= 4.4, <= "3.3"', 'Dependency version spec format is invalid'),
-        ])
+        ],
+    )
     def test_validate_optional_dependency_invalid_derived(
-            self, valid_optional_dependency_manifest_with_idf, invalid_str, error_message):
-        valid_optional_dependency_manifest_with_idf['dependencies']['optional']['rules'][0]['if'] = invalid_str
+        self, valid_optional_dependency_manifest_with_idf, invalid_str, error_message
+    ):
+        valid_optional_dependency_manifest_with_idf['dependencies']['optional']['rules'][0][
+            'if'
+        ] = invalid_str
         validator = ManifestValidator(valid_optional_dependency_manifest_with_idf)
         errors = validator.validate_normalize()
 
@@ -355,7 +381,9 @@ class TestManifestValidator(object):
 
     def test_known_targets_env(self, monkeypatch):
         monkeypatch.setenv(
-            'IDF_COMPONENT_MANAGER_KNOWN_TARGETS', 'esp32,test,esp32s2,esp32s3,esp32c3,esp32h4,linux,esp32c2')
+            'IDF_COMPONENT_MANAGER_KNOWN_TARGETS',
+            'esp32,test,esp32s2,esp32s3,esp32c3,esp32h4,linux,esp32c2',
+        )
         result = known_targets()
 
         assert len(result) == 8
@@ -378,8 +406,14 @@ class TestManifestValidator(object):
 
     def test_no_unused_components(self, tmp_managed_components):
         project_requirements = [
-            SolvedComponent(name='example/cmp', version=ComponentVersion('*'), source=LocalSource({'path': 'test'})),
-            SolvedComponent(name='mag3110', version=ComponentVersion('*'), source=LocalSource({'path': 'test'}))
+            SolvedComponent(
+                name='example/cmp',
+                version=ComponentVersion('*'),
+                source=LocalSource({'path': 'test'}),
+            ),
+            SolvedComponent(
+                name='mag3110', version=ComponentVersion('*'), source=LocalSource({'path': 'test'})
+            ),
         ]
         detect_unused_components(project_requirements, tmp_managed_components)
 
@@ -387,7 +421,9 @@ class TestManifestValidator(object):
 
     def test_one_unused_component(self, tmp_managed_components):
         project_requirements = [
-            SolvedComponent(name='mag3110', version=ComponentVersion('*'), source=LocalSource({'path': 'test'}))
+            SolvedComponent(
+                name='mag3110', version=ComponentVersion('*'), source=LocalSource({'path': 'test'})
+            )
         ]
         detect_unused_components(project_requirements, tmp_managed_components)
 
@@ -411,7 +447,9 @@ class TestManifestValidator(object):
             detect_unused_components(project_requirements, str(managed_components_path))
             assert len(w) == 1
             assert issubclass(w[-1].category, UserWarning)
-            assert 'Content of the managed components directory is managed automatically' in str(w[-1].message)
+            assert 'Content of the managed components directory is managed automatically' in str(
+                w[-1].message
+            )
 
     def test_env_ignore_unknown_files_empty(self, monkeypatch, tmp_path):
         monkeypatch.setenv('IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS', '')
@@ -425,7 +463,8 @@ class TestManifestValidator(object):
             detect_unused_components([], str(managed_components_path))
 
     @pytest.mark.parametrize(
-        'if_clause, bool_value', [
+        'if_clause, bool_value',
+        [
             ('idf_version > 4.4', True),
             ('idf_version <= "4.4"', False),
             ('idf_version >= 3.3, <=2.0', False),
@@ -438,7 +477,8 @@ class TestManifestValidator(object):
             ('target in ["esp32s2", "esp32c3"]', False),
             ('target not in ["esp32s2", "esp32c3"]', True),
             ('target not in [esp32, esp32c3]', False),
-        ])
+        ],
+    )
     def test_parse_if_clause(self, if_clause, bool_value, monkeypatch):
         monkeypatch.setenv('IDF_VERSION', '5.0.0')
         monkeypatch.setenv('IDF_TARGET', 'esp32')
@@ -474,8 +514,10 @@ class TestManifestValidator(object):
         valid_manifest['examples'] = [{'path, test'}]  # list of set of string
         validator = ManifestValidator(valid_manifest)
 
-        with pytest.warns(MetadataKeyWarning,
-                          match='Unknown array of array of string field "examples" in the manifest file'):
+        with pytest.warns(
+            MetadataKeyWarning,
+            match='Unknown array of array of string field "examples" in the manifest file',
+        ):
             validator.validate_normalize()
 
         assert len(validator._errors) == 0

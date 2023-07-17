@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
 
 try:
     from typing import List
@@ -16,6 +16,7 @@ class Union(object):
     """
     An union of Ranges.
     """
+
     def __init__(self, *ranges):
         self._ranges = list(ranges)
 
@@ -47,7 +48,9 @@ class Union(object):
         merged = []
         for constraint in flattened:
             # Merge this constraint with the previous one, but only if they touch.
-            if not merged or (not merged[-1].allows_any(constraint) and not merged[-1].is_adjacent_to(constraint)):
+            if not merged or (
+                not merged[-1].allows_any(constraint) and not merged[-1].is_adjacent_to(constraint)
+            ):
                 merged.append(constraint)
             else:
                 merged[-1] = merged[-1].union(constraint)

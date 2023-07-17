@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
 
 try:
     from typing import Optional
@@ -18,6 +18,7 @@ class Term(object):
     A statement about a package which is true or false for a given selection of
     package versions.
     """
+
     def __init__(self, constraint, is_positive):  # type: (Constraint, bool) -> None
         self._constraint = constraint
         self._package = constraint.package
@@ -40,7 +41,9 @@ class Term(object):
     @property
     def normalized_constraint(self):  # type: () -> Constraint
         if self._normalized_constraint is None:
-            self._normalized_constraint = (self.constraint if self.is_positive() else self.constraint.inverse)
+            self._normalized_constraint = (
+                self.constraint if self.is_positive() else self.constraint.inverse
+            )
 
         return self._normalized_constraint
 
@@ -127,7 +130,9 @@ class Term(object):
                 positive = self if self.is_positive() else other
                 negative = other if self.is_positive() else self
 
-                return self._non_empty_term(positive.constraint.difference(negative.constraint), True)
+                return self._non_empty_term(
+                    positive.constraint.difference(negative.constraint), True
+                )
             elif self.is_positive():
                 # foo ^1.0.0 ∩ foo >=1.5.0 <3.0.0 → foo ^1.5.0
                 return self._non_empty_term(self.constraint.intersect(other.constraint), True)
@@ -147,7 +152,11 @@ class Term(object):
         return self.intersect(other.inverse)
 
     def is_compatible_with(self, other):  # type: (Term) -> bool
-        return self.package == Package.root() or other.package == Package.root() or self.package == other.package
+        return (
+            self.package == Package.root()
+            or other.package == Package.root()
+            or self.package == other.package
+        )
 
     def is_empty(self):  # type: () -> bool
         if self._empty is None:
@@ -155,7 +164,9 @@ class Term(object):
 
         return self._empty
 
-    def _non_empty_term(self, constraint, is_positive):  # type: (Constraint, bool) -> Optional[Term]
+    def _non_empty_term(
+        self, constraint, is_positive
+    ):  # type: (Constraint, bool) -> Optional[Term]
         if constraint.is_empty():
             return
 

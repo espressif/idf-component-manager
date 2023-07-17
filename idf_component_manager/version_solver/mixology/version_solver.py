@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
 
 import logging
 import time
@@ -36,9 +36,10 @@ class VersionSolver:
     See https://github.com/dart-lang/pub/tree/master/doc/solver.md for details
     on how this solver works.
     """
+
     def __init__(
-            self,
-            source,  # type: PackageSource
+        self,
+        source,  # type: PackageSource
     ):
         self._source = source
 
@@ -59,7 +60,9 @@ class VersionSolver:
         """
         start = time.time()
 
-        self._add_incompatibility(Incompatibility([Term(Constraint(self._source.root, Range()), False)], RootCause()))
+        self._add_incompatibility(
+            Incompatibility([Term(Constraint(self._source.root, Range()), False)], RootCause())
+        )
         self._propagate(self._source.root)
 
         while not self.is_solved():
@@ -119,7 +122,9 @@ class VersionSolver:
                 elif result is not None:
                     changed.add(result)
 
-    def _propagate_incompatibility(self, incompatibility):  # type: (Incompatibility) -> Union[Package, _conflict, None]
+    def _propagate_incompatibility(
+        self, incompatibility
+    ):  # type: (Incompatibility) -> Union[Package, _conflict, None]
         """
         If incompatibility is almost satisfied by _solution, adds the
         negation of the unsatisfied term to _solution.
@@ -161,7 +166,9 @@ class VersionSolver:
 
         logger.info('derived: {}'.format(unsatisfied.inverse))
 
-        self._solution.derive(unsatisfied.constraint, not unsatisfied.is_positive(), incompatibility)
+        self._solution.derive(
+            unsatisfied.constraint, not unsatisfied.is_positive(), incompatibility
+        )
 
         return unsatisfied.package
 
@@ -174,7 +181,8 @@ class VersionSolver:
 
         Adds the new incompatibility to _incompatibilities and returns it.
 
-        .. _conflict resolution: https://github.com/dart-lang/pub/tree/master/doc/solver.md#conflict-resolution
+        .. _conflict resolution:
+        https://github.com/dart-lang/pub/tree/master/doc/solver.md#conflict-resolution
         """
         logger.info('conflict: {}'.format(incompatibility))
 
@@ -212,12 +220,16 @@ class VersionSolver:
                     most_recent_term = term
                     most_recent_satisfier = satisfier
                 elif most_recent_satisfier.index < satisfier.index:
-                    previous_satisfier_level = max(previous_satisfier_level, most_recent_satisfier.decision_level)
+                    previous_satisfier_level = max(
+                        previous_satisfier_level, most_recent_satisfier.decision_level
+                    )
                     most_recent_term = term
                     most_recent_satisfier = satisfier
                     difference = None
                 else:
-                    previous_satisfier_level = max(previous_satisfier_level, satisfier.decision_level)
+                    previous_satisfier_level = max(
+                        previous_satisfier_level, satisfier.decision_level
+                    )
 
                 if most_recent_term == term:
                     # If most_recent_satisfier doesn't satisfy most_recent_term on its
@@ -235,7 +247,10 @@ class VersionSolver:
             # than a derivation), then incompatibility is the root cause. We then
             # backjump to previous_satisfier_level, where incompatibility is
             # guaranteed to allow _propagate to produce more assignments.
-            if previous_satisfier_level < most_recent_satisfier.decision_level or most_recent_satisfier.cause is None:
+            if (
+                previous_satisfier_level < most_recent_satisfier.decision_level
+                or most_recent_satisfier.cause is None
+            ):
                 self._solution.backtrack(previous_satisfier_level)
                 if new_incompatibility:
                     self._add_incompatibility(incompatibility)
@@ -273,12 +288,18 @@ class VersionSolver:
             if difference is not None:
                 new_terms.append(difference.inverse)
 
-            incompatibility = Incompatibility(new_terms, ConflictCause(incompatibility, most_recent_satisfier.cause))
+            incompatibility = Incompatibility(
+                new_terms, ConflictCause(incompatibility, most_recent_satisfier.cause)
+            )
             new_incompatibility = True
 
             partially = '' if difference is None else ' partially'
             bang = '!'
-            logger.info('{} {} is{} satisfied by {}'.format(bang, most_recent_term, partially, most_recent_satisfier))
+            logger.info(
+                '{} {} is{} satisfied by {}'.format(
+                    bang, most_recent_term, partially, most_recent_satisfier
+                )
+            )
             logger.info('{} which is caused by "{}"'.format(bang, most_recent_satisfier.cause))
             logger.info('{} thus: {}'.format(bang, incompatibility))
 
@@ -332,7 +353,11 @@ class VersionSolver:
             # We'll continue adding its dependencies, then go back to
             # unit propagation which will guide us to choose a better version.
             conflict = conflict or all(
-                [iterm.package == term.package or self._solution.satisfies(iterm) for iterm in incompatibility.terms])
+                [
+                    iterm.package == term.package or self._solution.satisfies(iterm)
+                    for iterm in incompatibility.terms
+                ]
+            )
 
         if not conflict:
             self._solution.decide(term.package, version)

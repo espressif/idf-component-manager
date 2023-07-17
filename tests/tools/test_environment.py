@@ -6,7 +6,8 @@ from idf_component_tools.environment import getenv_bool, getenv_int
 
 
 @mark.parametrize(
-    ('value', 'expected'), [
+    ('value', 'expected'),
+    [
         ('1', True),
         ('0', False),
         ('true', True),
@@ -21,7 +22,8 @@ from idf_component_tools.environment import getenv_bool, getenv_int
         ('N', False),
         ('', False),
         ('asdf', False),
-    ])
+    ],
+)
 def test_getenv_bool(value, expected, monkeypatch):
     monkeypatch.setenv('TEST_GETENV_BOOL', value)
     assert getenv_bool('TEST_GETENV_BOOL') == expected
@@ -43,7 +45,9 @@ def test_getenv_int_ok(monkeypatch):
 def test_getenv_int_err(monkeypatch):
     monkeypatch.setenv('TEST_GETENV_INT_ERR', '1aaa')
 
-    with raises(ValueError, match='Environment variable "TEST_GETENV_INT_ERR" must contain a numeric value'):
+    with raises(
+        ValueError, match='Environment variable "TEST_GETENV_INT_ERR" must contain a numeric value'
+    ):
         getenv_int('TEST_GETENV_INT_ERR', 5)
 
 

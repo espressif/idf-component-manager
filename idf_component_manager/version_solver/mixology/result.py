@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
 
 try:
     from typing import Dict
@@ -13,7 +13,9 @@ from idf_component_tools.manifest import HashedComponentVersion
 
 
 class SolverResult:
-    def __init__(self, decisions, attempted_solutions):  # type: (Dict[Package, HashedComponentVersion], int) -> None
+    def __init__(
+        self, decisions, attempted_solutions
+    ):  # type: (Dict[Package, HashedComponentVersion], int) -> None
         self._decisions = decisions
         self._attempted_solutions = attempted_solutions
 

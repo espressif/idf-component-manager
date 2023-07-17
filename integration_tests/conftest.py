@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -20,7 +20,9 @@ def project(request, tmpdir_factory):
     project_path = str(tmpdir_factory.mktemp('project'))
     file_loader = FileSystemLoader(os.path.join(os.path.dirname(__file__), 'fixtures', 'templates'))
     env = Environment(loader=file_loader)
-    generate_from_template(os.path.join(project_path, 'CMakeLists.txt'), env.get_template('CMakeLists.txt'))
+    generate_from_template(
+        os.path.join(project_path, 'CMakeLists.txt'), env.get_template('CMakeLists.txt')
+    )
 
     components = request.param.get('components', {'main': {}})
     for component in components.keys():
@@ -87,6 +89,7 @@ def content_snapshot(request):
 
 
 def pytest_configure(config):
-    for name, description in {'snapshot': 'snapshot the specified files/folders and revert the content after test case'
-                              }.items():
+    for name, description in {
+        'snapshot': 'snapshot the specified files/folders and revert the content after test case'
+    }.items():
         config.addinivalue_line('markers', '{}: {}'.format(name, description))

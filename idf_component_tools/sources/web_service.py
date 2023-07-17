@@ -99,7 +99,9 @@ class WebServiceSource(BaseSource):
         self.api_client = self.source_details.get('api_client')
 
         if self.api_client is None:
-            self.api_client = api_client.APIClient(base_url=self.base_url, storage_url=self.storage_url, source=self)
+            self.api_client = api_client.APIClient(
+                base_url=self.base_url, storage_url=self.storage_url, source=self
+            )
 
         if not self.base_url and not self.storage_url:
             FetchingError('Cannot fetch a dependency with when registry is not defined')
@@ -135,7 +137,8 @@ class WebServiceSource(BaseSource):
                 self.normalized_name(component.name).replace('/', '__'),
                 str(component.version),
                 str(component.component_hash)[:8],
-            ])
+            ]
+        )
         path = os.path.join(self.cache_path(), component_dir_name)
         return path
 
@@ -151,7 +154,11 @@ class WebServiceSource(BaseSource):
                 other_targets_versions.append(version)
                 continue
 
-            if not self.pre_release and version.semver.prerelease and not SimpleSpec(spec).contains_prerelease:
+            if (
+                not self.pre_release
+                and version.semver.prerelease
+                and not SimpleSpec(spec).contains_prerelease
+            ):
                 pre_release_versions.append(str(version))
                 continue
 
@@ -167,25 +174,37 @@ class WebServiceSource(BaseSource):
 
             if pre_release_versions:
                 hint(
-                    'Component "{}" has some pre-release versions: "{}" satisfies your requirements. '
+                    'Component "{}" has some pre-release versions: "{}" '
+                    'satisfies your requirements. '
                     'To allow pre-release versions add "pre_release: true" '
-                    'to the dependency in the manifest.'.format(name, '", "'.join(pre_release_versions)))
+                    'to the dependency in the manifest.'.format(
+                        name, '", "'.join(pre_release_versions)
+                    )
+                )
 
             if other_targets_versions:
                 targets = {t for v in other_targets_versions for t in v.targets}
                 hint(
                     'Component "{}" has suitable versions for other targets: "{}". '
-                    'Is your current target {} set correctly?'.format(name, '", "'.join(targets), current_target))
+                    'Is your current target {} set correctly?'.format(
+                        name, '", "'.join(targets), current_target
+                    )
+                )
 
             if newer_component_manager_versions:
                 hint(
-                    'Component "{}" has versions "{}" that support only newer version of idf-component-manager '
+                    'Component "{}" has versions "{}" '
+                    'that support only newer version of idf-component-manager '
                     'that satisfy your requirements.\n'
-                    '{}'.format(name, '", "'.join(newer_component_manager_versions), UPDATE_SUGGESTION))
+                    '{}'.format(
+                        name, '", "'.join(newer_component_manager_versions), UPDATE_SUGGESTION
+                    )
+                )
 
             raise FetchingError(
                 'Cannot find versions of "{}" satisfying "{}" '
-                'for the current target {}.'.format(name, spec, current_target))
+                'for the current target {}.'.format(name, spec, current_target)
+            )
 
         return cmp_with_versions
 
@@ -216,7 +235,9 @@ class WebServiceSource(BaseSource):
             copy_directory(self.component_cache_path(component), download_path)
             return download_path
 
-        component_manifest = self.api_client.component(component_name=component.name, version=component.version)
+        component_manifest = self.api_client.component(
+            component_name=component.name, version=component.version
+        )
         url = component_manifest.download_url
 
         if not url:
@@ -233,7 +254,11 @@ class WebServiceSource(BaseSource):
             unpack_archive(file_path, self.component_cache_path(component))
             copy_directory(self.component_cache_path(component), download_path)
         except FetchingError as e:
-            raise FetchingError('Cannot download component {}@{}. {}'.format(component.name, component.version, str(e)))
+            raise FetchingError(
+                'Cannot download component {}@{}. {}'.format(
+                    component.name, component.version, str(e)
+                )
+            )
         finally:
             shutil.rmtree(tempdir)
 

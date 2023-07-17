@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 from io import open
@@ -15,12 +15,13 @@ except ImportError:
     pass
 
 COMPONENT_LIST_SCHEMA = Schema(
-    {'components': [
-        {
-            'name': Or(*string_types),
-            'path': Or(*string_types)
-        },
-    ]}, ignore_extra_keys=True)
+    {
+        'components': [
+            {'name': Or(*string_types), 'path': Or(*string_types)},
+        ]
+    },
+    ignore_extra_keys=True,
+)
 
 
 def parse_component_list(path):  # type: (str) -> List[Dict[str,str]]

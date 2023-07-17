@@ -27,10 +27,11 @@ CONFIG_SCHEMA = Schema(
             Or(*string_types): {
                 Optional('registry_url'): Or('default', Regex(COMPILED_URL_RE)),
                 Optional('default_namespace'): And(Or(*string_types), len),
-                Optional('api_token'): And(Or(*string_types), len)
+                Optional('api_token'): And(Or(*string_types), len),
             }
         }
-    })
+    }
+)
 
 
 def config_dir():
@@ -89,7 +90,9 @@ class ConfigManager(object):
                 return Config(yaml.safe_load(f.read())).validate()
             except yaml.YAMLError:
                 raise ConfigError(
-                    'Cannot parse config file. Please check that\n\t%s\nis valid YAML file\n' % self.config_path)
+                    'Cannot parse config file. Please check that\n\t%s\nis valid YAML file\n'
+                    % self.config_path
+                )
 
     def dump(self, config):  # type: (Config) -> None
         """Writes config to disk"""
@@ -106,7 +109,9 @@ def get_api_url(url):  # type: (str) -> str
     return '{}/api/'.format(url)
 
 
-def component_registry_url(registry_profile=None):  # type: (dict[str, str] | None) -> tuple[str | None, str | None]
+def component_registry_url(
+    registry_profile=None,
+):  # type: (dict[str, str] | None) -> tuple[str | None, str | None]
     """
     Returns registry API endpoint and static files URLs.
 
@@ -121,14 +126,16 @@ def component_registry_url(registry_profile=None):  # type: (dict[str, str] | No
 
     if env_registry_api_url:
         warnings.warn(
-            'DEFAULT_COMPONENT_SERVICE_URL environment variable pointing to the registy API is deprecated. '
-            'Set component registry URL to IDF_COMPONENT_REGISTRY_URL',
-            category=UserDeprecationWarning)
+            'DEFAULT_COMPONENT_SERVICE_URL environment variable pointing to the '
+            'registy API is deprecated. Set component registry URL to IDF_COMPONENT_REGISTRY_URL',
+            category=UserDeprecationWarning,
+        )
 
     if env_registry_url and env_registry_api_url:
         warnings.warn(
             'Both DEFAULT_COMPONENT_SERVICE_URL and IDF_COMPONENT_REGISTRY_URL '
-            'environment variables are defined. The value of IDF_COMPONENT_REGISTRY_URL is used.')
+            'environment variables are defined. The value of IDF_COMPONENT_REGISTRY_URL is used.'
+        )
 
     if env_registry_url:
         env_registry_api_url = get_api_url(env_registry_url)

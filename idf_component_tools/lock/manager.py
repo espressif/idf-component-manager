@@ -39,7 +39,8 @@ LOCK_SCHEMA = Schema(
         'manifest_hash': HASH_SCHEMA,
         'version': And(Or(*string_types), len),
         Optional('target'): And(Use(str.lower), lambda s: s in known_targets()),
-    })
+    }
+)
 
 
 def _ordered_dict_representer(dumper, data):  # type: (SafeDumper, OrderedDict) -> Node
@@ -65,11 +66,13 @@ class LockManager:
         """Writes updated lockfile to disk"""
         # add idf version if not in solution.dependencies
         if 'idf' not in solution.solved_components:
-            solution.dependencies.append(SolvedComponent(
-                'idf',
-                ComponentVersion(get_idf_version()),
-                IDFSource(),
-            ))
+            solution.dependencies.append(
+                SolvedComponent(
+                    'idf',
+                    ComponentVersion(get_idf_version()),
+                    IDFSource(),
+                )
+            )
 
         try:
             with open(self._path, mode='w', encoding='utf-8') as f:
@@ -78,7 +81,9 @@ class LockManager:
                 solution_dict['version'] = FORMAT_VERSION
                 solution_dict['target'] = get_env_idf_target()
                 lock = LOCK_SCHEMA.validate(solution_dict)
-                dump_yaml(data=lock, stream=f, encoding='utf-8', allow_unicode=True, Dumper=SafeDumper)
+                dump_yaml(
+                    data=lock, stream=f, encoding='utf-8', allow_unicode=True, Dumper=SafeDumper
+                )
         except SchemaError as e:
             raise LockError('Lock format is not valid:\n%s' % str(e))
 
@@ -99,12 +104,18 @@ class LockManager:
                 if version != FORMAT_VERSION:
                     raise LockError(
                         'Cannot parse components lock file.'
-                        'Lock file format version is %s, while only %s is supported' % (version, FORMAT_VERSION))
+                        'Lock file format version is %s, while only %s is supported'
+                        % (version, FORMAT_VERSION)
+                    )
 
                 return SolvedManifest.fromdict(lock)
             except (YAMLError, SchemaError):
                 raise LockError(
                     (
-                        'Cannot parse components lock file. Please check that\n\t%s\nis a valid lock YAML file.\n'
+                        'Cannot parse components lock file. '
+                        'Please check that\n\t%s\nis a valid lock YAML file.\n'
                         'You can delete corrupted lock file and it will be recreated on next run. '
-                        'Some components may be updated in this case.') % self._path)
+                        'Some components may be updated in this case.'
+                    )
+                    % self._path
+                )

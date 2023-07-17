@@ -95,7 +95,9 @@ class IfIdfVersionClause(IfClause):
 
 @serializable
 class IfTargetClause(IfClause):
-    def __init__(self, operator, target_str):  # type: (Literal['==', '!=', 'in', 'not in'], str) -> None
+    def __init__(
+        self, operator, target_str
+    ):  # type: (Literal['==', '!=', 'in', 'not in'], str) -> None
         self.operator = operator
         self.target_str = target_str
 
@@ -132,14 +134,16 @@ def _parse_if_idf_version_clause(mat):  # type: (re.Match) -> IfClause
     spec = ','.join([part.strip() for part in spec.split(',')])
 
     try:
-        simple_spec = SimpleSpec('{}{}'.format(IfClause.eval_str(comparison), IfClause.eval_str(spec)))
+        simple_spec = SimpleSpec(
+            '{}{}'.format(IfClause.eval_str(comparison), IfClause.eval_str(spec))
+        )
     except ValueError:
         raise SchemaError(
             None,
             'Invalid version specification for "idf_version": {clause}. Please use a format like '
             '"idf_version >=4.4,<5.3"\nDocumentation: '
-            'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/manifest_file.html#rules'.
-            format(clause=mat.string),
+            'https://docs.espressif.com/projects/idf-component-manager/'
+            'en/latest/reference/manifest_file.html#rules'.format(clause=mat.string),
         )
 
     return IfIdfVersionClause(str(simple_spec))
@@ -173,8 +177,9 @@ def parse_if_clause(if_clause):  # type: (str) -> IfClause
 
     raise SchemaError(
         None,
-        'Invalid if clause format "{clause}". You can specify rules based on current ESP-IDF version or target like: '
+        'Invalid if clause format "{clause}". '
+        'You can specify rules based on current ESP-IDF version or target like: '
         '"idf_version >=3.3,<5.0" or "target in [esp32, esp32c3]"\nDocumentation: '
-        'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/manifest_file.html#rules'.format(
-            clause=if_clause),
+        'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/'
+        'manifest_file.html#rules'.format(clause=if_clause),
     )

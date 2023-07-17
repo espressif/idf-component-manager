@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
 
 try:
     from typing import Dict, List, Tuple
@@ -39,7 +39,9 @@ class _Writer:
         required_python_version = None
 
         if required_python_version is not None:
-            buffer.append('The current supported Python versions are {}'.format(required_python_version))
+            buffer.append(
+                'The current supported Python versions are {}'.format(required_python_version)
+            )
             buffer.append('')
 
         if isinstance(self._root.cause, ConflictCause):
@@ -47,7 +49,11 @@ class _Writer:
         else:
             self._write(self._root, 'Because {}, version solving failed.'.format(self._root))
 
-        padding = (0 if not self._line_numbers else len('({}) '.format(list(self._line_numbers.values())[-1])))
+        padding = (
+            0
+            if not self._line_numbers
+            else len('({}) '.format(list(self._line_numbers.values())[-1]))
+        )
 
         last_was_empty = False
         for line in self._lines:
@@ -71,7 +77,9 @@ class _Writer:
 
         return '\n'.join(buffer)
 
-    def _write(self, incompatibility, message, numbered=False):  # type: (Incompatibility, str, bool) -> None
+    def _write(
+        self, incompatibility, message, numbered=False
+    ):  # type: (Incompatibility, str, bool) -> None
         if numbered:
             number = len(self._line_numbers) + 1
             self._line_numbers[incompatibility] = number
@@ -80,17 +88,17 @@ class _Writer:
             self._lines.append((message, None))
 
     def _visit(
-            self,
-            incompatibility,
-            details_for_incompatibility,
-            conclusion=False):  # type: (Incompatibility, Dict, bool) -> None
+        self, incompatibility, details_for_incompatibility, conclusion=False
+    ):  # type: (Incompatibility, Dict, bool) -> None
         numbered = conclusion or self._derivations[incompatibility] > 1
         conjunction = 'So,' if conclusion or incompatibility == self._root else 'And'
         incompatibility_string = str(incompatibility)
 
         cause = incompatibility.cause  # type: ConflictCause
         details_for_cause = {}
-        if isinstance(cause.conflict.cause, ConflictCause) and isinstance(cause.other.cause, ConflictCause):
+        if isinstance(cause.conflict.cause, ConflictCause) and isinstance(
+            cause.other.cause, ConflictCause
+        ):
             conflict_line = self._line_numbers.get(cause.conflict)
             other_line = self._line_numbers.get(cause.other)
 
@@ -98,7 +106,9 @@ class _Writer:
                 self._write(
                     incompatibility,
                     'Because {}, {}.'.format(
-                        cause.conflict.and_to_string(cause.other, details_for_cause, conflict_line, other_line),
+                        cause.conflict.and_to_string(
+                            cause.other, details_for_cause, conflict_line, other_line
+                        ),
                         incompatibility_string,
                     ),
                     numbered=numbered,
@@ -116,7 +126,9 @@ class _Writer:
                 self._visit(without_line, details_for_cause)
                 self._write(
                     incompatibility,
-                    '{} because {} ({}), {}.'.format(conjunction, str(with_line), line, incompatibility_string),
+                    '{} because {} ({}), {}.'.format(
+                        conjunction, str(with_line), line, incompatibility_string
+                    ),
                     numbered=numbered,
                 )
             else:
@@ -149,9 +161,13 @@ class _Writer:
                         ),
                         numbered=numbered,
                     )
-        elif isinstance(cause.conflict.cause, ConflictCause) or isinstance(cause.other.cause, ConflictCause):
-            derived = (cause.conflict if isinstance(cause.conflict.cause, ConflictCause) else cause.other)
-            ext = (cause.other if isinstance(cause.conflict.cause, ConflictCause) else cause.conflict)
+        elif isinstance(cause.conflict.cause, ConflictCause) or isinstance(
+            cause.other.cause, ConflictCause
+        ):
+            derived = (
+                cause.conflict if isinstance(cause.conflict.cause, ConflictCause) else cause.other
+            )
+            ext = cause.other if isinstance(cause.conflict.cause, ConflictCause) else cause.conflict
 
             derived_line = self._line_numbers.get(derived)
             if derived_line is not None:
@@ -209,18 +225,24 @@ class _Writer:
             return False
 
         cause = incompatibility.cause  # type: ConflictCause
-        if isinstance(cause.conflict.cause, ConflictCause) and isinstance(cause.other.cause, ConflictCause):
+        if isinstance(cause.conflict.cause, ConflictCause) and isinstance(
+            cause.other.cause, ConflictCause
+        ):
             return False
 
-        if not isinstance(cause.conflict.cause, ConflictCause) and not isinstance(cause.other.cause, ConflictCause):
+        if not isinstance(cause.conflict.cause, ConflictCause) and not isinstance(
+            cause.other.cause, ConflictCause
+        ):
             return False
 
-        complex = (cause.conflict if isinstance(cause.conflict.cause, ConflictCause) else cause.other)
+        complex = cause.conflict if isinstance(cause.conflict.cause, ConflictCause) else cause.other
 
         return complex not in self._line_numbers
 
     def _is_single_line(self, cause):  # type: (ConflictCause) -> bool
-        return not isinstance(cause.conflict.cause, ConflictCause) and not isinstance(cause.other.cause, ConflictCause)
+        return not isinstance(cause.conflict.cause, ConflictCause) and not isinstance(
+            cause.other.cause, ConflictCause
+        )
 
     def _count_derivations(self, incompatibility):  # type: (Incompatibility) -> None
         if incompatibility in self._derivations:

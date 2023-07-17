@@ -32,8 +32,10 @@ def dump_tree(path, manifest_tree):  # type: (str, dict) -> None
 
 class ManifestManager(object):
     """Parser for manifest files in the project"""
+
     def __init__(
-            self, path, name, check_required_fields=False, version=None):  # type: (str, str, bool, str | None) -> None
+        self, path, name, check_required_fields=False, version=None
+    ):  # type: (str, str, bool, str | None) -> None
         # Path of manifest file
         self._path = path
         self._path_checked = False
@@ -56,7 +58,8 @@ class ManifestManager(object):
                 self.manifest_tree,
                 check_required_fields=self.check_required_fields,
                 version=self.version,
-                metadata=metadata)
+                metadata=metadata,
+            )
             self._validation_errors = validator.validate_normalize()
             self._is_valid = not self._validation_errors
             self._normalized_manifest_tree = copy.deepcopy(validator.manifest_tree)
@@ -124,7 +127,9 @@ class ManifestManager(object):
 
             except yaml.YAMLError:
                 raise ManifestError(
-                    'Cannot parse the manifest file. Please check that\n\t{}\nis valid YAML file\n'.format(self.path))
+                    'Cannot parse the manifest file. '
+                    'Please check that\n\t{}\nis valid YAML file\n'.format(self.path)
+                )
 
     def load(self):  # type: () -> Manifest
         self.validate()
@@ -134,7 +139,9 @@ class ManifestManager(object):
             if error_count == 1:
                 error_desc = ['A problem was found in the manifest file %s:' % self.path]
             else:
-                error_desc = ['%i problems were found in the manifest file %s:' % (error_count, self.path)]
+                error_desc = [
+                    '%i problems were found in the manifest file %s:' % (error_count, self.path)
+                ]
 
             error_desc.extend(self.validation_errors)
 
@@ -144,9 +151,13 @@ class ManifestManager(object):
 
         for name, details in self.normalized_manifest_tree.get('dependencies', {}).items():
             if 'rules' in details:
-                self.normalized_manifest_tree['dependencies'][name]['rules'] = [rule['if'] for rule in details['rules']]
+                self.normalized_manifest_tree['dependencies'][name]['rules'] = [
+                    rule['if'] for rule in details['rules']
+                ]
 
-        return Manifest.fromdict(self.normalized_manifest_tree, name=self.name, manifest_manager=self)
+        return Manifest.fromdict(
+            self.normalized_manifest_tree, name=self.name, manifest_manager=self
+        )
 
     def dump(self, path=None):  # type: (str | None) -> None
         if path is None:
