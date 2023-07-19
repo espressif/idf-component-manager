@@ -31,7 +31,8 @@ def _flatten_manifest_file_keys(manifest_tree, stack=None, level=1):
                     # List of components should be a dictionary.
                     raise MetadataError(
                         'List of dependencies should be a dictionary.'
-                        ' For example:\ndependencies:\n  some-component: ">=1.2.3,!=1.2.5"')
+                        ' For example:\ndependencies:\n  some-component: ">=1.2.3,!=1.2.5"'
+                    )
             else:
                 res.extend(_flatten_manifest_file_keys(v, cur, level + 1))
 
@@ -46,7 +47,9 @@ def _flatten_manifest_file_keys(manifest_tree, stack=None, level=1):
         elif isinstance(manifest_tree, (int, float)):
             res.append(stack + ['type:number'])
         else:
-            raise MetadataError('Unknown key type {} for key {}'.format(type(manifest_tree), manifest_tree))
+            raise MetadataError(
+                'Unknown key type {} for key {}'.format(type(manifest_tree), manifest_tree)
+            )
 
     return res
 
@@ -63,7 +66,9 @@ class Metadata(object):
         return cls(build_metadata_keys, info_metadata_keys)
 
     @classmethod
-    def _parse_metadata_from_manifest(cls, manifest_tree):  # type: (t.Any) -> tuple[list[str], list[str]]
+    def _parse_metadata_from_manifest(
+        cls, manifest_tree
+    ):  # type: (t.Any) -> tuple[list[str], list[str]]
         metadata_keys = _flatten_manifest_file_keys(manifest_tree)
         build_metadata_keys = []
         info_metadata_keys = []
@@ -79,11 +84,14 @@ class Metadata(object):
                 _manifest_key, _manifest_type = cls.get_closest_manifest_key_and_type(_k)
                 warn(MetadataKeyWarning(_manifest_key, _manifest_type))
 
-        return serialize_list_of_list_of_strings(build_metadata_keys), serialize_list_of_list_of_strings(
-            info_metadata_keys)
+        return serialize_list_of_list_of_strings(
+            build_metadata_keys
+        ), serialize_list_of_list_of_strings(info_metadata_keys)
 
     @staticmethod
-    def get_closest_manifest_key_and_type(metadata_key):  # type: (str | list[str]) -> t.Tuple[str, str]
+    def get_closest_manifest_key_and_type(
+        metadata_key,
+    ):  # type: (str | list[str]) -> t.Tuple[str, str]
         """
         One metadata key should look like "dependencies-*-rules-type:array-if-type:string",
         or ['dependencies', '*', 'rules', 'type:array', 'if', 'type:string'] if it's a list
@@ -110,6 +118,9 @@ class Metadata(object):
                 break
 
         if not key:
-            reraise(InternalError, ValueError('manifest key is not found in metadata key: "{}"'.format(metadata_key)))
+            reraise(
+                InternalError,
+                ValueError('manifest key is not found in metadata key: "{}"'.format(metadata_key)),
+            )
 
         return key, ' of '.join([_t.split('type:')[-1] for _t in types[::-1]])

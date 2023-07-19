@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
 
 try:
     from typing import Any, Optional
@@ -19,13 +19,10 @@ class Assignment(Term):
     """
     A term in a PartialSolution that tracks some additional metadata.
     """
+
     def __init__(
-            self,
-            constraint,
-            is_positive,
-            decision_level,
-            index,
-            cause=None):  # type: (Constraint, bool, int, int, Optional[Incompatibility]) -> None
+        self, constraint, is_positive, decision_level, index, cause=None
+    ):  # type: (Constraint, bool, int, int, Optional[Incompatibility]) -> None
         super(Assignment, self).__init__(constraint, is_positive)
 
         self._decision_level = decision_level
@@ -45,7 +42,9 @@ class Assignment(Term):
         return self._cause
 
     @classmethod
-    def decision(cls, package, version, decision_level, index):  # type: (Package, Any, int, int) -> Assignment
+    def decision(
+        cls, package, version, decision_level, index
+    ):  # type: (Package, Any, int, int) -> Assignment
         return cls(
             Constraint(package, Range(version, version, True, True)),
             True,
@@ -55,8 +54,8 @@ class Assignment(Term):
 
     @classmethod
     def derivation(
-            cls, constraint, is_positive, cause, decision_level,
-            index):  # type: (Constraint, bool, Incompatibility, int, int) -> Assignment
+        cls, constraint, is_positive, cause, decision_level, index
+    ):  # type: (Constraint, bool, Incompatibility, int, int) -> Assignment
         return cls(constraint, is_positive, decision_level, index, cause)
 
     def is_decision(self):  # type: () -> bool

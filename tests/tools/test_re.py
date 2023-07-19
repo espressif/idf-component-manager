@@ -19,7 +19,8 @@ from idf_component_tools.constants import COMPILED_GIT_URL_RE
         # Without protocol
         'git@github.com:user/repo',
         'git@github.com:user/user.git',
-    ])
+    ],
+)
 def test_valid_git_urls(url):
     assert COMPILED_GIT_URL_RE.match(url), 'Failed to match valid URL: {}'.format(url)
 
@@ -34,7 +35,8 @@ def test_valid_git_urls(url):
         # random string
         'arstfpwafp',
         # random string with special characters
-        'WRj7vPcetd3!^Jun8r&WoSM9'
-    ])
+        'WRj7vPcetd3!^Jun8r&WoSM9',
+    ],
+)
 def test_invalid_git_urls(url):
     assert not COMPILED_GIT_URL_RE.match(url), 'Matched invalid URL: {}'.format(url)

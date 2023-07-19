@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
 
 try:
     from typing import Dict, List
@@ -28,6 +28,7 @@ class PartialSolution:
     #
     # See https://github.com/dart-lang/mixology/tree/master/doc/solver.md#partial-solution.
     """
+
     def __init__(self):  # type: () -> None
         # The assignments that have been made so far, in the order they were
         # assigned.
@@ -87,9 +88,13 @@ class PartialSolution:
         self._backtracking = False
         self._decisions[package] = version
 
-        self._assign(Assignment.decision(package, version, self.decision_level, len(self._assignments)))
+        self._assign(
+            Assignment.decision(package, version, self.decision_level, len(self._assignments))
+        )
 
-    def derive(self, constraint, is_positive, cause):  # type: (Constraint, bool, Incompatibility) -> None
+    def derive(
+        self, constraint, is_positive, cause
+    ):  # type: (Constraint, bool, Incompatibility) -> None
         """
         Adds an assignment of package as a derivation.
         """
@@ -100,7 +105,8 @@ class PartialSolution:
                 cause,
                 self.decision_level,
                 len(self._assignments),
-            ))
+            )
+        )
 
     def _assign(self, assignment):  # type: (Assignment) -> None
         """

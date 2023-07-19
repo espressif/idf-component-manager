@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import tempfile
@@ -39,10 +39,13 @@ def test_checkout_git_source(monkeypatch):
     assert COMMIT_ID == source._checkout_git_source('*', temp_path)
 
 
-@pytest.mark.parametrize('path, component_path', [
-    (None, '.'),
-    ('test', 'test'),
-])
+@pytest.mark.parametrize(
+    'path, component_path',
+    [
+        (None, '.'),
+        ('test', 'test'),
+    ],
+)
 def test_git_source_component_path(path, component_path):
     source = sources.GitSource({'git': '', 'path': path})
     assert source.component_path == component_path

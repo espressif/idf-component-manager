@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -9,7 +9,13 @@ from filecmp import dircmp
 import pytest
 
 from idf_component_tools.archive_tools import (
-    ArchiveError, get_format_from_path, is_known_format, unpack_archive, unpack_tar, unpack_zip)
+    ArchiveError,
+    get_format_from_path,
+    is_known_format,
+    unpack_archive,
+    unpack_tar,
+    unpack_zip,
+)
 
 
 @pytest.fixture
@@ -39,10 +45,13 @@ class TestUtilsArchive(object):
         assert is_known_format('zip')
         assert is_known_format('gztar')
 
-    @pytest.mark.parametrize(['ext', 'func'], [
-        ('tar.gz', unpack_tar),
-        ('zip', unpack_zip),
-    ])
+    @pytest.mark.parametrize(
+        ['ext', 'func'],
+        [
+            ('tar.gz', unpack_tar),
+            ('zip', unpack_zip),
+        ],
+    )
     def test_unpack_archive_tgz(self, ext, func, archive_path, tmp_path):
         target = tmp_path / 'cmp'
 

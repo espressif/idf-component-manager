@@ -29,14 +29,24 @@ def test_raise_exception_on_warnings(monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', 'test')
 
     process = subprocess.Popen(
-        ['compote', '--warnings-as-errors', 'project', 'create-from-example', 'example/cmp=3.3.8:cmp'],
+        [
+            'compote',
+            '--warnings-as-errors',
+            'project',
+            'create-from-example',
+            'example/cmp=3.3.8:cmp',
+        ],
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
+        stderr=subprocess.PIPE,
+    )
     _, stderr = process.communicate()
     decoded = stderr.decode('utf-8')
 
     assert process.returncode == 1
-    assert 'ERROR: IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES is set to a non-numeric value.' in decoded
+    assert (
+        'ERROR: IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES is set to a non-numeric value.'
+        in decoded
+    )
     assert 'Please set the variable to the number of minutes. Disabling caching.' in decoded
 
 
@@ -60,11 +70,15 @@ def test_login_to_registry(monkeypatch, tmp_path, mock_registry, mock_token_info
 
 def test_logout_from_registry(monkeypatch, tmp_path):
     monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
-    config = Config({'profiles': {
-        'default': {
-            'api_token': 'asdf',
-        },
-    }})
+    config = Config(
+        {
+            'profiles': {
+                'default': {
+                    'api_token': 'asdf',
+                },
+            }
+        }
+    )
     ConfigManager().dump(config)
 
     runner = CliRunner()
@@ -79,7 +93,6 @@ def test_logout_from_registry(monkeypatch, tmp_path):
 def test_manifest_create_add_dependency(mock_registry):
     runner = CliRunner()
     with runner.isolated_filesystem() as tempdir:
-
         os.makedirs(os.path.join(tempdir, 'main'))
         os.makedirs(os.path.join(tempdir, 'components', 'foo'))
         os.makedirs(os.path.join(tempdir, 'src'))
@@ -94,21 +107,36 @@ def test_manifest_create_add_dependency(mock_registry):
         assert 'Created' in runner.invoke(cli, ['manifest', 'create', '--component', 'foo']).output
         assert 'Created' in runner.invoke(cli, ['manifest', 'create', '--path', src_path]).output
 
-        assert runner.invoke(cli, ['manifest', 'create', '--component', 'src', '--path', src_path]).exit_code == 1
+        assert (
+            runner.invoke(
+                cli, ['manifest', 'create', '--component', 'src', '--path', src_path]
+            ).exit_code
+            == 1
+        )
         for filepath in [main_manifest_path, foo_manifest_path]:
             with open(filepath, mode='r') as file:
                 assert file.readline().startswith('## IDF Component Manager')
 
-        assert 'Successfully added dependency' in runner.invoke(
-            cli, ['manifest', 'add-dependency', 'espressif/cmp']).output
+        assert (
+            'Successfully added dependency'
+            in runner.invoke(cli, ['manifest', 'add-dependency', 'espressif/cmp']).output
+        )
         manifest_manager = ManifestManager(main_manifest_path, 'main')
         assert manifest_manager.manifest_tree['dependencies']['espressif/cmp'] == '*'
-        assert 'Successfully added dependency' in runner.invoke(
-            cli, ['manifest', 'add-dependency', 'espressif/cmp', '--component', 'foo']).output
+        assert (
+            'Successfully added dependency'
+            in runner.invoke(
+                cli, ['manifest', 'add-dependency', 'espressif/cmp', '--component', 'foo']
+            ).output
+        )
         manifest_manager = ManifestManager(foo_manifest_path, 'foo')
         assert manifest_manager.manifest_tree['dependencies']['espressif/cmp'] == '*'
-        assert 'Successfully added dependency' in runner.invoke(
-            cli, ['manifest', 'add-dependency', 'espressif/cmp', '--path', src_path]).output
+        assert (
+            'Successfully added dependency'
+            in runner.invoke(
+                cli, ['manifest', 'add-dependency', 'espressif/cmp', '--path', src_path]
+            ).output
+        )
         manifest_manager = ManifestManager(src_manifest_path, 'src')
         assert manifest_manager.manifest_tree['dependencies']['espressif/cmp'] == '*'
 
@@ -124,7 +152,9 @@ def test_manifest_schema(tmp_path, valid_manifest):
     jsonschema.validate(valid_manifest, schema_dict)
 
     with pytest.raises(ValidationError, match=r"\[\{'if': 'foo < 5'}]"):
-        invalid_manifest = deepcopy(valid_manifest)['dependencies']['test']['rules'] = [{'if': 'foo < 5'}]
+        invalid_manifest = deepcopy(valid_manifest)['dependencies']['test']['rules'] = [
+            {'if': 'foo < 5'}
+        ]
         jsonschema.validate(invalid_manifest, schema_dict)
 
     with pytest.raises(ValidationError, match=r'\[1, 2, 3]'):

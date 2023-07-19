@@ -49,21 +49,23 @@ class Manifest(object):
     ]
 
     def __init__(
-            self,
-            dependencies=None,  # type: list[ComponentRequirement] | None # Dependencies, list of component
-            description=None,  # type: str | None # Human-readable description
-            download_url=None,  # type: str | None # Direct url for tarball download
-            maintainers=None,  # type: str | None # List of maintainers
-            manifest_hash=None,  # type: str | None # Check-sum of manifest content
-            name=None,  # type: str | None # Component name
-            targets=None,  # type: list[str] | None # List of supported chips
-            include_files=None,  # type: list[str] | None
-            exclude_files=None,  # type: list[str] | None
-            version=None,  # type: ComponentVersion | None # Version
-            tags=None,  # type: list[str] | None # List of tags
-            links=None,  # type: ComponentLinks | None # Links of the component
-            examples=None,  # type: list[dict[str, str]] | None # List of paths to the examples
-            manifest_manager=None,  # type: ManifestManager | None  # manifest manager who generate this manifest
+        self,
+        # Dependencies, list of component
+        dependencies=None,  # type: list[ComponentRequirement] | None
+        description=None,  # type: str | None # Human-readable description
+        download_url=None,  # type: str | None # Direct url for tarball download
+        maintainers=None,  # type: str | None # List of maintainers
+        manifest_hash=None,  # type: str | None # Check-sum of manifest content
+        name=None,  # type: str | None # Component name
+        targets=None,  # type: list[str] | None # List of supported chips
+        include_files=None,  # type: list[str] | None
+        exclude_files=None,  # type: list[str] | None
+        version=None,  # type: ComponentVersion | None # Version
+        tags=None,  # type: list[str] | None # List of tags
+        links=None,  # type: ComponentLinks | None # Links of the component
+        examples=None,  # type: list[dict[str, str]] | None # List of paths to the examples
+        # manifest manager who generate this manifest
+        manifest_manager=None,  # type: ManifestManager | None
     ):
         # type: (...) -> None
 
@@ -100,10 +102,10 @@ class Manifest(object):
 
     @classmethod
     def fromdict(
-            cls,
-            manifest_tree,  # type: dict
-            name,  # type: str
-            manifest_manager=None,  # type: ManifestManager | None
+        cls,
+        manifest_tree,  # type: dict
+        name,  # type: str
+        manifest_manager=None,  # type: ManifestManager | None
     ):  # type: (...) -> Manifest
         """Coverts manifest dict to manifest object"""
         manifest = cls(
@@ -144,7 +146,10 @@ class Manifest(object):
 
     @property
     def dependencies(self):  # type: () -> list[ComponentRequirement]
-        return sorted([dep for dep in self._dependencies if dep.meet_optional_dependencies], key=lambda d: d.name)
+        return sorted(
+            [dep for dep in self._dependencies if dep.meet_optional_dependencies],
+            key=lambda d: d.name,
+        )
 
     @property
     def manifest_hash(self):  # type: () -> str
@@ -168,21 +173,17 @@ class ComponentRequirement(object):
         'source',
         'version_spec',
         'meet_optional_dependencies',
-        {
-            'name': 'require',
-            'default': True,
-            'serialize_default': False
-        },
+        {'name': 'require', 'default': True, 'serialize_default': False},
     ]
 
     def __init__(
-            self,
-            name,  # type: str
-            source,  # type: BaseSource
-            version_spec='*',  # type: str
-            public=None,  # type: bool | None
-            if_clauses=None,  # type: list[IfClause] | None
-            require=None,  # type: str | bool | None
+        self,
+        name,  # type: str
+        source,  # type: BaseSource
+        version_spec='*',  # type: str
+        public=None,  # type: bool | None
+        if_clauses=None,  # type: list[IfClause] | None
+        require=None,  # type: str | bool | None
     ):
         # type: (...) -> None
         self.version_spec = version_spec
@@ -216,7 +217,8 @@ class ComponentRequirement(object):
 
     def __repr__(self):  # type: () -> str
         return 'ComponentRequirement("{}", {}, version_spec="{}", public={})'.format(
-            self._name, self.source, self.version_spec, self.public)
+            self._name, self.source, self.version_spec, self.public
+        )
 
     def __str__(self):  # type: () -> str
         return '{}({})'.format(self._name, self.version_spec)
@@ -225,7 +227,9 @@ class ComponentRequirement(object):
 @total_ordering
 @serializable(like='str')
 class ComponentVersion(object):
-    def __init__(self, version_string, dependencies=None):  # type: (str, list[ComponentRequirement] | None) -> None
+    def __init__(
+        self, version_string, dependencies=None
+    ):  # type: (str, list[ComponentRequirement] | None) -> None
         """
         version_string - can be `*`, git commit hash (hex, 160 bit) or valid semantic version string
         """
@@ -244,7 +248,12 @@ class ComponentVersion(object):
             self.is_semver = True
 
     def __eq__(self, other):
-        if hasattr(self, 'is_semver') and hasattr(other, 'is_semver') and self.is_semver and other.is_semver:
+        if (
+            hasattr(self, 'is_semver')
+            and hasattr(other, 'is_semver')
+            and self.is_semver
+            and other.is_semver
+        ):
             return self._semver == other._semver
         else:
             return str(self) == str(other)
@@ -304,6 +313,7 @@ class ComponentWithVersions(object):
 
 class ProjectRequirements(object):
     '''Representation of all manifests required by project'''
+
     def __init__(self, manifests):  # type: (list[Manifest]) -> None
         self.manifests = manifests
         self._manifest_hash = None  # type: str | None

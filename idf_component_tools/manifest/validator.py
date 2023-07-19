@@ -7,7 +7,14 @@ from schema import SchemaError
 
 import idf_component_tools as tools
 
-from ..errors import MetadataError, MetadataKeyError, MetadataKeyWarning, MetadataWarning, SourceError, hint
+from ..errors import (
+    MetadataError,
+    MetadataKeyError,
+    MetadataKeyWarning,
+    MetadataWarning,
+    SourceError,
+    hint,
+)
 from .constants import FULL_SLUG_REGEX, known_targets
 from .metadata import Metadata
 from .schemas import BUILD_METADATA_KEYS, INFO_METADATA_KEYS, KNOWN_FILES_KEYS, MANIFEST_SCHEMA
@@ -21,12 +28,13 @@ except ImportError:
 class ManifestValidator(object):
     SLUG_REGEX_COMPILED = re.compile(FULL_SLUG_REGEX)
     """Validator for manifest object, checks for structure, known fields and valid values"""
+
     def __init__(
-            self,
-            parsed_manifest,  # type: dict
-            check_required_fields=False,  # type: bool
-            version=None,  # type: str | None
-            metadata=None,  # type: Metadata | None
+        self,
+        parsed_manifest,  # type: dict
+        check_required_fields=False,  # type: bool
+        version=None,  # type: str | None
+        metadata=None,  # type: Metadata | None
     ):  # type: (...) -> None
         self.manifest_tree = parsed_manifest
         self.metadata = metadata
@@ -60,19 +68,30 @@ class ManifestValidator(object):
                 _k, _type = Metadata.get_closest_manifest_key_and_type(key)
                 hint(MetadataKeyWarning(_k, _type))
                 if manifest_root_key in self.manifest_tree:
-                    hint(MetadataWarning('Dropping key "{}" from manifest.'.format(manifest_root_key)))
+                    hint(
+                        MetadataWarning(
+                            'Dropping key "{}" from manifest.'.format(manifest_root_key)
+                        )
+                    )
                     self.manifest_tree.pop(manifest_root_key)
 
     def validate_normalize_dependencies(self):  # type: () -> None
         def _check_name(name):  # type: (str) -> None
             if not self.SLUG_REGEX_COMPILED.match(name):
                 self.add_error(
-                    'Component\'s name is not valid "%s", should contain only letters, numbers, /, _ and -.' % name)
+                    'Component\'s name is not valid "%s", should '
+                    'contain only letters, numbers, /, _ and -.' % name
+                )
 
             if '__' in name:
-                self.add_error('Component\'s name "%s" should not contain two consecutive underscores.' % name)
+                self.add_error(
+                    'Component\'s name "%s" should not contain two consecutive underscores.' % name
+                )
 
-        if 'dependencies' not in self.manifest_tree.keys() or not self.manifest_tree['dependencies']:
+        if (
+            'dependencies' not in self.manifest_tree.keys()
+            or not self.manifest_tree['dependencies']
+        ):
             return
 
         dependencies = self.manifest_tree['dependencies']
@@ -81,7 +100,8 @@ class ManifestValidator(object):
         if not isinstance(dependencies, dict):
             self.add_error(
                 'List of dependencies should be a dictionary.'
-                ' For example:\ndependencies:\n  some-component: ">=1.2.3,!=1.2.5"')
+                ' For example:\ndependencies:\n  some-component: ">=1.2.3,!=1.2.5"'
+            )
 
             return
 
@@ -104,8 +124,9 @@ class ManifestValidator(object):
                     self.add_error(str(unknown_keys_error))
             else:
                 self.add_error(
-                    '"%s" version have unknown format. Should be either version string or dictionary with details' %
-                    component)
+                    '"%s" version have unknown format. Should be either version '
+                    'string or dictionary with details' % component
+                )
                 continue
 
     def validate_normalize_required_keys(self):  # type: () -> None
@@ -114,9 +135,12 @@ class ManifestValidator(object):
             manifest_version = self.manifest_tree.get('version')
             if manifest_version and manifest_version != self.version:
                 self.add_error(
-                    'Manifest version ({}) does not match the version specified in the command line ({}). '
-                    'Please either remove `--version` CLI parameter or update version in the manifest.'.format(
-                        manifest_version, self.version))
+                    'Manifest version ({}) does not match the version '
+                    'specified in the command line ({}). Please either '
+                    'remove `--version` CLI parameter or update version in the manifest.'.format(
+                        manifest_version, self.version
+                    )
+                )
             else:
                 self.manifest_tree['version'] = str(self.version)
 
@@ -125,7 +149,9 @@ class ManifestValidator(object):
 
         if not self.manifest_tree.get('version'):
             self.add_error(
-                '"version" field is required in the "idf_component.yml" manifest when uploading to the registry.')
+                '"version" field is required in the "idf_component.yml" '
+                'manifest when uploading to the registry.'
+            )
 
     def validate_targets(self):  # type: () -> None
         targets = self.manifest_tree.get('targets', [])
@@ -136,7 +162,8 @@ class ManifestValidator(object):
         if not isinstance(targets, list):
             self.add_error(
                 'Unknown format for list of supported targets. '
-                'It should be a list of targets, like [esp32, esp32s2]')
+                'It should be a list of targets, like [esp32, esp32s2]'
+            )
             return
 
         # Check fields only during uploads to the registry

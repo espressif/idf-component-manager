@@ -23,10 +23,15 @@ class GitCommandError(Exception):
 
 
 class GitClient(object):
-    """ Set of tools for working with git repos """
-    def __init__(self, git_command='git', min_supported='2.0.0'):  # type: (str, Union[str, Version]) -> None
+    """Set of tools for working with git repos"""
+
+    def __init__(
+        self, git_command='git', min_supported='2.0.0'
+    ):  # type: (str, Union[str, Version]) -> None
         self.git_command = git_command or 'git'
-        self.git_min_supported = min_supported if isinstance(min_supported, Version) else Version(min_supported)
+        self.git_min_supported = (
+            min_supported if isinstance(min_supported, Version) else Version(min_supported)
+        )
 
         self._git_checked = False
         self._repo_updated = False
@@ -98,13 +103,13 @@ class GitClient(object):
     @_git_cmd
     @_bare_repo
     def prepare_ref(
-            self,
-            repo,  # type: str
-            bare_path,  # type: str
-            checkout_path,  # type: str
-            ref=None,  # type: str | None
-            with_submodules=True,  # type: bool
-            selected_paths=None  # type: list[str] | None
+        self,
+        repo,  # type: str
+        bare_path,  # type: str
+        checkout_path,  # type: str
+        ref=None,  # type: str | None
+        with_submodules=True,  # type: bool
+        selected_paths=None,  # type: list[str] | None
     ):  # type: (...) -> str
         """
         Checkout required branch to desired path. Create a bare repo, if necessary
@@ -130,9 +135,19 @@ class GitClient(object):
         commit_id = self.get_commit_id_by_ref(repo, bare_path, ref)
 
         # Checkout required branch
-        checkout_command = ['--work-tree', checkout_path, '--git-dir', bare_path, 'checkout', '--force', commit_id]
+        checkout_command = [
+            '--work-tree',
+            checkout_path,
+            '--git-dir',
+            bare_path,
+            'checkout',
+            '--force',
+            commit_id,
+        ]
         if selected_paths:
-            if '.gitmodules' not in selected_paths and self.has_gitmodules_by_ref(repo, bare_path, commit_id):
+            if '.gitmodules' not in selected_paths and self.has_gitmodules_by_ref(
+                repo, bare_path, commit_id
+            ):
                 # avoid submodule update failed
                 selected_paths += ['.gitmodules']
             checkout_command += ['--'] + selected_paths
@@ -144,9 +159,17 @@ class GitClient(object):
         if with_submodules:
             self.run(
                 [
-                    '--work-tree=.', '-C', checkout_path, '--git-dir', bare_path, 'submodule', 'update', '--init',
-                    '--recursive'
-                ])
+                    '--work-tree=.',
+                    '-C',
+                    checkout_path,
+                    '--git-dir',
+                    bare_path,
+                    'submodule',
+                    'update',
+                    '--init',
+                    '--recursive',
+                ]
+            )
 
         return commit_id
 
@@ -169,7 +192,9 @@ class GitClient(object):
     @_git_cmd
     @_bare_repo
     def has_gitmodules_by_ref(self, repo, bare_path, ref):  # type: (str, str, str) -> bool
-        return '.gitmodules' in self.run(['ls-tree', '--name-only', ref], cwd=bare_path).splitlines()
+        return (
+            '.gitmodules' in self.run(['ls-tree', '--name-only', ref], cwd=bare_path).splitlines()
+        )
 
     def run(self, args, cwd=None, env=None):  # type: (List[str], str | None, dict | None) -> str
         if cwd is None:
@@ -192,8 +217,9 @@ class GitClient(object):
                 warn(stderr.decode('utf-8'))
         else:
             raise GitCommandError(
-                "'git %s' failed with exit code %d \n%s\n%s" %
-                (' '.join(args), p.returncode, stderr.decode('utf-8'), stdout.decode('utf-8')))
+                "'git %s' failed with exit code %d \n%s\n%s"
+                % (' '.join(args), p.returncode, stderr.decode('utf-8'), stdout.decode('utf-8'))
+            )
 
         return stdout.decode('utf-8')
 
@@ -202,16 +228,17 @@ class GitClient(object):
 
         if version < self.git_min_supported:
             raise GitError(
-                'Your git version %s is older than minimally required %s.' % (
+                'Your git version %s is older than minimally required %s.'
+                % (
                     version,
                     self.git_min_supported,
-                ))
+                )
+            )
 
     def version(self):  # type: () -> Version
         try:
             git_version_str = subprocess.check_output(  # nosec
-                [self.git_command, '--version'],
-                stderr=subprocess.STDOUT
+                [self.git_command, '--version'], stderr=subprocess.STDOUT
             ).decode('utf-8')
         except OSError:
             raise GitError("git command wasn't found")

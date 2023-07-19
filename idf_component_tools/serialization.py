@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 '''Class decorators to help with serialization'''
 
@@ -25,7 +25,9 @@ def serialize(value, serialize_default=True):
         return value
 
     if isinstance(value, Mapping):
-        return OrderedDict((k, serialize(v, serialize_default)) for (k, v) in sorted(value.items(), key=_by_key))
+        return OrderedDict(
+            (k, serialize(v, serialize_default)) for (k, v) in sorted(value.items(), key=_by_key)
+        )
 
     if isinstance(value, Iterable):
         return [serialize(v, serialize_default) for v in value]
@@ -39,6 +41,7 @@ def serialize(value, serialize_default=True):
 def serializable(_cls=None, like='dict'):
     """Returns the same class with `serialize` method to handle nested structures.
     Requires `_serialization_properties` to be defined in the class"""
+
     def wrapper(cls):
         # Check if class is already serializable by custom implementation
         if hasattr(cls, 'serialize'):
@@ -53,19 +56,27 @@ def serializable(_cls=None, like='dict'):
                 for prop in properties:
                     if isinstance(prop, dict):
                         property_name = prop['name']
-                        if not serialize_default and not prop.get('serialize_default', True) and getattr(
-                                self, property_name) == prop.get('default', None):
+                        if (
+                            not serialize_default
+                            and not prop.get('serialize_default', True)
+                            and getattr(self, property_name) == prop.get('default', None)
+                        ):
                             continue
 
                         serialization_properties[property_name] = serialize(
-                            getattr(self, property_name), serialize_default)
+                            getattr(self, property_name), serialize_default
+                        )
                     else:
-                        serialization_properties[prop] = serialize(getattr(self, prop), serialize_default)
+                        serialization_properties[prop] = serialize(
+                            getattr(self, prop), serialize_default
+                        )
                 return OrderedDict(sorted(serialization_properties.items()))
+
         elif like == 'str':
 
             def _serialize(self, serialize_default=True):
                 return str(self)
+
         else:
             raise TypeError("'%s' is not known type for serialization" % like)
 

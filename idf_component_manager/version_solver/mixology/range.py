@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
 
 try:
     from typing import TYPE_CHECKING, Any, NoReturn, Optional
@@ -23,6 +23,7 @@ class Range(object):
 
     A single version is represented by Range(version, version, True, True).
     """
+
     def __init__(
         self,
         min=None,
@@ -78,6 +79,7 @@ class Range(object):
 
     def allows_all(self, other):  # type: (Range) -> bool
         from .union import Union  # fool the interpreter
+
         if other.is_empty():
             return True
 
@@ -88,6 +90,7 @@ class Range(object):
 
     def allows_any(self, other):  # type: (Range) -> bool
         from .union import Union  # fool the interpreter
+
         if other.is_empty():
             return False
 
@@ -98,6 +101,7 @@ class Range(object):
 
     def intersect(self, other):  # type: (_Union[Range, Union]) -> _Union[Range, Union]
         from .union import Union  # fool the interpreter
+
         if other.is_empty():
             return other
 
@@ -146,6 +150,7 @@ class Range(object):
 
     def union(self, other):  # type: (Range) -> _Union[Range, Union]
         from .union import Union  # fool the interpreter
+
         if isinstance(other, Union):
             return other.union(self)
 
@@ -178,11 +183,14 @@ class Range(object):
             return False
 
         return (
-            self.allows_any(other) or (self.max == other.min and (self.include_max or other.include_min))
-            or (self.min == other.max and (self.include_min or other.include_max)))
+            self.allows_any(other)
+            or (self.max == other.min and (self.include_max or other.include_min))
+            or (self.min == other.max and (self.include_min or other.include_max))
+        )
 
     def difference(self, other):  # type: (_Union[Range, Union]) -> _Union[Range, Union]
         from .union import Union  # fool the interpreter
+
         if other.is_empty():
             return self
 
@@ -293,18 +301,25 @@ class Range(object):
         if self.max != other.min:
             return False
 
-        return self.include_max and not other.include_min or not self.include_max and other.include_min
+        return (
+            self.include_max and not other.include_min or not self.include_max and other.include_min
+        )
 
     def is_single_version(self):  # type: () -> bool
-        return self.min is not None and self.min == self.max and self.include_min and self.include_max
+        return (
+            self.min is not None and self.min == self.max and self.include_min and self.include_max
+        )
 
     def __eq__(self, other):
         if not isinstance(other, Range):
             return False
 
         return (
-            self._min == other.min and self._max == other.max and self._include_min == other.include_min
-            and self._include_max == other.include_max)
+            self._min == other.min
+            and self._max == other.max
+            and self._include_min == other.include_min
+            and self._include_max == other.include_max
+        )
 
     def __lt__(self, other):
         return self._cmp(other) < 0
@@ -381,7 +396,9 @@ class Range(object):
 
     def __hash__(self):
         if self._hash is None:
-            self._hash = (hash(self.min) ^ hash(self.max) ^ hash(self.include_min) ^ hash(self.include_max))
+            self._hash = (
+                hash(self.min) ^ hash(self.max) ^ hash(self.include_min) ^ hash(self.include_max)
+            )
 
         return self._hash
 

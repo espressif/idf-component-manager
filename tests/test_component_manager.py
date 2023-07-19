@@ -175,12 +175,14 @@ def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_comp
     manifest = ManifestManager(tempdir, 'pre', check_required_fields=True).load()
     assert manifest.version == '3.0.0'
     assert set(list_dir(tempdir)) == set(
-        os.path.join(tempdir, file) for file in [
+        os.path.join(tempdir, file)
+        for file in [
             'idf_component.yml',
             'cmp.c',
             'CMakeLists.txt',
             os.path.join('include', 'cmp.h'),
-        ])
+        ]
+    )
 
 
 def test_pack_component_with_dest_dir(tmp_path, release_component_path):
@@ -223,14 +225,20 @@ def test_pack_component_with_examples(tmp_path, example_component_path):
 
     component_manager.pack_component('cmp', '2.3.4')
 
-    unpack_archive(str(Path(component_manager.dist_path, 'cmp_2.3.4.tgz')), str(tmp_path / 'unpack'))
+    unpack_archive(
+        str(Path(component_manager.dist_path, 'cmp_2.3.4.tgz')), str(tmp_path / 'unpack')
+    )
 
     assert (tmp_path / 'unpack' / 'examples' / 'cmp_ex').is_dir()
-    assert 'cmake_minimum_required(VERSION 3.16)' in (tmp_path / 'unpack' / 'examples' / 'cmp_ex' /
-                                                      'CMakeLists.txt').read_text()
+    assert (
+        'cmake_minimum_required(VERSION 3.16)'
+        in (tmp_path / 'unpack' / 'examples' / 'cmp_ex' / 'CMakeLists.txt').read_text()
+    )
 
 
-def test_pack_component_with_rules_if(tmp_path, release_component_path, valid_optional_dependency_manifest_with_idf):
+def test_pack_component_with_rules_if(
+    tmp_path, release_component_path, valid_optional_dependency_manifest_with_idf
+):
     project_path = tmp_path / 'cmp'
     copy_tree(release_component_path, str(project_path))
     with open(str(project_path / MANIFEST_FILENAME), 'w') as fw:
@@ -241,34 +249,36 @@ def test_pack_component_with_rules_if(tmp_path, release_component_path, valid_op
 
 
 @pytest.mark.parametrize(
-    'examples, message', [
+    'examples, message',
+    [
         (
-            [{
-                'path': './custom_example_path/cmp_ex'
-            }, {
-                'path': './custom_example_path_2/cmp_ex'
-            }], 'Examples from "./custom_example_path/cmp_ex" and "./custom_example_path_2/cmp_ex" '
-            'have the same name: cmp_ex.'),
+            [{'path': './custom_example_path/cmp_ex'}, {'path': './custom_example_path_2/cmp_ex'}],
+            'Examples from "./custom_example_path/cmp_ex" and "./custom_example_path_2/cmp_ex" '
+            'have the same name: cmp_ex.',
+        ),
         (
-            [{
-                'path': './custom_example_path'
-            }, {
-                'path': './custom_example_path'
-            }], 'Some paths in the `examples` block in the manifest are listed multiple times: ./custom_example_path'),
-        ([{
-            'path': './unknown_path'
-        }], 'Example directory doesn\'t exist:*'),
-    ])
+            [{'path': './custom_example_path'}, {'path': './custom_example_path'}],
+            'Some paths in the `examples` block in the manifest are listed multiple times: '
+            './custom_example_path',
+        ),
+        ([{'path': './unknown_path'}], 'Example directory doesn\'t exist:*'),
+    ],
+)
 def test_pack_component_with_examples_errors(tmp_path, example_component_path, examples, message):
     project_path = tmp_path / 'cmp'
     copy_tree(example_component_path, str(project_path))
     if len(examples) == 2 and examples[0] != examples[1]:  # Add second example
-        copy_tree(str(Path(example_component_path, 'custom_example_path')), str(project_path / 'custom_example_path_2'))
+        copy_tree(
+            str(Path(example_component_path, 'custom_example_path')),
+            str(project_path / 'custom_example_path_2'),
+        )
 
     component_manager = ComponentManager(path=str(project_path))
 
     # Add folder with the same name of the example
-    manifest_manager = ManifestManager(str(project_path), 'cmp', check_required_fields=True, version='2.3.4')
+    manifest_manager = ManifestManager(
+        str(project_path), 'cmp', check_required_fields=True, version='2.3.4'
+    )
     manifest_manager.manifest_tree['examples'] = examples
     manifest_manager.dump(str(project_path))
 
@@ -308,7 +318,10 @@ def test_create_example_component_not_exist(tmp_path):
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_create_example_not_exist.yaml')
 def test_create_example_version_not_exist(mock_registry, tmp_path):
     manager = ComponentManager(path=str(tmp_path))
-    with raises(FatalError, match='Version of the component "test/cmp" satisfying the spec "=2.0.0" was not found.'):
+    with raises(
+        FatalError,
+        match='Version of the component "test/cmp" satisfying the spec "=2.0.0" was not found.',
+    ):
         manager.create_project_from_example('test/cmp=2.0.0:example')
 
 
@@ -334,5 +347,7 @@ def test_yank_component_version(mock_registry, tmp_path):
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_yank_version_success.yaml')
 def test_yank_component_version_not_exists(mock_registry, tmp_path):
     manager = ComponentManager(path=str(tmp_path))
-    with raises(FatalError, match='Version 1.2.0 of the component \"test/cmp\" is not on the registry'):
+    with raises(
+        FatalError, match='Version 1.2.0 of the component \"test/cmp\" is not on the registry'
+    ):
         manager.yank_version('cmp', '1.2.0', 'critical test', namespace='test')

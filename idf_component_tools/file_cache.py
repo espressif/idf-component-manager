@@ -35,6 +35,7 @@ def system_cache_path():  # type: () -> str
 
 class FileCache(object):
     """Common functions to work with components cache"""
+
     def __init__(self, path=None):  # type: (str | None) -> None
         self._path = path  # type: str | None
 

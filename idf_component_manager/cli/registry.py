@@ -30,11 +30,13 @@ def init_registry():
         '--no-browser',
         is_flag=True,
         default=False,
-        help='Do not open browser and only print login URL to the terminal')
+        help='Do not open browser and only print login URL to the terminal',
+    )
     @click.option(
         '--description',
         default='Token created through CLI login',
-        help='Description for the token for future reference')
+        help='Description for the token for future reference',
+    )
     def login(service_profile, no_browser, description):
         """
         Login to the component registry
@@ -48,7 +50,8 @@ def init_registry():
         if 'api_token' in profile:
             raise FatalError(
                 'You are already logged in with profile "{}", '
-                'please either logout or use different profile'.format(service_profile))
+                'please either logout or use different profile'.format(service_profile)
+            )
 
         api_client, _ = service_details(service_profile=service_profile, token_required=False)
 
@@ -61,9 +64,17 @@ def init_registry():
         auth_request = requests.Request('GET', auth_url, params=auth_params).prepare()
 
         if no_browser:
-            print_info('Open this URL in your browser to login to the registry:\n\t{}'.format(auth_request.url))
+            print_info(
+                'Open this URL in your browser to login to the registry:\n\t{}'.format(
+                    auth_request.url
+                )
+            )
         else:
-            print_info('If browser did not open automatically please visit this URL:\n\t{}'.format(auth_request.url))
+            print_info(
+                'If browser did not open automatically please visit this URL:\n\t{}'.format(
+                    auth_request.url
+                )
+            )
             webbrowser.open(auth_request.url, new=2, autoraise=True)
 
         # Wait for token
@@ -78,7 +89,9 @@ def init_registry():
                 token_valid = True
             except APIClientError as e:
                 # Handle 401 and 403 explicitly
-                print_error('Provided token does not seem to be working: {}\nPlease try again.'.format(e))
+                print_error(
+                    'Provided token does not seem to be working: {}\nPlease try again.'.format(e)
+                )
                 continue
 
         # Save token to the profile

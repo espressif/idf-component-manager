@@ -6,8 +6,15 @@ import os
 import pytest
 
 from idf_component_tools.hash_tools import (
-    HashDoesNotExistError, HashNotEqualError, HashNotSHA256Error, hash_dir, hash_file, hash_object, validate_dir,
-    validate_managed_component_hash)
+    HashDoesNotExistError,
+    HashNotEqualError,
+    HashNotSHA256Error,
+    hash_dir,
+    hash_file,
+    hash_object,
+    validate_dir,
+    validate_managed_component_hash,
+)
 
 
 @pytest.fixture
@@ -42,11 +49,16 @@ class TestHashTools(object):
     def test_hash_dir_ignore(self, fixture_path):
         expected_sha = '299e78217cd6cb4f6962dde0de8c34a8aa8df7c80d8ac782d1944a4ec5b0ff8e'
 
-        assert hash_dir(
-            fixture_path(4), exclude=[
-                '**/ignore.dir/*',
-                '**/*.me',
-            ]) == expected_sha
+        assert (
+            hash_dir(
+                fixture_path(4),
+                exclude=[
+                    '**/ignore.dir/*',
+                    '**/*.me',
+                ],
+            )
+            == expected_sha
+        )
 
     def test_hash_not_equal(self, fixture_path):
         expected_sha = '299e78217cd6cb4f6962dde0de8c34a8aa8df7c80d8ac782d1944a4ec5b0ff8e'

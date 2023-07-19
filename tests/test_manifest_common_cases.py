@@ -38,14 +38,14 @@ def test_project_manifest_builder(valid_manifest):
 
 def test_validator_broken_deps():
     manifest = {
-        'dependencies': {
-            'dep1': [],
-            'dep2': 4
-        },
+        'dependencies': {'dep1': [], 'dep2': 4},
     }
     errors = ManifestValidator(manifest).validate_normalize()
     assert len(errors) == 6
-    assert errors[0] == 'Unknown number field "dependencies:*" in the manifest file that may affect build result'
+    assert (
+        errors[0]
+        == 'Unknown number field "dependencies:*" in the manifest file that may affect build result'
+    )
 
 
 def test_validator_valid_manifest(valid_manifest):
@@ -55,17 +55,22 @@ def test_validator_valid_manifest(valid_manifest):
 def test_validator_passed_version(valid_manifest):
     errors = ManifestValidator(valid_manifest, version='5.0.0').validate_normalize()
     assert len(errors) == 1
-    assert 'Manifest version (2.3.1~2) does not match the version specified in the command line (5.0.0).' in errors[0]
+    assert (
+        'Manifest version (2.3.1~2) does not match the version specified '
+        'in the command line (5.0.0).' in errors[0]
+    )
 
 
 @pytest.mark.parametrize(
-    'require_field,public,require', [
+    'require_field,public,require',
+    [
         ('public', True, True),
         ('private', False, True),
         ('no', None, False),
         (False, None, False),
         (None, None, True),
-    ])
+    ],
+)
 def test_require_field_public(require_field, public, require):
     test_manifest = {'dependencies': {'test': {'version': '*', 'require': require_field}}}
     manifest = Manifest.fromdict(test_manifest, name='test')

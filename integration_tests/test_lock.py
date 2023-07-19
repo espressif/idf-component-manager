@@ -13,19 +13,20 @@ from integration_tests.integration_test_helpers import project_action
 
 
 @pytest.mark.parametrize(
-    'project', [
+    'project',
+    [
         {
             'components': {
                 'main': {
                     'dependencies': {
-                        'example/cmp': {
-                            'version': '*'
-                        },
+                        'example/cmp': {'version': '*'},
                     }
                 }
             }
         },
-    ], indirect=True)
+    ],
+    indirect=True,
+)
 def test_download_component_hash_different_from_lock_file(project):
     res = project_action(project, 'reconfigure')
     assert 'Configuring done' in res
@@ -40,20 +41,22 @@ def test_download_component_hash_different_from_lock_file(project):
     component_hash_line_regex = re.compile('component_hash: .+$', re.MULTILINE)
     with open(lock_path, 'w') as fw:
         fw.write(
-            component_hash_line_regex.sub('component_hash: {}'.format(hashlib.sha256(b'foobar').hexdigest()), file_str))
+            component_hash_line_regex.sub(
+                'component_hash: {}'.format(hashlib.sha256(b'foobar').hexdigest()), file_str
+            )
+        )
 
     res = project_action(project, 'reconfigure')
     assert 'spoof' in res
 
 
 @pytest.mark.parametrize(
-    'project', [
-        {
-            'components': {
-                'main': {}
-            }
-        },
-    ], indirect=True)
+    'project',
+    [
+        {'components': {'main': {}}},
+    ],
+    indirect=True,
+)
 def test_lock_file_include_idf_without_explicit_idf_dependency(project):
     (Path(project) / 'main' / 'idf_component.yml').touch()
 

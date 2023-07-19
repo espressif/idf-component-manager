@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
 
 try:
     from typing import Dict, Generator, Hashable, List, Optional
@@ -9,8 +9,14 @@ except ImportError:
     pass
 
 from .incompatibility_cause import (
-    ConflictCause, DependencyCause, IncompatibilityCause, NoVersionsCause, PackageNotFoundCause, RootCause,
-    SelfDependentCause)
+    ConflictCause,
+    DependencyCause,
+    IncompatibilityCause,
+    NoVersionsCause,
+    PackageNotFoundCause,
+    RootCause,
+    SelfDependentCause,
+)
 from .package import Package
 from .term import Term
 
@@ -20,14 +26,22 @@ class Incompatibility:
         # Remove the root package from generated incompatibilities, since it will
         # always be satisfied. This makes error reporting clearer, and may also
         # make solving more efficient.
-        if (len(terms) != 1 and isinstance(cause, ConflictCause)
-                and any([term.is_positive() and term.package != Package.root() for term in terms])):
-            terms = [term for term in terms if not term.is_positive() or term.package != Package.root()]
+        if (
+            len(terms) != 1
+            and isinstance(cause, ConflictCause)
+            and any([term.is_positive() and term.package != Package.root() for term in terms])
+        ):
+            terms = [
+                term for term in terms if not term.is_positive() or term.package != Package.root()
+            ]
 
-        if (len(terms) == 1
-                # Short-circuit in the common case of a two-term incompatibility with
-                # two different packages (for example, a dependency).
-                or len(terms) == 2 and terms[0].package != terms[-1].package):
+        if (
+            len(terms) == 1
+            # Short-circuit in the common case of a two-term incompatibility with
+            # two different packages (for example, a dependency).
+            or len(terms) == 2
+            and terms[0].package != terms[-1].package
+        ):
             pass
         elif isinstance(cause, SelfDependentCause):
             # If one package depends on itself, don't coalesce these two terms.
@@ -94,7 +108,10 @@ class Incompatibility:
 
     def is_failure(self):  # type: () -> bool
         return len(self._terms) == 0 or (
-            len(self._terms) == 1 and self._terms[0].package == Package.root() and self._terms[0].is_positive())
+            len(self._terms) == 1
+            and self._terms[0].package == Package.root()
+            and self._terms[0].is_positive()
+        )
 
     def handle_cause(self):  # type: () -> Optional[str]
         if isinstance(self._cause, (DependencyCause, SelfDependentCause)):
@@ -106,14 +123,20 @@ class Incompatibility:
             assert not dependee.is_positive()
 
             if isinstance(self._cause, SelfDependentCause):
-                return '{} self depends on {}'.format(depender.to_string(allow_every=True), dependee.inverse)
+                return '{} self depends on {}'.format(
+                    depender.to_string(allow_every=True), dependee.inverse
+                )
             else:
-                return '{} depends on {}'.format(depender.to_string(allow_every=True), dependee.inverse)
+                return '{} depends on {}'.format(
+                    depender.to_string(allow_every=True), dependee.inverse
+                )
         elif isinstance(self._cause, NoVersionsCause):
             assert len(self._terms) == 1
             assert self._terms[0].is_positive()
 
-            return 'no versions of {} match {}'.format(self._terms[0].package, self._terms[0].constraint.constraint)
+            return 'no versions of {} match {}'.format(
+                self._terms[0].package, self._terms[0].constraint.constraint
+            )
         elif isinstance(self._cause, PackageNotFoundCause):
             assert len(self._terms) == 1
             assert self._terms[0].is_positive()
@@ -152,8 +175,8 @@ class Incompatibility:
 
             if term1.is_positive() == term2.is_positive():
                 if term1.is_positive():
-                    package1 = (term1.package if term1.constraint.is_any() else self._terse(term1))
-                    package2 = (term2.package if term2.constraint.is_any() else self._terse(term2))
+                    package1 = term1.package if term1.constraint.is_any() else self._terse(term1)
+                    package2 = term2.package if term2.constraint.is_any() else self._terse(term2)
 
                     return '{} is incompatible with {}'.format(package1, package2)
                 else:
@@ -172,7 +195,9 @@ class Incompatibility:
             if len(positive) == 1:
                 positive_term = [term for term in self._terms if term.is_positive()][0]
 
-                return '{} requires {}'.format(positive_term.to_string(allow_every=True), ' or '.join(negative))
+                return '{} requires {}'.format(
+                    positive_term.to_string(allow_every=True), ' or '.join(negative)
+                )
             else:
                 return 'if {} then {}'.format(' and '.join(positive), ' or '.join(negative))
         elif positive:
@@ -180,7 +205,9 @@ class Incompatibility:
         else:
             return 'one of {} must be true'.format(' or '.join(negative))
 
-    def and_to_string(self, other, details, this_line, other_line):  # type: (Incompatibility, dict, int, int) -> str
+    def and_to_string(
+        self, other, details, this_line, other_line
+    ):  # type: (Incompatibility, dict, int, int) -> str
         requires_both = self._try_requires_both(other, details, this_line, other_line)
         if requires_both is not None:
             return requires_both
@@ -205,7 +232,8 @@ class Incompatibility:
         return '\n'.join(buffer)
 
     def _try_requires_both(
-            self, other, details, this_line, other_line):  # type: (Incompatibility, dict, int, int) -> Optional[str]
+        self, other, details, this_line, other_line
+    ):  # type: (Incompatibility, dict, int, int) -> Optional[str]
         if len(self._terms) == 1 or len(other.terms) == 1:
             return
 
@@ -220,12 +248,18 @@ class Incompatibility:
         if this_positive.package != other_positive.package:
             return
 
-        this_negatives = ' or '.join([term.inverse.to_string() for term in self._terms if not term.is_positive()])
+        this_negatives = ' or '.join(
+            [term.inverse.to_string() for term in self._terms if not term.is_positive()]
+        )
 
-        other_negatives = ' or '.join([term.inverse.to_string() for term in other.terms if not term.is_positive()])
+        other_negatives = ' or '.join(
+            [term.inverse.to_string() for term in other.terms if not term.is_positive()]
+        )
 
         buffer = [self._terse(this_positive, allow_every=True) + ' ']
-        is_dependency = isinstance(self.cause, DependencyCause) and isinstance(other.cause, DependencyCause)
+        is_dependency = isinstance(self.cause, DependencyCause) and isinstance(
+            other.cause, DependencyCause
+        )
 
         if is_dependency:
             buffer.append('depends on')
@@ -244,7 +278,8 @@ class Incompatibility:
         return ''.join(buffer)
 
     def _try_requires_through(
-            self, other, details, this_line, other_line):  # type: (Incompatibility, dict, int, int) -> Optional[str]
+        self, other, details, this_line, other_line
+    ):  # type: (Incompatibility, dict, int, int) -> Optional[str]
         if len(self._terms) == 1 or len(other.terms) == 1:
             return
 
@@ -257,15 +292,23 @@ class Incompatibility:
         this_positive = self._single_term_where(lambda term: term.is_positive())
         other_positive = self._single_term_where(lambda term: term.is_positive())
 
-        if (this_negative is not None and other_positive is not None and this_negative.package == other_positive.package
-                and this_negative.inverse.satisfies(other_positive)):
+        if (
+            this_negative is not None
+            and other_positive is not None
+            and this_negative.package == other_positive.package
+            and this_negative.inverse.satisfies(other_positive)
+        ):
             prior = self
             prior_negative = this_negative
             prior_line = this_line
             latter = other
             latter_line = other_line
-        elif (other_negative is not None and this_positive is not None
-              and other_negative.package == this_positive.package and other_negative.inverse.satisfies(this_positive)):
+        elif (
+            other_negative is not None
+            and this_positive is not None
+            and other_negative.package == this_positive.package
+            and other_negative.inverse.satisfies(this_positive)
+        ):
             prior = other
             prior_negative = other_negative
             prior_line = other_line
@@ -299,7 +342,11 @@ class Incompatibility:
         else:
             buffer.append('requires ')
 
-        buffer.append(' or '.join([term.inverse.to_string() for term in latter.terms if not term.is_positive()]))
+        buffer.append(
+            ' or '.join(
+                [term.inverse.to_string() for term in latter.terms if not term.is_positive()]
+            )
+        )
 
         if latter_line is not None:
             buffer.append(' ({})'.format(latter_line))
@@ -307,7 +354,8 @@ class Incompatibility:
         return ''.join(buffer)
 
     def _try_requires_forbidden(
-            self, other, details, this_line, other_line):  # type: (Incompatibility, dict, int, int) -> Optional[str]
+        self, other, details, this_line, other_line
+    ):  # type: (Incompatibility, dict, int, int) -> Optional[str]
         if len(self._terms) != 1 and len(other.terms) != 1:
             return None
 

@@ -38,7 +38,9 @@ def parse_constraint(spec):  # type: (str) -> _Union[Union, Range]
     return constraint
 
 
-def parse_single_constraint(_range):  # type: (_Union[SemverRange, HashedComponentVersion]) -> _Union[Union, Range]
+def parse_single_constraint(
+    _range,
+):  # type: (_Union[SemverRange, HashedComponentVersion]) -> _Union[Union, Range]
     if isinstance(_range, HashedComponentVersion):  # not semver
         return Range(_range, _range, True, True, _range.text)
 
@@ -88,10 +90,8 @@ class PackageSource(BasePackageSource):
         return self._root_version
 
     def add(
-            self,
-            package,
-            version,
-            deps=None):  # type: (Package, _Union[str, HashedComponentVersion],  Optional[Dict[Package, str]]) -> None
+        self, package, version, deps=None
+    ):  # type:(Package, _Union[str, HashedComponentVersion],  Optional[Dict[Package, str]]) -> None
         if deps is None:
             deps = {}
 
@@ -121,7 +121,8 @@ class PackageSource(BasePackageSource):
         for package in self._packages.keys():
             for version in self._packages[package].keys():
                 self._packages[package][version] = [
-                    elem for elem in self._packages[package][version]
+                    elem
+                    for elem in self._packages[package][version]
                     if elem.package.source.is_overrider or elem.package.name not in overriders
                 ]
 
@@ -131,7 +132,9 @@ class PackageSource(BasePackageSource):
 
         self._root_dependencies.append(Dependency(package, spec))
 
-    def _versions_for(self, package, constraint=None):  # type: (Package, Any) -> List[HashedComponentVersion]
+    def _versions_for(
+        self, package, constraint=None
+    ):  # type: (Package, Any) -> List[HashedComponentVersion]
         if package not in self._packages:
             return []
 
@@ -165,7 +168,8 @@ class PackageSource(BasePackageSource):
                     r.include_min,
                     r.include_max,
                     str(r),
-                ) for r in dependency.constraint.ranges
+                )
+                for r in dependency.constraint.ranges
             ]
             constraint = Union.of(ranges)
         else:

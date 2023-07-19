@@ -52,7 +52,9 @@ def test_local_relative_path_without_context(tmp_path):
     sub_component_path = tmp_path / 'sub'
     os.makedirs(str(sub_component_path))
 
-    source = LocalSource(source_details={'path': str(os.path.relpath(str(sub_component_path), os.getcwd()))})
+    source = LocalSource(
+        source_details={'path': str(os.path.relpath(str(sub_component_path), os.getcwd()))}
+    )
     cmp = SolvedComponent('test/cmp', '1.0.1', source)
 
     with raises(ManifestContextError):
@@ -67,7 +69,9 @@ def test_local_relative_path_not_exists(tmp_path):
 
     with raises(SourcePathError):
         source = LocalSource(
-            source_details={'path': '../sub'}, manifest_manager=ManifestManager(str(main_component_path), 'main'))
+            source_details={'path': '../sub'},
+            manifest_manager=ManifestManager(str(main_component_path), 'main'),
+        )
         cmp = SolvedComponent('test/cmp', '1.0.1', source)
         source.download(cmp, str(main_component_path))
 
@@ -79,7 +83,9 @@ def test_local_relative_path_success(tmp_path):
     os.makedirs(str(sub_component_path))
 
     source = LocalSource(
-        source_details={'path': '../../sub'}, manifest_manager=ManifestManager(str(main_component_path), 'main'))
+        source_details={'path': '../../sub'},
+        manifest_manager=ManifestManager(str(main_component_path), 'main'),
+    )
     cmp = SolvedComponent('test/cmp', '1.0.1', source)
     assert source.download(cmp, str(main_component_path))
     assert source._path.name == sub_component_path.name  # Path.name for Python <3.6 compatibility
@@ -92,7 +98,9 @@ def test_local_path_name_warning(release_component_path):
 
     with warnings.catch_warnings(record=True) as w:
         source.download(component, 'test')
-        assert 'Component name "not_cmp" doesn\'t match the directory name "cmp"' in str(w[-1].message)
+        assert 'Component name "not_cmp" doesn\'t match the directory name "cmp"' in str(
+            w[-1].message
+        )
 
 
 def test_local_path_name_no_warning(capsys, release_component_path):

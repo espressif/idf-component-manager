@@ -42,7 +42,9 @@ def get_token(profile, token_required=True):  # type: (dict[str, str], bool) -> 
     return token
 
 
-def get_profile(config_path=None, profile_name=None):  # type: (str | None, str | None) -> dict[str, str]
+def get_profile(
+    config_path=None, profile_name=None
+):  # type: (str | None, str | None) -> dict[str, str]
     config = ConfigManager(path=config_path).load()
 
     profile_name_env_deprecated = os.getenv('IDF_COMPONENT_SERVICE_PROFILE')
@@ -51,14 +53,17 @@ def get_profile(config_path=None, profile_name=None):  # type: (str | None, str 
         warnings.warn(
             'IDF_COMPONENT_SERVICE_PROFILE environment variable is deprecated. '
             'Please use IDF_COMPONENT_REGISTRY_PROFILE instead',
-            category=UserDeprecationWarning)
+            category=UserDeprecationWarning,
+        )
 
     profile_name_env = os.getenv('IDF_COMPONENT_REGISTRY_PROFILE')
 
     if profile_name_env and profile_name_env_deprecated:
         warnings.warn(
             'Both IDF_COMPONENT_SERVICE_PROFILE and IDF_COMPONENT_REGISTRY_PROFILE '
-            'environment variables are defined. The value of IDF_COMPONENT_REGISTRY_PROFILE is used.')
+            'environment variables are defined. The value of IDF_COMPONENT_REGISTRY_PROFILE '
+            'is used.'
+        )
 
     return config.profiles.get(profile_name_env or profile_name_env_deprecated or profile_name, {})
 
@@ -73,11 +78,20 @@ def service_details(
     profile = get_profile(config_path, profile_name)
 
     if profile:
-        print_info('Selected profile "{}" from the idf_component_manager.yml config file'.format(profile_name))
+        print_info(
+            'Selected profile "{}" from the idf_component_manager.yml config file'.format(
+                profile_name
+            )
+        )
     elif profile_name != 'default' and not profile:
-        raise NoSuchProfile('Profile "{}" not found in the idf_component_manager.yml config file'.format(profile_name))
+        raise NoSuchProfile(
+            'Profile "{}" not found in the idf_component_manager.yml config file'.format(
+                profile_name
+            )
+        )
 
-    # Priorities: Environment variables > profile value in `idf_component_manager.yml` file > built-in default
+    # Priorities:
+    # Environment variables > profile value in `idf_component_manager.yml` file > built-in default
     registry_url, storage_url = component_registry_url(registry_profile=profile)
 
     # Priorities: CLI option > IDF_COMPONENT_NAMESPACE env variable > profile value > Default

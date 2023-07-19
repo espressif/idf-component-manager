@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2016 Python-SemanticVersion project
 # SPDX-License-Identifier: BSD 2-Clause License
-# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
 """Test conformance to the specs."""
 
 import unittest
@@ -16,6 +16,7 @@ SimpleSpec = semver.SimpleSpec
 
 class FormatTests(unittest.TestCase):
     """Tests proper version validation."""
+
     def test_major_minor_patch(self):
         # SPEC:
         # A normal version number MUST take the form X.Y.Z
@@ -66,7 +67,7 @@ class FormatTests(unittest.TestCase):
             Version('1.2.3 -23')
         # Valid
         v = Version('1.2.3-23')
-        self.assertEqual(('23', ), v.prerelease)
+        self.assertEqual(('23',), v.prerelease)
 
         # SPEC:
         # Identifiers MUST comprise only ASCII alphanumerics and hyphen.

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2016 Python-SemanticVersion project
 # SPDX-License-Identifier: BSD 2-Clause License
-# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
 
 import functools
 import re
@@ -74,10 +74,20 @@ class AlphaIdentifier(object):
 
 
 class Version(object):
-    version_re = re.compile(r'^(\d+)\.(\d+)\.(\d+)(?:~(\d+))?(?:-([0-9a-zA-Z.-]+))?(?:\+([0-9a-zA-Z.-]+))?$')
+    version_re = re.compile(
+        r'^(\d+)\.(\d+)\.(\d+)(?:~(\d+))?(?:-([0-9a-zA-Z.-]+))?(?:\+([0-9a-zA-Z.-]+))?$'
+    )
 
     def __init__(
-            self, version_string=None, major=None, minor=None, patch=None, revision=None, prerelease=None, build=None):
+        self,
+        version_string=None,
+        major=None,
+        minor=None,
+        patch=None,
+        revision=None,
+        prerelease=None,
+        build=None,
+    ):
         has_text = version_string is not None
         has_parts = not (major is minor is patch is prerelease is build is None)
         if not has_text ^ has_parts:
@@ -187,7 +197,7 @@ class Version(object):
         if not match:
             raise ValueError('Version string lacks a numerical component: %r' % version_string)
 
-        version = version_string[:match.end()]
+        version = version_string[: match.end()]
         if '~' in version:
             version, revision = version.split('~')
         else:
@@ -201,12 +211,14 @@ class Version(object):
         # Version is of the form nn, nn.pp or nn.pp.qq
         version = '.'.join(
             # If the part was '0', we end up with an empty string.
-            part.lstrip('0') or '0' for part in version.split('.'))
+            part.lstrip('0') or '0'
+            for part in version.split('.')
+        )
 
         if match.end() == len(version_string):
             return Version(version, revision=revision)
 
-        rest = version_string[match.end():]
+        rest = version_string[match.end() :]  # noqa
 
         # Cleanup the 'rest'
         rest = re.sub(r'[^a-zA-Z0-9+.-]', '-', rest)
@@ -270,7 +282,9 @@ class Version(object):
         patch = cls._coerce(patch)
         revision = int(revision) if revision else 0
         if revision < 0:
-            raise ValueError('Invalid revision number, must be an integer greater than or equal to 0')
+            raise ValueError(
+                'Invalid revision number, must be an integer greater than or equal to 0'
+            )
 
         if not prerelease:
             prerelease = ()
@@ -290,25 +304,34 @@ class Version(object):
     def _validate_identifiers(cls, identifiers, allow_leading_zeroes=False):
         for item in identifiers:
             if not item:
-                raise ValueError('Invalid empty identifier %r in %r' % (item, '.'.join(identifiers)))
+                raise ValueError(
+                    'Invalid empty identifier %r in %r' % (item, '.'.join(identifiers))
+                )
 
             if item[0] == '0' and item.isdigit() and item != '0' and not allow_leading_zeroes:
                 raise ValueError('Invalid leading zero in identifier %r' % item)
 
     @classmethod
     def _validate_kwargs(cls, major, minor, patch, revision, prerelease, build):
-        if (major != int(major) or minor != cls._coerce(minor) or patch != cls._coerce(patch)
-                or revision != int(revision)):
+        if (
+            major != int(major)
+            or minor != cls._coerce(minor)
+            or patch != cls._coerce(patch)
+            or revision != int(revision)
+        ):
             raise ValueError(
                 'Invalid kwargs to Version(major=%r, minor=%r, patch=%r, revision=%r, '
-                'prerelease=%r, build=%r' % (major, minor, patch, revision, prerelease, build))
+                'prerelease=%r, build=%r' % (major, minor, patch, revision, prerelease, build)
+            )
         if prerelease is not None:
             cls._validate_identifiers(prerelease, allow_leading_zeroes=False)
         if build is not None:
             cls._validate_identifiers(build, allow_leading_zeroes=True)
 
     def __iter__(self):
-        return iter((self.major, self.minor, self.patch, self.revision, self.prerelease, self.build))
+        return iter(
+            (self.major, self.minor, self.patch, self.revision, self.prerelease, self.build)
+        )
 
     def __str__(self):
         version = '%d' % self.major
@@ -332,16 +355,19 @@ class Version(object):
         )
 
     def __hash__(self):
-        return hash((self.major, self.minor, self.patch, self.revision, self.prerelease, self.build))
+        return hash(
+            (self.major, self.minor, self.patch, self.revision, self.prerelease, self.build)
+        )
 
     @property
     def precedence_key(self):
         if self.prerelease:
             prerelease_key = tuple(
                 NumericIdentifier(part) if re.match(r'^[0-9]+$', part) else AlphaIdentifier(part)
-                for part in self.prerelease)
+                for part in self.prerelease
+            )
         else:
-            prerelease_key = (MaxIdentifier(), )
+            prerelease_key = (MaxIdentifier(),)
 
         return (
             self.major,
@@ -367,9 +393,13 @@ class Version(object):
         if not isinstance(other, self.__class__):
             return NotImplemented
         return (
-            self.major == other.major and self.minor == other.minor and self.patch == other.patch
-            and (self.revision == other.revision) and (self.prerelease or ()) == (other.prerelease or ())
-            and (self.build or ()) == (other.build or ()))
+            self.major == other.major
+            and self.minor == other.minor
+            and self.patch == other.patch
+            and (self.revision == other.revision)
+            and (self.prerelease or ()) == (other.prerelease or ())
+            and (self.build or ()) == (other.build or ())
+        )
 
     def __ne__(self, other):
         if not isinstance(other, self.__class__):
@@ -431,6 +461,7 @@ class BaseSpec(object):
         AllOf(...),
     )
     """
+
     def __init__(self, expression):
         super(BaseSpec, self).__init__()
         self.expression = expression
@@ -514,8 +545,7 @@ class Clause(object):
         raise NotImplementedError()
 
     def prettyprint(self, indent='\t'):
-        """Pretty-print the clause.
-        """
+        """Pretty-print the clause."""
         return '\n'.join(self._pretty()).replace('\t', indent)
 
     def _pretty(self):
@@ -688,7 +718,7 @@ class Never(Matcher):
         return False
 
     def __hash__(self):
-        return hash((Never, ))
+        return hash((Never,))
 
     def __eq__(self, other):
         return isinstance(other, self.__class__)
@@ -710,7 +740,7 @@ class Always(Matcher):
         return True
 
     def __hash__(self):
-        return hash((Always, ))
+        return hash((Always,))
 
     def __eq__(self, other):
         return isinstance(other, self.__class__)
@@ -747,10 +777,14 @@ class Range(Matcher):
 
     __slots__ = ['operator', 'target', 'prerelease_policy', 'build_policy']
 
-    def __init__(self, operator, target, prerelease_policy=PRERELEASE_NATURAL, build_policy=BUILD_IMPLICIT):
+    def __init__(
+        self, operator, target, prerelease_policy=PRERELEASE_NATURAL, build_policy=BUILD_IMPLICIT
+    ):
         super(Range, self).__init__()
         if target.build and operator not in (self.OP_EQ, self.OP_NEQ):
-            raise ValueError('Invalid range %s%s: build numbers have no ordering.' % (operator, target))
+            raise ValueError(
+                'Invalid range %s%s: build numbers have no ordering.' % (operator, target)
+            )
         self.operator = operator
         self.target = target  # type: Version
         self.prerelease_policy = prerelease_policy
@@ -770,15 +804,20 @@ class Range(Matcher):
             if self.build_policy == self.BUILD_STRICT:
                 return (
                     self.target.truncate('prerelease') == version.truncate('prerelease')
-                    and version.build == self.target.build)
+                    and version.build == self.target.build
+                )
             return version == self.target
         elif self.operator == self.OP_GT:
             return version > self.target
         elif self.operator == self.OP_GTE:
             return version >= self.target
         elif self.operator == self.OP_LT:
-            if (version.prerelease and self.prerelease_policy == self.PRERELEASE_NATURAL
-                    and version.truncate() == self.target.truncate() and not self.target.prerelease):
+            if (
+                version.prerelease
+                and self.prerelease_policy == self.PRERELEASE_NATURAL
+                and version.truncate() == self.target.truncate()
+                and not self.target.prerelease
+            ):
                 return False
             return version < self.target
         elif self.operator == self.OP_LTE:
@@ -788,10 +827,15 @@ class Range(Matcher):
             if self.build_policy == self.BUILD_STRICT:
                 return not (
                     self.target.truncate('prerelease') == version.truncate('prerelease')
-                    and version.build == self.target.build)
+                    and version.build == self.target.build
+                )
 
-            if (version.prerelease and self.prerelease_policy == self.PRERELEASE_NATURAL
-                    and version.truncate() == self.target.truncate() and not self.target.prerelease):
+            if (
+                version.prerelease
+                and self.prerelease_policy == self.PRERELEASE_NATURAL
+                and version.truncate() == self.target.truncate()
+                and not self.target.prerelease
+            ):
                 return False
             return version != self.target
 
@@ -800,17 +844,25 @@ class Range(Matcher):
 
     def __eq__(self, other):
         return (
-            isinstance(other, self.__class__) and self.operator == other.operator and self.target == other.target
-            and self.prerelease_policy == other.prerelease_policy)
+            isinstance(other, self.__class__)
+            and self.operator == other.operator
+            and self.target == other.target
+            and self.prerelease_policy == other.prerelease_policy
+        )
 
     def __str__(self):
         return '%s%s' % (self.operator, self.target)
 
     def __repr__(self):
         policy_part = (
-            '' if self.prerelease_policy == self.PRERELEASE_NATURAL else ', prerelease_policy=%r' %
-            self.prerelease_policy) + (
-                '' if self.build_policy == self.BUILD_IMPLICIT else ', build_policy=%r' % self.build_policy)
+            ''
+            if self.prerelease_policy == self.PRERELEASE_NATURAL
+            else ', prerelease_policy=%r' % self.prerelease_policy
+        ) + (
+            ''
+            if self.build_policy == self.BUILD_IMPLICIT
+            else ', build_policy=%r' % self.build_policy
+        )
         return 'Range(%r, %r%s)' % (
             self.operator,
             self.target,
@@ -845,7 +897,9 @@ class SimpleSpec(BaseSpec):
             (?:-(?P<prerel>[a-z0-9A-Z.-]*))?
             (?:\+(?P<build>[a-z0-9A-Z.-]*))?
             $
-            """.format(nb=NUMBER),
+            """.format(
+                nb=NUMBER
+            ),
             re.VERBOSE,
         )
 
@@ -881,7 +935,9 @@ class SimpleSpec(BaseSpec):
         def parse_block(cls, expr):
             if not cls.NAIVE_SPEC.match(expr):
                 raise ValueError('Invalid simple spec component: %r' % expr)
-            prefix, major_t, minor_t, patch_t, revision, prerel, build = cls.NAIVE_SPEC.match(expr).groups()
+            prefix, major_t, minor_t, patch_t, revision, prerel, build = cls.NAIVE_SPEC.match(
+                expr
+            ).groups()
             prefix = cls.PREFIX_ALIASES.get(prefix, prefix)
 
             major = None if major_t in cls.EMPTY_VALUES else int(major_t)

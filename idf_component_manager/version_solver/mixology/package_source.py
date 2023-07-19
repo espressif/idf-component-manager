@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
 
 from idf_component_tools.manifest import HashedComponentVersion
 
@@ -63,6 +63,7 @@ class PackageSource(object):
 
     __eq__() should be defined.
     """
+
     def __init__(self):  # type: () -> None
         self._root_package = Package.root()
 
@@ -74,7 +75,9 @@ class PackageSource(object):
     def root_version(self):  # type: () -> HashedComponentVersion
         raise NotImplementedError()
 
-    def versions_for(self, package, constraint=None):  # type: (Package, Any) -> List[HashedComponentVersion]
+    def versions_for(
+        self, package, constraint=None
+    ):  # type: (Package, Any) -> List[HashedComponentVersion]
         """
         Search for the specifications that match the given constraint.
         """
@@ -83,7 +86,9 @@ class PackageSource(object):
 
         return self._versions_for(package, constraint)
 
-    def _versions_for(self, package, constraint=None):  # type: (Package, Any) -> List[HashedComponentVersion]
+    def _versions_for(
+        self, package, constraint=None
+    ):  # type: (Package, Any) -> List[HashedComponentVersion]
         raise NotImplementedError()
 
     def dependencies_for(self, package, version):  # type: (Package, Any) -> List[Any]
@@ -96,7 +101,9 @@ class PackageSource(object):
         """
         raise NotImplementedError()
 
-    def incompatibilities_for(self, package, version):  # type: (Package, Any) -> List[Incompatibility]
+    def incompatibilities_for(
+        self, package, version
+    ):  # type: (Package, Any) -> List[Incompatibility]
         """
         Returns the incompatibilities of a given package and version
         """

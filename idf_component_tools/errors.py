@@ -18,19 +18,24 @@ class MetadataWarning(UserHint):
 
 class MetadataKeyWarning(MetadataWarning):
     def __init__(self, field_name, field_type):
-        super(MetadataKeyWarning,
-              self).__init__('Unknown {} field "{}" in the manifest file'.format(field_type, field_name))
+        super(MetadataKeyWarning, self).__init__(
+            'Unknown {} field "{}" in the manifest file'.format(field_type, field_name)
+        )
 
 
 class UserDeprecationWarning(UserWarning):
     pass
 
 
-def warn(message):  # type: (Exception | str) -> None
+def warn(
+    message,
+):  # type: (Exception | str) -> None
     warnings.warn(str(message))
 
 
-def hint(message):  # type: (Warning | Exception | str) -> None
+def hint(
+    message,
+):  # type: (Warning | Exception | str) -> None
     if isinstance(message, Warning):
         warnings.warn(message)
     else:
@@ -39,6 +44,7 @@ def hint(message):  # type: (Warning | Exception | str) -> None
 
 class FatalError(RuntimeError):
     """Generic unrecoverable runtime error"""
+
     exit_code = 2
 
     def __init__(self, *args, **kwargs):  # type: (Any, Any) -> None
@@ -50,14 +56,20 @@ class FatalError(RuntimeError):
 
 class InternalError(RuntimeError):
     """Internal Error, should report to us"""
+
     def __init__(self):
         super(InternalError, self).__init__(
-            'This is an internal error. Please report on `https://github.com/espressif/idf-component-manager/issues '
-            'with your operating system, idf-component-manager version, and the traceback log. Thanks for reporting!')
+            'This is an internal error. Please report on '
+            '`https://github.com/espressif/idf-component-manager/issues '
+            'with your operating system, idf-component-manager version, '
+            'and the traceback log. Thanks for reporting! '
+        )
 
 
 class NothingToDoError(FatalError):
-    '''Generic Runtime error for states when operation is prematurely aborted due to nothing to do'''
+    '''Generic Runtime error for states when operation is prematurely
+    aborted due to nothing to do'''
+
     exit_code = 144  # NOP
 
 
@@ -98,7 +110,10 @@ class MetadataError(ProcessingError):
 class MetadataKeyError(ProcessingError):
     def __init__(self, field_name, field_type):
         super(MetadataKeyError, self).__init__(
-            'Unknown {} field "{}" in the manifest file that may affect build result'.format(field_type, field_name))
+            'Unknown {} field "{}" in the manifest file that may affect build result'.format(
+                field_type, field_name
+            )
+        )
 
 
 class LockError(ProcessingError):

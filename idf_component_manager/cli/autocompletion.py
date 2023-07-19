@@ -24,10 +24,10 @@ def _get_shell_completion(shell):  # type: (str) -> str
 
 
 def _append_text_line(
-        strings,  # type: str | list[str]
-        filepath,  # type: str
-        write_string=None,  # type: str | None
-        dry_run=False  # type: bool
+    strings,  # type: str | list[str]
+    filepath,  # type: str
+    write_string=None,  # type: str | None
+    dry_run=False,  # type: bool
 ):  # type: (...) -> None
     if isinstance(strings, str):
         strings = [strings]
@@ -93,7 +93,8 @@ _DOC_STRSTRING = """
     For FISH users, completion files are commonly stored in {}. You may run:
         $ compote autocomplete --shell fish > {}
 
-    For ALL users, you may have to log out and log in again to your shell session for the changes to take effect.
+    For ALL users,
+    you may have to log out and log in again to your shell session for the changes to take effect.
 
     \b
     Besides, you may use:
@@ -126,32 +127,44 @@ def _doc(docstring):
 
 def init_autocomplete():
     @click.command()
-    @click.option('--shell', required=True, type=click.Choice(['bash', 'zsh', 'fish']), help='Shell type')
+    @click.option(
+        '--shell', required=True, type=click.Choice(['bash', 'zsh', 'fish']), help='Shell type'
+    )
     @click.option(
         '--install',
         is_flag=True,
         default=False,
-        help='Create the completion files and inject the sourcing script into your rc files if this flag is set.')
+        help='Create the completion files and inject '
+        'the sourcing script into your rc files if this flag is set.',
+    )
     @click.option(
         '--dry-run',
         is_flag=True,
         default=False,
         help='Only useful when flag "--install" is set. Instead of real file system changes, '
-        'log would be printed if this flag is set.')
+        'log would be printed if this flag is set.',
+    )
     @_doc(_DOC_STRSTRING)
     def autocomplete(shell, install, dry_run):
         if shell == 'fish':
             if CLICK_VERSION < Version('7.1.0'):  # fish support was added in 7.1
                 raise FatalError(
-                    'Autocomplete for the fish shell is only supported by library `click` version 7.1 and higher. '
-                    'An older version is installed on your machine due to an outdated version of python. '
-                    'We recommend using python 3.7 and higher with compote CLI.')
+                    'Autocomplete for the fish shell is only supported by '
+                    'library `click` version 7.1 and higher. An older version '
+                    'is installed on your machine due to an outdated version of python. '
+                    'We recommend using python 3.7 and higher with compote CLI.'
+                )
 
         # the return code could be 1 even succeeded
         # use || true to swallow the return code
-        autocomplete_script_str = subprocess.check_output(
-            '_{}_COMPLETE={} {} || true'.format(CLI_NAME.upper(), _get_shell_completion(shell), CLI_NAME),
-            shell=True).decode('utf8')  # nosec
+        autocomplete_script_str = subprocess.check_output(  # nosec
+            '_{}_COMPLETE={} {} || true'.format(
+                CLI_NAME.upper(), _get_shell_completion(shell), CLI_NAME
+            ),
+            shell=True,
+        ).decode(
+            'utf8'
+        )  # nosec
 
         if not install:  # print the autocomplete script only
             print(autocomplete_script_str)
@@ -178,8 +191,11 @@ def init_autocomplete():
                 _append_text_line(['compinit', 'compinit -u'], rc_filepath, dry_run=dry_run)
 
             _append_text_line(
-                '# ESP-IDF component manager compote CLI autocompletion\n{}'.format(_SOURCING_STR[shell]),
+                '# ESP-IDF component manager compote CLI autocompletion\n{}'.format(
+                    _SOURCING_STR[shell]
+                ),
                 rc_filepath,
-                dry_run=dry_run)
+                dry_run=dry_run,
+            )
 
     return autocomplete

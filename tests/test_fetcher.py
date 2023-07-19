@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os.path
@@ -20,15 +20,18 @@ def test_fetcher_download_and_create_hash(fixtures_path):
         'cmp',
         ComponentVersion('1.0.0'),
         source,
-        component_hash='0d7b0d0e9ab239cf4e127dd08990caf869158324c251dc1fbacacbe788dc3f35')
+        component_hash='0d7b0d0e9ab239cf4e127dd08990caf869158324c251dc1fbacacbe788dc3f35',
+    )
     fetcher = ComponentFetcher(component, components_folder_path)
     component_path = os.path.join(components_folder_path, 'cmp')
 
     try:
         fetcher.create_hash(component_path, component.component_hash)
 
-        with pytest.raises(ComponentModifiedError, match='Component directory was modified '
-                           'on the disk since the last run of the CMake'):
+        with pytest.raises(
+            ComponentModifiedError,
+            match='Component directory was modified ' 'on the disk since the last run of the CMake',
+        ):
             fetcher.download()
 
         hash_file = os.path.join(component_path, HASH_FILENAME)

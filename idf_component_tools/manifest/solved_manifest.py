@@ -11,10 +11,8 @@ except ImportError:
 
 class SolvedManifest(object):
     def __init__(
-            self,
-            solved_components,
-            manifest_hash,
-            target=None):  # type: (Optional[List[SolvedComponent]], str, Optional[str]) -> None
+        self, solved_components, manifest_hash, target=None
+    ):  # type: (Optional[List[SolvedComponent]], str, Optional[str]) -> None
         if solved_components is None:
             solved_components = []
         solved_components.sort(key=lambda c: c.name)

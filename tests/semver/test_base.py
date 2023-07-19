@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2016 Python-SemanticVersion project
 # SPDX-License-Identifier: BSD 2-Clause License
-# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
 """Test the various functions from 'base'."""
 
 import sys
@@ -38,7 +38,10 @@ class TopLevelTestCase(unittest.TestCase):
             with self.subTest(a=a, b=b):
                 result = base.compare(a, b)
                 self.assertEqual(
-                    expected, result, 'compare(%r, %r) should be %r instead of %r' % (a, b, expected, result))
+                    expected,
+                    result,
+                    'compare(%r, %r) should be %r instead of %r' % (a, b, expected, result),
+                )
 
     matches = (
         ('>=0.1.1', '0.1.2'),
@@ -78,7 +81,7 @@ class TopLevelTestCase(unittest.TestCase):
     def test_validate_valid(self):
         for version in self.valid_strings:
             with self.subTest(version=version):
-                self.assertTrue(base.validate(version), '%r should be a valid version' % (version, ))
+                self.assertTrue(base.validate(version), '%r should be a valid version' % (version,))
 
     invalid_strings = (
         '1',
@@ -96,7 +99,9 @@ class TopLevelTestCase(unittest.TestCase):
     def test_validate_invalid(self):
         for version in self.invalid_strings:
             with self.subTest(version=version):
-                self.assertFalse(base.validate(version), '%r should not be a valid version' % (version, ))
+                self.assertFalse(
+                    base.validate(version), '%r should not be a valid version' % (version,)
+                )
 
 
 class VersionTestCase(unittest.TestCase):
@@ -108,7 +113,7 @@ class VersionTestCase(unittest.TestCase):
             yield
 
     versions = {
-        '1.0.0-alpha': (1, 0, 0, 0, ('alpha', ), ()),
+        '1.0.0-alpha': (1, 0, 0, 0, ('alpha',), ()),
         '1.0.0-alpha.1': (1, 0, 0, 0, ('alpha', '1'), ()),
         '1.0.0-beta.2': (1, 0, 0, 0, ('beta', '2'), ()),
         '1.0.0-beta.11': (1, 0, 0, 0, ('beta', '11'), ()),
@@ -118,16 +123,29 @@ class VersionTestCase(unittest.TestCase):
         '1.0.0~1': (1, 0, 0, 1, (), ()),
         '1.0.0~99': (1, 0, 0, 99, (), ()),
         '1.0.0+0.3.7': (1, 0, 0, 0, (), ('0', '3', '7')),
-        '1.3.7+build': (1, 3, 7, 0, (), ('build', )),
+        '1.3.7+build': (1, 3, 7, 0, (), ('build',)),
         '1.3.7+build.2.b8f12d7': (1, 3, 7, 0, (), ('build', '2', 'b8f12d7')),
         '1.3.7+build.11.e0f985a': (1, 3, 7, 0, (), ('build', '11', 'e0f985a')),
         '1.1.1': (1, 1, 1, 0, (), ()),
         '1.1.2': (1, 1, 2, 0, (), ()),
         '1.1.3-rc4.5': (1, 1, 3, 0, ('rc4', '5'), ()),
-        '1.1.3~2-rc4+build99': (1, 1, 3, 2, ('rc4', ), ('build99', )),
+        '1.1.3~2-rc4+build99': (1, 1, 3, 2, ('rc4',), ('build99',)),
         '1.1.3-rc42.3-14-15.24+build.2012-04-13.223': (
-            1, 1, 3, 0, ('rc42', '3-14-15', '24'), ('build', '2012-04-13', '223')),
-        '1.1.3+build.2012-04-13.HUY.alpha-12.1': (1, 1, 3, 0, (), ('build', '2012-04-13', 'HUY', 'alpha-12', '1')),
+            1,
+            1,
+            3,
+            0,
+            ('rc42', '3-14-15', '24'),
+            ('build', '2012-04-13', '223'),
+        ),
+        '1.1.3+build.2012-04-13.HUY.alpha-12.1': (
+            1,
+            1,
+            3,
+            0,
+            (),
+            ('build', '2012-04-13', 'HUY', 'alpha-12', '1'),
+        ),
     }
 
     def test_parsing(self):
@@ -135,7 +153,13 @@ class VersionTestCase(unittest.TestCase):
             with self.subTest(text=text):
                 version = base.Version(text)
                 actual_fields = (
-                    version.major, version.minor, version.patch, version.revision, version.prerelease, version.build)
+                    version.major,
+                    version.minor,
+                    version.patch,
+                    version.revision,
+                    version.prerelease,
+                    version.build,
+                )
                 self.assertEqual(expected_fields, actual_fields)
 
     def test_str(self):
@@ -143,7 +167,9 @@ class VersionTestCase(unittest.TestCase):
             with self.subTest(text=text):
                 version = base.Version(text)
                 self.assertEqual(text, str(version))
-                self.assertEqual("Version('%s', revision=%d)" % (text, version.revision), repr(version))
+                self.assertEqual(
+                    "Version('%s', revision=%d)" % (text, version.revision), repr(version)
+                )
 
     def test_compare_to_self(self):
         for text in self.versions:
@@ -356,10 +382,21 @@ class CoerceTestCase(unittest.TestCase):
         '0.1.0': ('0.1', '0.1+', '0.1-', '0.1~', '0.1.0', '0.01.0', '000.0001.0000000000'),
         '0.1.0+2': ('0.1.0+2', '0.1.0.2', '0.1~1+2'),
         '0.1.0+2.3.4': ('0.1.0+2.3.4', '0.1.0+2+3+4', '0.1.0~1+2+3+4', '0.1.0.2+3+4'),
-        '0.1.0+2-3.4': ('0.1.0+2-3.4', '0.1.0+2-3+4', '0.1.0~1+2-3+4', '0.1.0.2-3+4', '0.1.0.2_3+4'),
+        '0.1.0+2-3.4': (
+            '0.1.0+2-3.4',
+            '0.1.0+2-3+4',
+            '0.1.0~1+2-3+4',
+            '0.1.0.2-3+4',
+            '0.1.0.2_3+4',
+        ),
         '0.1.0-a2.3': ('0.1.0-a2.3', '0.1.0a2.3', '0.1.0~1_a2.3', '0.1.0_a2.3'),
         '0.1.0-a2.3+4.5-6': (
-            '0.1.0-a2.3+4.5-6', '0.1.0a2.3+4.5-6', '0.1.0a2.3+4.5_6', '0.1.0~1a2.3+4.5_6', '0.1.0a2.3+4+5/6'),
+            '0.1.0-a2.3+4.5-6',
+            '0.1.0a2.3+4.5-6',
+            '0.1.0a2.3+4.5_6',
+            '0.1.0~1a2.3+4.5_6',
+            '0.1.0a2.3+4+5/6',
+        ),
     }
 
     def test_coerce(self):

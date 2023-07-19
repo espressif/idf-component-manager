@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 from textwrap import dedent
 
@@ -13,8 +13,10 @@ def test_no_version_matching_constraint(source, check_solver_result):
 
     check_solver_result(
         source,
-        error=('Because project depends on foo (^1.0) '
-               "which doesn't match any versions, version solving failed."),
+        error=(
+            'Because project depends on foo (^1.0) '
+            "which doesn't match any versions, version solving failed."
+        ),
     )
 
 
@@ -31,7 +33,7 @@ def test_no_version_that_matches_combined_constraints(source, check_solver_resul
     Because foo (1.0.0) depends on shared (>=2.0.0,<3.0.0)
      and no versions of shared match >=2.9.0,<3.0.0, foo (1.0.0) requires shared (>=2.0.0,<2.9.0).
     And because bar (1.0.0) depends on shared (>=2.9.0,<4.0.0), bar (1.0.0) is incompatible with foo (1.0.0).
-    So, because project depends on both foo (1.0.0) and bar (1.0.0), version solving failed."""
+    So, because project depends on both foo (1.0.0) and bar (1.0.0), version solving failed."""  # noqa
 
     check_solver_result(source, error=dedent(error))
 

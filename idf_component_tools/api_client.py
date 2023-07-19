@@ -27,10 +27,22 @@ from idf_component_tools.file_cache import FileCache as ComponentFileCache
 from idf_component_tools.semver import SimpleSpec, Version
 
 from .api_client_errors import (
-    KNOWN_API_ERRORS, APIClientError, ComponentNotFound, NetworkConnectionError, NoRegistrySet, StorageFileNotFound,
-    VersionNotFound)
+    KNOWN_API_ERRORS,
+    APIClientError,
+    ComponentNotFound,
+    NetworkConnectionError,
+    NoRegistrySet,
+    StorageFileNotFound,
+    VersionNotFound,
+)
 from .api_schemas import (
-    API_INFORMATION_SCHEMA, API_TOKEN_SCHEMA, COMPONENT_SCHEMA, ERROR_SCHEMA, TASK_STATUS_SCHEMA, VERSION_UPLOAD_SCHEMA)
+    API_INFORMATION_SCHEMA,
+    API_TOKEN_SCHEMA,
+    COMPONENT_SCHEMA,
+    ERROR_SCHEMA,
+    TASK_STATUS_SCHEMA,
+    VERSION_UPLOAD_SCHEMA,
+)
 from .manifest import BUILD_METADATA_KEYS, Manifest
 
 try:
@@ -43,10 +55,7 @@ except ImportError:
 
 TaskStatus = namedtuple('TaskStatus', ['message', 'status', 'progress', 'warnings'])
 
-DEFAULT_TIMEOUT = (
-    6.05,  # Connect timeout
-    30.1,  # Read timeout
-)
+DEFAULT_TIMEOUT = (6.05, 30.1)  # Connect timeout  # Read timeout
 
 DEFAULT_API_CACHE_EXPIRATION_MINUTES = 0
 MAX_RETRIES = 3
@@ -54,21 +63,24 @@ MAX_RETRIES = 3
 
 def env_cache_time():
     try:
-        return getenv_int('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', DEFAULT_API_CACHE_EXPIRATION_MINUTES)
+        return getenv_int(
+            'IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES',
+            DEFAULT_API_CACHE_EXPIRATION_MINUTES,
+        )
     except ValueError:
         warn(
             'IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES is set to a non-numeric value. '
-            'Please set the variable to the number of minutes. Disabling caching.')
+            'Please set the variable to the number of minutes. Disabling caching.'
+        )
         return DEFAULT_API_CACHE_EXPIRATION_MINUTES
 
 
 def create_session(
-        cache=False,  # type: bool
-        cache_path=None,  # type: str | None
-        cache_time=None,  # type: int | None
-        token=None,  # type: str | None
+    cache=False,  # type: bool
+    cache_path=None,  # type: str | None
+    cache_time=None,  # type: int | None
+    token=None,  # type: str | None
 ):  # type: (...) -> requests.Session
-
     if cache_path is None:
         cache_path = ComponentFileCache().path()
 
@@ -77,7 +89,8 @@ def create_session(
         api_adapter = CacheControlAdapter(
             max_retries=MAX_RETRIES,
             heuristic=ExpiresAfter(minutes=cache_time),
-            cache=FileCache(os.path.join(cache_path, '.api_client')))
+            cache=FileCache(os.path.join(cache_path, '.api_client')),
+        )
     else:
         api_adapter = HTTPAdapter(max_retries=MAX_RETRIES)
 
@@ -92,7 +105,9 @@ def create_session(
     return session
 
 
-def filter_versions(versions, version_filter, component_name):  # type: (list[dict], str, str) -> list[dict]
+def filter_versions(
+    versions, version_filter, component_name
+):  # type: (list[dict], str, str) -> list[dict]
     if version_filter and version_filter != '*':
         requested_version = SimpleSpec(str(version_filter))
         filtered_versions = [v for v in versions if requested_version.match(Version(v['version']))]
@@ -102,13 +117,22 @@ def filter_versions(versions, version_filter, component_name):  # type: (list[di
 
         clause = requested_version.clause.simplify()
         # Some clauses don't have an operator attribute, need to check
-        if hasattr(clause, 'operator') and clause.operator == '==' and filtered_versions[0]['yanked_at']:
+        if (
+            hasattr(clause, 'operator')
+            and clause.operator == '=='
+            and filtered_versions[0]['yanked_at']
+        ):
             warn(
-                'The version "{}" of the "{}" component you have selected has been yanked from the repository '
-                'due to the following reason: "{}". We recommend that you update to a different version. '
-                'Please note that continuing to use a yanked version can result in unexpected behavior and '
-                'issues with your project.'.format(
-                    clause.target, component_name.lower(), filtered_versions[0]['yanked_message']))
+                'The version "{}" of the "{}" component you have selected has '
+                'been yanked from the repository due to the following reason: "{}". '
+                'We recommend that you update to a different version. '
+                'Please note that continuing to use a yanked version can '
+                'result in unexpected behavior and issues with your project.'.format(
+                    clause.target,
+                    component_name.lower(),
+                    filtered_versions[0]['yanked_message'],
+                )
+            )
         else:
             filtered_versions = [v for v in filtered_versions if not v.get('yanked_at')]
     else:
@@ -119,13 +143,14 @@ def filter_versions(versions, version_filter, component_name):  # type: (list[di
 
 class ComponentDetails(Manifest):
     def __init__(
-            self,
-            download_url=None,  # type: str | None # Direct url for tarball download
-            documents=None,  # type: list[dict[str, str]] | None # List of documents of the component
-            license=None,  # type: dict[str, str] | None # Information about license
-            examples=None,  # type: list[dict[str, str]] | None # List of examples of the component
-            *args,
-            **kwargs):
+        self,
+        download_url=None,  # type: str | None # Direct url for tarball download
+        documents=None,  # type: list[dict[str, str]] | None # List of documents of the component
+        license=None,  # type: dict[str, str] | None # Information about license
+        examples=None,  # type: list[dict[str, str]] | None # List of examples of the component
+        *args,
+        **kwargs
+    ):
         super(ComponentDetails, self).__init__(*args, **kwargs)
         self.download_url = download_url
         self.documents = documents
@@ -139,7 +164,9 @@ def handle_4xx_error(error):  # type: (requests.Response) -> str
         name = json['error']
         messages = json['messages']
     except SchemaError as e:
-        raise APIClientError('API Endpoint "{}: returned unexpected error description:\n{}'.format(error.url, str(e)))
+        raise APIClientError(
+            'API Endpoint "{}: returned unexpected error description:\n{}'.format(error.url, str(e))
+        )
     except ValueError:
         raise APIClientError('Server returned an error in unexpected format')
 
@@ -148,7 +175,10 @@ def handle_4xx_error(error):  # type: (requests.Response) -> str
         raise exception('\n'.join(messages))
     else:
         raise exception(
-            'Error during request:\n{}\nStatus code: {} Error code: {}'.format(str(messages), error.status_code, name))
+            'Error during request:\n{}\nStatus code: {} Error code: {}'.format(
+                str(messages), error.status_code, name
+            )
+        )
 
 
 def join_url(*args):  # type: (*str) -> str
@@ -192,11 +222,7 @@ def user_agent():  # type: () -> str
 def _component_request(request, component_name):
     """Get component information from storage. Used by `versions` and `component`."""
     try:
-        return request(
-            'get',
-            ['components', component_name.lower()],
-            schema=COMPONENT_SCHEMA,
-        )
+        return request('get', ['components', component_name.lower()], schema=COMPONENT_SCHEMA)
     except StorageFileNotFound:
         raise ComponentNotFound('Component "{}" not found'.format(component_name))
 
@@ -225,21 +251,22 @@ class APIClient(object):
                     version_spec=dependency['spec'],
                     public=dependency['is_public'],
                     source=source,
-                ))
+                )
+            )
 
         return dependencies
 
     def _base_request(
-            self,
-            url,  # type: str
-            session,  # type: requests.Session
-            method,  # type: str
-            path,  # type: list[str]
-            data=None,  # type: dict | None
-            json=None,  # type: dict | None
-            headers=None,  # type: dict | None
-            schema=None,  # type: Schema | None
-            use_storage=False,  # type: bool
+        self,
+        url,  # type: str
+        session,  # type: requests.Session
+        method,  # type: str
+        path,  # type: list[str]
+        data=None,  # type: dict | None
+        json=None,  # type: dict | None
+        headers=None,  # type: dict | None
+        schema=None,  # type: Schema | None
+        use_storage=False,  # type: bool
     ):
         # type: (...) -> dict
         endpoint = join_url(url, *path)
@@ -248,7 +275,9 @@ class APIClient(object):
         try:
             timeout = float(os.environ['IDF_COMPONENT_SERVICE_TIMEOUT'])
         except ValueError:
-            raise APIClientError('Cannot parse IDF_COMPONENT_SERVICE_TIMEOUT. It should be a number in seconds.')
+            raise APIClientError(
+                'Cannot parse IDF_COMPONENT_SERVICE_TIMEOUT. It should be a number in seconds.'
+            )
         except KeyError:
             pass
 
@@ -269,14 +298,17 @@ class APIClient(object):
                 if use_storage:
                     if response.status_code == 404:
                         raise StorageFileNotFound()
-                    raise APIClientError('Error during request.\nStatus code: {}'.format(response.status_code))
+                    raise APIClientError(
+                        'Error during request.\nStatus code: {}'.format(response.status_code)
+                    )
 
                 handle_4xx_error(response)
 
             elif 500 <= response.status_code < 600:
                 raise APIClientError(
-                    'Internal server error happended while processing requrest to:\n{}\nStatus code: {}'.format(
-                        endpoint, response.status_code))
+                    'Internal server error happended while processing '
+                    'requrest to:\n{}\nStatus code: {}'.format(endpoint, response.status_code)
+                )
 
             response_json = response.json()
         except requests.exceptions.ConnectionError as e:
@@ -288,7 +320,9 @@ class APIClient(object):
             if schema is not None:
                 schema.validate(response_json)
         except SchemaError as e:
-            raise APIClientError('API Endpoint "{}: returned unexpected JSON:\n{}'.format(endpoint, str(e)))
+            raise APIClientError(
+                'API Endpoint "{}: returned unexpected JSON:\n{}'.format(endpoint, str(e))
+            )
 
         except (ValueError, KeyError, IndexError):
             raise APIClientError('Unexpected component server response')
@@ -320,10 +354,12 @@ class APIClient(object):
                     raise NoRegistrySet(
                         'The current operation requires access to the IDF component registry. '
                         'However, the registry URL is not set. You can set the '
-                        'IDF_COMPONENT_REGISTRY_URL environment variable or "registry_url" field for your current '
-                        'profile in "idf_component_manager.yml" file. To use the default IDF component registry '
-                        'unset IDF_COMPONENT_STORAGE_URL environment variable or remove "storage_url" field '
-                        'from the "idf_component_manager.yml" file')
+                        'IDF_COMPONENT_REGISTRY_URL environment variable or "registry_url" field '
+                        'for your current profile in "idf_component_manager.yml" file. '
+                        'To use the default IDF component registry '
+                        'unset IDF_COMPONENT_STORAGE_URL environment variable or remove '
+                        '"storage_url" field from the "idf_component_manager.yml" file'
+                    )
 
                 session = create_session(cache=cache, token=self.auth_token)
 
@@ -339,7 +375,8 @@ class APIClient(object):
                         json=json,
                         headers=headers,
                         schema=schema,
-                        use_storage=use_storage)
+                        use_storage=use_storage,
+                    )
 
                 return f(self, request=request, *args, **kwargs)
 
@@ -349,20 +386,12 @@ class APIClient(object):
 
     @_request(cache=True)
     def api_information(self, request):
-        return request(
-            'get',
-            [],
-            schema=API_INFORMATION_SCHEMA,
-        )
+        return request('get', [], schema=API_INFORMATION_SCHEMA)
 
     @auth_required
     @_request(cache=False)
     def token_information(self, request):
-        return request(
-            'get',
-            ['tokens', 'current'],
-            schema=API_TOKEN_SCHEMA,
-        )
+        return request('get', ['tokens', 'current'], schema=API_TOKEN_SCHEMA)
 
     @_request(cache=True, use_storage=True)
     def versions(self, request, component_name, spec='*'):
@@ -395,13 +424,17 @@ class APIClient(object):
                     component_hash=version['component_hash'],
                     dependencies=self._version_dependencies(version),
                     targets=version['targets'],
-                    all_build_keys_known=all_build_keys_known) for version, all_build_keys_known in versions
+                    all_build_keys_known=all_build_keys_known,
+                )
+                for version, all_build_keys_known in versions
             ],
         )
 
     @_request(cache=True, use_storage=True)
     def component(self, request, component_name, version=None):
-        """Manifest for given version of component, if version is None highest version is returned"""
+        """
+        Manifest for given version of component, if version is None highest version is returned
+        """
 
         component_name = component_name.lower()
         response = _component_request(request, component_name)
@@ -411,7 +444,9 @@ class APIClient(object):
         if not filtered_versions:
             raise VersionNotFound(
                 'Version of the component "{}" satisfying the spec "{}" was not found.'.format(
-                    component_name, str(version)))
+                    component_name, str(version)
+                )
+            )
 
         best_version = max(filtered_versions, key=lambda v: Version(v['version']))
         download_url = join_url(self.storage_url, best_version['url'])
@@ -436,7 +471,8 @@ class APIClient(object):
             download_url=download_url,
             documents=documents,
             license=license_info,
-            examples=examples)
+            examples=examples,
+        )
 
     @auth_required
     @_request(cache=False)
@@ -449,7 +485,9 @@ class APIClient(object):
 
             progress_bar = tqdm(total=encoder.len, unit_scale=True, unit='B', disable=None)
 
-            def callback(monitor, memo={'progress': 0}):  # type: (MultipartEncoderMonitor, dict) -> None
+            def callback(
+                monitor, memo={'progress': 0}
+            ):  # type: (MultipartEncoderMonitor, dict) -> None
                 progress_bar.update(monitor.bytes_read - memo['progress'])
                 memo['progress'] = monitor.bytes_read
 
@@ -480,9 +518,14 @@ class APIClient(object):
     @_request(cache=False)
     def yank_version(self, request, component_name, component_version, yank_message):
         request(
-            'post', ['components', component_name.lower(), component_version, 'yank'], json={'message': yank_message})
+            'post',
+            ['components', component_name.lower(), component_version, 'yank'],
+            json={'message': yank_message},
+        )
 
     @_request(cache=False)
     def task_status(self, request, job_id):  # type: (Callable, str) -> TaskStatus
         body = request('get', ['tasks', job_id], schema=TASK_STATUS_SCHEMA)
-        return TaskStatus(body['message'], body['status'], body['progress'], body.get('warnings', []))
+        return TaskStatus(
+            body['message'], body['status'], body['progress'], body.get('warnings', [])
+        )

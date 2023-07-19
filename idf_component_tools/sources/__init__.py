@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 from .base import BaseSource
@@ -12,7 +12,12 @@ try:
 except ImportError:
     pass
 
-KNOWN_SOURCES = [IDFSource, GitSource, LocalSource, WebServiceSource]  # type: List[Type[BaseSource]]
+KNOWN_SOURCES = [
+    IDFSource,
+    GitSource,
+    LocalSource,
+    WebServiceSource,
+]  # type: List[Type[BaseSource]]
 
 __all__ = [
     'BaseSource',

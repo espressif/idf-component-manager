@@ -42,7 +42,7 @@ KNOWN_ARCHIVE_EXTENSIONS = [
 
 
 def get_format_from_path(path):
-    """ Returns tuple of format , extension, unpacking function or None"""
+    """Returns tuple of format , extension, unpacking function or None"""
 
     if re.search(r'(\.tar\.gz$)|(\.tgz$)', path):
         return ('gztar', 'tgz', unpack_tar)

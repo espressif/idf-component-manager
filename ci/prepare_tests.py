@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import re
@@ -19,9 +19,15 @@ BUILD_DOCKER_RE = re.compile(r'^(.*,)*build_docker(,.*)*$')
 def _modified_files(branch: str) -> str:
     return subprocess.check_output(  # nosec
         [
-            'git', 'diff-tree', '-r', '--name-only', '--no-commit-id',
-            f'origin/{branch}', environ['CI_COMMIT_SHA']
-        ]).decode('utf-8')
+            'git',
+            'diff-tree',
+            '-r',
+            '--name-only',
+            '--no-commit-id',
+            f'origin/{branch}',
+            environ['CI_COMMIT_SHA'],
+        ]
+    ).decode('utf-8')
 
 
 def should_run_build_docker_files() -> bool:
@@ -46,7 +52,9 @@ def should_run_build_docker_files() -> bool:
 
 def should_run_integration_tests() -> bool:
     # Check if integration tests are forcefully disabled:
-    if getenv('RUN_INTEGRATION_TESTS') == '0' or SKIP_INTEGRATION_TESTS_RE.match(getenv('CI_MERGE_REQUEST_LABELS', '')):
+    if getenv('RUN_INTEGRATION_TESTS') == '0' or SKIP_INTEGRATION_TESTS_RE.match(
+        getenv('CI_MERGE_REQUEST_LABELS', '')
+    ):
         return False
 
     basic_conditions = [

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import filecmp
@@ -8,8 +8,12 @@ import shutil
 import pytest
 
 from idf_component_manager.cmake_component_requirements import (
-    CMakeRequirementsManager, ComponentName, RequirementsProcessingError, check_requirements_name_collisions,
-    handle_project_requirements)
+    CMakeRequirementsManager,
+    ComponentName,
+    RequirementsProcessingError,
+    check_requirements_name_collisions,
+    handle_project_requirements,
+)
 
 
 def test_component_name_without_namespace():
@@ -69,7 +73,7 @@ def test_handle_project_requirements():
             'REQUIRES': ['a', 'b', 'cmp', 'some__bmp'],
             'PRIV_REQUIRES': [],
             '__COMPONENT_REGISTERED': '1',
-        }
+        },
     }
 
     handle_project_requirements(reqs)

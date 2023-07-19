@@ -13,7 +13,13 @@ from idf_component_manager.version_solver.version_solver import VersionSolver
 from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.environment import getenv_bool
 from idf_component_tools.errors import (
-    ComponentModifiedError, FetchingError, InvalidComponentHashError, SolverError, hint, warn)
+    ComponentModifiedError,
+    FetchingError,
+    InvalidComponentHashError,
+    SolverError,
+    hint,
+    warn,
+)
 from idf_component_tools.hash_tools import ValidatingHashError, validate_managed_component_hash
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import ProjectRequirements, SolvedComponent, SolvedManifest
@@ -27,10 +33,15 @@ def check_manifests_targets(project_requirements):  # type: (ProjectRequirements
 
         if project_requirements.target not in manifest.targets:
             raise FetchingError(
-                'Component "{}" does not support target {}'.format(manifest.name, project_requirements.target))
+                'Component "{}" does not support target {}'.format(
+                    manifest.name, project_requirements.target
+                )
+            )
 
 
-def get_unused_components(unused_files_with_components, managed_components_path):  # type: (set[str], str) -> set[str]
+def get_unused_components(
+    unused_files_with_components, managed_components_path
+):  # type: (set[str], str) -> set[str]
     unused_components = set()
 
     for component in unused_files_with_components:
@@ -44,11 +55,11 @@ def get_unused_components(unused_files_with_components, managed_components_path)
 
 
 def detect_unused_components(
-        requirement_dependencies, managed_components_path):  # type: (list[SolvedComponent], str) -> None
+    requirement_dependencies, managed_components_path
+):  # type: (list[SolvedComponent], str) -> None
     downloaded_components = os.listdir(managed_components_path)
     unused_files_with_components = set(downloaded_components) - {
-        build_name(component.name)
-        for component in requirement_dependencies
+        build_name(component.name) for component in requirement_dependencies
     }
     unused_components = get_unused_components(unused_files_with_components, managed_components_path)
     unused_files = unused_files_with_components - unused_components
@@ -58,16 +69,20 @@ def detect_unused_components(
             print_info(' {}'.format(unused_component_name))
             shutil.rmtree(os.path.join(managed_components_path, unused_component_name))
     if unused_files and not getenv_bool('IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS'):
-        warning = '{} unexpected files and directories were found in the "managed_components" directory:'.format(
-            len(unused_files))
+        warning = (
+            '{} unexpected files and directories were found in the "managed_components" directory:'
+        )
+        warning = warning.format(len(unused_files))
 
         for unexpected_name in unused_files:
             warning += ' {}'.format(unexpected_name)
 
         warning += (
-            '\nContent of the managed components directory is managed automatically and it\'s not recommended to '
-            'place any files there manually. To suppress this warning set the environment variable: '
-            'IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS=1')
+            '\nContent of the managed components directory is managed automatically '
+            'and it\'s not recommended to place any files there manually. '
+            'To suppress this warning set the environment variable: '
+            'IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS=1'
+        )
         warn(warning)
 
 
@@ -84,23 +99,30 @@ def is_solve_required(project_requirements, solution):
 
     if solution.target and project_requirements.target != solution.target:
         print_info(
-            'Target changed from {} to {}, solving dependencies.'.format(solution.target, project_requirements.target))
+            'Target changed from {} to {}, solving dependencies.'.format(
+                solution.target, project_requirements.target
+            )
+        )
         return True
 
     for component in solution.dependencies:
         try:
-            # For downloadable volatile dependencies, like ones from git, if manifest didn't change, no need to solve
+            # For downloadable volatile dependencies, like ones from git,
+            # if manifest didn't change, no need to solve
             if component.source.downloadable and component.source.volatile:
                 continue
 
             # get the same version one
             try:
                 component_versions = component.source.versions(
-                    component.name, spec='=={}'.format(component.version.semver))
+                    component.name, spec='=={}'.format(component.version.semver)
+                )
             except FetchingError:
                 print_warn(
                     'Version {} of dependency {} not found, probably it was deleted, solving dependencies.'.format(
-                        component.version, component.name))
+                        component.version, component.name
+                    )
+                )
                 return True
 
             component_version = component_versions.versions[0]
@@ -109,21 +131,31 @@ def is_solve_required(project_requirements, solution):
             if component.source.meta or component.source.volatile:
                 if component_version != component.version:
                     print_info(
-                        'Dependency "{}" version has changed from {} to {}, solving dependencies.'.format(
-                            component, component.version, component_version))
+                        'Dependency "{}" version has changed from {} to {}, '
+                        'solving dependencies.'.format(
+                            component, component.version, component_version
+                        )
+                    )
                     return True
 
             # Should check for all types of source, but after version checking
             if component_version.component_hash != component.component_hash:
                 if component.source.volatile:
-                    print_info('Dependency "{}" has changed, solving dependencies.'.format(component))
+                    print_info(
+                        'Dependency "{}" has changed, solving dependencies.'.format(component)
+                    )
                     return True
                 else:
                     raise InvalidComponentHashError(
-                        'The hash sum of the component "{}" does not match the one recorded in your dependencies.lock '
-                        'file. This could be due to a potential spoofing of the download server, or your lock file may '
-                        'have become corrupted. Please review the lock file and verify the download server\'s '
-                        'authenticity to ensure the component\'s security and integrity.'.format(component))
+                        'The hash sum of the component "{}" does not match '
+                        'the one recorded in your dependencies.lock file. '
+                        'This could be due to a potential spoofing of the download server, '
+                        'or your lock file may have become corrupted. '
+                        'Please review the lock file and verify the download server\'s '
+                        'authenticity to ensure the component\'s security and integrity.'.format(
+                            component
+                        )
+                    )
 
         except IndexError:
             print_info('Dependency "{}" version changed, solving dependencies.'.format(component))
@@ -154,15 +186,20 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
             for conflict_constraint in conflict_constraints:
                 for manifest in project_requirements.manifests:
                     for dep in manifest.dependencies:
-                        if (Package(dep.name, dep.source) == conflict_constraint.package
-                                and dep.version_spec == str(conflict_constraint.constraint)):
+                        if Package(
+                            dep.name, dep.source
+                        ) == conflict_constraint.package and dep.version_spec == str(
+                            conflict_constraint.constraint
+                        ):
                             components_introduce_conflict.append(manifest.name)
                             break
 
             if components_introduce_conflict:
                 hint(
                     'Please check manifest file of the following component(s): {}'.format(
-                        ', '.join(components_introduce_conflict)))
+                        ', '.join(components_introduce_conflict)
+                    )
+                )
 
             raise SolverError(str(e))
 
@@ -173,13 +210,17 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
     downloaded_component_paths = set()
     downloaded_component_version_dict = dict()
     requirement_dependencies = []
-    project_requirements_dependencies = [manifest.name for manifest in project_requirements.manifests]
+    project_requirements_dependencies = [
+        manifest.name for manifest in project_requirements.manifests
+    ]
 
     for component in solution.dependencies:
         component_name_with_namespace = build_name(component.name)
         component_name = component_name_with_namespace.split('__')[-1]
-        if component_name_with_namespace not in project_requirements_dependencies \
-                and component_name not in project_requirements_dependencies:
+        if (
+            component_name_with_namespace not in project_requirements_dependencies
+            and component_name not in project_requirements_dependencies
+        ):
             requirement_dependencies.append(component)
 
     if os.path.exists(managed_components_path):
@@ -191,7 +232,11 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
         print_info('Processing {} dependencies:'.format(number_of_components))
 
         for index, component in enumerate(requirement_dependencies):
-            print_info('[{}/{}] {} ({})'.format(index + 1, number_of_components, component.name, component.version))
+            print_info(
+                '[{}/{}] {} ({})'.format(
+                    index + 1, number_of_components, component.name, component.version
+                )
+            )
             fetcher = ComponentFetcher(component, managed_components_path)
             try:
                 download_path = fetcher.download()

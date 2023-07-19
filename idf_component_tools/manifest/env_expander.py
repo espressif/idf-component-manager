@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -23,12 +23,13 @@ def subst_vars_in_str(s, env):  # type: (str, dict[str, Any]) -> str
     except ValueError:
         raise ManifestError(
             'Invalid format of environment varible in the value: "{}".\n'
-            'Note: you can use "$$" to escape the "$" character'.format(s))
+            'Note: you can use "$$" to escape the "$" character'.format(s)
+        )
 
 
 def expand_env_vars(
-        obj,  # type: dict[str, Any] | list | str | Any
-        env=None  # type: dict | None
+    obj,  # type: dict[str, Any] | list | str | Any
+    env=None,  # type: dict | None
 ):
     # type: (...) -> dict[str, Any] | list | str | Any
     '''
@@ -45,8 +46,8 @@ def expand_env_vars(
 
 
 def process_nested_strings(
-        obj,  # type: dict[str, Any] | list | str | Any
-        func  # type: Callable[[str], Any]
+    obj,  # type: dict[str, Any] | list | str | Any
+    func,  # type: Callable[[str], Any]
 ):
     # type: (...) -> dict[str, Any] | list | str | Any
     '''
@@ -70,4 +71,9 @@ def dump_yaml(d, path):  # type: (dict[str, Any], str) -> None
         return s.replace('$', '$$')
 
     with open(path, 'w', encoding='utf-8') as fw:
-        yaml.dump(process_nested_strings(d, _unescape_dollar_sign), fw, allow_unicode=True, Dumper=yaml.SafeDumper)
+        yaml.dump(
+            process_nested_strings(d, _unescape_dollar_sign),
+            fw,
+            allow_unicode=True,
+            Dumper=yaml.SafeDumper,
+        )

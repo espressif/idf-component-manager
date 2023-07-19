@@ -7,7 +7,6 @@ from .utils import add_options
 
 
 def init_project():
-
     PROJECT_DIR_OPTION = get_project_dir_option()
 
     @click.group()
@@ -23,7 +22,9 @@ def init_project():
         '-p',
         '--path',
         default=None,
-        help='Path of the new project. The project will be created directly in the given folder if it is empty.')
+        help='Path of the new project. '
+        'The project will be created directly in the given folder if it is empty.',
+    )
     @click.argument('example', required=True)
     def create_from_example(manager, example, path):
         """

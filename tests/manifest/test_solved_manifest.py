@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -34,20 +34,14 @@ class TestSolverResult(object):
         manifest_manager = ManifestManager(release_component_path, 'test')
         manifest_manager.manifest_tree['dependencies'] = {
             'test': '1.2.3',
-            'pest': {
-                'version': '3.2.1'
-            },
+            'pest': {'version': '3.2.1'},
             'foo': {
                 'version': '1.0.0',
                 'rules': [
-                    {
-                        'if': 'idf_version == 5.0.0'
-                    },
-                    {
-                        'if': 'target not in [esp32, esp32c3]'
-                    },
-                ]
-            }
+                    {'if': 'idf_version == 5.0.0'},
+                    {'if': 'target not in [esp32, esp32c3]'},
+                ],
+            },
         }
         manifest = manifest_manager.load()
         assert len(manifest.dependencies) == 2

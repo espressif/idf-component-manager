@@ -8,7 +8,12 @@ from pathlib import Path
 import pytest
 
 from idf_component_tools.file_tools import (
-    check_unexpected_component_files, copy_filtered_directory, directory_size, filtered_paths, human_readable_size)
+    check_unexpected_component_files,
+    copy_filtered_directory,
+    directory_size,
+    filtered_paths,
+    human_readable_size,
+)
 
 
 @pytest.fixture
@@ -27,51 +32,60 @@ def test_filtered_path_default(assets_path):
             Path(assets_path, 'ignore.dir'),
             Path(assets_path, 'ignore.dir', 'file.txt'),
             Path(assets_path, 'ignore.me'),
-        ])
+        ]
+    )
 
 
 def test_filtered_path_no_default(assets_path):
-    assert filtered_paths(
-        assets_path, exclude_default=False) == set(
-            [
-                Path(assets_path, '1.txt'),
-                Path(assets_path, 'ignore.dir'),
-                Path(assets_path, 'ignore.dir', 'file.txt'),
-                Path(assets_path, 'ignore.me'),
-                Path(assets_path, '.gitlab-ci.yml'),
-            ])
+    assert filtered_paths(assets_path, exclude_default=False) == set(
+        [
+            Path(assets_path, '1.txt'),
+            Path(assets_path, 'ignore.dir'),
+            Path(assets_path, 'ignore.dir', 'file.txt'),
+            Path(assets_path, 'ignore.me'),
+            Path(assets_path, '.gitlab-ci.yml'),
+        ]
+    )
 
 
 def test_filtered_path_exclude_file(assets_path):
-    assert filtered_paths(
-        assets_path, exclude=['**/file.txt']) == set(
-            [
-                Path(assets_path, '1.txt'),
-                Path(assets_path, 'ignore.dir'),
-                Path(assets_path, 'ignore.me'),
-            ])
+    assert filtered_paths(assets_path, exclude=['**/file.txt']) == set(
+        [
+            Path(assets_path, '1.txt'),
+            Path(assets_path, 'ignore.dir'),
+            Path(assets_path, 'ignore.me'),
+        ]
+    )
 
 
 def test_filtered_path_keep_empty_dir(assets_path):
     assert filtered_paths(
-        assets_path, exclude=[
+        assets_path,
+        exclude=[
             'ignore.dir/**/*',
-        ]) == set([
+        ],
+    ) == set(
+        [
             Path(assets_path, '1.txt'),
             Path(assets_path, 'ignore.me'),
             Path(assets_path, 'ignore.dir'),
-        ])
+        ]
+    )
 
 
 def test_filtered_path_exclude_empty_dir(assets_path):
     assert filtered_paths(
-        assets_path, exclude=[
+        assets_path,
+        exclude=[
             'ignore.dir',
             'ignore.dir/*',
-        ]) == set([
+        ],
+    ) == set(
+        [
             Path(assets_path, '1.txt'),
             Path(assets_path, 'ignore.me'),
-        ])
+        ]
+    )
 
 
 def test_filtered_path_exclude_dir_with_file(assets_path):
@@ -83,15 +97,18 @@ def test_filtered_path_exclude_dir_with_file(assets_path):
     assert os.path.exists(one_more)
 
     assert filtered_paths(
-        assets_path, exclude=[
+        assets_path,
+        exclude=[
             'ignore.dir/*',
-        ]) == set(
-            [
-                Path(assets_path, '1.txt'),
-                Path(assets_path, 'ignore.dir'),
-                Path(assets_path, 'ignore.dir', 'extra', 'one_more.txt'),
-                Path(assets_path, 'ignore.me'),
-            ])
+        ],
+    ) == set(
+        [
+            Path(assets_path, '1.txt'),
+            Path(assets_path, 'ignore.dir'),
+            Path(assets_path, 'ignore.dir', 'extra', 'one_more.txt'),
+            Path(assets_path, 'ignore.me'),
+        ]
+    )
 
 
 def test_excluded_and_included_files(tmpdir_factory):
@@ -112,7 +129,8 @@ def test_excluded_and_included_files(tmpdir_factory):
         folders_with_subdirectories.strpath,
         temp_dir.strpath,
         include=['folder1/folder1_1/**/*', 'folder1/folder1_2/**/*'],
-        exclude=['**/*'])
+        exclude=['**/*'],
+    )
 
     assert os.listdir(temp_dir.strpath) == ['folder1']
 
@@ -122,7 +140,10 @@ def test_check_suspisious_component_files(release_component_path, tmp_path):
     shutil.copytree(release_component_path, sub)
     (Path(sub) / 'dev' / 'CMakeCache.txt').touch()
 
-    with pytest.warns(UserWarning, match='Unexpected files "CMakeCache.txt" found in the component directory "dev"'):
+    with pytest.warns(
+        UserWarning,
+        match='Unexpected files "CMakeCache.txt" found in the component directory "dev"',
+    ):
         check_unexpected_component_files(sub)
 
 
@@ -138,12 +159,14 @@ def test_directory_size(tmp_path, file_with_size):
 
 
 @pytest.mark.parametrize(
-    ('size', 'expected'), [
+    ('size', 'expected'),
+    [
         (123, '123 bytes'),
         (1523, '1.49 KB'),
         (1052523, '1.00 MB'),
         (1100523000, '1.02 GB'),
-    ])
+    ],
+)
 def test_human_readable_size(size, expected):
     assert human_readable_size(size) == expected
 

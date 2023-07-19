@@ -3,12 +3,16 @@
 
 import click
 
-from .constants import get_dest_dir_option, get_namespace_name_options, get_project_dir_option, get_project_options
+from .constants import (
+    get_dest_dir_option,
+    get_namespace_name_options,
+    get_project_dir_option,
+    get_project_options,
+)
 from .utils import add_options
 
 
 def init_component():
-
     PROJECT_DIR_OPTION = get_project_dir_option()
     PROJECT_OPTIONS = get_project_options()
     NAMESPACE_NAME_OPTIONS = get_namespace_name_options()
@@ -24,13 +28,16 @@ def init_component():
     COMPONENT_VERSION_OPTION = [
         click.option(
             '--version',
-            help='Set version if not defined in the manifest. Use "git" to get version from the git tag. '
+            help='Set version if not defined in the manifest. '
+            'Use "git" to get version from the git tag. '
             '(command would fail if running not from a git tag)',
         )
     ]
 
     @component.command()
-    @add_options(PROJECT_DIR_OPTION + NAMESPACE_NAME_OPTIONS + COMPONENT_VERSION_OPTION + DEST_DIR_OPTION)
+    @add_options(
+        PROJECT_DIR_OPTION + NAMESPACE_NAME_OPTIONS + COMPONENT_VERSION_OPTION + DEST_DIR_OPTION
+    )
     def pack(manager, namespace, name, version, dest_dir):  # noqa: namespace is not used
         """
         Create component archive and store it in the dist directory.
@@ -38,28 +45,51 @@ def init_component():
         manager.pack_component(name=name, version=version, dest_dir=dest_dir)
 
     @component.command()
-    @add_options(PROJECT_OPTIONS + NAMESPACE_NAME_OPTIONS + COMPONENT_VERSION_OPTION + DEST_DIR_OPTION)
+    @add_options(
+        PROJECT_OPTIONS + NAMESPACE_NAME_OPTIONS + COMPONENT_VERSION_OPTION + DEST_DIR_OPTION
+    )
     @click.option(
         '--archive',
         help='Path of the archive with a component to upload. '
         'When not provided the component will be packed automatically.',
     )
-    @click.option('--skip-pre-release', is_flag=True, default=False, help='Do not upload pre-release versions.')
+    @click.option(
+        '--skip-pre-release',
+        is_flag=True,
+        default=False,
+        help='Do not upload pre-release versions.',
+    )
     @click.option(
         '--check-only',
         is_flag=True,
         default=False,
-        help='Check if given component version is already uploaded and exit.')
+        help='Check if given component version is already uploaded and exit.',
+    )
     @click.option(
-        '--allow-existing', is_flag=True, default=False, help='Return success if existing version is already uploaded.')
+        '--allow-existing',
+        is_flag=True,
+        default=False,
+        help='Return success if existing version is already uploaded.',
+    )
     @click.option(
         '--dry-run',
         is_flag=True,
         default=False,
-        help='Upload component for validation without creating a version in the registry.')
+        help='Upload component for validation without creating a version in the registry.',
+    )
     def upload(
-            manager, service_profile, namespace, name, version, archive, skip_pre_release, check_only, allow_existing,
-            dry_run, dest_dir):
+        manager,
+        service_profile,
+        namespace,
+        name,
+        version,
+        archive,
+        skip_pre_release,
+        check_only,
+        allow_existing,
+        dry_run,
+        dest_dir,
+    ):
         """
         Upload component to the component registry.
 
@@ -103,13 +133,16 @@ def init_component():
     @click.option(
         '--message',
         required=True,
-        help='Message explaining why the component version is being removed from the registry.')
+        help='Message explaining why the component version is being removed from the registry.',
+    )
     def yank(manager, service_profile, namespace, name, version, message):
         """
         Yank specified version of the component from the component registry.
         Yanked version will only be downloaded if the exact version is specified in the component manifest or lock file.
         A warning message is printed every time a yanked version is downloaded.
         """
-        manager.yank_version(name, version, message, service_profile=service_profile, namespace=namespace)
+        manager.yank_version(
+            name, version, message, service_profile=service_profile, namespace=namespace
+        )
 
     return component
