@@ -544,10 +544,15 @@ class ComponentManager(object):
         )
 
         # Wait for processing
+        profile_text = (
+            ''
+            if service_profile is None or service_profile == 'default'
+            else ' --service-profile={}'.format(service_profile)
+        )
         print_info(
             'Wait for processing, it is safe to press CTRL+C and exit\n'
             'You can check the state of processing by running CLI command '
-            '"compote component upload-status --job=%s"' % job_id
+            '"compote component upload-status --job={} {}"'.format(job_id, profile_text)
         )
 
         timeout_at = datetime.now() + timedelta(seconds=get_processing_timeout())
