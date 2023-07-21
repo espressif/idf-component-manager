@@ -26,6 +26,7 @@ requests-toolbelt = "*"
 schema = "*"
 six = "*"
 tqdm = '*'
+pyparsing = '*'
 
 [tool.poetry.group.docs.dependencies]
 sphinx_collapse = "==0.1.2"

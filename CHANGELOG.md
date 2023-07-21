@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add CI environment information to the component manager requests user agent
+- if-clause supported boolean operator `&&`, `||`, with nested parentheses
 
 ### Fixed
 

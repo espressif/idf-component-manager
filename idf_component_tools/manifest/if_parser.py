@@ -4,6 +4,7 @@
 import re
 from ast import literal_eval
 
+from pyparsing import Keyword, Word, alphanums, infixNotation, opAssoc
 from schema import SchemaError
 
 from idf_component_tools.build_system_tools import get_env_idf_target, get_idf_version
@@ -71,6 +72,14 @@ class IfClause:
     def from_string(cls, s):  # type: (str) -> IfClause
         return parse_if_clause(s)
 
+    @property
+    def clause(self):  # type: () -> str
+        raise NotImplementedError
+
+    @property
+    def bool_value(self):  # type: () -> bool
+        raise NotImplementedError
+
 
 class IfIdfVersionClause(IfClause):
     def __init__(self, spec):  # type: (str) -> None
@@ -128,6 +137,34 @@ class IfTargetClause(IfClause):
             return env_target in self.eval_list(self.target_str)
 
 
+class BoolAnd(IfClause):
+    def __init__(self, t):
+        self.left = t[0][0]  # type: IfClause
+        self.right = t[0][2]  # type: IfClause
+
+    @property
+    def clause(self):  # type: () -> str
+        return '{} and {}'.format(self.left.clause, self.right.clause)
+
+    @property
+    def bool_value(self):  # type: () -> bool
+        return self.left.bool_value and self.right.bool_value
+
+
+class BoolOr(IfClause):
+    def __init__(self, t):
+        self.left = t[0][0]  # type: IfClause
+        self.right = t[0][2]  # type: IfClause
+
+    @property
+    def clause(self):  # type: () -> str
+        return '{} or {}'.format(self.left.clause, self.right.clause)
+
+    @property
+    def bool_value(self):  # type: () -> bool
+        return self.left.bool_value or self.right.bool_value
+
+
 def _parse_if_idf_version_clause(mat):  # type: (re.Match) -> IfClause
     comparison = mat.group('comparison')
     spec = mat.group('spec')
@@ -166,12 +203,13 @@ def _parser_if_target_clause(mat):  # type: (re.Match) -> IfClause
     return IfTargetClause(operator, target_str)
 
 
-def parse_if_clause(if_clause):  # type: (str) -> IfClause
-    res = IF_IDF_VERSION_REGEX_COMPILED.match(if_clause)
+def _parse_if_clause(s):  # type: (str) -> IfClause
+    s = s.strip()
+    res = IF_IDF_VERSION_REGEX_COMPILED.match(s)
     if res:
         return _parse_if_idf_version_clause(res)
 
-    res = IF_TARGET_REGEX_COMPILED.match(if_clause)
+    res = IF_TARGET_REGEX_COMPILED.match(s)
     if res:
         return _parser_if_target_clause(res)
 
@@ -180,6 +218,25 @@ def parse_if_clause(if_clause):  # type: (str) -> IfClause
         'Invalid if clause format "{clause}". '
         'You can specify rules based on current ESP-IDF version or target like: '
         '"idf_version >=3.3,<5.0" or "target in [esp32, esp32c3]"\nDocumentation: '
-        'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/'
-        'manifest_file.html#rules'.format(clause=if_clause),
+        'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/manifest_file.html#rules'.format(
+            clause=s
+        ),
     )
+
+
+AND = Keyword('&&')
+OR = Keyword('||')
+
+CLAUSE = Word(alphanums + ' _.^=~<>![,]"').setParseAction(lambda t: _parse_if_clause(t[0]))
+
+BOOL_EXPR = infixNotation(
+    CLAUSE,
+    [
+        (AND, 2, opAssoc.LEFT, BoolAnd),
+        (OR, 2, opAssoc.LEFT, BoolOr),
+    ],
+)
+
+
+def parse_if_clause(s):  # type: (str) -> IfClause
+    return BOOL_EXPR.parseString(s, parseAll=True)[0]

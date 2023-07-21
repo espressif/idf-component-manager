@@ -141,6 +141,8 @@ The ``if`` field supports ``idf_version`` and ``target`` variables. The ``idf_ve
 
 The ``if`` field supports all :ref:`Range Specifications<reference/versioning:Range Specifications>`. It also supports the ``in`` and ``not in`` operators, which can be used to check if the value is in the list of values.
 
+To make a more complex condition, you can use nested parentheses with boolean operators ``&&`` and ``||``.
+
 .. code-block:: yaml
 
    dependencies:
@@ -149,6 +151,8 @@ The ``if`` field supports all :ref:`Range Specifications<reference/versioning:Ra
       rules:
         - if: "idf_version >=3.3,<5.0"
         - if: "target in [esp32, esp32c3]"
+        # the above two conditions equals to
+        - if: idf_version >=3.3,<5.0 && target in [esp32, esp32c3]
 
 Examples
 --------

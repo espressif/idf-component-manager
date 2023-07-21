@@ -477,6 +477,10 @@ class TestManifestValidator(object):
             ('target in ["esp32s2", "esp32c3"]', False),
             ('target not in ["esp32s2", "esp32c3"]', True),
             ('target not in [esp32, esp32c3]', False),
+            ('target not in [esp32, esp32c3] || idf_version == 5.0.0', True),
+            ('target not in [esp32, esp32c3] && idf_version == 5.0.0', False),
+            ('(target in [esp32, esp32c3] || idf_version == 5.0.0) && idf_version == 6.0.0', False),
+            ('target in [esp32, esp32c3] || (idf_version == 5.0.0 && idf_version == 6.0.0)', True),
         ],
     )
     def test_parse_if_clause(self, if_clause, bool_value, monkeypatch):
