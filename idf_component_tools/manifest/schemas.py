@@ -17,7 +17,7 @@ from .constants import (
     KNOWN_INFO_METADATA_FIELDS,
     TAGS_REGEX,
 )
-from .if_parser import IfClause, parse_if_clause
+from .if_parser import IfClause, OptionalDependency, parse_if_clause
 
 try:
     from typing import Any
@@ -38,6 +38,15 @@ LINKS_GIT_ERROR = 'Invalid URL in the "{}" field. Check that link is a valid Git
 
 
 def _dependency_schema():  # type: () -> Or
+    _optional_dependency = And(
+        {
+            'if': Use(parse_if_clause),
+            Optional('version'): Or(
+                None, *string_types, error='Dependency version spec format is invalid'
+            ),
+        },
+        Use(OptionalDependency.fromdict),
+    )
     return Or(
         Or(None, *string_types, error='Dependency version spec format is invalid'),
         {
@@ -48,7 +57,8 @@ def _dependency_schema():  # type: () -> Or
             Optional('path'): NONEMPTY_STRING,
             Optional('git'): NONEMPTY_STRING,
             Optional('service_url'): NONEMPTY_STRING,
-            Optional('rules'): [{'if': Use(parse_if_clause)}],
+            Optional('rules'): [_optional_dependency],
+            Optional('matches'): [_optional_dependency],
             Optional('override_path'): NONEMPTY_STRING,
             Optional('require'): Or(
                 'public',
@@ -168,6 +178,12 @@ def manifest_json_schema():  # type: () -> dict
         'type': 'string',
         'pattern': IfClause.regex_str(),
     }
+    _anyof[1]['properties']['rules']['items']['properties']['version'] = version_json_schema()
+    _anyof[1]['properties']['matches']['items']['properties']['if'] = {
+        'type': 'string',
+        'pattern': IfClause.regex_str(),
+    }
+    _anyof[1]['properties']['matches']['items']['properties']['version'] = version_json_schema()
 
     # The "schema" library is also missing the `type` for the following types
     # - enum - it's optional in JSON schema, but it's important to the error messages

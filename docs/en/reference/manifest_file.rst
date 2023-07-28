@@ -40,7 +40,8 @@ Common Fields for All Dependency Types
    - ``private``: This is the default value. The required component is added as a private dependency. This is equivalent to adding the component to the ``PRIV_REQUIRES`` argument of ``idf_component_register`` in the component's ``CMakeLists.txt`` file.
    - ``public``: Sets the transient dependency. This is equivalent to adding the component to the ``REQUIRES`` argument of ``idf_component_register`` in the component's ``CMakeLists.txt`` file.
    - ``no``: Can be used to only download the component but not add it as a requirement.
-- ``rules``: A list of rules that should be applied to the dependency. The rules are applied in the order they are specified in the list. The dependency is only included when all rules are true. More details on :ref:`rules<reference/manifest_file:Rules>`.
+- ``matches``: A list of if clauses that should be applied to the dependency. The dependency is only included when any of the if-clauses is true. More details on :ref:`rules<reference/manifest_file:Matches and Rules>`.
+- ``rules``: A list of if clauses that should be applied to the dependency. The dependency is only included when all of the if-clauses are true. More details on :ref:`rules<reference/manifest_file:Matches and Rules>`.
 
 Dependencies from the Component Registry
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -132,10 +133,17 @@ You can use the shorthand syntax to specify the version of ESP-IDF:
     dependencies:
       esp-idf: ">=5.0"
 
-Rules
------
+Matches and Rules
+-----------------
 
-Rules are specified in the ``rules`` field of the dependency. The field is a list of rules, where each rule is a dictionary with an ``if`` field. The dependency is only included when all if clauses are true.
+``matches`` and ``rules`` are specified to control the dependency inclusion. The dependency is only included when:
+
+- any of the if clauses in ``matches`` is true
+- all of the if clauses in ``rules`` are true
+
+``matches`` and ``rules`` are optional fields. If they are omitted, the dependency is always included.
+
+``matches`` and ``rules`` support the same syntax. The field is a list of optional dependencies. Each optional dependency has an ``if`` field, and an optional ``version`` field.
 
 The ``if`` field supports ``idf_version`` and ``target`` variables. The ``idf_version`` variable contains the version of ESP-IDF that is used to build the component. The ``target`` variable contains the current target selected for the project.
 
@@ -153,6 +161,22 @@ To make a more complex condition, you can use nested parentheses with boolean op
         - if: "target in [esp32, esp32c3]"
         # the above two conditions equals to
         - if: idf_version >=3.3,<5.0 && target in [esp32, esp32c3]
+
+The ``version`` field is optional, and it also supports all :ref:`Range Specifications<reference/versioning:Range Specifications>`. The version specified here will override the ``version`` field of the dependency when the corresponding if clause is true.
+
+For example,
+
+.. code-block:: yaml
+
+   dependencies:
+     optional_component:
+       matches:
+         - if: "idf_version >=3.3"
+           version: "~2.0.0"
+         - if: "idf_version <3.3"
+           version: "~1.0.0"
+
+The optional_component will be included with version ``~2.0.0`` when the ``idf_version >=3.3``, and it will be included with version ``~1.0.0`` when the ``idf_version <3.3``.
 
 Examples
 --------

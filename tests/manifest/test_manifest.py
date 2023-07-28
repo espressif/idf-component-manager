@@ -21,7 +21,8 @@ from idf_component_tools.manifest import (
     SolvedComponent,
 )
 from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS, known_targets
-from idf_component_tools.manifest.if_parser import parse_if_clause
+from idf_component_tools.manifest.if_parser import OptionalDependency, parse_if_clause
+from idf_component_tools.manifest.manifest import OptionalRequirement
 from idf_component_tools.sources import LocalSource
 
 
@@ -531,6 +532,56 @@ class TestManifestValidator(object):
         errors = validator.validate_normalize()
 
         assert not errors
+
+    def test_matches_with_versions(self, monkeypatch):
+        req = OptionalRequirement(
+            matches=[
+                OptionalDependency('idf_version < 4.4', '1.0.0'),
+                OptionalDependency('idf_version == 4.4.0'),
+            ]
+        )
+        monkeypatch.setenv('IDF_VERSION', '5.0.0')
+        assert req.version_spec_if_meet_conditions('*') is None
+
+        monkeypatch.setenv('IDF_VERSION', '4.4.0')
+        assert req.version_spec_if_meet_conditions('*') == '*'
+
+        monkeypatch.setenv('IDF_VERSION', '3.0.0')
+        assert req.version_spec_if_meet_conditions('*') == '1.0.0'
+
+    def test_matches_with_rules(self, monkeypatch):
+        req = OptionalRequirement(
+            rules=[
+                OptionalDependency('idf_version < 4.4', '1.0.0'),
+                OptionalDependency('target == esp32', '1.0.1'),  # shall override
+            ]
+        )
+        monkeypatch.setenv('IDF_VERSION', '5.0.0')
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
+        assert req.version_spec_if_meet_conditions('*') is None
+
+        monkeypatch.setenv('IDF_VERSION', '3.0.0')
+        assert req.version_spec_if_meet_conditions('*') == '1.0.1'
+
+    def test_rules_override_matches(self, monkeypatch):
+        req = OptionalRequirement(
+            matches=[
+                OptionalDependency('idf_version < 4.4', '1.0.0'),
+                OptionalDependency('idf_version == 4.4.0'),
+            ],
+            rules=[
+                OptionalDependency('target == esp32', '1.0.3'),  # shall override
+            ],
+        )
+        monkeypatch.setenv('IDF_VERSION', '5.0.0')
+        monkeypatch.setenv('IDF_TARGET', 'esp32s2')
+        assert req.version_spec_if_meet_conditions('*') is None
+
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
+        assert req.version_spec_if_meet_conditions('*') is None
+
+        monkeypatch.setenv('IDF_VERSION', '3.0.0')
+        assert req.version_spec_if_meet_conditions('*') == '1.0.3'
 
 
 def test_json_schema():

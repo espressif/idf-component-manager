@@ -23,6 +23,28 @@ IF_TARGET_REGEX_COMPILED = re.compile(IF_TARGET_REGEX)
 
 
 @serializable
+class OptionalDependency:
+    _serialization_properties = [
+        'if_clause',
+        'version',
+    ]
+
+    def __init__(self, clause, version=None):  # type: (str | IfClause, str | None) -> None
+        if isinstance(clause, IfClause):
+            self.if_clause = clause
+        else:
+            self.if_clause = IfClause.from_string(clause)
+        self.version = version
+
+    def __repr__(self):  # type: () -> str
+        return '{} ({})'.format(self.if_clause, self.version or '*')
+
+    @classmethod
+    def fromdict(cls, d):  # type: (dict) -> OptionalDependency
+        return cls(d.get('if'), d.get('version'))  # type: ignore
+
+
+@serializable
 class IfClause:
     _serialization_properties = [
         'clause',

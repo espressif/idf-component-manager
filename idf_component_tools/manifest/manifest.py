@@ -12,7 +12,7 @@ from idf_component_tools.serialization import serializable
 
 from ..semver import Version
 from .constants import COMMIT_ID_RE, LINKS
-from .if_parser import IfClause
+from .if_parser import OptionalDependency
 
 try:
     from collections.abc import Mapping
@@ -134,7 +134,7 @@ class Manifest(object):
                 source,
                 version_spec=details.get('version') or '*',
                 public=details.get('public'),
-                if_clauses=details.get('rules'),
+                optional_requirement=OptionalRequirement.fromdict(details),
                 require=details.get('require', None),
             )
             manifest._dependencies.append(component)
@@ -166,6 +166,72 @@ class Manifest(object):
 
 
 @serializable
+class OptionalRequirement(object):
+    _serialization_properties = [
+        'matches',
+        'rules',
+    ]
+
+    def __init__(
+        self,
+        matches=None,  # type: list[OptionalDependency] | None
+        rules=None,  # type: list[OptionalDependency] | None
+    ):  # type: (...) -> None
+        self.matches = matches or []
+        self.rules = rules or []
+
+    def version_spec_if_meet_conditions(self, default_version_spec):  # type: (str) -> str | None
+        """
+        Return version spec If
+        - The first IfClause that is true among all the specified `matches`
+          And
+        - All the IfClauses that are true among all the specified `rules`
+
+        :return:
+            - if the optional dependency matches, return the version spec if specified, else return '*'
+            - else, return None
+        """
+        if not self.matches and not self.rules:
+            return default_version_spec
+
+        res = None
+
+        # ANY of the `matches`
+        for optional_dependency in self.matches:
+            if optional_dependency.if_clause.bool_value:
+                res = optional_dependency.version or default_version_spec
+                break
+
+        # must match at least one `matches`
+        if self.matches and res is None:
+            return None
+
+        # AND all the `rules`
+        for optional_dependency in self.rules:
+            if optional_dependency.if_clause.bool_value:
+                res = optional_dependency.version or res or default_version_spec
+            else:
+                return None
+
+        return res
+
+    @classmethod
+    def fromdict(cls, d):  # type: (dict) -> OptionalRequirement
+        def _to_optional_dependency(d):
+            if isinstance(d, OptionalDependency):
+                return d
+            elif isinstance(d, dict):
+                return OptionalDependency.fromdict(d)
+
+            raise ValueError('Invalid optional dependency: {}, type {}'.format(d, type(d)))
+
+        return cls(
+            matches=[_to_optional_dependency(match) for match in d.get('matches', [])],
+            rules=[_to_optional_dependency(rule) for rule in d.get('rules', [])],
+        )
+
+
+@serializable
 class ComponentRequirement(object):
     _serialization_properties = [
         'name',
@@ -182,11 +248,11 @@ class ComponentRequirement(object):
         source,  # type: BaseSource
         version_spec='*',  # type: str
         public=None,  # type: bool | None
-        if_clauses=None,  # type: list[IfClause] | None
+        optional_requirement=None,  # type: OptionalRequirement | None
         require=None,  # type: str | bool | None
     ):
         # type: (...) -> None
-        self.version_spec = version_spec
+        self._version_spec = version_spec
         self.source = source
         self._name = name
         self.public = None  # type: bool | None
@@ -194,7 +260,7 @@ class ComponentRequirement(object):
             self.public = True
         elif public is False or require == 'private':
             self.public = False
-        self.if_clauses = if_clauses or []
+        self.optional_requirement = optional_requirement
         self.require = True if require in ['private', 'public', None] else False
 
     @property
@@ -206,14 +272,29 @@ class ComponentRequirement(object):
         return self.source.normalized_name(self._name)
 
     @property
-    def meet_optional_dependencies(self):
-        if not self.if_clauses:
+    def version_spec(self):
+        if self.optional_requirement:
+            version_spec = self.optional_requirement.version_spec_if_meet_conditions(
+                self._version_spec
+            )
+            if version_spec is not None:
+                return version_spec
+
+        return self._version_spec
+
+    @property
+    def meet_optional_dependencies(self):  # type: () -> bool
+        if not self.optional_requirement:
             return True
 
-        res = all(if_clause.bool_value for if_clause in self.if_clauses)
-        if not res:
-            print('Skipping optional dependency: {}'.format(self.name))
-        return res
+        if (
+            self.optional_requirement.version_spec_if_meet_conditions(self._version_spec)
+            is not None
+        ):
+            return True
+
+        print('Skipping optional dependency: {}'.format(self.name))
+        return False
 
     def __repr__(self):  # type: () -> str
         return 'ComponentRequirement("{}", {}, version_spec="{}", public={})'.format(

@@ -150,10 +150,11 @@ class ManifestManager(object):
             raise ManifestError('\n'.join(error_desc))
 
         for name, details in self.normalized_manifest_tree.get('dependencies', {}).items():
-            if 'rules' in details:
-                self.normalized_manifest_tree['dependencies'][name]['rules'] = [
-                    rule['if'] for rule in details['rules']
-                ]
+            for opt_deps_key in ['rules', 'matches']:
+                if opt_deps_key in details:
+                    self.normalized_manifest_tree['dependencies'][name][opt_deps_key] = [
+                        opt_dep for opt_dep in details[opt_deps_key]
+                    ]
 
         return Manifest.fromdict(
             self.normalized_manifest_tree, name=self.name, manifest_manager=self
