@@ -46,6 +46,7 @@ class Manifest(object):
         'tags',
         'version',
         'links',
+        'license',
     ]
 
     def __init__(
@@ -64,6 +65,7 @@ class Manifest(object):
         tags=None,  # type: list[str] | None # List of tags
         links=None,  # type: ComponentLinks | None # Links of the component
         examples=None,  # type: list[dict[str, str]] | None # List of paths to the examples
+        license_name=None,  # type: str | None # License of the component
         # manifest manager who generate this manifest
         manifest_manager=None,  # type: ManifestManager | None
     ):
@@ -97,6 +99,7 @@ class Manifest(object):
         self._manifest_hash = manifest_hash
         self.links = links
         self.examples = examples
+        self.license = license_name
 
         self._manifest_manager = manifest_manager
 
@@ -117,6 +120,7 @@ class Manifest(object):
             include_files=manifest_tree.get('files', {}).get('include'),
             exclude_files=manifest_tree.get('files', {}).get('exclude'),
             examples=manifest_tree.get('examples', []),
+            license_name=manifest_tree.get('license'),
             manifest_manager=manifest_manager,
         )
 

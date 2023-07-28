@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Support `license` field in the manifest files
+
 ### Fixed
 
 - Fix incorrect message suggestion to check upload status if non-default profile is used

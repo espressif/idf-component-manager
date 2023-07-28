@@ -13,6 +13,7 @@ The file contains the following fields:
 - ``tags``: A list of tags related to the component functionality. This field is optional.
 - ``targets``: A list of targets that the component supports. This field is optional and can be omitted if the component supports all targets.
 - ``version``: The version of the component. This field is always present for a component in the component registry. At the same time, it is optional for components in the local component directory or in git.
+- ``license``: The license of the component. It should be a valid SPDX license identifier listed in https://spdx.org/licenses/. This field is optional. The license will be automatically detected if it's not specified.
 
 External Links:
 

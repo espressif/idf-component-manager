@@ -154,7 +154,7 @@ class ComponentDetails(Manifest):
         super(ComponentDetails, self).__init__(*args, **kwargs)
         self.download_url = download_url
         self.documents = documents
-        self.license = license
+        self.license = license  # type: ignore
         self.examples = examples
 
 
