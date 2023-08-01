@@ -1,6 +1,5 @@
 stages:
   - check
-  - danger
   - build
   - test
   - deploy
@@ -106,3 +105,6 @@ include:
   - project: "espressif/shared-ci-dangerjs"
     ref: master
     file: "danger.yaml"
+
+run-danger-mr-linter:
+  stage: check
