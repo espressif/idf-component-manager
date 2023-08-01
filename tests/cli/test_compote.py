@@ -12,6 +12,7 @@ from click.testing import CliRunner
 from jsonschema.exceptions import ValidationError
 
 from idf_component_manager.cli.core import initialize_cli
+from idf_component_manager.core import ComponentManager
 from idf_component_tools.__version__ import __version__
 from idf_component_tools.config import Config, ConfigManager
 from idf_component_tools.file_cache import FileCache
@@ -87,6 +88,20 @@ def test_logout_from_registry(monkeypatch, tmp_path):
 
     # assert '' in output.stderr
     assert 'Successfully logged out' in output.stdout
+
+
+def test_create_project_from_example_non_default_registry(mocker):
+    mocker.patch('idf_component_manager.core.ComponentManager.create_project_from_example')
+    runner = CliRunner()
+    cli = initialize_cli()
+
+    runner.invoke(
+        cli,
+        ['project', 'create-from-example', 'test/cmp=1.0.0:ex', '--service-profile', 'non-default'],
+    )
+    ComponentManager.create_project_from_example.assert_called_once_with(
+        'test/cmp=1.0.0:ex', path=None, service_profile='non-default'
+    )
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_manifest_create_add_dependency.yaml')

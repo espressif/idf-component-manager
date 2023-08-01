@@ -2,12 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 import click
 
-from .constants import get_project_dir_option
+from .constants import get_project_dir_option, get_project_options
 from .utils import add_options
 
 
 def init_project():
     PROJECT_DIR_OPTION = get_project_dir_option()
+    PROJECT_OPTIONS = get_project_options()
 
     @click.group()
     def project():
@@ -17,7 +18,7 @@ def init_project():
         pass
 
     @project.command()
-    @add_options(PROJECT_DIR_OPTION)
+    @add_options(PROJECT_OPTIONS)
     @click.option(
         '-p',
         '--path',
@@ -26,7 +27,7 @@ def init_project():
         'The project will be created directly in the given folder if it is empty.',
     )
     @click.argument('example', required=True)
-    def create_from_example(manager, example, path):
+    def create_from_example(manager, example, path, service_profile):
         """
         Create a project from an example.
 
@@ -41,7 +42,7 @@ def init_project():
 
         Namespace and version are optional in the EXAMPLE argument.
         """
-        manager.create_project_from_example(example, path=path)
+        manager.create_project_from_example(example, path=path, service_profile=service_profile)
 
     @project.command()
     @add_options(PROJECT_DIR_OPTION)
