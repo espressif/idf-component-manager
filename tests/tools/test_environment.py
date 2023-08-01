@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 from pytest import mark, raises
 
-from idf_component_tools.environment import getenv_bool, getenv_int
+from idf_component_tools.environment import detect_ci, getenv_bool, getenv_int
 
 
 @mark.parametrize(
@@ -54,3 +54,22 @@ def test_getenv_int_err(monkeypatch):
 def test_getenv_int_unset(monkeypatch):
     monkeypatch.delenv('TEST_GETENV_INT_UNSET', raising=False)
     assert getenv_int('TEST_GETENV_INT_UNSET', 5) == 5
+
+
+def test_detect_ci(monkeypatch):
+    # Clear environment variables for github actions and gitlab ci
+    monkeypatch.delenv('CI', raising=False)
+    monkeypatch.delenv('GITHUB_ACTIONS', raising=False)
+    monkeypatch.delenv('GITLAB_CI', raising=False)
+
+    # Test when not running in a CI environment
+    assert detect_ci() is None
+
+    # Test when running in a known CI environment
+    monkeypatch.setenv('APPVEYOR', '1')
+    assert detect_ci() == 'appveyor'
+    monkeypatch.delenv('APPVEYOR')
+
+    # Test when running in an unknown CI environment
+    monkeypatch.setenv('CI', '1')
+    assert detect_ci() == 'unknown'

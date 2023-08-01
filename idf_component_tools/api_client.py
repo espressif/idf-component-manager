@@ -21,7 +21,7 @@ from tqdm import tqdm
 # Import whole module to avoid circular dependencies
 import idf_component_tools as tools
 from idf_component_tools.__version__ import __version__
-from idf_component_tools.environment import getenv_int
+from idf_component_tools.environment import detect_ci, getenv_int
 from idf_component_tools.errors import warn
 from idf_component_tools.file_cache import FileCache as ComponentFileCache
 from idf_component_tools.semver import SimpleSpec, Version
@@ -210,13 +210,27 @@ class TokenAuth(requests.auth.AuthBase):
 
 
 def user_agent():  # type: () -> str
-    return 'idf-component-manager/{version} ({os}/{release} {arch}; python/{py_version})'.format(
+    """
+    Returns user agent string.
+    """
+
+    environment_info = [
+        '{os}/{release} {arch}'.format(
+            os=platform.system(), release=platform.release(), arch=platform.machine()
+        ),
+        'python/{version}'.format(version=platform.python_version()),
+    ]
+
+    ci_name = detect_ci()
+    if ci_name:
+        environment_info.append('ci/{}'.format(ci_name))
+
+    user_agent = 'idf-component-manager/{version} ({env})'.format(
         version=__version__,
-        os=platform.system(),
-        release=platform.release(),
-        arch=platform.machine(),
-        py_version=platform.python_version(),
+        env='; '.join(environment_info),
     )
+
+    return user_agent
 
 
 def _component_request(request, component_name):

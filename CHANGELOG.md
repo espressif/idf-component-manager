@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add CI environment information to the component manager requests user agent
+
 ### Fixed
 
 - Fix incorrect message suggestion to check upload status if non-default profile is used
