@@ -124,7 +124,12 @@ def test_config_dump(tmp_path):
 
 def test_component_registry_url_storage_env(monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'https://storage.com/')
-    assert (None, 'https://storage.com/') == component_registry_url()
+    assert (None, ['https://storage.com/']) == component_registry_url()
+
+
+def test_component_registry_url_multiple_storage_env(monkeypatch):
+    monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'https://storage.com/;https://test.com/')
+    assert (None, ['https://storage.com/', 'https://test.com/']) == component_registry_url()
 
 
 def test_component_registry_url_registry_api_env(monkeypatch):
@@ -140,19 +145,22 @@ def test_component_registry_url_registry_env(monkeypatch):
 @mark.parametrize(
     ('profile', 'urls'),
     [
-        ({}, ('https://components.espressif.com/api/', 'https://components-file.espressif.com/')),
-        (None, ('https://components.espressif.com/api/', 'https://components-file.espressif.com/')),
+        ({}, ('https://components.espressif.com/api/', ['https://components-file.espressif.com/'])),
+        (
+            None,
+            ('https://components.espressif.com/api/', ['https://components-file.espressif.com/']),
+        ),
         (
             {'registry_url': 'default'},
-            ('https://components.espressif.com/api/', 'https://components-file.espressif.com/'),
+            ('https://components.espressif.com/api/', ['https://components-file.espressif.com/']),
         ),
         (
             {'registry_url': 'default', 'storage_url': 'default'},
-            ('https://components.espressif.com/api/', 'https://components-file.espressif.com/'),
+            ('https://components.espressif.com/api/', ['https://components-file.espressif.com/']),
         ),
         (
             {'storage_url': 'default'},
-            ('https://components.espressif.com/api/', 'https://components-file.espressif.com/'),
+            ('https://components.espressif.com/api/', ['https://components-file.espressif.com/']),
         ),
         (
             {'registry_url': 'http://example.com'},
@@ -160,11 +168,15 @@ def test_component_registry_url_registry_env(monkeypatch):
         ),
         (
             {'storage_url': 'http://example.com/'},
-            (None, 'http://example.com/'),
+            (None, ['http://example.com/']),
         ),
         (
             {'registry_url': 'http://example.com', 'storage_url': 'http://example.com'},
-            ('http://example.com/api/', 'http://example.com'),
+            ('http://example.com/api/', ['http://example.com']),
+        ),
+        (
+            {'registry_url': None, 'storage_url': ['http://example.com', 'https://test.com']},
+            (None, ['http://example.com', 'https://test.com']),
         ),
     ],
 )

@@ -16,12 +16,17 @@ ERROR_SCHEMA = Schema(
     error='Unexpected error format',
 )
 
+OPTIONAL_DEPENDENCY = {'if': STRING, Optional('version'): STRING}
+
 DEPENDENCY = {
     'spec': STRING,
     'source': STRING,
     Optional('name'): OPTIONAL_STRING,
     Optional('namespace'): OPTIONAL_STRING,
     Optional('is_public'): Use(bool),
+    Optional('require'): Use(bool),
+    Optional('rules'): [OPTIONAL_DEPENDENCY],
+    Optional('matches'): [OPTIONAL_DEPENDENCY],
     Optional(Use(str)): object,
 }
 

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 from pytest import mark
 
-from idf_component_tools.constants import COMPILED_GIT_URL_RE
+from idf_component_tools.constants import COMPILED_FILE_RE, COMPILED_GIT_URL_RE
 
 
 @mark.parametrize(
@@ -40,3 +40,32 @@ def test_valid_git_urls(url):
 )
 def test_invalid_git_urls(url):
     assert not COMPILED_GIT_URL_RE.match(url), 'Matched invalid URL: {}'.format(url)
+
+
+@mark.parametrize(
+    'path',
+    [
+        'file://C:\\\\test\\folder\\',
+        'file://C:\\\\new_\\path\\help\\',
+        'file://C:\\\\a\\..\\path\\',
+        # Unix Path
+        'file:///data/storage/',
+        'file:///data/storage/../new_folder/',
+    ],
+)
+def test_valid_file_re(path):
+    assert COMPILED_FILE_RE.match(path)
+
+
+@mark.parametrize(
+    'path',
+    [
+        'file://C:\\\\test\\folder',
+        'file://C:\\\\new_\\path\\help?.@\\',
+        'file://../../a/',
+        # Unix Path
+        'file://../data/storage/',
+    ],
+)
+def test_invalid_file_re(path):
+    assert not COMPILED_FILE_RE.match(path)

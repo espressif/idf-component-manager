@@ -384,7 +384,6 @@ class TestManifestValidator(object):
         errors = validator.validate_normalize()
 
         assert len(errors) == 4
-        print(errors)
         assert errors[-2].startswith(error_message)
         assert errors[-1].startswith('Invalid version specification')
 

@@ -104,3 +104,7 @@ class VersionNotFoundError(FatalError):
 
 class VersionAlreadyExistsError(FatalError):
     pass
+
+
+class ProfileNotValid(FatalError):
+    pass

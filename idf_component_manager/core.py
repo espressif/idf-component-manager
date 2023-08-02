@@ -17,11 +17,6 @@ from pathlib import Path
 import requests
 
 from idf_component_manager.utils import print_info, print_warn
-from idf_component_tools.api_client_errors import (
-    APIClientError,
-    ComponentNotFound,
-    NetworkConnectionError,
-)
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name, is_component
 from idf_component_tools.environment import getenv_int
@@ -52,6 +47,12 @@ from idf_component_tools.manifest import (
     ManifestManager,
     ProjectRequirements,
 )
+from idf_component_tools.registry.api_client_errors import (
+    APIClientError,
+    ComponentNotFound,
+    NetworkConnectionError,
+    VersionNotFound,
+)
 from idf_component_tools.semver import SimpleSpec, Version
 from idf_component_tools.sources import WebServiceSource
 
@@ -68,9 +69,9 @@ from .core_utils import (
     parse_example,
     raise_component_modified_error,
 )
-from .dependencies import DownloadedComponent, download_project_dependencies
+from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
-from .service_details import service_details
+from .service_details import get_api_client, get_storage_client
 
 try:
     from typing import Optional, Tuple
@@ -212,8 +213,7 @@ class ComponentManager(object):
     @general_error_handler
     def create_project_from_example(self, example, path=None, service_profile=None):
         # type: (str, str | None, str | None) -> None
-
-        client, namespace = service_details(None, service_profile, token_required=False)
+        client, namespace = get_storage_client(None, service_profile)
         component_name, version_spec, example_name = parse_example(example, namespace)
         project_path = path or os.path.join(self.path, os.path.basename(example_name))
 
@@ -261,9 +261,8 @@ class ComponentManager(object):
     def add_dependency(
         self, dependency, component='main', path=None, service_profile=None
     ):  # type: (str, str, Optional[str], str | None) -> None
-        client, _ = service_details(None, service_profile, token_required=False)
-
         manifest_filepath, _ = self._get_manifest(component=component, path=path)
+        client, _ = get_storage_client(None, service_profile)
 
         if path is not None:
             component_path = os.path.abspath(path)
@@ -395,8 +394,7 @@ class ComponentManager(object):
         service_profile=None,  # type: str | None
         namespace=None,  # type: str | None
     ):  # type: (...) -> None
-        client, namespace = service_details(namespace, service_profile)
-
+        client, namespace = get_api_client(namespace, service_profile)
         if not version:
             raise FatalError('Argument "version" is required')
 
@@ -423,7 +421,7 @@ class ComponentManager(object):
         service_profile=None,  # type: str | None
         namespace=None,  # type: str | None
     ):
-        client, namespace = service_details(namespace, service_profile)
+        client, namespace = get_api_client(namespace, service_profile)
         component_name = '/'.join([namespace, name])
 
         versions = client.versions(component_name=component_name).versions
@@ -490,7 +488,7 @@ class ComponentManager(object):
         Uploads a component version to the registry.
         """
         token_required = not (check_only or dry_run)
-        client, namespace = service_details(
+        client, namespace = get_api_client(
             namespace, service_profile, token_required=token_required
         )
 
@@ -535,7 +533,7 @@ class ComponentManager(object):
                         manifest.version, component_name
                     )
                 )
-        except ComponentNotFound:
+        except (ComponentNotFound, VersionNotFound):
             # It's ok if component doesn't exist yet
             pass
 
@@ -613,7 +611,7 @@ class ComponentManager(object):
     def upload_component_status(
         self, job_id, service_profile=None
     ):  # type: (str, str | None) -> None
-        client, _ = service_details(None, service_profile)
+        client, _ = get_api_client(None, service_profile)
         status = client.task_status(job_id=job_id)
         if status.status == 'failure':
             raise FatalError("Uploaded version wasn't processed successfully.\n%s" % status.message)

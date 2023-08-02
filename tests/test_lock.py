@@ -36,7 +36,7 @@ dependencies = {
     },
 }
 
-MANIFEST_HASH = 'e1508d824de5258b045a7edbd8ba85c99d28cf3302b48ab3aed26bdd39498ff1'
+MANIFEST_HASH = 'a1a5f092fd8e895c42e8bb1984c5b32b86c49e796369605ca175edb079407f77'
 
 
 @pytest.fixture
@@ -225,7 +225,7 @@ class TestLockManager(object):
                     ),
                     (
                         'manifest_hash',
-                        'df96197ee0b9631a6f707156c7bb429c0831b4384fb595141c95de858d34df9f',
+                        'cfedb62005f55b7e817bb733bb4d5df5047267a0229a162d4904ca9869af1522',
                     ),
                 ]
             )
@@ -274,7 +274,7 @@ class TestLockManager(object):
         assert 'Manifest files have changed, solving dependencies' in captured.out
 
         monkeypatch.setenv('IDF_VERSION', '4.2.0')
-        solution.manifest_hash = 'df96197ee0b9631a6f707156c7bb429c0831b4384fb595141c95de858d34df9f'
+        solution.manifest_hash = 'cfedb62005f55b7e817bb733bb4d5df5047267a0229a162d4904ca9869af1522'
         assert not is_solve_required(project_requirements, solution)
         captured = capsys.readouterr()
         assert 'solving dependencies.' not in captured.out
@@ -310,7 +310,7 @@ class TestLockManager(object):
                     ),
                     (
                         'manifest_hash',
-                        'f67563d60fe5b5efba54eff01811a780cea0de3895029d7b0aa5d557ccb15b12',
+                        'af4c5d3bd0d0f2bb7985b1a1e78c0cf16d2d4115c0adffb3e084cc3d5f63bf09',
                     ),
                 ]
             )

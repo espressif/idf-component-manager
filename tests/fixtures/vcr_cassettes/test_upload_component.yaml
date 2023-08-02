@@ -11,96 +11,36 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
+      - idf-component-manager/1.3.2 (Darwin/22.1.0 arm64; python/3.10.0)
     method: GET
-    uri: http://localhost:5000/api
+    uri: http://localhost:5000/api/components/espressif/cmp
   response:
     body:
-      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",\n
-        \ \"info\": \"Espressif Component Manager Service HTTP JSON API\",\n  \"status\":
-        \"ok\",\n  \"version\": \"0.2.0\"\n}\n"
+      string: '{"created_at":"2023-09-21T10:23:53.786567+00:00","featured":false,"name":"cmp","namespace":"espressif","versions":[{"build_metadata_keys":["version-type:string"],"component_hash":"6b01813805e15d5bbc428ec2ad0ab4d83d5a2ccb38886dfb78c6d420ac82f92d","created_at":"2023-09-21T10:23:54.469278+00:00","dependencies":[],"description":null,"discussion":"","docs":{"api":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09/api.md","api_fr":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09/api_fr.md","changelog":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09/changelog.md","changelog_fr":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09/changelog_fr.md","readme":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09/readme.md","readme_fr":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09/readme_fr.md"},"documentation":"","downloads_total":0,"examples":[{"docs":{"readme":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09/examples/2faf231b-5424-4bae-9f55-7e2cc35df7c2/readme.md"},"id":"2faf231b-5424-4bae-9f55-7e2cc35df7c2","name":"sample_project","url":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09/examples/2faf231b-5424-4bae-9f55-7e2cc35df7c2.tgz"}],"exclusion_list":["**/__pycache__","**/*.pyc","**/*.pyd","**/*.pyo","**/.DS_Store","**/.git/**/*","**/.svn/**/*","**/dist/**/*","**/build/**/*","**/managed_components/**/*","**/dependencies.lock","**/.github/**/*","**/.gitlab-ci.yml","**/.idea/**/*","**/.vscode/**/*","**/.settings/**/*","**/sdkconfig","**/sdkconfig.old","**/.component_hash"],"homepage":"","id":"95789275-7637-42ff-af78-c354ae69a0e2","info_metadata_keys":[],"issues":"","license":{"name":"FTL","url":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09/license.txt"},"maintainers":[],"repository":"","tags":[],"targets":[],"uploader":"dmitry","url":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09.tgz","version":"1.0.0-alpha.1.4","yanked_at":null,"yanked_message":null}]}
+
+        '
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '168'
+      - '2107'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
       Content-Type:
       - application/json
       Date:
-      - Tue, 21 Mar 2023 18:05:41 GMT
+      - Thu, 21 Sep 2023 10:46:07 GMT
       Server:
-      - Werkzeug/2.2.3 Python/3.11.1
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Authorization:
-      - Bearer L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ
-      Connection:
-      - keep-alive
-      User-Agent:
-      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
-    method: GET
-    uri: http://localhost:9000/test-public/components/espressif/cmp.json
-  response:
-    body:
-      string: '{"created_at": "2023-03-21T15:15:02.245808+00:00", "name": "cmp", "namespace":
-        "espressif", "versions": [{"url": "3ce48021-7d8b-43ef-896e-53b88c338da5.tgz",
-        "targets": [], "docs": {"readme": "3ce48021-7d8b-43ef-896e-53b88c338da5/readme.md"},
-        "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
-        "yanked_at": null, "description": "This component is an example, to be used
-        with the IDF component manager.", "downloads_total": 0, "issues": "", "tags":
-        [], "documentation": "", "exclusion_list": ["**/__pycache__", "**/*.pyc",
-        "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*", "**/dist/**/*",
-        "**/build/**/*", "**/managed_components/**/*", "**/dependencies.lock", "**/.github/**/*",
-        "**/.gitlab-ci.yml", "**/.idea/**/*", "**/.vscode/**/*", "**/.settings/**/*",
-        "**/sdkconfig", "**/sdkconfig.old", "**/.component_hash"], "dependencies":
-        [{"source": "service", "is_public": false, "name": "size-prove-besxcwe", "spec":
-        "9.8.4", "namespace": "rachael80dyw"}, {"source": "idf", "is_public": false,
-        "name": null, "spec": ">=4.1", "namespace": null}], "examples": [], "license":
-        {"url": "3ce48021-7d8b-43ef-896e-53b88c338da5/license.txt", "name": "Unknown
-        license"}, "repository": "", "created_at": "2023-03-21T15:15:02.408210+00:00",
-        "uploader": "dmitry", "discussion": "", "version": "1.0.0", "component_hash":
-        "504486bd41aee8dc87a68c23ba5666403b41ed4f4385c74950b0a49946a3c773", "yanked_message":
-        null}], "featured": false}'
-    headers:
-      Accept-Ranges:
-      - bytes
-      Cache-Control:
-      - max-age=300
-      Content-Length:
-      - '1461'
-      Content-Security-Policy:
-      - block-all-mixed-content
-      Content-Type:
-      - binary/octet-stream
-      Date:
-      - Tue, 21 Mar 2023 18:05:41 GMT
-      ETag:
-      - '"201b1165a0512b143bf515566dfb4fbd"'
-      Last-Modified:
-      - Tue, 21 Mar 2023 16:23:35 GMT
-      Server:
-      - MinIO
+      - Werkzeug/2.3.7 Python/3.11.1
       Strict-Transport-Security:
-      - max-age=31536000; includeSubDomains
+      - max-age=1209600; includeSubDomains
       Vary:
-      - Origin
-      - Accept-Encoding
-      X-Amz-Request-Id:
-      - 174E815BA1AFFEA9
+      - Cookie
       X-Content-Type-Options:
       - nosniff
-      X-Xss-Protection:
-      - 1; mode=block
     status:
       code: 200
       message: OK
@@ -108,24 +48,24 @@ interactions:
     body: !!python/object/new:_io.BytesIO
       state: !!python/tuple
       - !!binary |
-        LS01NTdiNzVlNDUzMTk0YzViODllYWQ1ODFiODhiMTdlYQ0KQ29udGVudC1EaXNwb3NpdGlvbjog
+        LS1mOGY4YWE1NzFkMzA0ZWJhYjg0ZTY5YmE1ZWY0N2NkNw0KQ29udGVudC1EaXNwb3NpdGlvbjog
         Zm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImNtcF8xLjAuMC1hbHBoYS50Z3oiDQpD
-        b250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL29jdGV0LXN0cmVhbQ0KDQofiwgI9fEZZAL/Y21wXzEu
-        MC4wLWFscGhhLnRnegDtmWtv2jAUhvmcX2GxD4VKGN+SEHpRJ2AqEgVU2LQPk1CUGGKNXJaEimra
-        f59Tqt62Vuok0mo5jwQOseVIxOd9fY5xG7fPpu72XLq+TGt7gex4riWEs/vr4j4ljJIa2tZKYJPl
-        bqofX6smzEJhrkJ5Qi3bEYw6gmKz06HUqAEVoF3CM4qgtk1z11q7ljDxKOapEMTitu63dPwXAlBD
-        ZpnxH7or5blpyNjfx+lhy+X/9/7xu9B/8af+M9D/UvS/c6f/3OGOtoAO5pRTxxLgABWgd+F+lyOV
-        5RnOt/n+4t8S4ln9p7al9Z+apiX0L32fcmHr/R8pM/4rqv9eqN//IlSRCjfhIpU/NiqVfuPL4HI2
-        nIwRx5Q3DSOTeaM3uZhOxoPxfDG77PWHlzOEm086Pvb7i+G4N/rcH9wMqKvIW298WddTpHKlV5lM
-        F14cJnEko7zRBIUB/wf/fy/+b5o2tYTDtf9TW1ALorMCeGGCvRLyv5f8n7Mi/2OmINxk1Czyv2I4
-        +H8Z+f+hgQ7RbNr/2vqk1rIXJ9epWgX5XG7zLmKEMTTIklRmmVqi2bV28DBDjVngRqvAVU3Um6DR
-        vK/nuJtmpDwZZbI19LXHq6WSaRd9TFwvkC2GiR7WNj7c7gvQcZb7KsbBqWFcxcpHejUuArlex3pv
-        8NNAtySpivJlo35e9KBlGoeodzFFVzLNVBwhigkm36J688j4BZoF/g/+/2/+/7D+a3PLhFiqAMpf
-        3mdk+Dpcv0X+b9En9V/BiQ3+Xwa+TGSkndpTMutqx9XroYsOTk8EJgdG6Grj1R9ttF2jheYyy2++
-        ZIqOc92eya0bJmuJ9Qo6NfT/uJL5zUiZJZwZtwbd3Tl0y10ngQuiAv4P/v/u/Z86ZgdCtQr+v8vE
-        9noM/PrzX6a3n3D+C/oP+l+i/j+s/3ZMi4P+V0j/izpwsEf9fyn/YzrZe1z/5ZzA+W8pvEn992mt
-        9wikBgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4LX8BtxNg4IAUAAADQotLTU1N2I3NWU0NTMx
-        OTRjNWI4OWVhZDU4MWI4OGIxN2VhLS0NCg==
+        b250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL29jdGV0LXN0cmVhbQ0KDQofiwgI7x4MZQL/Y21wXzEu
+        MC4wLWFscGhhLnRnegDtmmtr4kAUhv2cXzG4H6oFx7nkai+0qEsFq1K7y35YkJCMZtjcNonFsux/
+        37GWdmsvy+5iWprzgI6YIQEz7/t6Tga3cftk4q7OhOuLrLYTyIbnRkI4v/+8/p4SRmkNrWolsMwL
+        N1OXr1UTZqGokJE4oqZjMIdT08KWQ2zd0GrA+6ddwjXWorYMYzOam5Ew/aHmH+rf0o0aMsrUf+Qu
+        pOdmEWNPz1PT5vP3d//xm/B//bH/M/D/UvzfvvN/7nDH0ZmNOeXUMXUIgArQPXe/iaHMixwXq2J3
+        +jd1/Vn/p5a5pX+uc6V/Uqb+K+r/XqTu/yySsYyW0SwT35cyE37jc/9iOhiPEMeUNzUtF0WjOz6f
+        jEf90eVsetHtDS6mCDe3Dpz2erPBqDv81OvfTKjL2AuXvqirU2RioVaZyGZeEqVJLOKi0QSHgfyH
+        +u+t1H+WYdncMBxMiWnYFoizCgwH3f5o2t95/fdS/iu9b+mfmibkfymE0hNxLkDskP9Q/1e7/rcN
+        kxmM6NhwLIuYNnhCBfCiFHs7vsaf8p+zx/lPdMj/Mmjva2gfTSe9L62PMhTdJL3O5CIoLsWq6CBG
+        GEP9PM1Enss5ml6rCj7KUWMauPEicGUTdcdoeNlT57g7zXDzj6I18FWNL+dSZB10mrpeIFoMEzWt
+        rX247Qugw7zwZYKDY027SqSP1GqcBSIMk0ZT+6GhW9JMxsW8UT9bH0HzLIlQ93yCrkSWyyRGFBNM
+        vsb15oH2EzwL6n/I/3+r/397/ku5ZYKUqoD05/cdWXwdha+Q/9SkW/rXmbIEyP8S8EUqYpXUnhR5
+        RyWuWg8dtHd8pGOyp0WuCl71UkHb0VroUuTFzZvI0GGhxhOxcqM0FFitoGNN/Y4LUdzMFHnKmXYb
+        0J1NQrfcMA1ccBXIf8j/t57/xFHyBXFUIf83ldhOt4H9/f4vxtf6h/1fVfF/6P++mv8/3f+1KYUH
+        wFXy/3UfONih/79U/zFibe//YjqB+q8MXqX/u93rPQCrAQAAAAAAAAAAAAAAAAAAAAAAAAAA+F9+
+        ASGzS2QAUAAADQotLWY4ZjhhYTU3MWQzMDRlYmFiODRlNjliYTVlZjQ3Y2Q3LS0NCg==
       - 0
       - null
     headers:
@@ -138,30 +78,40 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '994'
+      - '1018'
       Content-Type:
-      - multipart/form-data; boundary=557b75e453194c5b89ead581b88b17ea
+      - multipart/form-data; boundary=f8f8aa571d304ebab84e69ba5ef47cd7
       User-Agent:
-      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
+      - idf-component-manager/1.3.2 (Darwin/22.1.0 arm64; python/3.10.0)
     method: POST
     uri: http://localhost:5000/api/components/espressif/cmp/versions
   response:
     body:
-      string: "{\n  \"job_id\": \"42426816-3ef3-432e-8026-02b4a45aed4a\",\n  \"upload_format\":
-        \"tgz\",\n  \"upload_id\": \"32636665-f9d4-4daa-8ca5-823aa9c2de64\"\n}\n"
+      string: '{"job_id":"ba388e5c-e473-4856-b926-ec137ead3914","upload_format":"tgz","upload_id":"584266f6-94a3-449a-a595-86115455a643"}
+
+        '
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '136'
+      - '123'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
       Content-Type:
       - application/json
       Date:
-      - Tue, 21 Mar 2023 18:05:41 GMT
+      - Thu, 21 Sep 2023 10:46:08 GMT
       Server:
-      - Werkzeug/2.2.3 Python/3.11.1
+      - Werkzeug/2.3.7 Python/3.11.1
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      Vary:
+      - Cookie
+      X-Content-Type-Options:
+      - nosniff
     status:
       code: 201
       message: CREATED
@@ -177,27 +127,34 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
+      - idf-component-manager/1.3.2 (Darwin/22.1.0 arm64; python/3.10.0)
     method: GET
-    uri: http://localhost:5000/api/tasks/42426816-3ef3-432e-8026-02b4a45aed4a
+    uri: http://localhost:5000/api/tasks/ba388e5c-e473-4856-b926-ec137ead3914
   response:
     body:
-      string: '{"id": "42426816-3ef3-432e-8026-02b4a45aed4a", "message": "Processing
-        examples", "progress": 80.0, "status": "processing", "warnings": ["URL field
-        is missing in the manifest file", "URL field is missing in the manifest file"]}'
+      string: '{"id":"ba388e5c-e473-4856-b926-ec137ead3914","message":"Pending...","progress":0.0,"status":"pending"}
+
+        '
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '226'
+      - '103'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
       Content-Type:
       - application/json
       Date:
-      - Tue, 21 Mar 2023 18:05:42 GMT
+      - Thu, 21 Sep 2023 10:46:08 GMT
       Server:
-      - Werkzeug/2.2.3 Python/3.11.1
+      - Werkzeug/2.3.7 Python/3.11.1
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
     status:
       code: 200
       message: OK
@@ -213,29 +170,41 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
+      - idf-component-manager/1.3.2 (Darwin/22.1.0 arm64; python/3.10.0)
     method: GET
-    uri: http://localhost:5000/api/tasks/42426816-3ef3-432e-8026-02b4a45aed4a
+    uri: http://localhost:5000/api/tasks/ba388e5c-e473-4856-b926-ec137ead3914
   response:
     body:
-      string: '{"id": "42426816-3ef3-432e-8026-02b4a45aed4a", "message": "The uploaded
+      string: '{"id": "ba388e5c-e473-4856-b926-ec137ead3914", "message": "The uploaded
         component was successfully processed. It may take up to 5 minutes for the
         new version to be available globally.", "progress": 100.0, "status": "success",
-        "warnings": ["URL field is missing in the manifest file", "URL field is missing
-        in the manifest file"]}'
+        "warnings": ["A component description has not been provided in the manifest
+        file. Please update your `idf_component.yml` file and include a brief description
+        of the component.This will help other developers understand the purpose and
+        functionality of your component. Documentation: https://docs.espressif.com/projects/idf-component-manager/en/latest/guides/packaging_components.html#create-idf-component-yml",
+        "A homepage URL has not been provided in the manifest file. Please update
+        your `idf_component.yml` file and include the URL to the component''s homepage.
+        Documentation: https://docs.espressif.com/projects/idf-component-manager/en/latest/guides/packaging_components.html#create-idf-component-yml"]}'
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '329'
+      - '932'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
       Content-Type:
       - application/json
       Date:
-      - Tue, 21 Mar 2023 18:05:45 GMT
+      - Thu, 21 Sep 2023 10:46:11 GMT
       Server:
-      - Werkzeug/2.2.3 Python/3.11.1
+      - Werkzeug/2.3.7 Python/3.11.1
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
     status:
       code: 200
       message: OK

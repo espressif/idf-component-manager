@@ -9,8 +9,8 @@ import yaml
 from schema import And, Optional, Or, Regex, Schema, SchemaError
 from six import string_types
 
-from idf_component_tools.constants import COMPILED_URL_RE
-from idf_component_tools.errors import FatalError
+from idf_component_tools.constants import COMPILED_FILE_RE, COMPILED_URL_RE
+from idf_component_tools.errors import FatalError, ProfileNotValid
 from idf_component_tools.messages import UserDeprecationWarning
 
 from .constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL
@@ -31,6 +31,11 @@ CONFIG_SCHEMA = Schema(
                 None,
                 {
                     Optional('registry_url'): Or('default', Regex(COMPILED_URL_RE)),
+                    Optional('storage_url'): Or(
+                        'default',
+                        Or(Regex(COMPILED_URL_RE), Regex(COMPILED_FILE_RE)),
+                        [Or(Regex(COMPILED_URL_RE), Regex(COMPILED_FILE_RE))],
+                    ),
                     Optional('default_namespace'): And(Or(*string_types), len),
                     Optional('api_token'): And(Or(*string_types), len),
                     # allow any other keys that may be introduced in future versions
@@ -120,9 +125,18 @@ def get_api_url(url):  # type: (str) -> str
     return '{}/api/'.format(url)
 
 
+def replace_default_value(storage_urls):  # type: (list[str]) -> list[str]
+    storage_urls_copy = list(storage_urls)
+    for i, storage_url in enumerate(storage_urls_copy):
+        if storage_url == 'default':
+            storage_urls_copy[i] = IDF_COMPONENT_STORAGE_URL
+
+    return storage_urls_copy
+
+
 def component_registry_url(
     registry_profile=None,
-):  # type: (dict[str, str] | None) -> tuple[str | None, str | None]
+):  # type: (dict[str, str] | None) -> tuple[str | None, list[str] | None]
     """
     Returns registry API endpoint and static files URLs.
 
@@ -154,28 +168,44 @@ def component_registry_url(
     env_storage_url = os.getenv('IDF_COMPONENT_STORAGE_URL')
 
     if env_registry_api_url or env_storage_url:
-        return env_registry_api_url, env_storage_url
+        storage_urls = None
+        if env_storage_url:
+            storage_urls = env_storage_url.split(';')
+            storage_urls = replace_default_value(storage_urls)
+
+        return env_registry_api_url, storage_urls
 
     if registry_profile is None:
         registry_profile = {}
 
-    storage_url = None
-    profile_storage_url = registry_profile.get('storage_url')
-    if profile_storage_url and profile_storage_url != 'default':
-        storage_url = profile_storage_url
+    storage_urls = None
+    profile_storage_urls = registry_profile.get('storage_url')
+    if profile_storage_urls and profile_storage_urls != 'default':
+        if isinstance(profile_storage_urls, list):
+            storage_urls = replace_default_value(profile_storage_urls)
+        elif isinstance(profile_storage_urls, str):
+            if profile_storage_urls.find(';') != -1:
+                raise ProfileNotValid(
+                    '`storage_url` field may only be a string with one URL. For multiple URLs, use list syntax'
+                )
+            storage_urls = [profile_storage_urls]
+        else:
+            raise ProfileNotValid(
+                '`storage_url` field should be string or list, not {}'.format(storage_urls)
+            )
 
     registry_url = None
     profile_registry_url = registry_profile.get('registry_url')
     if profile_registry_url and profile_registry_url != 'default':
         registry_url = profile_registry_url
 
-    if storage_url and not registry_url:
-        return None, storage_url
+    if storage_urls and not registry_url:
+        return None, storage_urls
 
     if not registry_url:
         registry_url = IDF_COMPONENT_REGISTRY_URL
 
-        if not storage_url:
-            storage_url = IDF_COMPONENT_STORAGE_URL
+        if not storage_urls:
+            storage_urls = [IDF_COMPONENT_STORAGE_URL]
 
-    return get_api_url(registry_url), storage_url
+    return get_api_url(registry_url), storage_urls

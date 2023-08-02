@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `default_namespace`, `registry_url` parameters to `compote registry login` command
 - Create a profile in `idf_component_manager.yml` if it does not exist when executing `compote registry login` command
 - Option to check for new versions of components each time CMake is triggered (IDF_COMPONENT_CHECK_NEW_VERSION env variable)
+- Support multiple storage urls in IDF_COMPONENT_STORAGE_URL environment variable (“;” separated) or from configuration file.
 
 ### Fixed
 

@@ -1,18 +1,23 @@
 # SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 ''' Helper function to init API client'''
+import functools
 import os
 import warnings
-from collections import namedtuple
+from collections import OrderedDict, namedtuple
+from typing import Any, Callable, Dict, Tuple
 
 from idf_component_manager.utils import print_info
-from idf_component_tools.api_client import APIClient
 from idf_component_tools.config import ConfigManager, component_registry_url
 from idf_component_tools.constants import DEFAULT_NAMESPACE
 from idf_component_tools.errors import FatalError
 from idf_component_tools.messages import UserDeprecationWarning
+from idf_component_tools.registry.api_client import APIClient
+from idf_component_tools.registry.multi_storage_client import MultiStorageClient
 
-ServiceDetails = namedtuple('ServiceDetails', ['client', 'namespace'])
+ServiceDetails = namedtuple(
+    'ServiceDetails', ['registry_url', 'storage_urls', 'token', 'namespace']
+)
 
 
 class NamespaceError(FatalError):
@@ -44,7 +49,7 @@ def get_token(profile, token_required=True):  # type: (dict[str, str], bool) -> 
 
 
 def get_profile(
-    profile_name,
+    profile_name='',
     config_path=None,
 ):  # type: (str, str | None) -> dict[str, str] | None
     profile_name_env_deprecated = os.getenv('IDF_COMPONENT_SERVICE_PROFILE')
@@ -75,6 +80,61 @@ def get_profile(
         return None
 
 
+def get_component_registry_url_with_profile(
+    config_path=None,
+):  # type: (str | None) -> tuple[str | None, list[str] | None]
+    profile = get_profile(config_path=config_path)
+    return component_registry_url(profile)
+
+
+def lru_cache(func):  # type: (Callable) -> Callable
+    dictionary = dict()  # type: dict[str, str]
+
+    @functools.wraps(func)
+    def wrapper(storage_url):  # type: (str) -> str
+        if storage_url not in dictionary:
+            dictionary[storage_url] = func(storage_url)
+        return dictionary[storage_url]
+
+    return wrapper
+
+
+@lru_cache
+def get_storage_urls(
+    registry_url,  # type: str
+):
+    client = APIClient(base_url=registry_url)
+    storage_urls = [client.api_information()['components_base_url']]
+    return storage_urls
+
+
+def get_registry_storage_urls(
+    registry_profile=None,  # type: dict[str, str] | None
+    storage_required=False,  # type: bool
+):
+    registry_url, storage_urls = component_registry_url(registry_profile)
+
+    if storage_required and registry_url and not storage_urls:
+        storage_urls = get_storage_urls(registry_url)
+
+    return registry_url, storage_urls
+
+
+def _load_service_profile_details(
+    namespace=None,  # type: str | None
+    service_profile=None,  # type: str | None
+    config_path=None,  # type: str | None
+    token_required=True,  # type: bool
+    raise_on_missing_profile=True,
+    storage_required=False,  # type: bool
+):  # type: (...) -> ServiceDetails
+    profile_name = service_profile or 'default'
+    profile = get_profile(profile_name, config_path)
+    validate_profile(profile, profile_name, raise_on_missing_profile)
+
+    return service_details_for_profile(profile, namespace, token_required, storage_required)
+
+
 def validate_profile(
     profile, profile_name, raise_on_missing=True
 ):  # type: (dict[str, str] | None, str, bool) -> None
@@ -95,14 +155,17 @@ def validate_profile(
 def service_details_for_profile(
     profile,  # type: dict[str,str] | None
     namespace=None,  # type: str | None
-    token_required=True,
-):  # type: (...) -> tuple[APIClient, str]
+    token_required=True,  # type: bool
+    storage_required=False,  # type: bool
+):  # type: (...) -> ServiceDetails
     if profile is None:
         profile = {}
 
     # Priorities:
     # Environment variables > profile value in `idf_component_manager.yml` file > built-in default
-    registry_url, storage_url = component_registry_url(registry_profile=profile)
+    registry_url, storage_urls = get_registry_storage_urls(
+        registry_profile=profile, storage_required=storage_required
+    )
 
     # Priorities: CLI option > IDF_COMPONENT_NAMESPACE env variable > profile value > Default
     namespace = get_namespace(profile, namespace)
@@ -110,20 +173,40 @@ def service_details_for_profile(
     # Priorities: IDF_COMPONENT_API_TOKEN env variable > profile value
     token = get_token(profile, token_required=token_required)
 
-    client = APIClient(base_url=registry_url, storage_url=storage_url, auth_token=token)
-
-    return ServiceDetails(client, namespace)
+    return ServiceDetails(registry_url, storage_urls, token, namespace)
 
 
-def service_details(
+def get_api_client(
     namespace=None,  # type: str | None
     service_profile=None,  # type: str | None
     config_path=None,  # type: str | None
-    token_required=True,
+    token_required=True,  # type: bool
+    raise_on_missing_profile=True,
 ):  # type: (...) -> tuple[APIClient, str]
-    profile_name = service_profile or 'default'
-    profile = get_profile(profile_name, config_path=config_path)
-    validate_profile(profile, profile_name)
-    return service_details_for_profile(
-        namespace=namespace, profile=profile, token_required=token_required
+    service_details = _load_service_profile_details(
+        namespace, service_profile, config_path, token_required, raise_on_missing_profile
     )
+
+    client = APIClient(base_url=service_details.registry_url, auth_token=service_details.token)
+
+    return client, service_details.namespace
+
+
+def get_storage_client(
+    namespace=None,  # type: str | None
+    service_profile=None,  # type: str | None
+    config_path=None,  # type: str | None
+    raise_on_missing_profile=True,
+):  # type: (...) -> tuple[MultiStorageClient, str]
+    service_details = _load_service_profile_details(
+        namespace,
+        service_profile,
+        config_path,
+        token_required=False,
+        storage_required=True,
+        raise_on_missing_profile=raise_on_missing_profile,
+    )
+
+    client = MultiStorageClient(storage_urls=service_details.storage_urls)
+
+    return client, service_details.namespace

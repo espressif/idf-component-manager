@@ -159,13 +159,15 @@ def test_manifest_create_add_dependency(mock_registry):
         os.makedirs(os.path.join(tempdir, 'main'))
         os.makedirs(os.path.join(tempdir, 'components', 'foo'))
         os.makedirs(os.path.join(tempdir, 'src'))
-
         main_manifest_path = os.path.join(tempdir, 'main', MANIFEST_FILENAME)
         foo_manifest_path = os.path.join(tempdir, 'components', 'foo', MANIFEST_FILENAME)
-        src_path = os.path.join(tempdir, 'src')
+        # realpath fix for macos: /var is a symlink to /private/var
+        # https://stackoverflow.com/questions/12482702/pythons-os-chdir-and-os-getcwd-mismatch-when-using-tempfile-mkdtemp-on-ma
+        src_path = os.path.realpath(os.path.join(tempdir, 'src'))
         src_manifest_path = os.path.join(src_path, MANIFEST_FILENAME)
 
         cli = initialize_cli()
+
         assert 'Created' in runner.invoke(cli, ['manifest', 'create']).output
         assert 'Created' in runner.invoke(cli, ['manifest', 'create', '--component', 'foo']).output
         assert 'Created' in runner.invoke(cli, ['manifest', 'create', '--path', src_path]).output

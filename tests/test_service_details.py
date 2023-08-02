@@ -8,10 +8,11 @@ from pytest import fixture, raises, warns
 
 from idf_component_manager.service_details import (
     NoSuchProfile,
+    get_api_client,
+    get_component_registry_url_with_profile,
     get_namespace,
     get_profile,
     get_token,
-    service_details,
 )
 from idf_component_tools.config import Config, ConfigManager
 from idf_component_tools.errors import FatalError
@@ -93,7 +94,7 @@ def test_empty_env_registry_profile(monkeypatch):
         NoSuchProfile,
         match="Profile \"not_exists\" not found in the idf_component_manager.yml config file",
     ):
-        service_details(service_profile='not_exists')
+        get_api_client(service_profile='not_exists')
 
 
 def test_get_token_profile(config_path, monkeypatch):
@@ -133,11 +134,11 @@ def test_get_profile_env_both(config_path, monkeypatch):
 
 
 def test_get_profile_not_exist(config_path):
-    assert get_profile('not_test', config_path) == None
+    assert get_profile('not_test', config_path) is None
 
 
 def test_service_details_success(config_path):
-    client, namespace = service_details(
+    client, namespace = get_api_client(
         service_profile='test', namespace='test', config_path=config_path
     )
     assert client.base_url == 'https://example.com/api/'
@@ -146,19 +147,27 @@ def test_service_details_success(config_path):
 
 def test_service_details_namespace_not_exist(tmp_path):
     with raises(NoSuchProfile):
-        service_details(config_path=str(tmp_path), service_profile='not_exists')
+        get_api_client(config_path=str(tmp_path), service_profile='not_exists')
 
 
 def test_service_details_without_token(tmp_path):
     with raises(FatalError, match='Failed to get API Token*'):
-        service_details(config_path=str(tmp_path), namespace='test')
+        get_api_client(config_path=str(tmp_path), namespace='test')
 
 
 def test_service_details_without_profile(tmp_path):
     with raises(NoSuchProfile, match='Profile "test" not found*'):
-        service_details(config_path=str(tmp_path), service_profile='test', namespace='test')
+        get_api_client(config_path=str(tmp_path), service_profile='test', namespace='test')
 
 
 def test_service_details_with_empty_profile(config_path):
     with raises(FatalError, match='Failed to get API Token*'):
-        service_details(config_path=config_path, service_profile='emptyprofile')
+        get_api_client(config_path=config_path, service_profile='emptyprofile')
+
+
+def test_get_component_registry_url_with_profile(monkeypatch, config_path):
+    monkeypatch.setenv('IDF_COMPONENT_REGISTRY_PROFILE', 'test')
+    service_url, storage_urls = get_component_registry_url_with_profile(config_path)
+
+    assert service_url == 'https://example.com/api/'
+    assert storage_urls is None

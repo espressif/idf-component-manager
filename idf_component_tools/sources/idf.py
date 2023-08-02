@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 from .. import semver
@@ -16,8 +16,10 @@ class IDFSource(BaseSource):
     NAME = 'idf'
 
     @staticmethod
-    def is_me(name, details):
-        return name == IDFSource.NAME
+    def create_sources_if_valid(name, details, manifest_manager=None):
+        if name == IDFSource.NAME:
+            return [IDFSource(details, manifest_manager=manifest_manager)]
+        return None
 
     @property
     def hash_key(self):

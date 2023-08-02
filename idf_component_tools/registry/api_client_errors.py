@@ -33,4 +33,5 @@ class NoRegistrySet(APIClientError):
 KNOWN_API_ERRORS = {
     'NamespaceNotFoundError': NamespaceNotFound,
     'ComponentNotFoundError': ComponentNotFound,
+    'VersionNotFoundError': VersionNotFound,
 }

@@ -101,7 +101,7 @@ def test_upload_component(mock_registry, pre_release_component_path, capsys):
     manager.upload_component('cmp')
     captured = capsys.readouterr()
 
-    assert 'WARNING: URL field is missing in the manifest file' in captured.err
+    assert 'WARNING: A homepage URL has not been provided in the manifest file.' in captured.err
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_check_only_component.yaml')
@@ -180,6 +180,7 @@ def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_comp
             'idf_component.yml',
             'cmp.c',
             'CMakeLists.txt',
+            'LICENSE',
             os.path.join('include', 'cmp.h'),
         ]
     )

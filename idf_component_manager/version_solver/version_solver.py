@@ -3,16 +3,17 @@
 
 import os
 
-from idf_component_tools.api_client_errors import NetworkConnectionError
-from idf_component_tools.errors import DependencySolveError, SolverError
+from idf_component_tools.errors import DependencySolveError, FetchingError, SolverError
 from idf_component_tools.manifest import (
     ComponentRequirement,
+    ComponentWithVersions,
     Manifest,
     ProjectRequirements,
     SolvedComponent,
     SolvedManifest,
 )
-from idf_component_tools.sources import LocalSource
+from idf_component_tools.registry.api_client_errors import ComponentNotFound, NetworkConnectionError
+from idf_component_tools.sources import BaseSource, LocalSource
 
 from ..utils import print_info, print_warn
 from .helper import PackageSource
@@ -82,7 +83,7 @@ class VersionSolver(object):
 
                 self._local_root_requirements[manifest.name] = ComponentRequirement(
                     name=manifest.name,
-                    source=_source,
+                    sources=[_source],
                     version_spec=str(manifest.version),
                 )
 
@@ -107,11 +108,37 @@ class VersionSolver(object):
             solved_components, self.requirements.manifest_hash, self.requirements.target
         )
 
+    def get_versions_from_sources(
+        self, requirement
+    ):  # type: (ComponentRequirement) -> tuple[ComponentWithVersions | None, BaseSource | None]
+        latest_source = None
+        cmp_with_versions = None
+        for source in requirement.sources:
+            try:
+                cmp_with_versions = source.versions(
+                    name=requirement.name,
+                    spec=requirement.version_spec,
+                    target=self.requirements.target,
+                )
+                latest_source = source
+                if cmp_with_versions.versions:
+                    break
+            except NetworkConnectionError:
+                raise NetworkConnectionError
+            except ComponentNotFound:
+                pass
+        return cmp_with_versions, latest_source
+
     def solve_manifest(self, manifest):  # type: (Manifest) -> None
         for dep in self._dependencies_with_local_precedence(
             manifest.dependencies, manifest_path=manifest.path
         ):
-            self._source.root_dep(Package(dep.name, dep.source), dep.version_spec)
+            if len(dep.sources) == 1:
+                source = dep.source
+            else:
+                _, source = self.get_versions_from_sources(dep)
+
+            self._source.root_dep(Package(dep.name, source), dep.version_spec)
             try:
                 self.solve_component(dep, manifest_path=manifest.path)
             except DependencySolveError as e:
@@ -133,20 +160,14 @@ class VersionSolver(object):
         if requirement in self._solved_requirements:
             return
 
-        try:
-            cmp_with_versions = requirement.source.versions(
-                name=requirement.name,
-                spec=requirement.version_spec,
-                target=self.requirements.target,
-            )
-        except NetworkConnectionError:
-            raise NetworkConnectionError
-        except Exception as e:
-            print_warn(e)
+        cmp_with_versions, source = self.get_versions_from_sources(requirement)
+
+        if not cmp_with_versions or not cmp_with_versions.versions or not source:
+            print_warn('Component "{}" not found'.format(requirement.name))
             return
 
         for version in cmp_with_versions.versions:
-            if requirement.source.is_overrider:
+            if source.is_overrider:
                 self._overriders.add(requirement.build_name)
 
             deps = self._component_dependencies_with_local_precedence(
@@ -154,7 +175,7 @@ class VersionSolver(object):
             )
 
             self._source.add(
-                Package(requirement.name, requirement.source),
+                Package(requirement.name, source),
                 version,
                 deps=deps,
             )
