@@ -1,6 +1,24 @@
 # SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+'''
+This module contains utility functions for working with environment variables.
+'''
+
 import os
+
+KNOWN_CI_ENVIRONMENTS = {
+    'GITHUB_ACTIONS': 'github-actions',
+    'GITLAB_CI': 'gitlab-cii',
+    'CIRCLECI': 'circle-ci',
+    'TRAVIS': 'travis',
+    'JENKINS_URL': 'jenkins',
+    'DRONE': 'drone',
+    'APPVEYOR': 'appveyor',
+    'BITBUCKET_COMMIT': 'bitbucket-pipelines',
+    'SEMAPHORE': 'semaphore',
+    'TEAMCITY_VERSION': 'teamcity',
+    'CI': 'unknown',
+}
 
 
 def getenv_int(name, default):  # type: (str, int) -> int
@@ -18,3 +36,13 @@ def getenv_int(name, default):  # type: (str, int) -> int
 def getenv_bool(name, default=False):  # type: (str, bool) -> bool
     '''Returns True if environment variable is set to 1, t, y, yes, true, or False otherwise'''
     return os.getenv(name, str(default)).lower() in {'1', 't', 'true', 'y', 'yes'}
+
+
+def detect_ci():  # type: () ->  str | None
+    '''Returns the name of CI environment if running in a CI environment'''
+
+    for env_var, name in KNOWN_CI_ENVIRONMENTS.items():
+        if os.environ.get(env_var):
+            return name
+
+    return None
