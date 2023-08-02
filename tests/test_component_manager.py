@@ -126,7 +126,7 @@ def test_allow_existing_component(mock_registry, release_component_path, tmp_pat
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_validate_component.yaml')
-def test_validate_component(mock_registry, pre_release_component_path):
+def test_validate_component(mock_registry_without_token, pre_release_component_path):
     manager = ComponentManager(path=pre_release_component_path)
 
     manager.upload_component(

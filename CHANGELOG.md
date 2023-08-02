@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Don't require token for `--dry-run` of `compote component upload` command
 - Fix incorrect message suggestion to check upload status if non-default profile is used
 
 ## [1.3.2] - 2023-07-05
