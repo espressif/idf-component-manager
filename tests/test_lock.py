@@ -33,7 +33,7 @@ dependencies = {
     },
 }
 
-MANIFEST_HASH = 'f149f1bd032c8b1aa9ffc0f32db8525c73f1f35910dc73645ee5b1d0eb110c8a'
+MANIFEST_HASH = 'e1508d824de5258b045a7edbd8ba85c99d28cf3302b48ab3aed26bdd39498ff1'
 
 
 @pytest.fixture
@@ -211,7 +211,7 @@ class TestLockManager(object):
                     ),
                     (
                         'manifest_hash',
-                        '21320534fd3bcad301fbb124c9c13a7e90f1cc79973f3cb1937d30c3edee8f1d',
+                        '501e298399139355647b9d36da3bc3234eb14eb8b128e84e0548035e01c5b98f',
                     ),
                 ]
             )
@@ -227,7 +227,7 @@ class TestLockManager(object):
         assert 'Manifest files have changed, solving dependencies' in captured.out
 
         monkeypatch.setenv('IDF_VERSION', '4.2.0')
-        solution.manifest_hash = '1c97a887068943d87050f7b553361967d1f0af2ddbd61400869e060fceffa704'
+        solution.manifest_hash = 'df96197ee0b9631a6f707156c7bb429c0831b4384fb595141c95de858d34df9f'
         assert not is_solve_required(project_requirements, solution)
         captured = capsys.readouterr()
         assert 'solving dependencies.' not in captured.out
@@ -263,7 +263,7 @@ class TestLockManager(object):
                     ),
                     (
                         'manifest_hash',
-                        '4bd383d5c18605f77b0fc984da9a131faeb2a40392e167a10a7aa298028112fa',
+                        'f67563d60fe5b5efba54eff01811a780cea0de3895029d7b0aa5d557ccb15b12',
                     ),
                 ]
             )
@@ -294,7 +294,7 @@ class TestLockManager(object):
                     ('version', '1.0.0'),
                     (
                         'manifest_hash',
-                        'ab2a358655efaa744089844e6dc66b2a6488db87b2a4a7584dbfbbac008d6462',
+                        '1d0802987b5b8267a89f85398234e02f46a358ff13d321e2bc1eda3049a33ee6',
                     ),
                 ]
             )
@@ -320,7 +320,7 @@ class TestLockManager(object):
                     ('version', '1.0.0'),
                     (
                         'manifest_hash',
-                        'aeb0e6cb6f6673bcaa61b78fe7ee506902ff00062d2f44e53c8797fc8551b4b3',
+                        '16d1de584caf3b1e92c92078bbabb5972509c96e44b169ec877d45e4d7716b67',
                     ),
                 ]
             )

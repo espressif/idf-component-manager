@@ -71,7 +71,7 @@ It's recommended to add extra metadata information for your component. For examp
    description: "This is a test component"
    url: "[YOUR URL]"  # could be a github repo.
 
-For detailed information about the manifest file and all supported metadata, please refer to the manifest page.
+For detailed information about the manifest file and all supported metadata, please refer to the :doc:`/reference/manifest_file`.
 
 Create README.md
 ^^^^^^^^^^^^^^^^
@@ -99,7 +99,14 @@ Create License File
 
 Once you've uploaded your component, other users can discover, download, and use it. Including a license with your component is crucial to ensure proper usage.
 
-If you need help choosing a license for your component, you can check the <https://choosealicense.com>_ website. Once you've selected your license, be sure to include the full text of the license in the `LICENSE` or `LICENSE.txt` file in your component's root directory. Better to check the "How to apply this license" section to see if there's additional action items to apply the license.
+If you need help choosing a license for your component, you can check the `<https://choosealicense.com>`_ website. Once you've selected your license, be sure to include the full text of the license in the ``LICENSE`` or ``LICENSE.txt`` file in your component's root directory. Better to check the "How to apply this license" section to see if there's additional action items to apply the license.
+
+After selecting a license, you can add the ``license`` field in your ``idf_component.yml`` file. The value should be the SPDX license identifier of the chosen license. You may check the identifier list at `<https://spdx.org/licenses/>`_. For example, if you choose MIT license, the ``idf_component.yml`` should look like:
+
+.. code-block:: yaml
+
+   version: "0.0.1"
+   license: "MIT"
 
 Publish the Component
 ---------------------

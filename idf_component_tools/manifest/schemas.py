@@ -89,6 +89,7 @@ def _manifest_schema():  # type: () -> Schema
             Optional('targets'): [NONEMPTY_STRING],
             Optional('maintainers'): [NONEMPTY_STRING],
             Optional('description'): NONEMPTY_STRING,
+            Optional('license'): NONEMPTY_STRING,
             Optional('tags'): [
                 Regex(
                     TAGS_REGEX,
