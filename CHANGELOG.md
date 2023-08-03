@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add CI environment information to the component manager requests user agent
+- if-clause supported boolean operator `&&`, `||`, with nested parentheses
+- support set `version` besides if-clause, to override the default dependency version
+- support `matches` for declaring optional dependencies. The first if-clause that matches the condition will be used
 
 ### Fixed
 

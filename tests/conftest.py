@@ -71,6 +71,12 @@ def disable_cache(monkeypatch):
 def valid_optional_dependency_manifest(valid_manifest):
     valid_manifest['dependencies']['optional'] = {
         'version': '1.0.0',
+        'matches': [
+            {
+                'if': 'idf_version >= 4.4',
+                'version': '2.0.0',
+            },
+        ],
         'rules': [
             {'if': 'idf_version >= 4.4'},
             {'if': 'target not in [esp32, esp32s2]'},

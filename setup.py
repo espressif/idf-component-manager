@@ -39,6 +39,7 @@ REQUIRES = [
     'schema',
     'six',
     'tqdm<5',
+    'pyparsing',
 ]
 
 info = {}  # type: ignore

@@ -106,7 +106,7 @@ class BaseSource(object):
     def known_keys(cls):  # type: () -> list[str]
         """List of known details key"""
         return (
-            ['version', 'public', 'rules', 'require']
+            ['version', 'public', 'matches', 'rules', 'require']
             + list(cls.required_keys().keys())
             + list(cls.optional_keys().keys())
         )

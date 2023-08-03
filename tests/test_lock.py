@@ -22,7 +22,6 @@ from idf_component_tools.manifest import (
     SolvedComponent,
     SolvedManifest,
 )
-from idf_component_tools.manifest.if_parser import parse_if_clause
 from idf_component_tools.sources import IDFSource, LocalSource, WebServiceSource
 
 dependencies = {
@@ -243,7 +242,7 @@ class TestLockManager(object):
                 'foo': {
                     'version': '*',
                     'rules': [
-                        parse_if_clause('idf_version > 4'),
+                        {'if': 'idf_version > 4'},
                     ],
                 }
             }
@@ -271,7 +270,7 @@ class TestLockManager(object):
         )
 
         monkeypatch.setenv('IDF_VERSION', '5.0.0')
-        manifest_dict['dependencies']['foo']['rules'] = [parse_if_clause('idf_version > 4')]
+        manifest_dict['dependencies']['foo']['rules'] = [{'if': 'idf_version > 4'}]
         manifest = Manifest.fromdict(manifest_dict, name='test_manifest')
         project_requirements = ProjectRequirements([manifest])
         assert not is_solve_required(project_requirements, solution)
@@ -279,7 +278,7 @@ class TestLockManager(object):
         assert 'solving dependencies.' not in captured.out
 
         monkeypatch.setenv('IDF_VERSION', '3.0.0')
-        manifest_dict['dependencies']['foo']['rules'] = [parse_if_clause('idf_version > 4')]
+        manifest_dict['dependencies']['foo']['rules'] = [{'if': 'idf_version > 4'}]
         manifest = Manifest.fromdict(manifest_dict, name='test_manifest')
         project_requirements = ProjectRequirements([manifest])
         assert is_solve_required(project_requirements, solution)
