@@ -488,9 +488,7 @@ class APIClient(object):
             examples=examples,
         )
 
-    @auth_required
-    @_request(cache=False)
-    def upload_version(self, request, component_name, file_path, validate_only=False):
+    def _upload_version_to_endpoint(self, request, file_path, endpoint):
         with open(file_path, 'rb') as file:
             filename = os.path.basename(file_path)
 
@@ -507,11 +505,6 @@ class APIClient(object):
 
             data = MultipartEncoderMonitor(encoder, callback)
 
-            if validate_only:
-                endpoint = ['components', 'validate']
-            else:
-                endpoint = ['components', component_name.lower(), 'versions']
-
             try:
                 return request(
                     'post',
@@ -522,6 +515,17 @@ class APIClient(object):
                 )['job_id']
             finally:
                 progress_bar.close()
+
+    @auth_required
+    @_request(cache=False)
+    def upload_version(self, request, component_name, file_path):
+        return self._upload_version_to_endpoint(
+            request, file_path, ['components', component_name.lower(), 'versions']
+        )
+
+    @_request(cache=False)
+    def validate_version(self, request, file_path):
+        return self._upload_version_to_endpoint(request, file_path, ['components', 'validate'])
 
     @auth_required
     @_request(cache=False)

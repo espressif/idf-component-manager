@@ -147,8 +147,12 @@ def example_component_path(fixtures_path):
 
 
 @pytest.fixture()
-def mock_registry(monkeypatch):
+def mock_registry_without_token(monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
+
+
+@pytest.fixture()
+def mock_registry(mock_registry_without_token, monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
 
 

@@ -485,7 +485,13 @@ class ComponentManager(object):
         dry_run=False,  # type: bool
         dest_dir=None,
     ):  # type: (...) -> None
-        client, namespace = service_details(namespace, service_profile)
+        """
+        Uploads a component version to the registry.
+        """
+        token_required = not (check_only or dry_run)
+        client, namespace = service_details(
+            namespace, service_profile, token_required=token_required
+        )
 
         if archive:
             if not os.path.isfile(archive):
@@ -538,10 +544,12 @@ class ComponentManager(object):
 
         # Uploading/validating the component
         info_message = 'Uploading' if not dry_run else 'Validating'
-        print_info('%s archive %s' % (info_message, archive))
-        job_id = client.upload_version(
-            component_name=component_name, file_path=archive, validate_only=dry_run
-        )
+        print_info('{} archive {}'.format(info_message, archive))
+
+        if dry_run:
+            job_id = client.validate_version(file_path=archive)
+        else:
+            job_id = client.upload_version(component_name=component_name, file_path=archive)
 
         # Wait for processing
         profile_text = (
