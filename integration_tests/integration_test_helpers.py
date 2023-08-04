@@ -156,7 +156,7 @@ def idf_version():
 
 
 def project_action(project_path, *actions):
-    return live_print_call(['idf.py', '-C', project_path] + list(actions))
+    return live_print_call(['idf.py', '-C', str(project_path)] + list(actions))
 
 
 def build_project(project_path):

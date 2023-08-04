@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
+from pathlib import Path
 
 import pytest
 import yaml
@@ -206,13 +207,11 @@ def test_idf_version_dependency_passed(project):
                 'main': {
                     'dependencies': {
                         'component_foo': {
-                            'version': '1.0.0',
                             'path': '../../component_foo',
                         }
                     }
                 },
                 'component_foo': {
-                    'version': '1.0.0',
                     'dependencies': {
                         'git-only-cmp': {
                             'version': 'main',
@@ -228,10 +227,8 @@ def test_idf_version_dependency_passed(project):
 )
 def test_version_solver_on_local_components(project):
     # need to move to another folder, not under the default `components/`
-    os.rename(
-        os.path.join(project, 'components', 'component_foo'),
-        os.path.join(project, '..', 'component_foo'),
-    )
+    project = Path(project)
+    (project / 'components' / 'component_foo').rename(project.parent / 'component_foo')
     real_result = project_action(project, 'fullclean', 'reconfigure')
     for line in [
         '[1/4] component_foo',
@@ -240,6 +237,8 @@ def test_version_solver_on_local_components(project):
         '[4/4] idf',
     ]:
         assert line in real_result
+
+    assert 'error' not in project_action(project, 'reconfigure')
 
 
 @pytest.mark.parametrize(
