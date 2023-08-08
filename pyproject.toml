@@ -44,6 +44,7 @@ comment-parser = "*"
 coverage = '*'
 deptry = { version = ">=0.12.0", python = ">=3.9,<4.0" }
 flake8 = '*'
+Flake8-pyproject = "*"
 flake8-quotes = '*'
 jinja2 = "*"
 jsonschema = "*"
