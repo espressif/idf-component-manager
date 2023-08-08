@@ -112,6 +112,10 @@ def is_solve_required(project_requirements, solution):
             if component.source.downloadable and component.source.volatile:
                 continue
 
+            # For local components without version specified, nothing to do
+            if not component.version.is_semver and component.source.volatile:
+                continue
+
             # get the same version one
             try:
                 component_versions = component.source.versions(

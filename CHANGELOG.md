@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Don't require token for `--dry-run` of `compote component upload` command
 - Fix incorrect message suggestion to check upload status if non-default profile is used
 - Add support for non-default registries to `compote project create-from-example` command through the `--service-profile` option
+- Fix issue with dependencies on local components without a version set
 
 ## [1.3.2] - 2023-07-05
 
