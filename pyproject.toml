@@ -51,7 +51,6 @@ jsonschema = "*"
 mypy = { extras = ["python2"], version = '*' }
 pexpect = "*"
 pre-commit = '*'
-pylint = "*"
 pytest = '*'
 pytest-cov = '*'
 pytest-mock = '*'
