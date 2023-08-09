@@ -44,13 +44,13 @@ comment-parser = "*"
 coverage = '*'
 deptry = { version = ">=0.12.0", python = ">=3.9,<4.0" }
 flake8 = '*'
+Flake8-pyproject = "*"
 flake8-quotes = '*'
 jinja2 = "*"
 jsonschema = "*"
 mypy = { extras = ["python2"], version = '*' }
 pexpect = "*"
 pre-commit = '*'
-pylint = "*"
 pytest = '*'
 pytest-cov = '*'
 pytest-mock = '*'
@@ -98,6 +98,13 @@ docstring-quotes = 'double'
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+python_version = "3.10"
+
+[[tool.mypy.overrides]]
+module = "idf_component_manager.version_solver.mixology.*"
+ignore_errors = true
 
 [tool.deptry]
 extend_exclude = [
