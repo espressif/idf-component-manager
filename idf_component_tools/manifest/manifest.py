@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Classes to work with manifest file"""
+import json
 import re
 from collections import namedtuple
 from functools import total_ordering
@@ -8,7 +9,7 @@ from functools import total_ordering
 import idf_component_tools as tools
 from idf_component_tools.build_system_tools import get_env_idf_target
 from idf_component_tools.hash_tools import hash_object
-from idf_component_tools.serialization import serializable
+from idf_component_tools.serialization import serializable, serialize
 
 from ..semver import Version
 from .constants import COMMIT_ID_RE, LINKS
@@ -267,6 +268,15 @@ class ComponentRequirement(object):
         self.optional_requirement = optional_requirement
         self.require = True if require in ['private', 'public', None] else False
 
+    def __hash__(self):
+        return hash(json.dumps(self.serialize()))
+
+    def __eq__(self, other):
+        if not isinstance(other, ComponentRequirement):
+            return NotImplemented
+
+        return self.serialize() == other.serialize()
+
     @property
     def meta(self):
         return self.source.meta
@@ -302,11 +312,11 @@ class ComponentRequirement(object):
 
     def __repr__(self):  # type: () -> str
         return 'ComponentRequirement("{}", {}, version_spec="{}", public={})'.format(
-            self._name, self.source, self.version_spec, self.public
+            self.name, self.source, self.version_spec, self.public
         )
 
     def __str__(self):  # type: () -> str
-        return '{}({})'.format(self._name, self.version_spec)
+        return '{}({})'.format(self.name, self.version_spec)
 
 
 @total_ordering
