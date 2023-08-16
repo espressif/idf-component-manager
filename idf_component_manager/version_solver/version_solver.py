@@ -39,6 +39,7 @@ class VersionSolver(object):
         self._target = None
         self._overriders = set()  # type: set[str]
         self._local_root_requirements = dict()  # type: dict[str, ComponentRequirement]
+        self._solved_requirements = set()  # type: set[ComponentRequirement]
 
     def solve(self):  # type: () -> SolvedManifest
         # scan all root local requirements
@@ -114,6 +115,9 @@ class VersionSolver(object):
                 )
 
     def solve_component(self, requirement):  # type: (ComponentRequirement) -> None
+        if requirement in self._solved_requirements:
+            return
+
         try:
             cmp_with_versions = requirement.source.versions(
                 name=requirement.name,
@@ -154,6 +158,8 @@ class VersionSolver(object):
             if version.dependencies:
                 for dep in version.dependencies:
                     self.solve_component(dep)
+
+        self._solved_requirements.add(requirement)
 
         if self.component_solved_callback:
             self.component_solved_callback()
