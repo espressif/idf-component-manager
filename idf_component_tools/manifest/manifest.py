@@ -302,11 +302,11 @@ class ComponentRequirement(object):
 
     def __repr__(self):  # type: () -> str
         return 'ComponentRequirement("{}", {}, version_spec="{}", public={})'.format(
-            self._name, self.source, self.version_spec, self.public
+            self.name, self.source, self.version_spec, self.public
         )
 
     def __str__(self):  # type: () -> str
-        return '{}({})'.format(self._name, self.version_spec)
+        return '{}({})'.format(self.name, self.version_spec)
 
 
 @total_ordering
