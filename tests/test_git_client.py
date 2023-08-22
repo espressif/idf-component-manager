@@ -8,7 +8,7 @@ from io import open
 import pytest
 
 from idf_component_tools.errors import GitError
-from idf_component_tools.git_client import GitClient
+from idf_component_tools.git_client import GitClient, clean_tag_version
 
 
 @pytest.fixture(scope='session')
@@ -127,3 +127,18 @@ def test_git_path_does_not_exist(git_repository_with_two_branches, tmpdir_factor
             with_submodules=True,
             selected_paths=['path_not_exists'],
         )
+
+
+@pytest.mark.parametrize(
+    'input_str, expected_output',
+    [
+        ('v1.2.3', '1.2.3'),
+        ('1.2.3.4', '1.2.3~4'),
+        ('v1.2.3.4', '1.2.3~4'),
+        ('v1.2.3.4-rc1', '1.2.3~4-rc1'),
+        ('v1.2.3.4-rc1+123', '1.2.3~4-rc1+123'),
+        ('abc', 'abc'),
+    ],
+)
+def test_clean_tag_version(input_str, expected_output):
+    assert clean_tag_version(input_str) == expected_output

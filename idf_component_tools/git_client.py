@@ -22,6 +22,20 @@ class GitCommandError(Exception):
     pass
 
 
+def clean_tag_version(tag):  # type: (str) -> str
+    """Clean version from tag before processing it"""
+    tag = tag.strip()
+
+    # Remove leading 'v' from tag
+    if tag.startswith('v'):
+        tag = tag[1:]
+
+    # Replace revision 1.2.3.4 with 1.2.3~4
+    tag = re.sub(r'^(\d+\.\d+\.\d+)\.(\d+)', r'\1~\2', tag)
+
+    return tag
+
+
 class GitClient(object):
     """Set of tools for working with git repos"""
 
@@ -257,13 +271,11 @@ class GitClient(object):
     def get_tag_version(self):  # type: () -> Optional[Version]
         try:
             tag_str = self.run(['describe', '--exact-match'])
-            if tag_str.startswith('v'):
-                tag_str = tag_str[1:]
         except GitCommandError:
             return None
 
         try:
-            semantic_version = Version(tag_str)
+            semantic_version = Version(clean_tag_version(tag_str))
             return semantic_version
         except ValueError:
             return None
