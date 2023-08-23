@@ -360,7 +360,8 @@ class ComponentManager(object):
                 Version.parse(version)
             except ValueError:
                 raise FatalError(
-                    'Version parameter must be either "git" or a valid semantic version'
+                    'Version parameter must be either "git" or a valid version. '
+                    'Documentation: https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/versioning.html#versioning-scheme'
                 )
 
         manifest_manager = ManifestManager(
@@ -613,6 +614,12 @@ class ComponentManager(object):
         else:
             print_info('Status: %s. %s' % (status.status, status.message))
 
+    def update_dependencies(self, **kwargs):
+        if os.path.isfile(self.lock_path):
+            os.remove(self.lock_path)
+
+    ## Function executed from CMake
+
     @general_error_handler
     def prepare_dep_dirs(
         self, managed_components_list_file, component_list_file, local_components_list_file=None
@@ -759,7 +766,3 @@ class ComponentManager(object):
 
         handle_project_requirements(requirements)
         requirements_manager.dump(requirements)
-
-    def update_dependencies(self, **kwargs):
-        if os.path.isfile(self.lock_path):
-            os.remove(self.lock_path)

@@ -57,6 +57,10 @@ A full version number containing all fields such as ``0.1.2~3-dev4.7+git5.66`` w
 - ``prerelease``: (``str`` “dev4”, ``int`` 7)
 - ``build``: (``str`` “git5”, ``int`` 66)
 
+.. note::
+   CLI commands ``compote component pack`` and ``compote component upload`` accept ``--version=git`` to read version from the current git tag. However, ``~`` is not allowed in git tags. Therefore, you must replace ``~`` with  ``.`` in the git tag if your version contains revision. For example, for version ``0.1.2~3`` use git tag ``0.1.2.3`` or ``v0.1.2.3``.
+
+
 Version Precedence
 ------------------
 
