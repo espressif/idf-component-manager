@@ -7,7 +7,7 @@ from collections import namedtuple
 from functools import total_ordering
 
 import idf_component_tools as tools
-from idf_component_tools.build_system_tools import get_env_idf_target
+from idf_component_tools.build_system_tools import build_name, get_env_idf_target
 from idf_component_tools.hash_tools import hash_object
 from idf_component_tools.serialization import serializable, serialize
 
@@ -284,6 +284,10 @@ class ComponentRequirement(object):
     @property
     def name(self):
         return self.source.normalized_name(self._name)
+
+    @property
+    def build_name(self):
+        return build_name(self.name)
 
     @property
     def version_spec(self):

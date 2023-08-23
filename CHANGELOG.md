@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for non-default registries to `compote project create-from-example` command through the `--service-profile` option
 - Fix issue with dependencies on local components without a version set
 - Skip solving solved component requirements. Speed up version solving
+- Components under `components/` will be treated with higher priority while solving dependencies
 
 ## [1.3.2] - 2023-07-05
 
