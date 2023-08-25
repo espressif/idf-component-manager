@@ -1,10 +1,13 @@
 # SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
+import shutil
 from pathlib import Path
 
 import pytest
 import yaml
+
+from idf_component_tools.semver import Version
 
 from .integration_test_helpers import build_project, project_action
 
@@ -313,6 +316,61 @@ def test_version_solver_on_local_components_higher_priority(project):
             },
             'version': '*',
         }
+
+
+@pytest.mark.parametrize(
+    'project',
+    [
+        (
+            {
+                'components': {
+                    'main': {
+                        'dependencies': {
+                            'example/cmp': {
+                                'version': '*',
+                            }
+                        }
+                    }
+                }
+            }
+        ),
+    ],
+    indirect=True,
+)
+def test_version_solver_on_local_components_with_higher_versions(project):
+    real_result = project_action(project, 'reconfigure')
+    for line in [
+        '[1/2] example/cmp',
+        '[2/2] idf',
+    ]:
+        assert line in real_result
+
+    # move the example/cmp to components folder, modify the manifest version
+    shutil.move(
+        os.path.join(project, 'managed_components', 'example__cmp'),
+        os.path.join(project, 'components', 'example__cmp'),
+    )
+    with open(os.path.join(project, 'components', 'example__cmp', 'idf_component.yml'), 'r') as fr:
+        d = yaml.safe_load(fr)
+
+    with open(os.path.join(project, 'components', 'example__cmp', 'idf_component.yml'), 'w') as fw:
+        v = Version(d['version'])
+        v.major += 1
+        new_version = str(v)
+        d['version'] = new_version
+        yaml.safe_dump(d, fw)
+
+    # update the dependency
+    with open(os.path.join(project, 'main', 'idf_component.yml'), 'r') as fr:
+        d = yaml.safe_load(fr)
+
+    with open(os.path.join(project, 'main', 'idf_component.yml'), 'w') as fw:
+        d['dependencies']['example/cmp']['version'] = new_version
+        yaml.safe_dump(d, fw)
+
+    # compile again
+    output = project_action(project, 'reconfigure')
+    assert 'Configuring done' in output
 
 
 @pytest.mark.parametrize(
