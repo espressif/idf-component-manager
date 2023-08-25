@@ -74,6 +74,8 @@ class VersionSolver(object):
             kwargs = {'name': package.name, 'source': package.source, 'version': version}
             if package.source.component_hash_required:
                 kwargs['component_hash'] = version.component_hash
+            if version.targets:
+                kwargs['targets'] = version.targets
             solved_components.append(SolvedComponent(**kwargs))  # type: ignore
         return SolvedManifest(
             solved_components, self.requirements.manifest_hash, self.requirements.target

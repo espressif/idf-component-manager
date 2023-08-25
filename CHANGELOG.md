@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix issue with dependencies on local components without a version set
 - Skip solving solved component requirements. Speed up version solving
 - Support revision in git tags by replacing `~` with `.` in the version, i.e. `1.0.0.1`
+- Add component property `REQUIRED_IDF_TARGET` if the component supports specific targets
 
 ## [1.3.2] - 2023-07-05
 
