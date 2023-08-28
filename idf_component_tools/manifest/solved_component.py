@@ -9,7 +9,7 @@ from ..manifest import ComponentRequirement, ComponentVersion
 from ..sources.base import BaseSource
 
 try:
-    from typing import Iterable, Optional
+    from typing import Iterable
 except ImportError:
     pass
 
@@ -28,18 +28,17 @@ class SolvedComponent(object):
         name,  # type: str
         version,  # type: ComponentVersion
         source,  # type: BaseSource
-        component_hash=None,  # type: Optional[str]
-        dependencies=None,  # type: Optional[Iterable[ComponentRequirement]]
+        component_hash=None,  # type: str | None
+        dependencies=None,  # type: Iterable[ComponentRequirement] | None
+        targets=None,  # type: list[str] | None
     ):
         # type: (...) -> None
         self.name = name
         self.version = version
         self.source = source
         self.component_hash = component_hash
-
-        if dependencies is None:
-            dependencies = []
-        self.dependencies = dependencies
+        self.dependencies = dependencies or []
+        self.targets = targets or []
 
     def __repr__(self):
         return 'SolvedComponent <{}({}) {}>'.format(self.name, self.version, self.component_hash)

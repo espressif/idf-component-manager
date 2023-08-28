@@ -3,6 +3,8 @@
 
 import os
 import shutil
+from functools import total_ordering
+from pathlib import Path
 
 from idf_component_manager.core_utils import raise_component_modified_error
 from idf_component_manager.utils import print_info, print_warn
@@ -172,9 +174,44 @@ def print_dot():
     print_info('.', nl=False)
 
 
+@total_ordering
+class DownloadedComponent:
+    def __init__(self, downloaded_path, targets, version):  # type: (str, list[str], str) -> None
+        self.downloaded_path = downloaded_path
+        self.targets = targets
+        self.version = version
+
+    def __hash__(self):
+        return hash(self.abs_path)
+
+    def __eq__(self, other):
+        if not isinstance(other, DownloadedComponent):
+            return NotImplemented
+
+        return self.abs_path == other.abs_path
+
+    def __lt__(self, other):
+        if not isinstance(other, DownloadedComponent):
+            return NotImplemented
+
+        return self.abs_path < other.abs_path
+
+    @property
+    def name(self):  # type: () -> str
+        return os.path.basename(self.abs_path)
+
+    @property
+    def abs_path(self):
+        return os.path.abspath(self.downloaded_path)
+
+    @property
+    def abs_posix_path(self):  # type: () -> str
+        return Path(self.abs_path).as_posix()
+
+
 def download_project_dependencies(project_requirements, lock_path, managed_components_path):
-    # type: (ProjectRequirements, str, str) -> tuple[set[str], dict[str, str]]
-    '''Solves dependencies and download components'''
+    # type: (ProjectRequirements, str, str) -> set[DownloadedComponent]
+    """Solves dependencies and download components"""
     lock_manager = LockManager(lock_path)
     solution = lock_manager.load()
     check_manifests_targets(project_requirements)
@@ -211,8 +248,8 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
         lock_manager.dump(solution)
 
     # Download components
-    downloaded_component_paths = set()
-    downloaded_component_version_dict = dict()
+    downloaded_components = set()
+
     requirement_dependencies = []
     project_requirements_dependencies = [
         manifest.name for manifest in project_requirements.manifests
@@ -246,13 +283,15 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
                 download_path = fetcher.download()
                 if download_path:
                     fetcher.create_hash(download_path, component.component_hash)
-                    downloaded_component_paths.add(download_path)
-                    # Save versions of downloadable components
-                    downloaded_component_version_dict[download_path] = str(component.version)
+                    downloaded_components.add(
+                        DownloadedComponent(
+                            download_path, component.targets, str(component.version)
+                        )
+                    )
             except ComponentModifiedError:
                 changed_components.append(component.name)
 
         if changed_components:
             raise_component_modified_error(managed_components_path, changed_components)
 
-    return downloaded_component_paths, downloaded_component_version_dict
+    return downloaded_components

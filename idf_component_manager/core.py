@@ -68,7 +68,7 @@ from .core_utils import (
     parse_example,
     raise_component_modified_error,
 )
-from .dependencies import download_project_dependencies
+from .dependencies import DownloadedComponent, download_project_dependencies
 from .local_component_list import parse_component_list
 from .service_details import service_details
 
@@ -647,8 +647,7 @@ class ComponentManager(object):
             and os.path.isfile(os.path.join(component['path'], MANIFEST_FILENAME))
         ]
 
-        downloaded_component_paths = set()
-        downloaded_component_version_dict = {}
+        downloaded_components = set()
         if local_components:
             manifests = []
 
@@ -656,41 +655,49 @@ class ComponentManager(object):
                 manifests.append(ManifestManager(component['path'], component['name']).load())
 
             project_requirements = ProjectRequirements(manifests)
-            (
-                downloaded_component_paths,
-                downloaded_component_version_dict,
-            ) = download_project_dependencies(
+            downloaded_components = download_project_dependencies(
                 project_requirements, self.lock_path, self.managed_components_path
             )
 
         # Exclude requirements paths
-        downloaded_component_paths -= {component['path'] for component in local_components}
-        # Change relative paths to absolute paths
-        downloaded_component_paths = {
-            os.path.abspath(path) for path in list(downloaded_component_paths)
+        downloaded_components = {
+            comp
+            for comp in downloaded_components
+            if comp.downloaded_path not in [local_comp['path'] for local_comp in local_components]
         }
+
         # Include managed components in project directory
         with open(managed_components_list_file, mode='w', encoding='utf-8') as file:
-            for component_path in sorted(downloaded_component_paths):
-                file.write(u'idf_build_component("%s")\n' % Path(component_path).as_posix())
-                component_name = Path(component_path).name
+            for downloaded_component in sorted(downloaded_components):
+                file.write(u'idf_build_component("%s")\n' % downloaded_component.abs_posix_path)
                 file.write(
                     u'idf_component_set_property(%s %s "%s")\n'
                     % (
-                        component_name,
+                        downloaded_component.name,
                         'COMPONENT_VERSION',
-                        downloaded_component_version_dict[component_path],
+                        downloaded_component.version,
                     )
                 )
+                if downloaded_component.targets:
+                    file.write(
+                        u'idf_component_set_property(%s %s "%s")\n'
+                        % (
+                            downloaded_component.name,
+                            'REQUIRED_IDF_TARGETS',
+                            ' '.join(downloaded_component.targets),
+                        )
+                    )
 
-            component_names = ';'.join(
-                os.path.basename(path) for path in downloaded_component_paths
+            file.write(
+                u'set(managed_components "%s")\n'
+                % ';'.join(component.name for component in downloaded_components)
             )
-            file.write(u'set(managed_components "%s")\n' % component_names)
 
         # Saving list of all components with manifests for use on requirements injection step
         all_components = sorted(
-            downloaded_component_paths.union(component['path'] for component in local_components)
+            set(component.abs_path for component in downloaded_components).union(
+                component['path'] for component in local_components
+            )
         )
         with open(component_list_file, mode='w', encoding='utf-8') as file:
             file.write(u'\n'.join(all_components))
