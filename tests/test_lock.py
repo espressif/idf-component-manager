@@ -9,6 +9,8 @@ from io import open
 from pathlib import Path
 
 import pytest
+import requests
+import requests_mock
 
 from idf_component_manager.dependencies import is_solve_required
 from idf_component_tools.build_system_tools import get_idf_version
@@ -22,6 +24,7 @@ from idf_component_tools.manifest import (
     SolvedComponent,
     SolvedManifest,
 )
+from idf_component_tools.messages import UserHint
 from idf_component_tools.sources import IDFSource, LocalSource, WebServiceSource
 
 dependencies = {
@@ -51,6 +54,15 @@ def manifest_path(fixtures_path):
         fixtures_path,
         'idf_component.yml',
     )
+
+
+@pytest.fixture
+def connection_error_request():
+    with requests_mock.Mocker() as m:
+        m.register_uri(
+            requests_mock.ANY, requests_mock.ANY, exc=requests.exceptions.ConnectionError
+        )
+        yield m
 
 
 class TestLockManager(object):
@@ -190,6 +202,41 @@ class TestLockManager(object):
         solution = LockManager(lock_path).load()
 
         assert solution.manifest_hash is None
+
+    def test_no_internet_connection(self, capsys, connection_error_request):
+        manifest = Manifest.fromdict({'dependencies': {'idf': '4.4.0'}}, name='test_manifest')
+        project_requirements = ProjectRequirements([manifest])
+        solution = SolvedManifest.fromdict(
+            dict(
+                [
+                    ('version', '1.0.0'),
+                    (
+                        'dependencies',
+                        {
+                            'example/cmp': {
+                                'component_hash': '8644358a11a35a986b0ce4d325ba3d1aa9491b9518111acd4ea9447f11dc47c1',
+                                'source': {
+                                    'service_url': 'https://ohnoIdonthaveinternetconnection.com',
+                                    'type': 'service',
+                                },
+                                'version': '3.3.7',
+                            },
+                        },
+                    ),
+                    (
+                        'manifest_hash',
+                        'df96197ee0b9631a6f707156c7bb429c0831b4384fb595141c95de858d34df9f',
+                    ),
+                ]
+            )
+        )
+
+        with pytest.warns(UserHint) as record:
+            assert not is_solve_required(project_requirements, solution)
+            assert (
+                'Cannot establish a connection to the component registry. Skipping checks of dependency changes.'
+                in record.list[0].message.args[0]
+            )
 
     def test_change_manifest_file_idf_version(self, monkeypatch, capsys):
         monkeypatch.setenv('IDF_TARGET', 'esp32')

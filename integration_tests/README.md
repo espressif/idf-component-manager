@@ -132,8 +132,8 @@ tmp7F1Ssf
 ```
 
 3. The project contains two components - the main and "new_component". The "new_component"
-privately requires the component button. This component is added into manifest of the main component 
-   as a component registry dependency. The `main.c` of the main component includes `new_component.h` 
+privately requires the component button. This component is added into manifest of the main component
+   as a component registry dependency. The `main.c` of the main component includes `new_component.h`
    and `button.h`. Test is successful when build of the project is successful.
 
 ```python

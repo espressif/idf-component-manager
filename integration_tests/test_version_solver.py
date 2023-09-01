@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+import json
 import os
 import shutil
 from pathlib import Path
@@ -400,3 +401,51 @@ def test_version_is_not_updated_when_not_necessary(project):
     output = project_action(project, 'reconfigure')
     assert 'example/cmp (3.3.3)' in output
     assert 'Configuring done' in output
+
+
+@pytest.mark.parametrize(
+    'project',
+    [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'example/cmp': {'version': '>=3.3.3'},
+                    }
+                },
+            },
+        }
+    ],
+    indirect=True,
+)
+def test_check_for_newer_component_versions(project, tmp_path, monkeypatch, fixtures_path):
+    monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'file://' + str(tmp_path))
+    monkeypatch.setenv('IDF_COMPONENT_CHECK_NEW_VERSION', '1')
+
+    tmp_dir = tmp_path / 'components' / 'example'
+    os.makedirs(str(tmp_dir))
+    json_path = str(tmp_dir / 'cmp.json')
+
+    # Move the archive to the tmp_path
+    shutil.copy(
+        str(fixtures_path / 'archives' / 'cmp_1.0.0.tar.gz'), str(tmp_path / 'cmp_1.0.0.tar.gz')
+    )
+
+    # Copy registry json to tmp
+    shutil.copy(str(fixtures_path / 'component_jsons' / 'cmp.json'), json_path)
+
+    # Reconfigure for the first time
+    output = project_action(project, 'reconfigure')
+    assert 'Configuring done' in output
+
+    # Remove old cmp.json
+    os.remove(json_path)
+
+    # Copy json with new version
+    shutil.copy(str(fixtures_path / 'component_jsons' / 'cmp_new_version.json'), json_path)
+
+    # Check that the version is not updated when it is not necessary
+    output = project_action(project, 'reconfigure')
+    assert 'Following dependencies have new versions available:' in output
+    assert 'Dependency "example/cmp": "3.3.99" -> "3.4.0"' in output
+    assert 'Consider running "idf.py update-dependencies" to update your lock file.' in output
