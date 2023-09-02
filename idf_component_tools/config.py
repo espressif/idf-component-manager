@@ -28,8 +28,12 @@ CONFIG_SCHEMA = Schema(
                 Optional('registry_url'): Or('default', Regex(COMPILED_URL_RE)),
                 Optional('default_namespace'): And(Or(*string_types), len),
                 Optional('api_token'): And(Or(*string_types), len),
+                # allow any other keys that may be introduced in future versions
+                Optional(str): object,
             }
-        }
+        },
+        # allow any other keys that may be introduced in future versions
+        Optional(str): object,
     }
 )
 
