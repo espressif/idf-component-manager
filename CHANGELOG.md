@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support set `version` besides if-clause, to override the default dependency version
 - support `matches` for declaring optional dependencies. The first if-clause that matches the condition will be used
 - Support `license` field in the manifest files
+- Allow unknown fields in the idf_component_manager.yml config file
 
 ### Fixed
 

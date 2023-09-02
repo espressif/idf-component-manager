@@ -71,7 +71,9 @@ def test_load_config(tmp_path):
                     'api_token': 'asdf',
                     'default_namespace': 'asdf',
                 },
-            }
+            },
+            # It's ok to have unknown keys in the config
+            'settings': {'abc': 1},
         }
     )
 
