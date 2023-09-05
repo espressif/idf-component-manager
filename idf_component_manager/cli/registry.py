@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+import os
 import webbrowser
 
 import click
@@ -10,6 +11,7 @@ from idf_component_manager.service_details import service_details
 from idf_component_manager.utils import print_error, print_info
 from idf_component_tools.api_client_errors import APIClientError
 from idf_component_tools.config import ConfigManager
+from idf_component_tools.constants import DEFAULT_NAMESPACE, IDF_COMPONENT_REGISTRY_URL
 from idf_component_tools.errors import FatalError
 
 from .constants import get_service_profile_option
@@ -37,10 +39,21 @@ def init_registry():
         default='Token created through CLI login',
         help='Description for the token for future reference',
     )
-    def login(service_profile, no_browser, description):
+    @click.option(
+        '--default_namespace',
+        help='Default namespace to use for the components',
+    )
+    @click.option(
+        '--registry_url',
+        help='URL of the registry to use',
+    )
+    def login(service_profile, no_browser, description, default_namespace, registry_url):
         """
         Login to the component registry
         """
+
+        if registry_url:
+            os.environ['IDF_COMPONENT_REGISTRY_URL'] = registry_url
 
         # Load config to get
         config = ConfigManager().load()
@@ -53,7 +66,9 @@ def init_registry():
                 'please either logout or use different profile'.format(service_profile)
             )
 
-        api_client, _ = service_details(service_profile=service_profile, token_required=False)
+        api_client, _ = service_details(
+            service_profile=service_profile, namespace=default_namespace, token_required=False
+        )
 
         auth_url = '{}/tokens/'.format(api_client.frontend_url)
 
@@ -94,8 +109,13 @@ def init_registry():
                 )
                 continue
 
-        # Save token to the profile
+        # Update config with token and default namespace, registry URL if they are provided
+        if default_namespace:
+            profile['namespace'] = default_namespace
+        if registry_url:
+            profile['registry_url'] = registry_url
         profile['api_token'] = token
+
         ConfigManager().dump(config)
 
         print_info('Successfully logged in')
