@@ -202,7 +202,7 @@ class TestManifestValidator(object):
             errors[0]
             == 'Unknown string field "persion" in the manifest file that may affect build result'
         )
-        assert errors[-1] == 'Unknown keys in dependency details: persion'
+        assert errors[-1] == 'Unknown keys in dependency "test-component" details: persion'
 
     def test_validate_component_versions_invalid_name(self, valid_manifest):
         valid_manifest['dependencies'] = {'asdf!fdsa': {'version': '^1.2.3'}}

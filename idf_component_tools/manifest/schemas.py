@@ -31,10 +31,14 @@ KNOWN_FILES_KEYS = [
 KNOWN_EXAMPLES_KEYS = ['path']
 KNOWN_IF_CLAUSE_KEYWORDS = ['IDF_TARGET', 'IDF_VERSION']
 
-NONEMPTY_STRING = And(Or(*string_types), len, error='Non-empty string is required here')
-
 LINKS_URL_ERROR = 'Invalid URL in the "{}" field. Check that link is a correct HTTP(S) URL. '
 LINKS_GIT_ERROR = 'Invalid URL in the "{}" field. Check that link is a valid Git remote URL'
+
+
+def _nonempty_string(field):  # type: (str) -> And
+    return And(
+        Or(*string_types), len, error='Non-empty string is required in the "{}" field'.format(field)
+    )
 
 
 def _dependency_schema():  # type: () -> Or
@@ -53,13 +57,16 @@ def _dependency_schema():  # type: () -> Or
             Optional('version'): Or(
                 None, *string_types, error='Dependency version spec format is invalid'
             ),
-            Optional('public'): Use(bool, error='Invalid format of dependency public flag'),
-            Optional('path'): NONEMPTY_STRING,
-            Optional('git'): NONEMPTY_STRING,
-            Optional('service_url'): NONEMPTY_STRING,
+            Optional('public'): Use(
+                bool,
+                error='Invalid format of dependency public flag',
+            ),
+            Optional('path'): _nonempty_string('path'),
+            Optional('git'): _nonempty_string('git'),
+            Optional('service_url'): _nonempty_string('service_url'),
             Optional('rules'): [_optional_dependency],
             Optional('matches'): [_optional_dependency],
-            Optional('override_path'): NONEMPTY_STRING,
+            Optional('override_path'): _nonempty_string('override_path'),
             Optional('require'): Or(
                 'public',
                 'private',
@@ -86,10 +93,10 @@ def _manifest_schema():  # type: () -> Schema
             Optional('version'): Or(
                 Version.parse, error='Component version should be valid semantic version'
             ),
-            Optional('targets'): [NONEMPTY_STRING],
-            Optional('maintainers'): [NONEMPTY_STRING],
-            Optional('description'): NONEMPTY_STRING,
-            Optional('license'): NONEMPTY_STRING,
+            Optional('targets'): [_nonempty_string('targets')],
+            Optional('maintainers'): [_nonempty_string('maintainers')],
+            Optional('description'): _nonempty_string('description'),
+            Optional('license'): _nonempty_string('license'),
             Optional('tags'): [
                 Regex(
                     TAGS_REGEX,
@@ -99,11 +106,15 @@ def _manifest_schema():  # type: () -> Schema
             ],
             Optional('dependencies'): {
                 Optional(
-                    Regex(FULL_SLUG_REGEX, error='Invalid dependency name')
-                ): DEPENDENCY_SCHEMA,
+                    Regex(FULL_SLUG_REGEX, error='Invalid name for dependency')
+                ): DEPENDENCY_SCHEMA
             },
-            Optional('files'): {Optional(key): [NONEMPTY_STRING] for key in KNOWN_FILES_KEYS},
-            Optional('examples'): [{key: NONEMPTY_STRING for key in KNOWN_EXAMPLES_KEYS}],
+            Optional('files'): {
+                Optional(key): [_nonempty_string('files')] for key in KNOWN_FILES_KEYS
+            },
+            Optional('examples'): [
+                {key: _nonempty_string('examples') for key in KNOWN_EXAMPLES_KEYS}
+            ],
             # Links of the project
             Optional('url'): Regex(COMPILED_URL_RE, error=LINKS_URL_ERROR.format('url')),
             Optional('repository'): Regex(

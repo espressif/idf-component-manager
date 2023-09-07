@@ -52,6 +52,49 @@ def test_validator_valid_manifest(valid_manifest):
     assert not ManifestValidator(valid_manifest).validate_normalize()
 
 
+@pytest.mark.parametrize(
+    ('manifest', 'errors'),
+    [
+        (
+            {
+                'version': '1.0.0',
+                'description': 'Some description',
+                'url': 'https://github.com/espressif/esp-insights/tree/main/components/esp_insights',
+                'dependencies': {
+                    'espressif/rmaker_common': {
+                        'version': '~1.4.0',
+                        'override_path': '../rmaker/common/',
+                    },
+                    'espressif/esp_diag_data_store': {
+                        'version': '.1.0',
+                        'override_path': '../esp_diag_data_store/',
+                        'service_url': '',
+                    },
+                    'espressif/esp_diagnostics': {
+                        'version': '.1.0',
+                        'override_path': '../esp_diagnostics/',
+                    },
+                    'espressif/cbor': {'version': '~0.6', 'rules': [{'if': 'idf_version >=5.0'}]},
+                    'invalid_slug---': {
+                        'version': '~0.6',
+                    },
+                },
+            },
+            [
+                'Unknown keys in dependency "espressif/esp_diag_data_store" details: service_url',
+                'Non-empty string is required in the "service_url" field',
+                'Version specifications for "espressif/esp_diagnostics" are invalid.',
+                'Component\'s name is not valid "invalid_slug---", should contain only letters, numbers, /, _ and -.',
+            ],
+        ),
+    ],
+)
+def test_invalid_manifest(manifest, errors):
+    produced_errors = ManifestValidator(manifest).validate_normalize()
+    for error in errors:
+        assert error in produced_errors
+
+
 def test_validator_passed_version(valid_manifest):
     errors = ManifestValidator(valid_manifest, version='5.0.0').validate_normalize()
     assert len(errors) == 1
