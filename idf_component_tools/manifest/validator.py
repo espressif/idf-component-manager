@@ -135,7 +135,11 @@ class ManifestValidator(object):
                     if 'public' in details and 'require' in details:
                         self.add_error('Don\'t use "public" and "require" fields at the same time.')
                 except SourceError as unknown_keys_error:
-                    self.add_error(str(unknown_keys_error))
+                    self.add_error(
+                        str(unknown_keys_error).replace(
+                            'dependency', 'dependency "{}"'.format(component)
+                        )
+                    )
             else:
                 self.add_error(
                     '"%s" version have unknown format. Should be either version '
