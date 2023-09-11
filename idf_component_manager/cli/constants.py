@@ -43,7 +43,7 @@ def get_namespace_option():
         click.option(
             '--namespace',
             envvar='IDF_COMPONENT_NAMESPACE',
-            default='espressif',
+            default=None,
             help='Namespace for the component. Can be set in config file.',
         ),
     ]

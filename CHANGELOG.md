@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support revision in git tags by replacing `~` with `.` in the version, i.e. `1.0.0.1`
 - Components under `components/` will be treated with higher priority while solving dependencies
 - Add component property `REQUIRED_IDF_TARGET` if the component supports specific targets
+- Fixed issue where `compote component upload` command ignored `default_namespace` parameter from the profile
 
 ## [1.3.2] - 2023-07-05
 
