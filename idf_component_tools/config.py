@@ -15,7 +15,7 @@ from idf_component_tools.errors import FatalError, UserDeprecationWarning
 from .constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL
 
 try:
-    from typing import Any, Iterator
+    from typing import Any, Iterator, Tuple
 except ImportError:
     pass
 
@@ -77,7 +77,7 @@ class Config(object):
             self._config = CONFIG_SCHEMA.validate(self._config)
             return self
         except SchemaError as e:
-            raise ConfigError('Config format is not valid:\n%s' % str(e))
+            raise ConfigError('Config format is not valid:\n{}'.format(str(e)))
 
 
 class ConfigManager(object):
@@ -94,8 +94,9 @@ class ConfigManager(object):
                 return Config(yaml.safe_load(f.read())).validate()
             except yaml.YAMLError:
                 raise ConfigError(
-                    'Cannot parse config file. Please check that\n\t%s\nis valid YAML file\n'
-                    % self.config_path
+                    'Cannot parse config file. Please check that\n\t{}\nis valid YAML file\n'.format(
+                        self.config_path
+                    )
                 )
 
     def dump(self, config):  # type: (Config) -> None

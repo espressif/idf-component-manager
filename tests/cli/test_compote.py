@@ -69,6 +69,34 @@ def test_login_to_registry(monkeypatch, tmp_path, mock_registry, mock_token_info
     assert 'Successfully logged in' in output.output
 
 
+def test_login_arguments(monkeypatch, tmp_path, mock_token_information):
+    monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
+
+    runner = CliRunner()
+    cli = initialize_cli()
+    output = runner.invoke(
+        cli,
+        [
+            'registry',
+            'login',
+            '--no-browser',
+            '--registry_url',
+            'http://localhost:5000',
+            '--default_namespace',
+            'testspace',
+        ],
+        input='test_token',
+        env={'IDF_TOOLS_PATH': str(tmp_path)},
+    )
+
+    assert output.exit_code == 0
+    assert 'http://localhost:5000/tokens/?' in output.output
+
+    profile_content = open(str(tmp_path / 'idf_component_manager.yml'), 'r').read()
+    assert 'testspace' in profile_content
+    assert 'http://localhost:5000' in profile_content
+
+
 def test_logout_from_registry(monkeypatch, tmp_path):
     monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
     config = Config(
@@ -86,7 +114,6 @@ def test_logout_from_registry(monkeypatch, tmp_path):
     cli = initialize_cli()
     output = runner.invoke(cli, ['registry', 'logout'], env={'IDF_TOOLS_PATH': str(tmp_path)})
 
-    # assert '' in output.stderr
     assert 'Successfully logged out' in output.stdout
 
 

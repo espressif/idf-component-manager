@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support `license` field in the manifest files
 - Allow unknown fields in the idf_component_manager.yml config file
 - More descriptive manifest validation error messages
+- Add `default_namespace`, `registry_url` parameters to `compote registry login` command
+- Create a profile in `idf_component_manager.yml` if it does not exist when executing `compote registry login` command
 
 ### Fixed
 
