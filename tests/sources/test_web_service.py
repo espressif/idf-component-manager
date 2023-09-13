@@ -8,11 +8,12 @@ import shutil
 import pytest
 import vcr
 
+from idf_component_tools.constants import IDF_COMPONENT_STORAGE_URL
 from idf_component_tools.errors import FetchingError, UserHint
 from idf_component_tools.hash_tools import hash_dir
 from idf_component_tools.manifest import ComponentVersion, SolvedComponent
 from idf_component_tools.sources import WebServiceSource
-from idf_component_tools.sources.web_service import download_archive
+from idf_component_tools.sources.web_service import IDF_COMPONENT_REGISTRY_API_URL, download_archive
 
 
 class TestComponentWebServiceSource(object):
@@ -152,3 +153,8 @@ class TestComponentWebServiceSource(object):
                     'Cannot get versions of "example/cmp" that satisfy spec "*" with esp32s2 target'
                     in captured.out
                 )
+
+    def test_default_storage_url(self):
+        source = WebServiceSource(source_details={'service_url': IDF_COMPONENT_REGISTRY_API_URL})
+
+        assert source.storage_url == IDF_COMPONENT_STORAGE_URL

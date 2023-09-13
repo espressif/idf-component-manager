@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Components under `components/` will be treated with higher priority while solving dependencies
 - Add component property `REQUIRED_IDF_TARGET` if the component supports specific targets
 - Fixed issue where `compote component upload` command ignored `default_namespace` parameter from the profile
+- The component manager no longer accesses the API to get the storage URL for the default registry URL
 
 ## [1.3.2] - 2023-07-05
 
