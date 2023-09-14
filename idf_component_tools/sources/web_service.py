@@ -95,6 +95,8 @@ class WebServiceSource(BaseSource):
 
         if not self.base_url and not self.storage_url:
             self.base_url, self.storage_url = component_registry_url()
+        if self.base_url == IDF_COMPONENT_REGISTRY_API_URL and not self.storage_url:
+            self.storage_url = IDF_COMPONENT_STORAGE_URL
 
         self.api_client = self.source_details.get('api_client')
 
