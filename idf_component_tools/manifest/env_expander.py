@@ -22,7 +22,7 @@ def subst_vars_in_str(s, env):  # type: (str, dict[str, Any]) -> str
         raise ManifestError('Environment variable "{}" is not set'.format(e.args[0]))
     except ValueError:
         raise ManifestError(
-            'Invalid format of environment varible in the value: "{}".\n'
+            'Invalid format of environment variable in the value: "{}".\n'
             'Note: you can use "$$" to escape the "$" character'.format(s)
         )
 
