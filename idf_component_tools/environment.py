@@ -8,7 +8,7 @@ import os
 
 KNOWN_CI_ENVIRONMENTS = {
     'GITHUB_ACTIONS': 'github-actions',
-    'GITLAB_CI': 'gitlab-cii',
+    'GITLAB_CI': 'gitlab-ci',
     'CIRCLECI': 'circle-ci',
     'TRAVIS': 'travis',
     'JENKINS_URL': 'jenkins',
