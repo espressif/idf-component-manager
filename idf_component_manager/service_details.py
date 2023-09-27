@@ -45,8 +45,6 @@ def get_token(profile, token_required=True):  # type: (dict[str, str], bool) -> 
 def get_profile(
     config_path=None, profile_name=None
 ):  # type: (str | None, str | None) -> dict[str, str]
-    config = ConfigManager(path=config_path).load()
-
     profile_name_env_deprecated = os.getenv('IDF_COMPONENT_SERVICE_PROFILE')
 
     if profile_name_env_deprecated:
@@ -65,31 +63,32 @@ def get_profile(
             'is used.'
         )
 
+    config = ConfigManager(path=config_path).load()
     return config.profiles.get(profile_name_env or profile_name_env_deprecated or profile_name, {})
 
 
-def service_details(
-    namespace=None,  # type: str | None
-    service_profile=None,  # type: str | None
-    config_path=None,  # type: str | None
-    token_required=True,
-):  # type: (...) -> tuple[APIClient, str]
-    profile_name = service_profile or 'default'
-    profile = get_profile(config_path, profile_name)
-
+def validate_profile(
+    profile, profile_name, raise_on_missing=True
+):  # type: (dict[str, str], str, bool) -> None
     if profile:
         print_info(
             'Selected profile "{}" from the idf_component_manager.yml config file'.format(
                 profile_name
             )
         )
-    elif profile_name != 'default' and not profile:
+    elif raise_on_missing and (profile_name != 'default' and not profile):
         raise NoSuchProfile(
             'Profile "{}" not found in the idf_component_manager.yml config file'.format(
                 profile_name
             )
         )
 
+
+def service_details_for_profile(
+    namespace=None,  # type: str | None
+    profile={},  # type: dict[str,str]
+    token_required=True,
+):  # type: (...) -> tuple[APIClient, str]
     # Priorities:
     # Environment variables > profile value in `idf_component_manager.yml` file > built-in default
     registry_url, storage_url = component_registry_url(registry_profile=profile)
@@ -103,3 +102,17 @@ def service_details(
     client = APIClient(base_url=registry_url, storage_url=storage_url, auth_token=token)
 
     return ServiceDetails(client, namespace)
+
+
+def service_details(
+    namespace=None,  # type: str | None
+    service_profile=None,  # type: str | None
+    config_path=None,  # type: str | None
+    token_required=True,
+):  # type: (...) -> tuple[APIClient, str]
+    profile_name = service_profile or 'default'
+    profile = get_profile(config_path=config_path, profile_name=profile_name)
+    validate_profile(profile, profile_name)
+    return service_details_for_profile(
+        namespace=namespace, profile=profile, token_required=token_required
+    )
