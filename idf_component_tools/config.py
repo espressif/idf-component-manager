@@ -24,13 +24,18 @@ DEFAULT_CONFIG_DIR = os.path.join('~', '.espressif')
 CONFIG_SCHEMA = Schema(
     {
         Optional('profiles'): {
-            Or(*string_types): {
-                Optional('registry_url'): Or('default', Regex(COMPILED_URL_RE)),
-                Optional('default_namespace'): And(Or(*string_types), len),
-                Optional('api_token'): And(Or(*string_types), len),
-                # allow any other keys that may be introduced in future versions
-                Optional(str): object,
-            }
+            Or(*string_types):
+            # Use Or to allow either a None value or a dictionary with specific keys and validation rules
+            Or(
+                None,
+                {
+                    Optional('registry_url'): Or('default', Regex(COMPILED_URL_RE)),
+                    Optional('default_namespace'): And(Or(*string_types), len),
+                    Optional('api_token'): And(Or(*string_types), len),
+                    # allow any other keys that may be introduced in future versions
+                    Optional(str): object,
+                },
+            ),
         },
         # allow any other keys that may be introduced in future versions
         Optional(str): object,

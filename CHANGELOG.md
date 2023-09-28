@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix typo in gitlab CI user agent
 - Fix issue with creating a profile in `idf_component_manager.yml` if it does not exist, when executing `compote registry login` command with `--service-profile` specified
 - Remove warnings of the unknown root keys in the manifest files
+- Fix schema validation of `idf_component_manager.yml`, for an empty profile name value
 
 ## [1.4.0] - 2023-09-15
 

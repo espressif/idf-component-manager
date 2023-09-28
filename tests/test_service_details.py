@@ -44,7 +44,8 @@ def config_path(tmp_path):
                             'registry_url': 'https://example.com/',
                             'default_namespace': 'test',
                             'api_token': 'token',
-                        }
+                        },
+                        'emptyprofile': None,
                     }
                 }
             )
@@ -155,3 +156,8 @@ def test_service_details_without_token(tmp_path):
 def test_service_details_without_profile(tmp_path):
     with raises(NoSuchProfile, match='Profile "test" not found*'):
         service_details(config_path=str(tmp_path), service_profile='test', namespace='test')
+
+
+def test_service_details_with_empty_profile(config_path):
+    with raises(NoSuchProfile, match='Profile "emptyprofile" not found*'):
+        service_details(config_path=config_path, service_profile='emptyprofile')
