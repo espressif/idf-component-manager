@@ -46,6 +46,8 @@ def _flatten_manifest_file_keys(manifest_tree, stack=None, level=1):
             res.append(stack + ['type:string'])
         elif isinstance(manifest_tree, (int, float)):
             res.append(stack + ['type:number'])
+        elif isinstance(manifest_tree, type(None)):
+            pass
         else:
             raise MetadataError(
                 'Unknown key type {} for key {}'.format(type(manifest_tree), manifest_tree)

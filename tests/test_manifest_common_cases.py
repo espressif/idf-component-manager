@@ -87,6 +87,14 @@ def test_validator_valid_manifest(valid_manifest):
                 'Component\'s name is not valid "invalid_slug---", should contain only letters, numbers, /, _ and -.',
             ],
         ),
+        (
+            {
+                'version': '1.0.0',
+                'description': None,
+                'url': 'https://github.com/espressif/esp-insights/tree/main/components/esp_insights',
+            },
+            ['Invalid manifest format', 'Non-empty string is required in the "description" field'],
+        ),
     ],
 )
 def test_invalid_manifest(manifest, errors):
