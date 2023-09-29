@@ -14,7 +14,8 @@ from idf_component_manager.service_details import (
     service_details,
 )
 from idf_component_tools.config import Config, ConfigManager
-from idf_component_tools.errors import FatalError, UserDeprecationWarning
+from idf_component_tools.errors import FatalError
+from idf_component_tools.messages import UserDeprecationWarning
 
 
 @fixture()

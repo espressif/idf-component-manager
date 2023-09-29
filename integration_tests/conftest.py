@@ -8,6 +8,7 @@ import pytest
 from jinja2 import Environment, FileSystemLoader
 
 from .integration_test_helpers import create_component, generate_from_template
+from .integration_test_helpers import idf_version as system_idf_version
 
 
 @pytest.fixture  # fake fixture since can't specify `indirect` for only one fixture
@@ -93,3 +94,8 @@ def pytest_configure(config):
         'snapshot': 'snapshot the specified files/folders and revert the content after test case'
     }.items():
         config.addinivalue_line('markers', '{}: {}'.format(name, description))
+
+
+@pytest.fixture(scope='session')
+def idf_version():
+    return system_idf_version()

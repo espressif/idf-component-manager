@@ -6,7 +6,7 @@ import shutil
 from pathlib import Path
 from shutil import copytree, rmtree
 
-from idf_component_tools.errors import warn
+from idf_component_tools.messages import warn
 
 try:
     from typing import Iterable

@@ -17,9 +17,10 @@ from idf_component_tools.semver import SimpleSpec
 from ..archive_tools import ArchiveError, get_format_from_path, unpack_archive
 from ..config import component_registry_url
 from ..constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL, UPDATE_SUGGESTION
-from ..errors import FetchingError, hint
+from ..errors import FetchingError
 from ..file_tools import copy_directory
 from ..hash_tools import validate_filtered_dir
+from ..messages import hint
 from . import utils
 from .base import BaseSource
 
@@ -237,10 +238,9 @@ class WebServiceSource(BaseSource):
             copy_directory(self.component_cache_path(component), download_path)
             return download_path
 
-        component_manifest = self.api_client.component(
+        url = self.api_client.component(
             component_name=component.name, version=component.version
-        )
-        url = component_manifest.download_url
+        ).download_url
 
         if not url:
             raise FetchingError(
