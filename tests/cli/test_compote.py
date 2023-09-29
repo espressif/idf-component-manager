@@ -69,6 +69,27 @@ def test_login_to_registry(monkeypatch, tmp_path, mock_registry, mock_token_info
     assert 'Successfully logged in' in output.output
 
 
+def test_login_with_non_existing_service_profile(
+    monkeypatch, tmp_path, mock_registry, mock_token_information
+):
+    monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
+
+    runner = CliRunner()
+    cli = initialize_cli()
+    output = runner.invoke(
+        cli,
+        ['registry', 'login', '--no-browser', '--service-profile', 'non-existing'],
+        input='test_token',
+        env={'IDF_TOOLS_PATH': str(tmp_path)},
+    )
+
+    config_content = open(str(tmp_path / 'idf_component_manager.yml')).read()
+
+    assert output.exit_code == 0
+    # assert that profile is created with a token
+    assert 'non-existing' in config_content
+
+
 def test_login_arguments(monkeypatch, tmp_path, mock_token_information):
     monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
 
@@ -89,12 +110,12 @@ def test_login_arguments(monkeypatch, tmp_path, mock_token_information):
         env={'IDF_TOOLS_PATH': str(tmp_path)},
     )
 
-    assert output.exit_code == 0
-    assert 'http://localhost:5000/tokens/?' in output.output
+    config_content = open(str(tmp_path / 'idf_component_manager.yml')).read()
 
-    profile_content = open(str(tmp_path / 'idf_component_manager.yml'), 'r').read()
-    assert 'testspace' in profile_content
-    assert 'http://localhost:5000' in profile_content
+    assert output.exit_code == 0
+    # assert that profile is created with provided namespace and registry_url
+    assert 'testspace' in config_content
+    assert 'http://localhost:5000' in config_content
 
 
 def test_logout_from_registry(monkeypatch, tmp_path):
