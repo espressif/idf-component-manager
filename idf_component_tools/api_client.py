@@ -22,8 +22,8 @@ from tqdm import tqdm
 import idf_component_tools as tools
 from idf_component_tools.__version__ import __version__
 from idf_component_tools.environment import detect_ci, getenv_int
-from idf_component_tools.errors import warn
 from idf_component_tools.file_cache import FileCache as ComponentFileCache
+from idf_component_tools.messages import warn
 from idf_component_tools.semver import SimpleSpec, Version
 
 from .api_client_errors import (
@@ -259,16 +259,22 @@ class APIClient(object):
             else:
                 source = self.source or tools.sources.WebServiceSource({})
 
+            is_public = dependency.get('is_public', False)
+            require = dependency.get('require', True)
+            require_string = 'public' if is_public else ('private' if require else 'no')
+
             dependencies.append(
                 tools.manifest.ComponentRequirement(
                     name='{}/{}'.format(dependency['namespace'], dependency['name']),
                     version_spec=dependency['spec'],
-                    public=dependency['is_public'],
                     source=source,
+                    public=is_public,
+                    require=require_string,
+                    optional_requirement=tools.manifest.OptionalRequirement.fromdict(dependency),
                 )
             )
 
-        return dependencies
+        return tools.manifest.filter_optional_dependencies(dependencies)
 
     def _base_request(
         self,

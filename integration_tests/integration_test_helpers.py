@@ -167,11 +167,11 @@ def set_target(project_path, target):
     return live_print_call(['idf.py', '-C', project_path, 'set-target', target])
 
 
-def skip_for_idf_versions(*versions):
+def current_idf_in_the_list(*versions):
+    """Returns True if current IDF version is in the list of versions"""
     current_version = idf_version()
     for version in versions:
         if version in current_version:
-            logging.info('Skipping the test for %s', current_version)
             return True
 
     return False

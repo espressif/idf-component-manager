@@ -11,7 +11,7 @@ import pytest
 import yaml
 
 from idf_component_manager.dependencies import detect_unused_components
-from idf_component_tools.errors import ManifestError, MetadataKeyWarning
+from idf_component_tools.errors import ManifestError
 from idf_component_tools.manifest import (
     JSON_SCHEMA,
     SLUG_REGEX,
@@ -23,6 +23,7 @@ from idf_component_tools.manifest import (
 from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS, known_targets
 from idf_component_tools.manifest.if_parser import OptionalDependency, parse_if_clause
 from idf_component_tools.manifest.manifest import OptionalRequirement
+from idf_component_tools.messages import MetadataKeyWarning
 from idf_component_tools.sources import LocalSource
 
 

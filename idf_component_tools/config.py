@@ -10,7 +10,8 @@ from schema import And, Optional, Or, Regex, Schema, SchemaError
 from six import string_types
 
 from idf_component_tools.constants import COMPILED_URL_RE
-from idf_component_tools.errors import FatalError, UserDeprecationWarning
+from idf_component_tools.errors import FatalError
+from idf_component_tools.messages import UserDeprecationWarning
 
 from .constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL
 
@@ -138,7 +139,7 @@ def component_registry_url(
         warnings.warn(
             'DEFAULT_COMPONENT_SERVICE_URL environment variable pointing to the '
             'registy API is deprecated. Set component registry URL to IDF_COMPONENT_REGISTRY_URL',
-            category=UserDeprecationWarning,
+            UserDeprecationWarning,
         )
 
     if env_registry_url and env_registry_api_url:

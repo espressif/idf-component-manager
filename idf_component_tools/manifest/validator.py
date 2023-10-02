@@ -7,14 +7,8 @@ from schema import SchemaError
 
 import idf_component_tools as tools
 
-from ..errors import (
-    MetadataError,
-    MetadataKeyError,
-    MetadataKeyWarning,
-    MetadataWarning,
-    SourceError,
-    hint,
-)
+from ..errors import MetadataError, MetadataKeyError, SourceError
+from ..messages import MetadataKeyWarning, MetadataWarning, hint
 from .constants import FULL_SLUG_REGEX, known_targets
 from .metadata import Metadata
 from .schemas import BUILD_METADATA_KEYS, INFO_METADATA_KEYS, KNOWN_FILES_KEYS, MANIFEST_SCHEMA

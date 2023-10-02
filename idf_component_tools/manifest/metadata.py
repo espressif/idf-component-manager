@@ -3,7 +3,8 @@
 
 from six import reraise
 
-from ..errors import InternalError, MetadataError, MetadataKeyWarning, warn
+from ..errors import InternalError, MetadataError
+from ..messages import MetadataKeyWarning, warn
 from .constants import KNOWN_BUILD_METADATA_FIELDS, KNOWN_INFO_METADATA_FIELDS
 from .schemas import serialize_list_of_list_of_strings
 

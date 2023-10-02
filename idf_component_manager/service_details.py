@@ -9,7 +9,8 @@ from idf_component_manager.utils import print_info
 from idf_component_tools.api_client import APIClient
 from idf_component_tools.config import ConfigManager, component_registry_url
 from idf_component_tools.constants import DEFAULT_NAMESPACE
-from idf_component_tools.errors import FatalError, UserDeprecationWarning
+from idf_component_tools.errors import FatalError
+from idf_component_tools.messages import UserDeprecationWarning
 
 ServiceDetails = namedtuple('ServiceDetails', ['client', 'namespace'])
 
@@ -52,7 +53,7 @@ def get_profile(
         warnings.warn(
             'IDF_COMPONENT_SERVICE_PROFILE environment variable is deprecated. '
             'Please use IDF_COMPONENT_REGISTRY_PROFILE instead',
-            category=UserDeprecationWarning,
+            UserDeprecationWarning,
         )
 
     profile_name_env = os.getenv('IDF_COMPONENT_REGISTRY_PROFILE')

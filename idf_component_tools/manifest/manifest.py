@@ -9,6 +9,7 @@ from functools import total_ordering
 import idf_component_tools as tools
 from idf_component_tools.build_system_tools import build_name, get_env_idf_target
 from idf_component_tools.hash_tools import hash_object
+from idf_component_tools.messages import notice
 from idf_component_tools.serialization import serializable, serialize
 
 from ..semver import Version
@@ -55,7 +56,6 @@ class Manifest(object):
         # Dependencies, list of component
         dependencies=None,  # type: list[ComponentRequirement] | None
         description=None,  # type: str | None # Human-readable description
-        download_url=None,  # type: str | None # Direct url for tarball download
         maintainers=None,  # type: str | None # List of maintainers
         manifest_hash=None,  # type: str | None # Check-sum of manifest content
         name=None,  # type: str | None # Component name
@@ -150,11 +150,14 @@ class Manifest(object):
         return manifest
 
     @property
+    def raw_dependencies(self):  # type: () -> list[ComponentRequirement]
+        """Return all dependencies, ignoring rules/matches"""
+        return self._dependencies
+
+    @property
     def dependencies(self):  # type: () -> list[ComponentRequirement]
-        return sorted(
-            [dep for dep in self._dependencies if dep.meet_optional_dependencies],
-            key=lambda d: d.name,
-        )
+        """Return dependencies that meet rules/matches"""
+        return filter_optional_dependencies(self._dependencies)
 
     @property
     def manifest_hash(self):  # type: () -> str
@@ -172,6 +175,11 @@ class Manifest(object):
 
 @serializable
 class OptionalRequirement(object):
+    """
+    Stores the list of `matches` and `rules` for the requirement dependency.
+    Each rule represented as `OptionalDependency` object.
+    """
+
     _serialization_properties = [
         'matches',
         'rules',
@@ -311,7 +319,7 @@ class ComponentRequirement(object):
         ):
             return True
 
-        print('Skipping optional dependency: {}'.format(self.name))
+        notice('Skipping optional dependency: {}'.format(self.name))
         return False
 
     def __repr__(self):  # type: () -> str
@@ -437,3 +445,12 @@ class ProjectRequirements(object):
         manifest_hashes = [manifest.manifest_hash for manifest in self.manifests]
         self._manifest_hash = hash_object(manifest_hashes)
         return self._manifest_hash
+
+
+def filter_optional_dependencies(
+    dependencies,
+):  # type: (list[ComponentRequirement]) -> list[ComponentRequirement]
+    return sorted(
+        [dep for dep in dependencies if dep.meet_optional_dependencies],
+        key=lambda d: d.name,
+    )
