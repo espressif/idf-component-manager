@@ -72,6 +72,7 @@ def init_registry():
 
         # Get profile for API client
         api_profile = get_profile(profile_name=service_profile)
+        api_profile = api_profile if api_profile else {}
         validate_profile(profile=api_profile, profile_name=service_profile, raise_on_missing=False)
 
         api_client, _ = service_details_for_profile(

@@ -43,8 +43,9 @@ def get_token(profile, token_required=True):  # type: (dict[str, str], bool) -> 
 
 
 def get_profile(
-    config_path=None, profile_name=None
-):  # type: (str | None, str | None) -> dict[str, str]
+    profile_name,
+    config_path=None,
+):  # type: (str, str | None) -> dict[str, str] | None
     profile_name_env_deprecated = os.getenv('IDF_COMPONENT_SERVICE_PROFILE')
 
     if profile_name_env_deprecated:
@@ -64,19 +65,25 @@ def get_profile(
         )
 
     config = ConfigManager(path=config_path).load()
-    return config.profiles.get(profile_name_env or profile_name_env_deprecated or profile_name, {})
+    try:
+        profile = config.profiles[profile_name_env or profile_name_env_deprecated or profile_name]
+        return {} if profile is None else profile
+    except KeyError:
+        if profile_name == 'default':
+            return {}
+        return None
 
 
 def validate_profile(
     profile, profile_name, raise_on_missing=True
-):  # type: (dict[str, str], str, bool) -> None
+):  # type: (dict[str, str] | None, str, bool) -> None
     if profile:
         print_info(
             'Selected profile "{}" from the idf_component_manager.yml config file'.format(
                 profile_name
             )
         )
-    elif raise_on_missing and (profile_name != 'default' and not profile):
+    elif raise_on_missing and (profile_name != 'default' and profile is None):
         raise NoSuchProfile(
             'Profile "{}" not found in the idf_component_manager.yml config file'.format(
                 profile_name
@@ -85,10 +92,13 @@ def validate_profile(
 
 
 def service_details_for_profile(
+    profile,  # type: dict[str,str] | None
     namespace=None,  # type: str | None
-    profile={},  # type: dict[str,str]
     token_required=True,
 ):  # type: (...) -> tuple[APIClient, str]
+    if profile is None:
+        profile = {}
+
     # Priorities:
     # Environment variables > profile value in `idf_component_manager.yml` file > built-in default
     registry_url, storage_url = component_registry_url(registry_profile=profile)
@@ -111,7 +121,7 @@ def service_details(
     token_required=True,
 ):  # type: (...) -> tuple[APIClient, str]
     profile_name = service_profile or 'default'
-    profile = get_profile(config_path=config_path, profile_name=profile_name)
+    profile = get_profile(profile_name, config_path=config_path)
     validate_profile(profile, profile_name)
     return service_details_for_profile(
         namespace=namespace, profile=profile, token_required=token_required
