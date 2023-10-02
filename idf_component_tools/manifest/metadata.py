@@ -80,9 +80,7 @@ class Metadata(object):
             elif _k[0] in KNOWN_INFO_METADATA_FIELDS:
                 if _k not in info_metadata_keys:
                     info_metadata_keys.append(_k)
-            else:  # assume it's a info metadata key
-                _manifest_key, _manifest_type = cls.get_closest_manifest_key_and_type(_k)
-                warn(MetadataKeyWarning(_manifest_key, _manifest_type))
+            # unknown root key, ignore it
 
         return serialize_list_of_list_of_strings(
             build_metadata_keys

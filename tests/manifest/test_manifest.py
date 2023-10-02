@@ -130,17 +130,24 @@ class TestManifestPipeline(object):
 
 class TestManifestValidator(object):
     def test_validate_unknown_root_key(self, valid_manifest, recwarn):
+        # unknown root keys
         valid_manifest['unknown'] = 'test'
         valid_manifest['test'] = 3.1415926
+
+        # known root keys, but unknown subkeys
+        valid_manifest['maintainers'] = {}
+        valid_manifest['maintainers']['foo'] = 'bar'
+
         validator = ManifestValidator(valid_manifest)
 
         errors = validator.validate_normalize()
         assert len(errors) == 0
+        assert len(recwarn) == 2
 
         # manifest_tree is not sorted. compare set not list
         assert set(warning.message.args[0] for warning in recwarn) == {
-            'Unknown string field "unknown" in the manifest file',
-            'Unknown number field "test" in the manifest file',
+            'Unknown string field "foo" in the manifest file',
+            'Dropping key "maintainers" from manifest.',
         }
 
     def test_validate_unknown_root_values(self, valid_manifest):
