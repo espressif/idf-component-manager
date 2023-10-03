@@ -3,7 +3,8 @@
 
 from six import reraise
 
-from ..errors import InternalError, MetadataError, MetadataKeyWarning, warn
+from ..errors import InternalError, MetadataError
+from ..messages import MetadataKeyWarning, warn
 from .constants import KNOWN_BUILD_METADATA_FIELDS, KNOWN_INFO_METADATA_FIELDS
 from .schemas import serialize_list_of_list_of_strings
 
@@ -46,6 +47,8 @@ def _flatten_manifest_file_keys(manifest_tree, stack=None, level=1):
             res.append(stack + ['type:string'])
         elif isinstance(manifest_tree, (int, float)):
             res.append(stack + ['type:number'])
+        elif isinstance(manifest_tree, type(None)):
+            pass
         else:
             raise MetadataError(
                 'Unknown key type {} for key {}'.format(type(manifest_tree), manifest_tree)
@@ -80,9 +83,7 @@ class Metadata(object):
             elif _k[0] in KNOWN_INFO_METADATA_FIELDS:
                 if _k not in info_metadata_keys:
                     info_metadata_keys.append(_k)
-            else:  # assume it's a info metadata key
-                _manifest_key, _manifest_type = cls.get_closest_manifest_key_and_type(_k)
-                warn(MetadataKeyWarning(_manifest_key, _manifest_type))
+            # unknown root key, ignore it
 
         return serialize_list_of_list_of_strings(
             build_metadata_keys

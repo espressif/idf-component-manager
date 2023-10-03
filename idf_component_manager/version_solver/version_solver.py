@@ -78,8 +78,11 @@ class VersionSolver(object):
                         manifest.dependencies, manifest.name
                     ),
                 )
+
                 self._local_root_requirements[manifest.name] = ComponentRequirement(
-                    manifest.name, _source, str(manifest.version)
+                    name=manifest.name,
+                    source=_source,
+                    version_spec=str(manifest.version),
                 )
 
         for manifest in self.requirements.manifests:

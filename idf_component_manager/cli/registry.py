@@ -7,7 +7,11 @@ import click
 import requests
 from six.moves import input
 
-from idf_component_manager.service_details import service_details
+from idf_component_manager.service_details import (
+    get_profile,
+    service_details_for_profile,
+    validate_profile,
+)
 from idf_component_manager.utils import print_error, print_info
 from idf_component_tools.api_client_errors import APIClientError
 from idf_component_tools.config import ConfigManager
@@ -55,19 +59,24 @@ def init_registry():
         if registry_url:
             os.environ['IDF_COMPONENT_REGISTRY_URL'] = registry_url
 
-        # Load config to get
+        # Load config for dump later
         config = ConfigManager().load()
+        profile = config.profiles.setdefault(service_profile, {})
 
         # Check if token is already in the profile
-        profile = config.profiles.setdefault(service_profile, {})
         if 'api_token' in profile:
             raise FatalError(
                 'You are already logged in with profile "{}", '
                 'please either logout or use different profile'.format(service_profile)
             )
 
-        api_client, _ = service_details(
-            service_profile=service_profile, namespace=default_namespace, token_required=False
+        # Get profile for API client
+        api_profile = get_profile(profile_name=service_profile)
+        api_profile = api_profile if api_profile else {}
+        validate_profile(profile=api_profile, profile_name=service_profile, raise_on_missing=False)
+
+        api_client, _ = service_details_for_profile(
+            profile=api_profile, namespace=default_namespace, token_required=False
         )
 
         auth_url = '{}/tokens/'.format(api_client.frontend_url)

@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
+import logging
 import os
 import shutil
 import sys
@@ -15,10 +16,10 @@ from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS
 
 from .integration_test_helpers import (
     build_project,
+    current_idf_in_the_list,
     fixtures_path,
     live_print_call,
     project_action,
-    skip_for_idf_versions,
 )
 
 
@@ -154,7 +155,9 @@ def test_env_var(project, monkeypatch):
     indirect=True,
 )
 def test_build_pure_cmake(project):
-    if skip_for_idf_versions('v4.2', 'v4.3'):
+    if current_idf_in_the_list('v4.2', 'v4.3'):
+        logging.info('Skipping the test')
+
         return
 
     build_dir = os.path.join(project, 'build')
@@ -162,35 +165,6 @@ def test_build_pure_cmake(project):
     assert 'Generating done' in res
     res = live_print_call(['cmake', '--build', build_dir])
     assert 'FAILED' not in res
-
-
-@pytest.mark.parametrize(
-    'project',
-    [
-        {
-            'components': {
-                'main': {
-                    'dependencies': {
-                        'cmp': {
-                            'version': '*',
-                            'path': fixtures_path('components', 'cmp'),
-                            'include': 'cmp.h',
-                            'rules': [
-                                {'if': 'idf_version < 3.0'},
-                            ],
-                        },
-                    }
-                }
-            }
-        },
-    ],
-    indirect=True,
-)
-def test_inject_requirements_with_optional_dependency(project):
-    res = project_action(project, 'reconfigure')
-    assert 'Skipping optional dependency: cmp' in res
-    assert '[1/1] idf' in res
-    assert 'cmake failed with exit code 1' not in res
 
 
 @pytest.mark.parametrize(

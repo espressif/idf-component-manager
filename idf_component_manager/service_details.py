@@ -9,7 +9,8 @@ from idf_component_manager.utils import print_info
 from idf_component_tools.api_client import APIClient
 from idf_component_tools.config import ConfigManager, component_registry_url
 from idf_component_tools.constants import DEFAULT_NAMESPACE
-from idf_component_tools.errors import FatalError, UserDeprecationWarning
+from idf_component_tools.errors import FatalError
+from idf_component_tools.messages import UserDeprecationWarning
 
 ServiceDetails = namedtuple('ServiceDetails', ['client', 'namespace'])
 
@@ -43,17 +44,16 @@ def get_token(profile, token_required=True):  # type: (dict[str, str], bool) -> 
 
 
 def get_profile(
-    config_path=None, profile_name=None
-):  # type: (str | None, str | None) -> dict[str, str]
-    config = ConfigManager(path=config_path).load()
-
+    profile_name,
+    config_path=None,
+):  # type: (str, str | None) -> dict[str, str] | None
     profile_name_env_deprecated = os.getenv('IDF_COMPONENT_SERVICE_PROFILE')
 
     if profile_name_env_deprecated:
         warnings.warn(
             'IDF_COMPONENT_SERVICE_PROFILE environment variable is deprecated. '
             'Please use IDF_COMPONENT_REGISTRY_PROFILE instead',
-            category=UserDeprecationWarning,
+            UserDeprecationWarning,
         )
 
     profile_name_env = os.getenv('IDF_COMPONENT_REGISTRY_PROFILE')
@@ -65,30 +65,40 @@ def get_profile(
             'is used.'
         )
 
-    return config.profiles.get(profile_name_env or profile_name_env_deprecated or profile_name, {})
+    config = ConfigManager(path=config_path).load()
+    try:
+        profile = config.profiles[profile_name_env or profile_name_env_deprecated or profile_name]
+        return {} if profile is None else profile
+    except KeyError:
+        if profile_name == 'default':
+            return {}
+        return None
 
 
-def service_details(
-    namespace=None,  # type: str | None
-    service_profile=None,  # type: str | None
-    config_path=None,  # type: str | None
-    token_required=True,
-):  # type: (...) -> tuple[APIClient, str]
-    profile_name = service_profile or 'default'
-    profile = get_profile(config_path, profile_name)
-
+def validate_profile(
+    profile, profile_name, raise_on_missing=True
+):  # type: (dict[str, str] | None, str, bool) -> None
     if profile:
         print_info(
             'Selected profile "{}" from the idf_component_manager.yml config file'.format(
                 profile_name
             )
         )
-    elif profile_name != 'default' and not profile:
+    elif raise_on_missing and (profile_name != 'default' and profile is None):
         raise NoSuchProfile(
             'Profile "{}" not found in the idf_component_manager.yml config file'.format(
                 profile_name
             )
         )
+
+
+def service_details_for_profile(
+    profile,  # type: dict[str,str] | None
+    namespace=None,  # type: str | None
+    token_required=True,
+):  # type: (...) -> tuple[APIClient, str]
+    if profile is None:
+        profile = {}
 
     # Priorities:
     # Environment variables > profile value in `idf_component_manager.yml` file > built-in default
@@ -103,3 +113,17 @@ def service_details(
     client = APIClient(base_url=registry_url, storage_url=storage_url, auth_token=token)
 
     return ServiceDetails(client, namespace)
+
+
+def service_details(
+    namespace=None,  # type: str | None
+    service_profile=None,  # type: str | None
+    config_path=None,  # type: str | None
+    token_required=True,
+):  # type: (...) -> tuple[APIClient, str]
+    profile_name = service_profile or 'default'
+    profile = get_profile(profile_name, config_path=config_path)
+    validate_profile(profile, profile_name)
+    return service_details_for_profile(
+        namespace=namespace, profile=profile, token_required=token_required
+    )

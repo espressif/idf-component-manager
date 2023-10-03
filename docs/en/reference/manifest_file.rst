@@ -119,12 +119,12 @@ Dependencies from Git support two additional fields:
 ESP-IDF Version
 ---------------
 
-The ``esp-idf`` dependency is a special case. It is used to specify the version of ESP-IDF that the component is compatible with. The version is specified in the ``version`` field of the ``esp-idf`` dependency.
+The ``idf`` dependency is a special case. It is used to specify the version of ESP-IDF that the component is compatible with. The version is specified in the ``version`` field of the ``idf`` dependency.
 
 .. code-block:: yaml
 
     dependencies:
-      esp-idf:
+      idf:
         version: ">=5.0"
 
 You can use the shorthand syntax to specify the version of ESP-IDF:
@@ -132,7 +132,7 @@ You can use the shorthand syntax to specify the version of ESP-IDF:
 .. code-block:: yaml
 
     dependencies:
-      esp-idf: ">=5.0"
+      idf: ">=5.0"
 
 Matches and Rules
 -----------------

@@ -1,6 +1,6 @@
 # Test Components
 
-The components under this folder would be uploaded to the component registry under namespace `example`. Would be used
+The components under this folder would be uploaded to the component registry under namespace `test`. Would be used
 for testing with the following scenarios.
 
 ## Scenarios
@@ -36,10 +36,10 @@ graph LR
   C1[c <1.0.0>]
   C2[c <2.0.0>]
   C3[c <3.0.0>]
-  
+
   R -- a: * --> A1
   R -- a: * --> A2
-   
+
   R -- b: * --> B1
   R -- b: * --> B2
 
@@ -95,7 +95,7 @@ graph LR
   B2[b <2.0.0>]
   C1[c <1.0.0>]
   C2[c <2.0.0>]
-  
+
   R -- a: * --> A1
   R -- a: * --> A2
 
@@ -105,7 +105,8 @@ graph LR
   A2 -- b: * --> B1
   A2 -- b: * --> B2
   A2 -- c: ^2.0.0 --> C2
-  
+
   B2 -- c: ^1.0.0 --> C1
 ```
+
 a <2.0.0> b <1.0.0> c <2.0.0>

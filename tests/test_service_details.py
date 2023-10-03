@@ -14,7 +14,8 @@ from idf_component_manager.service_details import (
     service_details,
 )
 from idf_component_tools.config import Config, ConfigManager
-from idf_component_tools.errors import FatalError, UserDeprecationWarning
+from idf_component_tools.errors import FatalError
+from idf_component_tools.messages import UserDeprecationWarning
 
 
 @fixture()
@@ -44,7 +45,8 @@ def config_path(tmp_path):
                             'registry_url': 'https://example.com/',
                             'default_namespace': 'test',
                             'api_token': 'token',
-                        }
+                        },
+                        'emptyprofile': None,
                     }
                 }
             )
@@ -104,7 +106,7 @@ def test_get_token_allow_none(service_config):
 
 
 def test_get_profile_success(config_path):
-    profile = get_profile(config_path, 'test')
+    profile = get_profile('test', config_path)
     assert profile['registry_url'] == 'https://example.com/'
     assert profile['default_namespace'] == 'test'
     assert profile['api_token'] == 'token'
@@ -113,12 +115,12 @@ def test_get_profile_success(config_path):
 def test_get_profile_env_dep(config_path, monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_SERVICE_PROFILE', 'test')
     with warns(UserDeprecationWarning):
-        assert get_profile(config_path)['default_namespace'] == 'test'
+        assert get_profile(None, config_path=config_path)['default_namespace'] == 'test'
 
 
 def test_get_profile_env(config_path, monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_REGISTRY_PROFILE', 'test')
-    assert get_profile(config_path)['default_namespace'] == 'test'
+    assert get_profile(None, config_path=config_path)['default_namespace'] == 'test'
 
 
 def test_get_profile_env_both(config_path, monkeypatch):
@@ -127,11 +129,11 @@ def test_get_profile_env_both(config_path, monkeypatch):
     with warns(
         UserWarning, match='IDF_COMPONENT_SERVICE_PROFILE and IDF_COMPONENT_REGISTRY_PROFILE'
     ):
-        assert get_profile(config_path)['default_namespace'] == 'test'
+        assert get_profile(None, config_path=config_path)['default_namespace'] == 'test'
 
 
 def test_get_profile_not_exist(config_path):
-    assert get_profile(config_path, 'not_test') == {}
+    assert get_profile('not_test', config_path) == None
 
 
 def test_service_details_success(config_path):
@@ -155,3 +157,8 @@ def test_service_details_without_token(tmp_path):
 def test_service_details_without_profile(tmp_path):
     with raises(NoSuchProfile, match='Profile "test" not found*'):
         service_details(config_path=str(tmp_path), service_profile='test', namespace='test')
+
+
+def test_service_details_with_empty_profile(config_path):
+    with raises(FatalError, match='Failed to get API Token*'):
+        service_details(config_path=config_path, service_profile='emptyprofile')

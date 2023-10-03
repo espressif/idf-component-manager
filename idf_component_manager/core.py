@@ -300,7 +300,7 @@ class ComponentManager(object):
         manifest_manager = ManifestManager(manifest_filepath, component)
         manifest = manifest_manager.load()
 
-        for dep in manifest.dependencies:
+        for dep in manifest.raw_dependencies:
             if dep.name == name:
                 raise FatalError(
                     'Dependency "{}" already exists for in manifest "{}"'.format(

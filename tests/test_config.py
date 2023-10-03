@@ -58,6 +58,11 @@ def test_config_manager_validation(fixtures_path):
         manager.load()
 
 
+def test_config_empty_profile_validation():
+    config = Config({'profiles': {'emptyprofile': None}}).validate()
+    assert config.profiles['emptyprofile'] is None
+
+
 def test_load_config(tmp_path):
     config_path = str(tmp_path / 'idf_component_manager.yml')
     config = Config(

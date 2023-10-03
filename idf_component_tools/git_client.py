@@ -8,7 +8,8 @@ import time
 from datetime import datetime
 from functools import wraps
 
-from .errors import GitError, warn
+from .errors import GitError
+from .messages import warn
 from .semver import Version
 
 try:

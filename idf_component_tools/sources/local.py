@@ -4,13 +4,14 @@
 import os
 from pathlib import Path
 
-from ..errors import SourceError, warn
+from ..errors import SourceError
 from ..manifest import (
     MANIFEST_FILENAME,
     ComponentWithVersions,
     HashedComponentVersion,
     ManifestManager,
 )
+from ..messages import warn
 from .base import BaseSource
 
 try:
