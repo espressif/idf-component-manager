@@ -6,7 +6,7 @@ The ``idf_component.yml`` file is a YAML file that describes the component. The 
 The file contains the following fields:
 
 - ``dependencies``: A dictionary of dependencies of the component. This field is optional and can be omitted if the component does not have any dependencies.
-- ``description``: A short description of the component. This field is optional.
+- ``description``: A brief description of the component. This field is highly recommended, if it's missing, a warning message will appear when the component is uploaded to the registry.
 - ``examples``: A list of directories with examples. This field is optional and can be omitted if all the component examples are located in the ``examples`` directory.
 - ``files``: A dictionary containing two lists of ``include`` and ``exclude`` patterns. This field is optional and can be omitted if the component contains all files in the root directory with the default list of exceptions.
 - ``maintainers``: A list of maintainers of the component, while format is not fixed, we recommend using the ``First Last <email@example.com>`` format. This field is optional.
@@ -21,7 +21,7 @@ External Links:
 - ``documentation``: The URL of the component documentation, if it is not included in the component itself. This field is optional.
 - ``issues``: The URL of the component issue tracker. This field is optional.
 - ``repository``: The URL of the component repository. This field is optional, but highly recommended.
-- ``url``: The homepage of the component. This field is optional.
+- ``url``: The homepage of the component. This field is highly recommended, if it's missing, a warning message will appear when the component is uploaded to the registry.
 
 All links should be correct HTTP(S) URLs like ``https://example.com/path`` except for the ``repository`` field, which is expected to be a valid [Git remote](https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes) URL.
 
