@@ -267,6 +267,11 @@ One possible use-case is providing authentication to Git repositories accessed t
       git: https://git:${ACCESS_TOKEN}@git.my_git.com/my_component.git
 
 
+.. note::
+
+      Environment variables are not allowed in manifests of components and examples uploaded to the component registry.
+
+
 Special Rules
 -------------
 
