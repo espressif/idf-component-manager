@@ -3,6 +3,7 @@
 
 import os
 
+from idf_component_tools.api_client_errors import NetworkConnectionError
 from idf_component_tools.errors import DependencySolveError, SolverError
 from idf_component_tools.manifest import (
     ComponentRequirement,
@@ -138,6 +139,8 @@ class VersionSolver(object):
                 spec=requirement.version_spec,
                 target=self.requirements.target,
             )
+        except NetworkConnectionError:
+            raise NetworkConnectionError
         except Exception as e:
             print_warn(e)
             return

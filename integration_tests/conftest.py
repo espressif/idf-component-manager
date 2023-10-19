@@ -3,6 +3,7 @@
 
 import os
 import shutil
+from pathlib import Path
 
 import pytest
 from jinja2 import Environment, FileSystemLoader
@@ -87,6 +88,11 @@ def content_snapshot(request):
         snapshot = Snapshot(snapshot_marker.args)
         yield
         snapshot.revert()
+
+
+@pytest.fixture()
+def fixtures_path():
+    return Path(os.path.join(os.path.dirname(__file__), 'fixtures'))
 
 
 def pytest_configure(config):

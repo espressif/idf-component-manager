@@ -124,6 +124,7 @@ examples:
 | COMPONENT_MANAGER_JOB_TIMEOUT               | 300                                     | no        | Timeout in seconds to wait for component processing                                             |
 | IDF_COMPONENT_OVERWRITE_MANAGED_COMPONENTS  | 0                                       | no        | Overwrite files in the managed_component directory, even if they have been modified by the user |
 | IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS | 0                                       | no        | Ignore unknown files in managed_components directory                                            |
+| IDF_COMPONENT_CHECK_NEW_VERSION             | 0                                       | no        | Check for new versions of components                                                            |
 
 ## Contributions Guide
 

@@ -12,6 +12,7 @@ from idf_component_manager.version_solver.helper import parse_root_dep_conflict_
 from idf_component_manager.version_solver.mixology.failure import SolverFailure
 from idf_component_manager.version_solver.mixology.package import Package
 from idf_component_manager.version_solver.version_solver import VersionSolver
+from idf_component_tools.api_client_errors import NetworkConnectionError
 from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.environment import getenv_bool
 from idf_component_tools.errors import (
@@ -129,6 +130,11 @@ def is_solve_required(project_requirements, solution):
                     )
                 )
                 return True
+            except NetworkConnectionError:
+                hint(
+                    'Cannot establish a connection to the component registry. Skipping checks of dependency changes.'
+                )
+                return False
 
             component_version = component_versions.versions[0]
 
@@ -208,6 +214,42 @@ class DownloadedComponent:
         return Path(self.abs_path).as_posix()
 
 
+def check_for_new_component_versions(project_requirements, old_solution):
+    if getenv_bool('IDF_COMPONENT_CHECK_NEW_VERSION', False):
+        # Check for newer versions of components
+        solver = VersionSolver(project_requirements, old_solution)
+        try:
+            new_solution = solver.solve()
+            new_deps_names = [dep.name for dep in new_solution.dependencies]
+            updateable_components_messages = []
+
+            for old_dep in old_solution.dependencies:
+                # Check if the old dependency is present in the new solution
+                if old_dep.name not in new_deps_names:
+                    continue
+
+                # Find index of old dependency in new_solution dependencies
+                new_dep = new_solution.dependencies[new_deps_names.index(old_dep.name)]
+                # Check if the version of the old dependency is different from the new one
+                if old_dep.version != new_dep.version:
+                    updateable_components_messages.append(
+                        'Dependency "{}": "{}" -> "{}"'.format(
+                            old_dep.name, old_dep.version, new_dep.version
+                        )
+                    )
+
+            if updateable_components_messages:
+                hint(
+                    '\nFollowing dependencies have new versions available:\n{}'
+                    '\nConsider running "idf.py update-dependencies" to update your lock file.\n'.format(
+                        '\n'.join(updateable_components_messages)
+                    )
+                )
+
+        except (SolverFailure, NetworkConnectionError):
+            pass
+
+
 def download_project_dependencies(project_requirements, lock_path, managed_components_path):
     # type: (ProjectRequirements, str, str) -> set[DownloadedComponent]
     """Solves dependencies and download components"""
@@ -240,12 +282,14 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
                         ', '.join(components_introduce_conflict)
                     )
                 )
-
             raise SolverError(str(e))
-
         print_info('Updating lock file at %s' % lock_path)
         lock_manager.dump(solution)
 
+    else:
+        check_for_new_component_versions(
+            project_requirements=project_requirements, old_solution=solution
+        )
     # Download components
     downloaded_components = set()
 

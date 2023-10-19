@@ -30,8 +30,8 @@ class TestUtils(object):
         print_hint('Hello')
         captured = capsys.readouterr()
 
-        assert '' == captured.out
-        assert 'HINT: Hello\n' == captured.err
+        assert 'HINT: Hello\n' == captured.out
+        assert '' == captured.err
 
     def test_print_message(self, capsys):
         print_info('Hello')
