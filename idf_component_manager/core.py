@@ -568,18 +568,20 @@ class ComponentManager(object):
 
         try:
             warnings = set()
-            with ProgressBar(total=MAX_PROGRESS, unit='%') as progress_bar:
+            with ProgressBar(total=MAX_PROGRESS, unit='%', leave=False) as progress_bar:
                 while True:
                     if datetime.now() > timeout_at:
                         raise TimeoutError()
                     status = client.task_status(job_id=job_id)
-                    progress_bar.set_description(status.message)
-                    progress_bar.update_to(status.progress)
 
                     for warning in status.warnings:
                         if warning not in warnings:
-                            print_warn(warning)
                             warnings.add(warning)
+
+                    if status.status == 'failure' or status.status == 'success':
+                        progress_bar.close()
+                        for warning in warnings:
+                            print_warn(warning)
 
                     if status.status == 'failure':
                         if dry_run:
@@ -594,6 +596,9 @@ class ComponentManager(object):
                             )
                     elif status.status == 'success':
                         return
+
+                    progress_bar.set_description(status.message)
+                    progress_bar.update_to(status.progress)
 
                     time.sleep(CHECK_INTERVAL)
         except TimeoutError:
