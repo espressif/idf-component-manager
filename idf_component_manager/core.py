@@ -595,6 +595,7 @@ class ComponentManager(object):
                                 % status.message
                             )
                     elif status.status == 'success':
+                        print_info(status.message)
                         return
 
                     progress_bar.set_description(status.message)
