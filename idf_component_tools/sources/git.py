@@ -174,6 +174,8 @@ class GitSource(BaseSource):
             manifest_path = os.path.join(source_path, MANIFEST_FILENAME)
             targets = []
             dependencies = []
+            include = set()
+            exclude = set()
 
             if os.path.isfile(manifest_path):
                 manifest = ManifestManager(manifest_path, name=name).load()
@@ -188,7 +190,10 @@ class GitSource(BaseSource):
 
                     targets = manifest.targets
 
-            component_hash = hash_dir(source_path)
+                    include = set(manifest.files['include'])
+                    exclude = set(manifest.files['exclude'])
+
+            component_hash = hash_dir(source_path, include=include, exclude=exclude)
         finally:
             shutil.rmtree(temp_dir)
 

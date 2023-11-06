@@ -11,7 +11,7 @@ import vcr
 from idf_component_tools.constants import IDF_COMPONENT_STORAGE_URL
 from idf_component_tools.errors import FetchingError, SourceError
 from idf_component_tools.hash_tools import hash_dir
-from idf_component_tools.manifest import ComponentVersion, SolvedComponent
+from idf_component_tools.manifest import ComponentVersion, ManifestManager, SolvedComponent
 from idf_component_tools.messages import UserHint
 from idf_component_tools.sources import WebServiceSource
 from idf_component_tools.sources.web_service import IDF_COMPONENT_REGISTRY_API_URL, download_archive
@@ -68,8 +68,22 @@ class TestComponentWebServiceSource(object):
         source.download(cmp, download_path)
 
         # Check copy from the cache (NO http request)
+
+        # release_component_path shouldn't have any excluded files.
+        # It's "downloaded" from the registry
+        manifest_manager = ManifestManager(release_component_path, 'cmp')
+        manifest = manifest_manager.load()
+
+        include = manifest.files['include']
+        exclude = manifest.files['exclude']
+
         fixture_cmp = SolvedComponent(
-            'test/cmp', '1.0.0', source, component_hash=hash_dir(release_component_path)
+            'test/cmp',
+            '1.0.0',
+            source,
+            component_hash=hash_dir(
+                release_component_path, include=include, exclude=exclude, exclude_default=False
+            ),
         )
         download_path = str(tmp_path / 'test_cached')
         cache_path = source.component_cache_path(fixture_cmp)

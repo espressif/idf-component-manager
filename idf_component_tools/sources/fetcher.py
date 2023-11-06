@@ -7,13 +7,8 @@ from io import open
 
 from ..build_system_tools import build_name
 from ..errors import ComponentModifiedError, InvalidComponentHashError
-from ..hash_tools import (
-    HASH_FILENAME,
-    HashDoesNotExistError,
-    HashNotEqualError,
-    HashNotSHA256Error,
-    validate_managed_component_hash,
-)
+from ..hash_tools import HASH_FILENAME, HashDoesNotExistError, HashNotEqualError, HashNotSHA256Error
+from ..hash_validator import validate_managed_component_hash
 from ..manifest import SolvedComponent
 
 try:

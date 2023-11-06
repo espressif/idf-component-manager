@@ -179,3 +179,15 @@ def mock_token_information():
             },
         )
         yield m
+
+
+@pytest.fixture
+def hash_component(fixtures_path):
+    def inner(id):
+        return os.path.join(
+            fixtures_path,
+            'hash_examples',
+            'component_%s' % id,
+        )
+
+    return inner

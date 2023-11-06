@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support overriding components according to the component types
+- Included the use of include/exclude filters from the manifest that is used for calculating the component hash.
 
 ### Fixed
 

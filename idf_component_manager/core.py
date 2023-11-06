@@ -41,8 +41,8 @@ from idf_component_tools.hash_tools import (
     HashDoesNotExistError,
     HashNotEqualError,
     HashNotSHA256Error,
-    validate_managed_component_hash,
 )
+from idf_component_tools.hash_validator import validate_managed_component_hash
 from idf_component_tools.manifest import (
     MANIFEST_FILENAME,
     WEB_DEPENDENCY_REGEX,

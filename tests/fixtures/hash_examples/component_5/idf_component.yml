@@ -1,0 +1,6 @@
+version: 0.0.5
+files:
+  exclude:
+    - "**/*"
+  include:
+    - "1.txt"

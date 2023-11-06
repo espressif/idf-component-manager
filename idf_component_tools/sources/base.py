@@ -11,7 +11,7 @@ import idf_component_tools as tools
 
 from ..errors import FetchingError, SourceError
 from ..file_cache import FileCache
-from ..hash_tools import validate_filtered_dir
+from ..hash_validator import validate_managed_component
 from ..semver import SimpleSpec
 
 try:
@@ -182,7 +182,7 @@ class BaseSource(object):
                 return False
 
             if component.component_hash:
-                return validate_filtered_dir(path, component.component_hash)
+                return validate_managed_component(path, component.component_hash)
 
         return True
 
