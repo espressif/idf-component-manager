@@ -90,8 +90,10 @@ class LocalSource(BaseSource):
         return {'override_path': 'str'}
 
     @staticmethod
-    def is_me(name, details):
-        return bool(details.get('path', None)) or 'override_path' in details
+    def create_sources_if_valid(name, details, manifest_manager=None):
+        if details.get('path', None) or 'override_path' in details:
+            return [LocalSource(details, manifest_manager=manifest_manager)]
+        return None
 
     @property
     def hash_key(self):

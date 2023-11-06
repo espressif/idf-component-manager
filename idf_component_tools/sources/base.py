@@ -77,22 +77,24 @@ class BaseSource(object):
         name,  # type: str
         details,  # type: dict
         manifest_manager=None,  # type: ManifestManager | None
-    ):  # type: (...) -> BaseSource
+    ):  # type: (...) -> list[BaseSource]
         """Build component source by dict"""
         for source_class in tools.sources.KNOWN_SOURCES:
             # MARKER
-            source = source_class.build_if_me(name, details, manifest_manager)
+            sources = source_class.build_if_valid(name, details, manifest_manager)
 
-            if source:
-                return source
+            if sources:
+                return sources
             else:
                 continue
 
         raise SourceError('Unknown source for component: %s' % name)
 
     @staticmethod
-    def is_me(name, details):  # type: (str, dict) -> bool
-        return False
+    def create_sources_if_valid(
+        name, details, manifest_manager=None
+    ):  # type: (str, dict, ManifestManager | None) -> list[BaseSource] | None
+        return None
 
     @classmethod
     def required_keys(cls):
@@ -125,9 +127,9 @@ class BaseSource(object):
         return source_schema
 
     @classmethod
-    def build_if_me(cls, name, details, manifest_manager=None):
+    def build_if_valid(cls, name, details, manifest_manager=None):
         """Returns source if details are matched, otherwise returns None"""
-        return cls(details, manifest_manager=manifest_manager) if cls.is_me(name, details) else None
+        return cls.create_sources_if_valid(name, details, manifest_manager)
 
     @property
     def source_details(self):

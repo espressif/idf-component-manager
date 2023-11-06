@@ -13,9 +13,9 @@ from idf_component_tools.sources import LocalSource
 from idf_component_tools.sources.local import ManifestContextError, SourcePathError
 
 
-def test_service_is_me():
-    assert LocalSource.is_me('test', {'path': '/'})
-    assert not LocalSource.is_me('test', {'url': '/'})
+def test_service_create_sources_if_valid():
+    assert LocalSource.create_sources_if_valid('test', {'path': '/'})
+    assert not LocalSource.create_sources_if_valid('test', {'url': '/'})
 
 
 def test_download(fixtures_path):

@@ -12,7 +12,6 @@ from idf_component_manager.version_solver.helper import parse_root_dep_conflict_
 from idf_component_manager.version_solver.mixology.failure import SolverFailure
 from idf_component_manager.version_solver.mixology.package import Package
 from idf_component_manager.version_solver.version_solver import VersionSolver
-from idf_component_tools.api_client_errors import NetworkConnectionError
 from idf_component_tools.build_system_tools import build_name
 from idf_component_tools.environment import getenv_bool
 from idf_component_tools.errors import (
@@ -25,6 +24,8 @@ from idf_component_tools.hash_tools import ValidatingHashError, validate_managed
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import ProjectRequirements, SolvedComponent, SolvedManifest
 from idf_component_tools.messages import hint, warn
+from idf_component_tools.registry.api_client_errors import NetworkConnectionError
+from idf_component_tools.sources import WebServiceSource
 from idf_component_tools.sources.fetcher import ComponentFetcher
 
 
@@ -268,13 +269,14 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
             for conflict_constraint in conflict_constraints:
                 for manifest in project_requirements.manifests:
                     for dep in manifest.dependencies:
-                        if Package(
-                            dep.name, dep.source
-                        ) == conflict_constraint.package and dep.version_spec == str(
-                            conflict_constraint.constraint
-                        ):
-                            components_introduce_conflict.append(manifest.name)
-                            break
+                        for source in dep.sources:
+                            if Package(
+                                dep.name, source
+                            ) == conflict_constraint.package and dep.version_spec == str(
+                                conflict_constraint.constraint
+                            ):
+                                components_introduce_conflict.append(manifest.name)
+                                break
 
             if components_introduce_conflict:
                 hint(
@@ -317,8 +319,8 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
 
         for index, component in enumerate(requirement_dependencies):
             print_info(
-                '[{}/{}] {} ({})'.format(
-                    index + 1, number_of_components, component.name, component.version
+                '[{index}/{num_components}] {component}'.format(
+                    index=index + 1, num_components=number_of_components, component=str(component)
                 )
             )
             fetcher = ComponentFetcher(component, managed_components_path)

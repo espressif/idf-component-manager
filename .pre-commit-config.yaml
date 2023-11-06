@@ -69,7 +69,7 @@ repos:
           ]
 
   - repo: https://github.com/fpgmaas/deptry.git
-    rev: "0.11.0"
+    rev: "0.12.0"
     hooks:
       - id: deptry
 

@@ -449,3 +449,29 @@ def test_check_for_newer_component_versions(project, tmp_path, monkeypatch, fixt
     assert 'Following dependencies have new versions available:' in output
     assert 'Dependency "example/cmp": "3.3.99" -> "3.4.0"' in output
     assert 'Consider running "idf.py update-dependencies" to update your lock file.' in output
+
+
+@pytest.mark.parametrize(
+    'project',
+    [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'example/cmp': {'version': '==3.3.3'},
+                        'test/cmp': {'version': '*'},
+                    }
+                },
+            },
+        }
+    ],
+    indirect=True,
+)
+def test_multiple_storage_urls(monkeypatch, project):
+    fixtures = os.path.join(os.path.dirname(__file__), 'fixtures')
+    monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'file://{};default'.format(fixtures))
+    output = project_action(project, 'reconfigure')
+
+    assert 'Configuring done' in output
+    assert 'example/cmp (3.3.3)' in output
+    assert 'test/cmp (1.0.0) from file:///' in output

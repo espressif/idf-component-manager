@@ -66,8 +66,12 @@ class GitSource(BaseSource):
         )
 
     @staticmethod
-    def is_me(name, details):  # type: (str, dict) -> bool
-        return bool(details.get('git', None))
+    def create_sources_if_valid(
+        name, details, manifest_manager=None
+    ):  # type: (str, dict, ManifestManager | None) -> list[BaseSource] | None
+        if details.get('git', None):
+            return [GitSource(details, manifest_manager=manifest_manager)]
+        return None
 
     @classmethod
     def required_keys(cls):

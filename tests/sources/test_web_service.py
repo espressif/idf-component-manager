@@ -9,7 +9,7 @@ import pytest
 import vcr
 
 from idf_component_tools.constants import IDF_COMPONENT_STORAGE_URL
-from idf_component_tools.errors import FetchingError
+from idf_component_tools.errors import FetchingError, SourceError
 from idf_component_tools.hash_tools import hash_dir
 from idf_component_tools.manifest import ComponentVersion, SolvedComponent
 from idf_component_tools.messages import UserHint
@@ -22,10 +22,11 @@ class TestComponentWebServiceSource(object):
     LOCALHOST_HASH = '02d9269ed8690352e6bfc5f6a6c60e859fa6cbfc56efe75a1199b35bdd6c54c8'
     CMP_HASH = '15a658f759a13f1767ca3810cd822e010aba1e36b3a980d140cc5e80e823f422'
 
-    def test_service_is_me(self):
-        assert WebServiceSource.is_me('test', None)
-        assert WebServiceSource.is_me('test', {})
-        assert WebServiceSource.is_me('test', {'path': '/'})
+    def test_service_create_sources_if_valid(self):
+        assert WebServiceSource.create_sources_if_valid('test', None)
+        assert WebServiceSource.create_sources_if_valid('test', {})
+        with pytest.raises(SourceError):
+            assert WebServiceSource.create_sources_if_valid('test', {'path': '/'})
 
     def test_cache_path(self):
         source = WebServiceSource(source_details={'service_url': 'https://example.com/api'})
@@ -49,7 +50,9 @@ class TestComponentWebServiceSource(object):
         )
         cmp = SolvedComponent('test/cmp', '1.0.1', source, component_hash=self.CMP_HASH)
 
-        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/api/'})
+        source = WebServiceSource(
+            source_details={'storage_url': 'http://localhost:9000/test-public/'}
+        )
         download_path = str(tmp_path / 'test_download')
         local_path = source.download(cmp, download_path)
 
@@ -158,4 +161,4 @@ class TestComponentWebServiceSource(object):
     def test_default_storage_url(self):
         source = WebServiceSource(source_details={'service_url': IDF_COMPONENT_REGISTRY_API_URL})
 
-        assert source.storage_url == IDF_COMPONENT_STORAGE_URL
+        assert source._storage_url == IDF_COMPONENT_STORAGE_URL

@@ -22,7 +22,7 @@ def file_with_size():
 
 @pytest.fixture()
 def valid_manifest_hash():
-    return 'c2082b70848fa5e8a0b9dfbbfc9df7dcfc581dec4f3c80a29a6dc8b4394ab8b2'
+    return '7169f4c78d49021379e0df0e288440ab2df1cf694119b56d5c5bac22ef7833ab'
 
 
 @pytest.fixture()
@@ -153,7 +153,10 @@ def mock_registry_without_token(monkeypatch):
 
 @pytest.fixture()
 def mock_registry(mock_registry_without_token, monkeypatch):
-    monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
+    monkeypatch.setenv(
+        'IDF_COMPONENT_API_TOKEN',
+        'L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ',
+    )
 
 
 @pytest.fixture

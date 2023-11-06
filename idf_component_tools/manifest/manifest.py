@@ -10,7 +10,7 @@ import idf_component_tools as tools
 from idf_component_tools.build_system_tools import build_name, get_env_idf_target
 from idf_component_tools.hash_tools import hash_object
 from idf_component_tools.messages import notice
-from idf_component_tools.serialization import serializable, serialize
+from idf_component_tools.serialization import serializable
 
 from ..semver import Version
 from .constants import COMMIT_ID_RE, LINKS
@@ -133,10 +133,10 @@ class Manifest(object):
             if not isinstance(details, Mapping):
                 details = {'version': details}
 
-            source = tools.sources.BaseSource.fromdict(name, details, manifest_manager)
+            sources = tools.sources.BaseSource.fromdict(name, details, manifest_manager)
             component = ComponentRequirement(
                 name,
-                source,
+                sources=sources,
                 version_spec=details.get('version') or '*',
                 public=details.get('public'),
                 optional_requirement=OptionalRequirement.fromdict(details),
@@ -249,7 +249,7 @@ class ComponentRequirement(object):
     _serialization_properties = [
         'name',
         'public',
-        'source',
+        'sources',
         'version_spec',
         'meet_optional_dependencies',
         {'name': 'require', 'default': True, 'serialize_default': False},
@@ -258,7 +258,7 @@ class ComponentRequirement(object):
     def __init__(
         self,
         name,  # type: str
-        source,  # type: BaseSource
+        sources,  # type: list[BaseSource]
         version_spec='*',  # type: str
         public=None,  # type: bool | None
         optional_requirement=None,  # type: OptionalRequirement | None
@@ -266,7 +266,7 @@ class ComponentRequirement(object):
     ):
         # type: (...) -> None
         self._version_spec = version_spec
-        self.source = source
+        self.sources = sources
         self._name = name
         self.public = None  # type: bool | None
         if require == 'public' or public:
@@ -284,6 +284,10 @@ class ComponentRequirement(object):
             return NotImplemented
 
         return self.serialize() == other.serialize()
+
+    @property
+    def source(self):
+        return self.sources[0]
 
     @property
     def meta(self):
@@ -400,7 +404,7 @@ class HashedComponentVersion(ComponentVersion):
         super(HashedComponentVersion, self).__init__(*args, **kwargs)
 
         self.component_hash = component_hash
-        self.dependencies = dependencies  # type: list[ComponentRequirement]
+        self.dependencies = dependencies
         self.targets = targets
         self.all_build_keys_known = all_build_keys_known
 

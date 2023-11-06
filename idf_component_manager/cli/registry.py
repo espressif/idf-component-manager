@@ -7,16 +7,11 @@ import click
 import requests
 from six.moves import input
 
-from idf_component_manager.service_details import (
-    get_profile,
-    service_details_for_profile,
-    validate_profile,
-)
+from idf_component_manager.service_details import get_api_client
 from idf_component_manager.utils import print_error, print_info
-from idf_component_tools.api_client_errors import APIClientError
 from idf_component_tools.config import ConfigManager
-from idf_component_tools.constants import DEFAULT_NAMESPACE, IDF_COMPONENT_REGISTRY_URL
 from idf_component_tools.errors import FatalError
+from idf_component_tools.registry.api_client_errors import APIClientError
 
 from .constants import get_service_profile_option
 from .utils import add_options
@@ -70,13 +65,11 @@ def init_registry():
                 'please either logout or use different profile'.format(service_profile)
             )
 
-        # Get profile for API client
-        api_profile = get_profile(profile_name=service_profile)
-        api_profile = api_profile if api_profile else {}
-        validate_profile(profile=api_profile, profile_name=service_profile, raise_on_missing=False)
-
-        api_client, _ = service_details_for_profile(
-            profile=api_profile, namespace=default_namespace, token_required=False
+        api_client, _ = get_api_client(
+            service_profile=service_profile,
+            namespace=default_namespace,
+            token_required=False,
+            raise_on_missing_profile=False,
         )
 
         auth_url = '{}/tokens/'.format(api_client.frontend_url)

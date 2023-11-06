@@ -107,24 +107,29 @@ class ManifestValidator(object):
 
             if isinstance(details, dict):
                 try:
-                    source = tools.sources.BaseSource.fromdict(component, details)  # type: ignore
+                    sources = tools.sources.BaseSource.fromdict(component, details)  # type: ignore
 
-                    if not source.validate_version_spec(str(details.get('version', ''))):
-                        self.add_error('Version specifications for "%s" are invalid.' % component)
-
-                    # check the version defined in optional requirements as well
-                    optional_dependencies = details.get('rules', []) + details.get('matches', [])
-                    for rule in optional_dependencies:
-                        if isinstance(rule, dict):
-                            version = rule.get('version', '')
-                        else:
-                            version = rule.version or ''
-
-                        if not source.validate_version_spec(version):
+                    for source in sources:
+                        if not source.validate_version_spec(str(details.get('version', ''))):
                             self.add_error(
-                                '"dependencies" version specifications for "%s" are invalid.'
-                                % component
+                                'Version specifications for "%s" are invalid.' % component
                             )
+
+                        # check the version defined in optional requirements as well
+                        optional_dependencies = details.get('rules', []) + details.get(
+                            'matches', []
+                        )
+                        for rule in optional_dependencies:
+                            if isinstance(rule, dict):
+                                version = rule.get('version', '')
+                            else:
+                                version = rule.version or ''
+
+                            if not source.validate_version_spec(version):
+                                self.add_error(
+                                    '"dependencies" version specifications for "%s" are invalid.'
+                                    % component
+                                )
 
                     if 'public' in details and 'require' in details:
                         self.add_error('Don\'t use "public" and "require" fields at the same time.')

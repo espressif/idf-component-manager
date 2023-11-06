@@ -5,14 +5,16 @@ FROM python:${PYTHON_IMAGE_TAG} as idf_tools
 ARG API_TOKEN=
 ARG IDF_BRANCH=master
 ARG IDF_PROJ_ID=
-ARG IDF_FILE_API_URL=
+ARG IDF_GIT_URL=
 
-RUN wget --no-verbose -O idf_tools.py --header="PRIVATE-TOKEN: ${API_TOKEN}" "${IDF_FILE_API_URL}/tools%2Fidf_tools%2Epy/raw?ref=${IDF_BRANCH}" \
-  && wget --no-verbose -O tools.json --header="PRIVATE-TOKEN: ${API_TOKEN}" "${IDF_FILE_API_URL}/tools%2Ftools%2Ejson/raw?ref=${IDF_BRANCH}" \
-  # release/v4.3 or earlier branches does not have this file
-  && (wget --no-verbose -O python_version_checker.py --header="PRIVATE-TOKEN: ${API_TOKEN}" "${IDF_FILE_API_URL}/tools%2Fpython_version_checker%2Epy/raw?ref=${IDF_BRANCH}" || true)
+RUN set -e \
+    && git init \
+    && git remote add origin https://gitlab-ci-token:${API_TOKEN}@${IDF_GIT_URL} \
+    && git fetch --depth 1 origin ${IDF_BRANCH} \
+    && git checkout FETCH_HEAD
 
-RUN python ./idf_tools.py --non-interactive --tools-json ./tools.json download --platform linux-amd64 all \
+
+RUN python ./tools/idf_tools.py --non-interactive --tools-json ./tools/tools.json download --platform linux-amd64 all \
   && ls -lA /root/.espressif/dist/
 
 FROM python:${PYTHON_IMAGE_TAG}

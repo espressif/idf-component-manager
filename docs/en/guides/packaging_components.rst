@@ -182,7 +182,11 @@ Configurable options:
 
    URL of the component registry. (Default: ``https://components.espressif.com``)
 
-Here's an example that includes two profiles, default, and staging:
+-  ``storage_url``
+
+   URIs of the component storages. Supports ``http[s]`` and ``file`` URI schemas. Can be a single URI or a list of them. (Default: ``https://components-file.espressif.com``)
+
+Here's an example that includes three profiles, default, staging, and offline:
 
 .. code-block:: yaml
 
@@ -195,6 +199,12 @@ Here's an example that includes two profiles, default, and staging:
        registry_url: https://example-service.com
        api_token: my_long_long_token
        default_namespace: my_namespace
+
+     offline:
+       storage_url:
+         - file:///Users/username/storage/  # Unix path
+         # - file://C:/storage/ # Windows path
+         - http://localhost:9004
 
 All CLI commands accept ``--service-profile`` parameter. If you want to upload ``test_cmp`` to ``staging``, you may run
 

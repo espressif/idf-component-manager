@@ -11,16 +11,20 @@ from io import open
 
 import requests
 
-import idf_component_tools.api_client as api_client
+from idf_component_manager.service_details import (
+    get_component_registry_url_with_profile,
+    get_storage_urls,
+)
+from idf_component_tools.registry.storage_client import StorageClient
 from idf_component_tools.semver import SimpleSpec
 
 from ..archive_tools import ArchiveError, get_format_from_path, unpack_archive
-from ..config import component_registry_url
 from ..constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL, UPDATE_SUGGESTION
 from ..errors import FetchingError
 from ..file_tools import copy_directory
 from ..hash_tools import validate_filtered_dir
 from ..messages import hint
+from ..registry.base_client import create_session
 from . import utils
 from .base import BaseSource
 
@@ -33,7 +37,7 @@ try:
     from typing import TYPE_CHECKING, Dict
 
     if TYPE_CHECKING:
-        from ..manifest import SolvedComponent
+        from ..manifest import ManifestManager, SolvedComponent
 except ImportError:
     pass
 
@@ -42,7 +46,7 @@ IDF_COMPONENT_REGISTRY_API_URL = '{}api/'.format(IDF_COMPONENT_REGISTRY_URL)
 
 
 def download_archive(url, download_dir):  # type: (str, str) -> str
-    session = api_client.create_session(cache=False)
+    session = create_session(cache=False)
 
     try:
         with session.get(url, stream=True, allow_redirects=True) as r:  # type: requests.Response
@@ -87,26 +91,18 @@ class WebServiceSource(BaseSource):
 
         # Use URL from source details with the high priority
         self.base_url = self.source_details.get('service_url')
+        self.__storage_url = self.source_details.get('storage_url')
 
         # Use the default URL, even if the lock file was made with the canonical one
         if self.base_url == CANONICAL_IDF_COMPONENT_REGISTRY_API_URL:
             self.base_url = IDF_COMPONENT_REGISTRY_API_URL
 
-        self.storage_url = self.source_details.get('storage_url')
+        if self.base_url == IDF_COMPONENT_REGISTRY_API_URL and not self.__storage_url:
+            self.__storage_url = IDF_COMPONENT_STORAGE_URL
 
-        if not self.base_url and not self.storage_url:
-            self.base_url, self.storage_url = component_registry_url()
-        if self.base_url == IDF_COMPONENT_REGISTRY_API_URL and not self.storage_url:
-            self.storage_url = IDF_COMPONENT_STORAGE_URL
+        self.__api_client = self.source_details.get('api_client')
 
-        self.api_client = self.source_details.get('api_client')
-
-        if self.api_client is None:
-            self.api_client = api_client.APIClient(
-                base_url=self.base_url, storage_url=self.storage_url, source=self
-            )
-
-        if not self.base_url and not self.storage_url:
+        if not self.base_url and not self.__storage_url:
             FetchingError('Cannot fetch a dependency with when registry is not defined')
 
         self.pre_release = self.source_details.get('pre_release')
@@ -122,17 +118,61 @@ class WebServiceSource(BaseSource):
     @property
     def hash_key(self):
         if self._hash_key is None:
-            url = urlparse(self.base_url or self.storage_url)
+            url = urlparse(self.base_url or self._storage_url)
             netloc = url.netloc
             path = '/'.join(filter(None, url.path.split('/')))
             normalized_path = '/'.join([netloc, path])
             self._hash_key = sha256(normalized_path.encode('utf-8')).hexdigest()
         return self._hash_key
 
+    @property
+    def _storage_url(self):
+        if self.base_url and not self.__storage_url:
+            self.__storage_url = get_storage_urls(self.base_url)[0]
+        return self.__storage_url
+
+    @property
+    def _api_client(self):
+        if self.__api_client is None:
+            self.__api_client = StorageClient(storage_url=self._storage_url, sources=[self])
+        return self.__api_client
+
     @staticmethod
-    def is_me(name, details):
+    def create_sources_if_valid(
+        name, details, manifest_manager=None
+    ):  # type: (str, dict, ManifestManager | None) -> list[BaseSource]
         # This should be run last
-        return True
+        if not details:
+            details_copy = {}
+        else:
+            details_copy = details.copy()
+        base_url = details_copy.get('service_url')
+
+        # Use the default URL, even if the lock file was made with the canonical one
+        if base_url == CANONICAL_IDF_COMPONENT_REGISTRY_API_URL:
+            base_url = IDF_COMPONENT_REGISTRY_API_URL
+
+        # Get storage_urls from details > from profile/env > from API
+        storage_urls = details_copy.get('storage_url')
+
+        if isinstance(storage_urls, str):
+            storage_urls = [storage_urls]
+
+        if not base_url and not storage_urls:
+            base_url, storage_urls = get_component_registry_url_with_profile()
+            details_copy['service_url'] = base_url
+
+        # WebServiceSource will get storage_url from API when needed
+        if not storage_urls:
+            return [WebServiceSource(details_copy, manifest_manager=manifest_manager)]
+
+        sources = []  # type: list[BaseSource]
+        if storage_urls:
+            for storage_url in storage_urls:
+                details_copy['storage_url'] = storage_url
+                sources.append(WebServiceSource(details_copy, manifest_manager=manifest_manager))
+
+        return sources
 
     def component_cache_path(self, component):  # type: (SolvedComponent) -> str
         component_dir_name = '_'.join(
@@ -146,7 +186,7 @@ class WebServiceSource(BaseSource):
         return path
 
     def versions(self, name, details=None, spec='*', target=None):
-        cmp_with_versions = self.api_client.versions(component_name=name, spec=spec)
+        cmp_with_versions = self._api_client.versions(component_name=name, spec=spec)
         versions = []
         other_targets_versions = []
         pre_release_versions = []
@@ -238,7 +278,7 @@ class WebServiceSource(BaseSource):
             copy_directory(self.component_cache_path(component), download_path)
             return download_path
 
-        url = self.api_client.component(
+        url = self._api_client.component(
             component_name=component.name, version=component.version
         ).download_url
 
@@ -282,8 +322,8 @@ class WebServiceSource(BaseSource):
         if service_url is not None:
             source['service_url'] = service_url
 
-        if self.storage_url != IDF_COMPONENT_STORAGE_URL and self.storage_url is not None:
-            source['storage_url'] = self.storage_url
+        if self.__storage_url != IDF_COMPONENT_STORAGE_URL and self.__storage_url is not None:
+            source['storage_url'] = self._storage_url
 
         if self.pre_release is not None:
             source['pre_release'] = self.pre_release
