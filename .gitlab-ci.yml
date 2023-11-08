@@ -116,6 +116,7 @@ include:
   - project: "espressif/shared-ci-dangerjs"
     ref: master
     file: "danger.yaml"
+  - local: ci/common.yml
 
 run-danger-mr-linter:
   stage: check

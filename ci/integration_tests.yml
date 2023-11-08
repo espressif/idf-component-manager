@@ -1,5 +1,5 @@
 integration_test:
-  image: ${DOCKER_REGISTRY}/component-manager-integration-tests:${PYTHON_IMAGE_TAG}-${IDF_BRANCH}
+  image: ${DOCKER_REGISTRY}/component-manager-integration-tests:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}
   stage: integration_test
   tags:
     - test
@@ -17,23 +17,41 @@ integration_test:
     - build_wheel
   parallel:
     matrix:
-      - IDF_BRANCH: [release-v4.2]
+      - IDF_BRANCH_TAG: [release-v4.2]
         PYTHON_IMAGE_TAG: [2.7-buster, 3.5-buster, 3.11-bullseye]
-      - IDF_BRANCH: [release-v4.3]
+      - IDF_BRANCH_TAG: [release-v4.3]
         PYTHON_IMAGE_TAG: [3.5-buster, 3.11-bullseye]
-      - IDF_BRANCH: [release-v4.4]
+      - IDF_BRANCH_TAG: [release-v4.4]
         PYTHON_IMAGE_TAG: [3.7-bullseye, 3.11-bullseye]
-      - IDF_BRANCH: [release-v5.0, release-v5.1]
+      - IDF_BRANCH_TAG: [release-v5.0, release-v5.1]
         PYTHON_IMAGE_TAG: [3.7-bullseye, 3.11-bullseye]
         REQ_FILE: ["tools/requirements/requirements.core.txt"]
-      - IDF_BRANCH: [master]
+      - IDF_BRANCH_TAG: [master]
         PYTHON_IMAGE_TAG: [3.8-bullseye, 3.11-bullseye]
         REQ_FILE: ["tools/requirements/requirements.core.txt"]
   before_script:
+    - BRANCH_NAME=$(echo $IDF_BRANCH_TAG | sed -e "s/release-v/release\/v/g")
+    - export IDF_BRANCH=${BRANCH_NAME}
+    # starts from idf 5.3, requires IDF_VERSION
+    - |
+      if [ "${IDF_BRANCH_TAG}" = "master" ]; then
+        export IDF_VERSION=5.3.0
+
+        if [ -n "${MASTER_RELEASE_CUSTOM_TAG:-}" ]; then
+          BRANCH_NAME=${MASTER_RELEASE_CUSTOM_TAG/-//}
+          IDF_BRANCH_TAG=${MASTER_RELEASE_CUSTOM_TAG}
+          IDF_REPO=https://gitlab-ci-token:${ESPCI_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/espressif/esp-idf.git
+        fi
+      fi
+    - IMAGE_TAG="${DOCKER_REGISTRY}/component-manager-integration-tests:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}"
+
+    - echo "Using esp-idf branch - ${BRANCH_NAME}"
+    - echo "Creating docker image - ${IMAGE_TAG}"
+
     # Get the version of component manager
     - WHEEL=$(ls ${CI_PROJECT_DIR}/dist/*.whl)
-    - UNESCAPED_IDF_BRANCH=$(echo $IDF_BRANCH | sed -e "s/release-v/release\/v/g")
-    - git clone ${IDF_REPO:-https://github.com/espressif/esp-idf.git} --recursive -b $UNESCAPED_IDF_BRANCH --depth 1
+
+    - git clone ${IDF_REPO:-https://github.com/espressif/esp-idf.git} --recursive -b $BRANCH_NAME --depth 1
     - cd ./esp-idf/
     - ORIGINAL_REQ=$(grep idf-component-manager ${REQ_FILE:-requirements.txt})
     # Replace component manager in the requirements file with local copy
