@@ -13,6 +13,7 @@ from idf_component_tools.constants import COMPILED_FILE_RE, COMPILED_URL_RE
 from idf_component_tools.errors import FatalError, ProfileNotValid
 from idf_component_tools.messages import UserDeprecationWarning
 
+from .build_system_tools import get_idf_version
 from .constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL
 
 try:
@@ -51,6 +52,10 @@ CONFIG_SCHEMA = Schema(
 
 def config_dir():
     return os.environ.get('IDF_TOOLS_PATH') or os.path.expanduser(DEFAULT_CONFIG_DIR)
+
+
+def root_managed_components_dir():
+    return os.path.join(config_dir(), 'root_managed_components', 'idf{}'.format(get_idf_version()))
 
 
 class ConfigError(FatalError):

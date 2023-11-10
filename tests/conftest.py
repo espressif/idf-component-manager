@@ -25,6 +25,11 @@ def valid_manifest_hash():
     return '7169f4c78d49021379e0df0e288440ab2df1cf694119b56d5c5bac22ef7833ab'
 
 
+@pytest.fixture(autouse=True)
+def monkeypatch_idf_version(monkeypatch):
+    monkeypatch.setenv('IDF_VERSION', '5.3.0')
+
+
 @pytest.fixture()
 def valid_manifest():
     return {
