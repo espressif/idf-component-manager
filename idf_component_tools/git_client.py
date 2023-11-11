@@ -7,6 +7,8 @@ import subprocess  # nosec
 import time
 from datetime import datetime
 from functools import wraps
+from glob import glob
+from shutil import move
 
 from .errors import GitError, warn
 from .semver import Version
@@ -127,10 +129,17 @@ class GitClient(object):
         -------
             Commit id of the current checkout
         """
+        intermediate_path = checkout_path + '_inter'
         commit_id = self.get_commit_id_by_ref(repo, bare_path, ref)
 
-        # Checkout required branch
-        checkout_command = ['--work-tree', checkout_path, '--git-dir', bare_path, 'checkout', '--force', commit_id]
+        # Create worktree in intermediate dir
+        worktree_add_cmd = ['--git-dir', bare_path,
+            *'worktree add --detach --no-checkout'.split(' '),
+            intermediate_path, commit_id]
+        self.run(worktree_add_cmd)
+
+        # Checkout required branch contents
+        checkout_command = ['-C', intermediate_path, 'checkout', 'HEAD']
         if selected_paths:
             if '.gitmodules' not in selected_paths and self.has_gitmodules_by_ref(repo, bare_path, commit_id):
                 # avoid submodule update failed
@@ -139,14 +148,20 @@ class GitClient(object):
         self.run(checkout_command)
 
         # And remove all untracked files
-        self.run(['--work-tree', checkout_path, '--git-dir', bare_path, 'clean', '--force'])
+        self.run(['-C', intermediate_path, 'clean', '--force'])
+
         # Submodules
         if with_submodules:
-            self.run(
-                [
-                    '--work-tree=.', '-C', checkout_path, '--git-dir', bare_path, 'submodule', 'update', '--init',
-                    '--recursive'
-                ])
+            self.run(['-C', intermediate_path, *'submodule update --init --recursive'.split(' ')])
+
+        # Move contents from intermediate dir to target one
+        for file in glob(intermediate_path + '/*') + glob(intermediate_path + '/.*'):
+            if re.match(r".*\.git$", file):
+                continue
+            move(file, checkout_path)
+
+        # Remove empty worktree
+        self.run(['-C', bare_path, *'worktree remove --force'.split(' '), intermediate_path])
 
         return commit_id
 
