@@ -41,6 +41,7 @@ REQUIRES = [
     'six',
     'tqdm<5',
     'pyparsing',
+    'functools32;python_version<"3.3"',
 ]
 
 info = {}  # type: ignore

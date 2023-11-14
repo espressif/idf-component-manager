@@ -7,6 +7,11 @@ from packaging import version
 
 from idf_component_tools.messages import UserHint, UserNotice
 
+try:
+    from functools32 import lru_cache
+except ImportError:
+    from functools import lru_cache
+
 CLICK_SUPPORTS_SHOW_DEFAULT = version.parse(click.__version__) >= version.parse('7.1.0')
 
 
