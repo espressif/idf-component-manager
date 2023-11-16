@@ -13,6 +13,7 @@ from ..manifest import (
 )
 from ..messages import warn
 from .base import BaseSource
+from .web_service_keys import WEB_SERVICE_OPTIONAL_KEYS
 
 try:
     from typing import Dict
@@ -87,7 +88,10 @@ class LocalSource(BaseSource):
 
     @classmethod
     def optional_keys(cls):
-        return {'override_path': 'str'}
+        # support `web_service` fields for override_path source changing
+        local_keys = {'override_path': 'str'}
+        local_keys.update(WEB_SERVICE_OPTIONAL_KEYS)
+        return local_keys
 
     @staticmethod
     def create_sources_if_valid(name, details, manifest_manager=None):

@@ -27,6 +27,7 @@ from ..messages import hint
 from ..registry.base_client import create_session
 from . import utils
 from .base import BaseSource
+from .web_service_keys import WEB_SERVICE_OPTIONAL_KEYS, WEB_SERVICE_REQUIRED_KEYS
 
 try:
     from urllib.parse import urlparse  # type: ignore
@@ -109,11 +110,11 @@ class WebServiceSource(BaseSource):
 
     @classmethod
     def required_keys(cls):
-        return {}
+        return WEB_SERVICE_REQUIRED_KEYS
 
     @classmethod
     def optional_keys(cls):
-        return {'pre_release': 'bool', 'storage_url': 'str', 'service_url': 'str'}
+        return WEB_SERVICE_OPTIONAL_KEYS
 
     @property
     def hash_key(self):
