@@ -81,7 +81,6 @@ def test_validator_valid_manifest(valid_manifest):
                 },
             },
             [
-                'Unknown keys in dependency "espressif/esp_diag_data_store" details: service_url',
                 'Non-empty string is required in the "service_url" field',
                 'Version specifications for "espressif/esp_diagnostics" are invalid.',
                 'Component\'s name is not valid "invalid_slug---", should contain only letters, numbers, /, _ and -.',

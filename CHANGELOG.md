@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed message formatting and progress bar displays during user component upload
+- Fixed a problem when the local source created by the override_path parameter doesn't support web_service source keys
 
 ## [1.4.1] - 2023-10-02
 
