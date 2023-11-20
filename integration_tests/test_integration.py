@@ -99,14 +99,16 @@ def test_local_dependency_main_requires(project):
     assert 'Project build complete.' in res
 
 
+@pytest.mark.skipif(
+    (os.getenv('IDF_BRANCH', 'master') or 'master') != 'master',
+    reason='only test it in master branch',
+)
 def test_known_targets():
-    branch = os.getenv('IDF_BRANCH')
-    if not branch or branch == 'master':
-        idf_path = os.environ['IDF_PATH']
-        sys.path.append(os.path.join(idf_path, 'tools'))
-        from idf_py_actions.constants import PREVIEW_TARGETS, SUPPORTED_TARGETS
+    idf_path = os.environ['IDF_PATH']
+    sys.path.append(os.path.join(idf_path, 'tools'))
+    from idf_py_actions.constants import PREVIEW_TARGETS, SUPPORTED_TARGETS
 
-        assert set(SUPPORTED_TARGETS + PREVIEW_TARGETS) == set(DEFAULT_KNOWN_TARGETS)
+    assert set(SUPPORTED_TARGETS + PREVIEW_TARGETS) == set(DEFAULT_KNOWN_TARGETS)
 
 
 @pytest.mark.parametrize(

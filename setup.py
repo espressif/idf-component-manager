@@ -15,6 +15,7 @@ SHORT_DESCRIPTION = 'The component manager for ESP-IDF'
 LICENSE = 'Apache License 2.0'
 URL = 'https://github.com/espressif/idf-component-manager'
 REQUIRES = [
+    'enum34;python_version<"3.4"',
     'brotli<=1.0.9;python_version=="2.7.*"',  # Workaround for https://github.com/google/brotli/issues/1074
     'cachecontrol[filecache]<=0.12.6;python_version<"3.6"',
     'cachecontrol[filecache]>0.12.6;python_version>="3.6"',
@@ -41,6 +42,7 @@ REQUIRES = [
     'six',
     'tqdm<5',
     'pyparsing',
+    'functools32;python_version<"3.3"',
 ]
 
 info = {}  # type: ignore

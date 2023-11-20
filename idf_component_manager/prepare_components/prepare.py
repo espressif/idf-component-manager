@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 #
-# SPDX-FileCopyrightText: 2019-2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2019-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 #
 # 'prepare.py' is a tool to be used by CMake build system to prepare components
@@ -58,13 +58,14 @@ def main():
     # *0* supports ESP-IDF <=4.4
     # *1* starting ESP-IDF 5.0
     # *2* starting ESP-IDF 5.1
+    # *3* starting ESP-IDF 5.2
 
     parser.add_argument(
         '--interface_version',
         help='Version of ESP-IDF build system integration',
         default=0,
         type=int,
-        choices=[0, 1, 2],
+        choices=[0, 1, 2, 3],
     )
 
     parser.add_argument('--lock_path', help='lock file path relative to the project path')

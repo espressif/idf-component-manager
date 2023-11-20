@@ -9,19 +9,33 @@ build:
   timeout: 2h
   parallel:
     matrix:
-      - IDF_BRANCH: [release-v4.2]
+      - IDF_BRANCH_TAG: [release-v4.2]
         PYTHON_IMAGE_TAG: [2.7-buster, 3.5-buster, 3.11-bullseye]
-      - IDF_BRANCH: [release-v4.3]
+      - IDF_BRANCH_TAG: [release-v4.3]
         PYTHON_IMAGE_TAG: [3.5-buster, 3.11-bullseye]
-      - IDF_BRANCH: [release-v4.4]
+      - IDF_BRANCH_TAG: [release-v4.4]
         PYTHON_IMAGE_TAG: [3.7-bullseye, 3.11-bullseye]
-      - IDF_BRANCH: [release-v5.0, release-v5.1]
+      - IDF_BRANCH_TAG: [release-v5.0, release-v5.1]
         PYTHON_IMAGE_TAG: [3.7-bullseye, 3.11-bullseye]
-      - IDF_BRANCH: [master]
+      - IDF_BRANCH_TAG: [master]
         PYTHON_IMAGE_TAG: [3.8-bullseye, 3.11-bullseye]
   script:
-    - UNESCAPED_IDF_BRANCH=$(echo $IDF_BRANCH | sed -e "s/release-v/release\/v/g")
-    - IMAGE_TAG="${DOCKER_REGISTRY}/component-manager-integration-tests:${PYTHON_IMAGE_TAG}-${IDF_BRANCH}"
+    - BRANCH_NAME=$(echo $IDF_BRANCH_TAG | sed -e "s/release-v/release\/v/g")
+    # starts from idf 5.3, requires IDF_VERSION
+    - |
+      if [ "${IDF_BRANCH_TAG}" = "master" ]; then
+        export IDF_VERSION=5.3.0
+
+        if [ -n "${MASTER_RELEASE_CUSTOM_TAG:-}" ]; then
+          BRANCH_NAME=${MASTER_RELEASE_CUSTOM_TAG/-//}
+          IDF_BRANCH_TAG=${MASTER_RELEASE_CUSTOM_TAG}
+        fi
+      fi
+    - IMAGE_TAG="${DOCKER_REGISTRY}/component-manager-integration-tests:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}"
+
+    - echo "Using esp-idf branch - ${BRANCH_NAME}"
+    - echo "Creating docker image - ${IMAGE_TAG}"
+
     - mkdir -p /kaniko/.docker
     - echo "${DOCKER_AUTH_CONFIG}" > /kaniko/.docker/config.json
     - /kaniko/executor
@@ -30,6 +44,7 @@ build:
       --build-arg IDF_GIT_URL=${GITLAB_HTTPS_SERVER}/espressif/esp-idf.git
       --build-arg API_TOKEN="${IDF_API_TOKEN}"
       --build-arg PYTHON_IMAGE_TAG="${PYTHON_IMAGE_TAG}"
-      --build-arg IDF_BRANCH="${UNESCAPED_IDF_BRANCH}"
+      --build-arg IDF_BRANCH="${BRANCH_NAME}"
+      --build-arg IDF_VERSION="${IDF_VERSION}"
       --cache=true
       --cache-ttl=720h

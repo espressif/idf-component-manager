@@ -1,13 +1,12 @@
 # SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+
 ''' Helper function to init API client'''
-import functools
 import os
 import warnings
-from collections import OrderedDict, namedtuple
-from typing import Any, Callable, Dict, Tuple
+from collections import namedtuple
 
-from idf_component_manager.utils import print_info
+from idf_component_manager.utils import lru_cache, print_info
 from idf_component_tools.config import ConfigManager, component_registry_url
 from idf_component_tools.constants import DEFAULT_NAMESPACE
 from idf_component_tools.errors import FatalError
@@ -87,19 +86,7 @@ def get_component_registry_url_with_profile(
     return component_registry_url(profile)
 
 
-def lru_cache(func):  # type: (Callable) -> Callable
-    dictionary = dict()  # type: dict[str, str]
-
-    @functools.wraps(func)
-    def wrapper(storage_url):  # type: (str) -> str
-        if storage_url not in dictionary:
-            dictionary[storage_url] = func(storage_url)
-        return dictionary[storage_url]
-
-    return wrapper
-
-
-@lru_cache
+@lru_cache()
 def get_storage_urls(
     registry_url,  # type: str
 ):

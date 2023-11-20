@@ -1,7 +1,13 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
-from idf_component_manager.utils import print_error, print_hint, print_info, print_warn
+from idf_component_manager.utils import (
+    ComponentType,
+    print_error,
+    print_hint,
+    print_info,
+    print_warn,
+)
 
 
 class TestUtils(object):
@@ -39,3 +45,40 @@ class TestUtils(object):
 
         assert 'Hello\n' == captured.out
         assert '' == captured.err
+
+
+class TestComponentType(object):
+    def test_component_type_order(self):
+        assert (
+            ComponentType.IDF_COMPONENTS
+            < ComponentType.PROJECT_MANAGED_COMPONENTS
+            < ComponentType.PROJECT_COMPONENTS
+            < ComponentType.PROJECT_EXTRA_COMPONENTS
+        )
+        assert (
+            ComponentType.PROJECT_EXTRA_COMPONENTS
+            > ComponentType.PROJECT_COMPONENTS
+            > ComponentType.PROJECT_MANAGED_COMPONENTS
+            > ComponentType.IDF_COMPONENTS
+        )
+
+    def test_component_type_equality(self):
+        assert (
+            ComponentType.IDF_COMPONENTS
+            != ComponentType.PROJECT_MANAGED_COMPONENTS
+            != ComponentType.PROJECT_COMPONENTS
+            != ComponentType.PROJECT_EXTRA_COMPONENTS
+        )
+
+        assert ComponentType.IDF_COMPONENTS == ComponentType('"idf_components"')
+        assert ComponentType.PROJECT_MANAGED_COMPONENTS == ComponentType(
+            '"project_managed_components"'
+        )
+        assert ComponentType.PROJECT_COMPONENTS == ComponentType('"project_components"')
+        assert ComponentType.PROJECT_EXTRA_COMPONENTS == ComponentType('"project_extra_components"')
+
+    def test_component_type_equality_str(self):
+        assert ComponentType.IDF_COMPONENTS == '"idf_components"'
+        assert ComponentType.PROJECT_MANAGED_COMPONENTS == '"project_managed_components"'
+        assert ComponentType.PROJECT_COMPONENTS == '"project_components"'
+        assert ComponentType.PROJECT_EXTRA_COMPONENTS == '"project_extra_components"'

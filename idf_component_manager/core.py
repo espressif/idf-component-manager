@@ -10,19 +10,22 @@ import shutil
 import tarfile
 import tempfile
 import time
+from collections import OrderedDict
 from datetime import datetime, timedelta
 from io import open
 from pathlib import Path
 
 import requests
 
-from idf_component_manager.utils import print_info, print_warn
+from idf_component_manager.utils import ComponentType, lru_cache, print_info, print_warn
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name, is_component
+from idf_component_tools.config import root_managed_components_dir
 from idf_component_tools.environment import getenv_int
 from idf_component_tools.errors import (
     FatalError,
     GitError,
+    InternalError,
     ManifestError,
     NothingToDoError,
     VersionAlreadyExistsError,
@@ -59,6 +62,8 @@ from idf_component_tools.sources import WebServiceSource
 from .cmake_component_requirements import (
     CMakeRequirementsManager,
     ComponentName,
+    RequirementsProcessingError,
+    check_requirements_name_collisions,
     handle_project_requirements,
 )
 from .core_utils import (
@@ -194,6 +199,16 @@ class ComponentManager(object):
             )
 
         return manifest_dir
+
+    @property
+    @lru_cache(1)
+    def root_managed_components_dir(self):  # type: () -> str
+        return root_managed_components_dir()  # type: ignore
+
+    @property
+    @lru_cache(1)
+    def root_managed_components_lock_path(self):  # type: () -> str
+        return os.path.join(self.root_managed_components_dir, 'dependencies.lock')  # type: ignore
 
     def _get_manifest(
         self, component='main', path=None
@@ -628,7 +643,21 @@ class ComponentManager(object):
     def prepare_dep_dirs(
         self, managed_components_list_file, component_list_file, local_components_list_file=None
     ):
-        '''Process all manifests and download all dependencies'''
+        """Process all manifests and download all dependencies"""
+        # root core components
+        root_manifest_filepath = os.path.join(root_managed_components_dir(), MANIFEST_FILENAME)
+        if os.path.isfile(root_manifest_filepath):
+            root_managed_components = download_project_dependencies(
+                ProjectRequirements(
+                    [ManifestManager(self.root_managed_components_dir, 'root').load()]
+                ),
+                self.root_managed_components_lock_path,
+                self.root_managed_components_dir,
+                is_idf_root_dependencies=True,
+            )
+        else:
+            root_managed_components = []
+
         # Find all components
         local_components = []
         if local_components_list_file and os.path.isfile(local_components_list_file):
@@ -671,35 +700,43 @@ class ComponentManager(object):
         }
 
         # Include managed components in project directory
+        all_managed_components = set(
+            sorted(downloaded_components) + sorted(root_managed_components)
+        )
         with open(managed_components_list_file, mode='w', encoding='utf-8') as file:
-            for downloaded_component in sorted(downloaded_components):
-                file.write(u'idf_build_component("%s")\n' % downloaded_component.abs_posix_path)
-                file.write(
-                    u'idf_component_set_property(%s %s "%s")\n'
-                    % (
-                        downloaded_component.name,
-                        'COMPONENT_VERSION',
-                        downloaded_component.version,
-                    )
-                )
-                if downloaded_component.targets:
+            for is_root, group in enumerate([downloaded_components, root_managed_components]):
+                for downloaded_component in group:
                     file.write(
-                        u'idf_component_set_property(%s %s "%s")\n'
-                        % (
+                        u'idf_build_component("{}" "{}")\n'.format(
+                            downloaded_component.abs_posix_path,
+                            'idf_components' if is_root == 1 else 'project_managed_components',
+                        )
+                    )
+                    file.write(
+                        u'idf_component_set_property({} {} "{}")\n'.format(
                             downloaded_component.name,
-                            'REQUIRED_IDF_TARGETS',
-                            ' '.join(downloaded_component.targets),
+                            'COMPONENT_VERSION',
+                            downloaded_component.version,
                         )
                     )
 
+                    if downloaded_component.targets:
+                        file.write(
+                            u'idf_component_set_property({} {} "{}")\n'.format(
+                                downloaded_component.name,
+                                'REQUIRED_IDF_TARGETS',
+                                ' '.join(downloaded_component.targets),
+                            )
+                        )
+
             file.write(
                 u'set(managed_components "%s")\n'
-                % ';'.join(component.name for component in downloaded_components)
+                % ';'.join(component.name for component in all_managed_components)
             )
 
         # Saving list of all components with manifests for use on requirements injection step
         all_components = sorted(
-            set(component.abs_path for component in downloaded_components).union(
+            set(component.abs_path for component in all_managed_components).union(
                 component['path'] for component in local_components
             )
         )
@@ -775,5 +812,97 @@ class ComponentManager(object):
                 if name not in main_reqs and name != 'main' and isinstance(main_reqs, list):
                     main_reqs.append(name)
 
-        handle_project_requirements(requirements)
-        requirements_manager.dump(requirements)
+        if self.interface_version >= 3:
+            new_requirements = self._override_requirements_by_component_types(requirements)
+        else:
+            new_requirements = requirements
+            # we still use this function to check name collisions before 5.2
+            # The behavior is different when
+            #   two components with the same name but have different namespaces
+            # before IDF interface 3, we consider them acceptable, and choose the first one
+            # after IDF interface 3, we raise an requirement conflict error
+            #   if they are under the same component type
+            check_requirements_name_collisions(new_requirements)
+
+        handle_project_requirements(new_requirements)
+        requirements_manager.dump(new_requirements)
+
+    @staticmethod
+    def _override_requirements_by_component_types(
+        requirements,  # type: OrderedDict[ComponentName, dict[str, list[str] | str]]
+    ):  # type: (...) -> OrderedDict[ComponentName, dict[str, list[str] | str]]
+        # group the requirements, the overriding sequence here is:
+        # - idf_components
+        # - project_managed_components
+        # - project_components
+        # - project_extra_components
+        idf_components = OrderedDict()
+        project_managed_components = OrderedDict()
+        project_components = OrderedDict()
+        project_extra_components = OrderedDict()
+        for comp_name, props in requirements.items():
+            if props['__COMPONENT_TYPE'] == ComponentType.IDF_COMPONENTS:
+                idf_components[comp_name] = props
+            elif props['__COMPONENT_TYPE'] == ComponentType.PROJECT_MANAGED_COMPONENTS:
+                project_managed_components[comp_name] = props
+            elif props['__COMPONENT_TYPE'] == ComponentType.PROJECT_COMPONENTS:
+                project_components[comp_name] = props
+            elif props['__COMPONENT_TYPE'] == ComponentType.PROJECT_EXTRA_COMPONENTS:
+                project_extra_components[comp_name] = props
+            else:
+                raise InternalError
+
+        # overriding the sequence
+        new_requirements = project_extra_components
+        for component_group in [
+            project_components,
+            project_managed_components,
+            idf_components,
+        ]:
+            for comp_name, props in component_group.items():
+                name_matched_before = None
+                if comp_name in new_requirements:
+                    name_matched_before = comp_name
+                else:
+                    comp_name_without_namespace = ComponentName(
+                        comp_name.prefix, comp_name.name_without_namespace
+                    )
+                    if comp_name_without_namespace in new_requirements:
+                        name_matched_before = comp_name_without_namespace
+                    else:
+                        for _req_name, _req_props in new_requirements.items():
+                            if comp_name_without_namespace == ComponentName(
+                                _req_name.prefix, _req_name.name_without_namespace
+                            ):
+                                name_matched_before = _req_name
+                                break
+
+                if not name_matched_before:
+                    new_requirements[comp_name] = props
+                # we raise name collision error when same name components
+                # are introduced at the same level of the component type
+                elif (
+                    new_requirements[name_matched_before]['__COMPONENT_TYPE']
+                    == props['__COMPONENT_TYPE']
+                ):
+                    raise RequirementsProcessingError(
+                        'Cannot process component requirements. '
+                        'Requirement {} and requirement {} are both added as {}.'
+                        "Can't decide which one to pick.".format(
+                            name_matched_before.name,
+                            comp_name.name,
+                            props['__COMPONENT_TYPE'],
+                        )
+                    )
+                # Give user a info when same name components got overriden
+                else:
+                    print_info(
+                        '{} overrides {} since {} type got higher priority than {}'.format(
+                            name_matched_before.name,
+                            comp_name.name,
+                            new_requirements[name_matched_before]['__COMPONENT_TYPE'],
+                            props['__COMPONENT_TYPE'],
+                        )
+                    )
+
+        return new_requirements

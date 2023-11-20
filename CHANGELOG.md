@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Support overriding components according to the component types
+
 ### Fixed
 
 - Fixed message formatting and progress bar displays during user component upload

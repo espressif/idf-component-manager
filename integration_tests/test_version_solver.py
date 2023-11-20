@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import json
 import os
 import shutil
 from pathlib import Path
@@ -459,7 +458,7 @@ def test_check_for_newer_component_versions(project, tmp_path, monkeypatch, fixt
                 'main': {
                     'dependencies': {
                         'example/cmp': {'version': '==3.3.3'},
-                        'test/cmp': {'version': '*'},
+                        'test/cmp2': {'version': '*'},
                     }
                 },
             },
@@ -474,4 +473,4 @@ def test_multiple_storage_urls(monkeypatch, project):
 
     assert 'Configuring done' in output
     assert 'example/cmp (3.3.3)' in output
-    assert 'test/cmp (1.0.0) from file:///' in output
+    assert 'test/cmp2 (1.0.0) from file:///' in output

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import re
@@ -16,7 +16,8 @@ ComponentProperty = namedtuple('ComponentProperty', ['component', 'prop', 'value
 ITERABLE_PROPS = ['REQUIRES', 'PRIV_REQUIRES', 'MANAGED_REQUIRES', 'MANAGED_PRIV_REQUIRES']
 REQ_RE = re.compile(
     r'^__component_set_property\(___(?P<prefix>[a-zA-Z\d\-]+)_(?P<name>[a-zA-Z\d_\-\.\+]+)'
-    r'\s+(?P<prop>\w+)\s+(?P<value>.*)\)')
+    r'\s+(?P<prop>\w+)\s+(?P<value>.*)\)'
+)
 
 
 def name_without_namespace(name):  # type: (str) -> str
@@ -85,10 +86,12 @@ class CMakeRequirementsManager(object):
 
                     f.write(
                         u'__component_set_property(___{prefix}_{name} {prop} {value})\n'.format(
-                            prefix=name.prefix, name=name.name, prop=prop, value=value))
+                            prefix=name.prefix, name=name.name, prop=prop, value=value
+                        )
+                    )
 
-    def load(self):  # type: () -> OrderedDict[ComponentName, dict[str, list | str]]
-        requirements = OrderedDict()  # type: OrderedDict[ComponentName, dict[str, list | str]]
+    def load(self):  # type: () -> OrderedDict[ComponentName, dict[str, list[str] | str]]
+        requirements = OrderedDict()  # type: OrderedDict[ComponentName, dict[str, list[str] | str]]
 
         with open(self.path, mode='r', encoding='utf-8') as f:
             for line in f:
@@ -109,11 +112,18 @@ class CMakeRequirementsManager(object):
         return requirements
 
 
-def check_requirements_name_collisions(requirements):  # type: (dict[ComponentName, dict[str, list | str]]) -> None
+def check_requirements_name_collisions(
+    requirements,
+):  # type: (dict[ComponentName, dict[str, list[str] | str]]) -> None
+    """
+    DEPRECATE: This function is deprecated since interface_version 3,
+        Remove it after ESP-IDF 5.1 EOL
+    """
     # Pay attention only to components without namespaces
     name_variants = {
         cmp.name: {cmp.name}
-        for cmp in requirements.keys() if cmp.name == cmp.name_without_namespace
+        for cmp in requirements.keys()
+        if cmp.name == cmp.name_without_namespace
     }  # type: dict[str, set[str]]
 
     for cmp in requirements.keys():
@@ -131,7 +141,10 @@ def check_requirements_name_collisions(requirements):  # type: (dict[ComponentNa
         ]
         raise RequirementsProcessingError(
             'Cannot process component requirements. '
-            'Multiple candidates to satisfy project requirements:\n{}'.format('\n'.join(descriptions)))
+            'Multiple candidates to satisfy project requirements:\n{}'.format(
+                '\n'.join(descriptions)
+            )
+        )
 
 
 def _choose_component(component, known_components):  # type: (str, list[str]) -> str
@@ -142,14 +155,19 @@ def _choose_component(component, known_components):  # type: (str, list[str]) ->
     # Or the the opposite: namespaced is known but required one without namespace
     namespaced_name = '__{}'.format(component)
     for known_component in known_components:
-        if known_component.endswith(namespaced_name) or name_without_namespace(component) == known_component:
+        if (
+            known_component.endswith(namespaced_name)
+            or name_without_namespace(component) == known_component
+        ):
             return known_component
 
     # In this case CMake will fail due to unknown target
     return component
 
 
-def _handle_component_reqs(components, known_components):  # type: (list[str], list[str]) -> list[str]
+def _handle_component_reqs(
+    components, known_components
+):  # type: (list[str], list[str]) -> list[str]
     updated_items = []
     for component in components:
         name_to_add = _choose_component(component, known_components)
@@ -159,16 +177,14 @@ def _handle_component_reqs(components, known_components):  # type: (list[str], l
     return updated_items
 
 
-def handle_project_requirements(requirements):  # type: (OrderedDict[ComponentName, dict[str, list[str] | str]]) -> None
-    '''
+def handle_project_requirements(
+    requirements,
+):  # type: (OrderedDict[ComponentName, dict[str, list[str] | str]]) -> None
+    """
     Use local components with higher priority.
     For example if in some manifest has a dependency `namespace/component`,
     but there is a local component named `namespace__component` or `component` it will be used instead.
-    '''
-
-    # First check that there are no uncertaintinies in what components to use
-    check_requirements_name_collisions(requirements)
-
+    """
     known_components = [component_name.name for component_name in requirements.keys()]
     for component, requirement in requirements.items():
         for prop in ITERABLE_PROPS:
@@ -176,4 +192,5 @@ def handle_project_requirements(requirements):  # type: (OrderedDict[ComponentNa
                 continue
 
             requirements[component][prop] = _handle_component_reqs(
-                requirement[prop], known_components)  # type: ignore # these props are always lists
+                requirement[prop], known_components  # type: ignore # these props are always lists
+            )

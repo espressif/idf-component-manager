@@ -25,7 +25,6 @@ from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import ProjectRequirements, SolvedComponent, SolvedManifest
 from idf_component_tools.messages import hint, warn
 from idf_component_tools.registry.api_client_errors import NetworkConnectionError
-from idf_component_tools.sources import WebServiceSource
 from idf_component_tools.sources.fetcher import ComponentFetcher
 
 
@@ -251,8 +250,10 @@ def check_for_new_component_versions(project_requirements, old_solution):
             pass
 
 
-def download_project_dependencies(project_requirements, lock_path, managed_components_path):
-    # type: (ProjectRequirements, str, str) -> set[DownloadedComponent]
+def download_project_dependencies(
+    project_requirements, lock_path, managed_components_path, is_idf_root_dependencies=False
+):
+    # type: (ProjectRequirements, str, str, bool) -> set[DownloadedComponent]
     """Solves dependencies and download components"""
     lock_manager = LockManager(lock_path)
     solution = lock_manager.load()
@@ -309,7 +310,7 @@ def download_project_dependencies(project_requirements, lock_path, managed_compo
         ):
             requirement_dependencies.append(component)
 
-    if os.path.exists(managed_components_path):
+    if os.path.exists(managed_components_path) and is_idf_root_dependencies is False:
         detect_unused_components(requirement_dependencies, managed_components_path)
 
     if requirement_dependencies:

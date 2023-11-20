@@ -6,7 +6,11 @@ import shutil
 from pathlib import Path
 
 import pytest
+import yaml
 from jinja2 import Environment, FileSystemLoader
+
+from idf_component_tools.config import root_managed_components_dir
+from idf_component_tools.manifest import MANIFEST_FILENAME
 
 from .integration_test_helpers import create_component, generate_from_template
 from .integration_test_helpers import idf_version as system_idf_version
@@ -26,6 +30,14 @@ def project(request, tmpdir_factory):
         os.path.join(project_path, 'CMakeLists.txt'), env.get_template('CMakeLists.txt')
     )
 
+    # create idf root dependencies
+    root_dependencies = request.param.get('root_dependencies', {})
+    if not os.path.isdir(root_managed_components_dir()):
+        os.makedirs(root_managed_components_dir())
+    with open(os.path.join(root_managed_components_dir(), MANIFEST_FILENAME), 'w') as fw:
+        yaml.dump({'dependencies': root_dependencies}, fw)
+
+    # create project components
     components = request.param.get('components', {'main': {}})
     for component in components.keys():
         create_component(project_path, component, components[component], env)
