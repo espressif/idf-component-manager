@@ -13,6 +13,7 @@ from integration_tests.integration_test_helpers import project_action
 @pytest.mark.skipif(
     Version(get_idf_version()) < Version('5.3.0'), reason='only test it in master branch'
 )
+@pytest.mark.xfail(reason='not supported yet in ESP-IDF')
 class TestComponentTypes:
     @pytest.mark.parametrize(
         'project',
