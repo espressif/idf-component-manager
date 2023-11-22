@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 import requests_mock
 
-from idf_component_tools.hash_tools import HASH_FILENAME
+from idf_component_tools.hash_tools.constants import HASH_FILENAME
 
 
 @pytest.fixture()

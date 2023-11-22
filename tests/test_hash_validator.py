@@ -1,19 +1,18 @@
 # SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import shutil
 
 import pytest
 
-from idf_component_tools.hash_tools import (
+from idf_component_tools.hash_tools.errors import (
     HashDoesNotExistError,
     HashNotEqualError,
     HashNotSHA256Error,
 )
-from idf_component_tools.hash_validator import (
-    validate_dir,
-    validate_managed_component,
+from idf_component_tools.hash_tools.validate_managed_component import (
+    validate_managed_component_by_manifest,
     validate_managed_component_hash,
 )
+from idf_component_tools.hash_tools.validator import validate_dir
 
 
 class TestValidateManagedComponent(object):
@@ -61,4 +60,4 @@ class TestValidateManagedComponent(object):
     def test_validate_managed_component_inc_exc_manifest(self, hash_component, tmp_path):
         expected_sha = '299e78217cd6cb4f6962dde0de8c34a8aa8df7c80d8ac782d1944a4ec5b0ff8e'
 
-        assert validate_managed_component(hash_component(5), expected_sha)
+        assert validate_managed_component_by_manifest(hash_component(5), expected_sha)

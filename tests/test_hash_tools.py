@@ -3,9 +3,7 @@
 
 import os
 
-import pytest
-
-from idf_component_tools.hash_tools import hash_dir, hash_file, hash_object
+from idf_component_tools.hash_tools.calculate import hash_dir, hash_file, hash_object
 
 
 class TestHashTools(object):

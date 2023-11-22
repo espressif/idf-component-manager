@@ -7,10 +7,11 @@ import shutil
 import tempfile
 from hashlib import sha256
 
+from idf_component_tools.hash_tools.calculate import hash_dir
+
 from ..errors import FetchingError
 from ..file_tools import copy_filtered_directory
 from ..git_client import GitClient
-from ..hash_tools import hash_dir
 from ..manifest import (
     MANIFEST_FILENAME,
     ComponentVersion,
@@ -29,7 +30,7 @@ try:
     from typing import TYPE_CHECKING, Dict
 
     if TYPE_CHECKING:
-        from ..manifest import SolvedComponent
+        from ..manifest.solved_component import SolvedComponent
 except ImportError:
     pass
 

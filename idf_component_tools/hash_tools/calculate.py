@@ -7,30 +7,11 @@ from io import open
 from pathlib import Path
 
 from idf_component_tools.file_tools import filtered_paths
+from idf_component_tools.hash_tools.constants import BLOCK_SIZE
 
 try:
     from typing import Any, Iterable, Text
 except ImportError:
-    pass
-
-BLOCK_SIZE = 65536
-HASH_FILENAME = '.component_hash'
-SHA256_RE = r'^[A-Fa-f0-9]{64}$'
-
-
-class ValidatingHashError(Exception):
-    pass
-
-
-class HashNotEqualError(ValidatingHashError):
-    pass
-
-
-class HashNotSHA256Error(ValidatingHashError):
-    pass
-
-
-class HashDoesNotExistError(ValidatingHashError):
     pass
 
 

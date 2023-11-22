@@ -4,7 +4,8 @@
 import os
 
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import ManifestManager, SolvedComponent
+from idf_component_tools.manifest import ManifestManager
+from idf_component_tools.manifest.solved_component import SolvedComponent
 from idf_component_tools.sources import WebServiceSource
 
 

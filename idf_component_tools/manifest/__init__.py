@@ -21,8 +21,6 @@ from .manifest import (
     filter_optional_dependencies,
 )
 from .schemas import BUILD_METADATA_KEYS, INFO_METADATA_KEYS, JSON_SCHEMA
-from .solved_component import SolvedComponent
-from .solved_manifest import SolvedManifest
 from .validator import ManifestValidator
 
 __all__ = [
@@ -44,7 +42,5 @@ __all__ = [
     'OptionalRequirement',
     'ProjectRequirements',
     'SLUG_REGEX',
-    'SolvedComponent',
-    'SolvedManifest',
     'WEB_DEPENDENCY_REGEX',
 ]

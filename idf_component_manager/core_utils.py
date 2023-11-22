@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from idf_component_tools.errors import ComponentModifiedError, FatalError
 from idf_component_tools.file_tools import copy_directories, filtered_paths
-from idf_component_tools.hash_tools import HASH_FILENAME
+from idf_component_tools.hash_tools.constants import HASH_FILENAME
 from idf_component_tools.manifest import Manifest
 from idf_component_tools.manifest.constants import SLUG_BODY_REGEX
 from idf_component_tools.semver import SimpleSpec

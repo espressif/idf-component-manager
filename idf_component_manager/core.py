@@ -37,12 +37,14 @@ from idf_component_tools.file_tools import (
     create_directory,
 )
 from idf_component_tools.git_client import GitClient
-from idf_component_tools.hash_tools import (
+from idf_component_tools.hash_tools.errors import (
     HashDoesNotExistError,
     HashNotEqualError,
     HashNotSHA256Error,
 )
-from idf_component_tools.hash_validator import validate_managed_component_hash
+from idf_component_tools.hash_tools.validate_managed_component import (
+    validate_managed_component_hash,
+)
 from idf_component_tools.manifest import (
     MANIFEST_FILENAME,
     WEB_DEPENDENCY_REGEX,

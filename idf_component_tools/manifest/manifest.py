@@ -8,7 +8,7 @@ from functools import total_ordering
 
 import idf_component_tools as tools
 from idf_component_tools.build_system_tools import build_name, get_env_idf_target
-from idf_component_tools.hash_tools import hash_object
+from idf_component_tools.hash_tools.calculate import hash_object
 from idf_component_tools.messages import notice
 from idf_component_tools.serialization import serializable
 

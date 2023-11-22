@@ -6,14 +6,11 @@ from io import open
 from pathlib import Path
 
 from idf_component_tools.environment import getenv_bool
-from idf_component_tools.hash_tools import (
-    HASH_FILENAME,
-    SHA256_RE,
-    HashDoesNotExistError,
-    HashNotEqualError,
-    HashNotSHA256Error,
-    hash_dir,
-)
+from idf_component_tools.hash_tools.validator import validate_dir
+from idf_component_tools.manifest import MANIFEST_FILENAME, ManifestManager
+
+from .constants import HASH_FILENAME, SHA256_RE
+from .errors import HashDoesNotExistError, HashNotEqualError, HashNotSHA256Error
 
 try:
     from typing import Any, Iterable, Text
@@ -21,28 +18,11 @@ except ImportError:
     pass
 
 
-def validate_dir(
-    root,  # type: Text | Path
-    dir_hash,  # type: Text
-    include=None,  # type Iterable[Text] | None
-    exclude=None,  # type: Iterable[Text] | None
-    exclude_default=True,  # type: bool
-):
-    # type: (...) -> bool
-    """Check if directory hash is the same as provided"""
-    current_hash = Path(root).is_dir() and hash_dir(
-        root, include=include, exclude=exclude, exclude_default=exclude_default
-    )
-    return current_hash == dir_hash
-
-
-def validate_managed_component(
+def validate_managed_component_by_manifest(
     root,  # type: Text | Path
     component_hash,  # type: str
 ):  # type: (...) -> bool
     """Validate component in managed directory"""
-    from idf_component_tools.manifest import MANIFEST_FILENAME, ManifestManager
-
     manifest_file_path = os.path.join(root, MANIFEST_FILENAME)
 
     manifest_manager = ManifestManager(manifest_file_path, 'cmp')
@@ -72,5 +52,5 @@ def validate_managed_component_hash(root):  # type: (str) -> None
     if not re.match(SHA256_RE, hash_from_file):
         raise HashNotSHA256Error()
 
-    if not validate_managed_component(root, hash_from_file):
+    if not validate_managed_component_by_manifest(root, hash_from_file):
         raise HashNotEqualError()

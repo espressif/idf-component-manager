@@ -7,7 +7,6 @@ from idf_component_tools.serialization import serializable
 from ..constants import IDF_COMPONENT_STORAGE_URL
 from ..errors import LockError
 from ..manifest import ComponentRequirement, ComponentVersion
-from ..sources import WebServiceSource
 from ..sources.base import BaseSource
 
 try:
@@ -46,10 +45,7 @@ class SolvedComponent(object):
         return 'SolvedComponent <{}({}) {}>'.format(self.name, self.version, self.component_hash)
 
     def __str__(self):
-        if (
-            isinstance(self.source, WebServiceSource)
-            and self.source._storage_url != IDF_COMPONENT_STORAGE_URL
-        ):
+        if self.source.name == 'service' and self.source._storage_url != IDF_COMPONENT_STORAGE_URL:
             return '{name} ({version}) from {storage_url}'.format(
                 name=self.name,
                 version=self.version,

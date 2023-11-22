@@ -8,7 +8,8 @@ import warnings
 
 from pytest import raises
 
-from idf_component_tools.manifest import ComponentVersion, ManifestManager, SolvedComponent
+from idf_component_tools.manifest import ComponentVersion, ManifestManager
+from idf_component_tools.manifest.solved_component import SolvedComponent
 from idf_component_tools.sources import LocalSource
 from idf_component_tools.sources.local import ManifestContextError, SourcePathError
 
