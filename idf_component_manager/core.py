@@ -17,7 +17,7 @@ from pathlib import Path
 
 import requests
 
-from idf_component_manager.utils import ComponentType, lru_cache, print_info, print_warn
+from idf_component_manager.utils import ComponentType, print_info, print_warn
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name, is_component
 from idf_component_tools.config import root_managed_components_dir
@@ -60,6 +60,7 @@ from idf_component_tools.registry.api_client_errors import (
 )
 from idf_component_tools.semver import SimpleSpec, Version
 from idf_component_tools.sources import WebServiceSource
+from idf_component_tools.utils import lru_cache
 
 from .cmake_component_requirements import (
     CMakeRequirementsManager,
@@ -651,7 +652,11 @@ class ComponentManager(object):
         if os.path.isfile(root_manifest_filepath):
             root_managed_components = download_project_dependencies(
                 ProjectRequirements(
-                    [ManifestManager(self.root_managed_components_dir, 'root').load()]
+                    [
+                        ManifestManager(
+                            self.root_managed_components_dir, 'root', expand_environment=True
+                        ).load()
+                    ]
                 ),
                 self.root_managed_components_lock_path,
                 self.root_managed_components_dir,
@@ -687,7 +692,11 @@ class ComponentManager(object):
             manifests = []
 
             for component in local_components:
-                manifests.append(ManifestManager(component['path'], component['name']).load())
+                manifests.append(
+                    ManifestManager(
+                        component['path'], component['name'], expand_environment=True
+                    ).load()
+                )
 
             project_requirements = ProjectRequirements(manifests)
             downloaded_components = download_project_dependencies(
@@ -769,7 +778,7 @@ class ComponentManager(object):
         for component in components_with_manifests:
             component = component.strip()
             name = os.path.basename(component)
-            manifest = ManifestManager(component, name).load()
+            manifest = ManifestManager(component, name, expand_environment=True).load()
             name_key = ComponentName('idf', name)
 
             for dependency in manifest.dependencies:

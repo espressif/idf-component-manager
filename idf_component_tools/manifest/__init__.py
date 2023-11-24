@@ -21,7 +21,7 @@ from .manifest import (
     filter_optional_dependencies,
 )
 from .schemas import BUILD_METADATA_KEYS, INFO_METADATA_KEYS, JSON_SCHEMA
-from .validator import ManifestValidator
+from .validator import ExpandedManifestValidator, ManifestValidator
 
 __all__ = [
     'BUILD_METADATA_KEYS',
@@ -38,6 +38,7 @@ __all__ = [
     'Manifest',
     'ManifestManager',
     'ManifestValidator',
+    'ExpandedManifestValidator',
     'OptionalDependency',
     'OptionalRequirement',
     'ProjectRequirements',

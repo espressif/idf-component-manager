@@ -20,7 +20,7 @@ from .constants import (
 from .if_parser import IfClause, OptionalDependency, parse_if_clause
 
 try:
-    from typing import Any
+    import typing as t
 except ImportError:
     pass
 
@@ -41,16 +41,28 @@ def _nonempty_string(field):  # type: (str) -> And
     )
 
 
-def _dependency_schema():  # type: () -> Or
-    _optional_dependency = And(
+def expanded_optional_dependency_schema_builder():  # type: () -> Schema
+    return And(
         {
             'if': Use(parse_if_clause),
             Optional('version'): Or(
-                None, *string_types, error='Dependency version spec format is invalid'
+                None, *string_types, error='Dependency version spec format in rule/match is invalid'
             ),
         },
         Use(OptionalDependency.fromdict),
     )
+
+
+def optional_dependency_schema_builder():  # type: () -> Schema
+    return {
+        'if': Or(*string_types),
+        Optional('version'): Or(
+            None, *string_types, error='Dependency version spec format in rule/match is invalid'
+        ),
+    }
+
+
+def dependency_schema_builder(rule_schema_builder):  # type: (t.Callable) -> Or
     return Or(
         Or(None, *string_types, error='Dependency version spec format is invalid'),
         {
@@ -64,8 +76,8 @@ def _dependency_schema():  # type: () -> Or
             Optional('path'): _nonempty_string('path'),
             Optional('git'): _nonempty_string('git'),
             Optional('service_url'): _nonempty_string('service_url'),
-            Optional('rules'): [_optional_dependency],
-            Optional('matches'): [_optional_dependency],
+            Optional('rules'): [rule_schema_builder()],
+            Optional('matches'): [rule_schema_builder()],
             Optional('override_path'): _nonempty_string('override_path'),
             Optional('require'): Or(
                 'public',
@@ -83,10 +95,14 @@ def _dependency_schema():  # type: () -> Or
     )
 
 
-DEPENDENCY_SCHEMA = _dependency_schema()
+def schema_builder(validate_rules=False):  # type: (bool) -> Schema
+    if validate_rules:
+        rule_builder = expanded_optional_dependency_schema_builder
+    else:
+        rule_builder = optional_dependency_schema_builder
 
+    dependency_schema = dependency_schema_builder(rule_builder)
 
-def _manifest_schema():  # type: () -> Schema
     return Schema(
         {
             Optional('name'): Or(*string_types),
@@ -107,7 +123,7 @@ def _manifest_schema():  # type: () -> Schema
             Optional('dependencies'): {
                 Optional(
                     Regex(FULL_SLUG_REGEX, error='Invalid name for dependency')
-                ): DEPENDENCY_SCHEMA
+                ): dependency_schema
             },
             Optional('files'): {
                 Optional(key): [_nonempty_string('files')] for key in KNOWN_FILES_KEYS
@@ -134,20 +150,17 @@ def _manifest_schema():  # type: () -> Schema
     )
 
 
-MANIFEST_SCHEMA = _manifest_schema()
-
-
 def version_json_schema():  # type: () -> dict
     return {'type': 'string', 'pattern': SimpleSpec.regex_str()}
 
 
 def manifest_json_schema():  # type: () -> dict
-    def replace_regex_pattern_with_pattern_str(pat):  # type: (re.Pattern) -> Any
+    def replace_regex_pattern_with_pattern_str(pat):  # type: (re.Pattern) -> t.Any
         return pat.pattern
 
     def process_json_schema(
-        obj,  # type: dict[str, Any] | list | str | Any
-    ):  # type: (...) -> dict[str, Any] | list | str | Any
+        obj,  # type: dict[str, t.Any] | list | str | t.Any
+    ):  # type: (...) -> dict[str, t.Any] | list | str | t.Any
         if isinstance(obj, dict):
             # jsonschema 2.5.1 for python 3.4 does not support empty `required` field
             if not obj.get('required', []):
@@ -164,7 +177,7 @@ def manifest_json_schema():  # type: () -> dict
         # we don't process other data types, like numbers
         return obj
 
-    json_schema = MANIFEST_SCHEMA.json_schema(
+    json_schema = schema_builder().json_schema(
         'idf-component-manager'
     )  # here id should be an url to use $ref in the future
 
@@ -178,7 +191,9 @@ def manifest_json_schema():  # type: () -> dict
     json_schema['properties']['version'] = version_json_schema()
     # `dependency`
     json_schema['properties']['dependencies']['additionalProperties'] = {
-        'anyOf': Schema(DEPENDENCY_SCHEMA).json_schema('#dependency')['anyOf']
+        'anyOf': Schema(dependency_schema_builder(optional_dependency_schema_builder)).json_schema(
+            '#dependency'
+        )['anyOf']
     }
     # `dependencies:*:version` could be simple spec version,
     # or git branch/commit, use string instead

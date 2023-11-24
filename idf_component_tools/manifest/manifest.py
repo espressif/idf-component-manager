@@ -139,9 +139,12 @@ class Manifest(object):
                 sources=sources,
                 version_spec=details.get('version') or '*',
                 public=details.get('public'),
-                optional_requirement=OptionalRequirement.fromdict(details),
                 require=details.get('require', None),
             )
+            # Optional dependencies, only if manifest_manager not present or environment is expanded
+            if not manifest_manager or manifest_manager.expand_environment:
+                component.optional_requirement = OptionalRequirement.fromdict(details)
+
             manifest._dependencies.append(component)
 
         links = {link: manifest_tree.get(link, '') for link in LINKS}
