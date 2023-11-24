@@ -21,9 +21,9 @@ from idf_component_tools.manifest import (
     Manifest,
     ManifestManager,
     ProjectRequirements,
-    SolvedComponent,
-    SolvedManifest,
 )
+from idf_component_tools.manifest.solved_component import SolvedComponent
+from idf_component_tools.manifest.solved_manifest import SolvedManifest
 from idf_component_tools.messages import UserHint
 from idf_component_tools.sources import IDFSource, LocalSource, WebServiceSource
 

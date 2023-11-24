@@ -8,17 +8,20 @@ from schema import Optional, Or
 from six import string_types
 
 import idf_component_tools as tools
+from idf_component_tools.hash_tools.validate_managed_component import (
+    validate_managed_component_by_manifest,
+)
 
 from ..errors import FetchingError, SourceError
 from ..file_cache import FileCache
-from ..hash_tools import validate_filtered_dir
 from ..semver import SimpleSpec
 
 try:
     from typing import TYPE_CHECKING, Callable
 
     if TYPE_CHECKING:
-        from ..manifest import ComponentWithVersions, ManifestManager, SolvedComponent
+        from ..manifest import ComponentWithVersions, ManifestManager
+        from ..manifest.solved_component import SolvedComponent
 except ImportError:
     pass
 
@@ -182,7 +185,7 @@ class BaseSource(object):
                 return False
 
             if component.component_hash:
-                return validate_filtered_dir(path, component.component_hash)
+                return validate_managed_component_by_manifest(path, component.component_hash)
 
         return True
 

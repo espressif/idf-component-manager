@@ -15,7 +15,9 @@ import idf_component_tools as tools
 
 from ..build_system_tools import get_env_idf_target, get_idf_version
 from ..errors import LockError
-from ..manifest import ComponentVersion, SolvedComponent, SolvedManifest, known_targets
+from ..manifest import ComponentVersion, known_targets
+from ..manifest.solved_component import SolvedComponent
+from ..manifest.solved_manifest import SolvedManifest
 from ..sources import IDFSource
 
 FORMAT_VERSION = '1.0.0'

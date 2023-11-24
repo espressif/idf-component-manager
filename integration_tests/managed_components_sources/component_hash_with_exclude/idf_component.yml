@@ -1,0 +1,4 @@
+version: 0.3.3
+files:  # Delete this block to get error that component_hash doesn't match
+  exclude:
+    - test_file

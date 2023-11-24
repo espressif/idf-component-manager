@@ -5,16 +5,19 @@
 import os
 from io import open
 
-from ..build_system_tools import build_name
-from ..errors import ComponentModifiedError, InvalidComponentHashError
-from ..hash_tools import (
-    HASH_FILENAME,
+from idf_component_tools.hash_tools.constants import HASH_FILENAME
+from idf_component_tools.hash_tools.errors import (
     HashDoesNotExistError,
     HashNotEqualError,
     HashNotSHA256Error,
+)
+from idf_component_tools.hash_tools.validate_managed_component import (
     validate_managed_component_hash,
 )
-from ..manifest import SolvedComponent
+
+from ..build_system_tools import build_name
+from ..errors import ComponentModifiedError, InvalidComponentHashError
+from ..manifest.solved_component import SolvedComponent
 
 try:
     from typing import TYPE_CHECKING

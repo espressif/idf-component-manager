@@ -15,6 +15,9 @@ from idf_component_manager.service_details import (
     get_component_registry_url_with_profile,
     get_storage_urls,
 )
+from idf_component_tools.hash_tools.validate_managed_component import (
+    validate_managed_component_by_manifest,
+)
 from idf_component_tools.registry.storage_client import StorageClient
 from idf_component_tools.semver import SimpleSpec
 
@@ -22,7 +25,6 @@ from ..archive_tools import ArchiveError, get_format_from_path, unpack_archive
 from ..constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL, UPDATE_SUGGESTION
 from ..errors import FetchingError
 from ..file_tools import copy_directory
-from ..hash_tools import validate_filtered_dir
 from ..messages import hint
 from ..registry.base_client import create_session
 from . import utils
@@ -38,7 +40,8 @@ try:
     from typing import TYPE_CHECKING, Dict
 
     if TYPE_CHECKING:
-        from ..manifest import ManifestManager, SolvedComponent
+        from ..manifest import ManifestManager
+        from ..manifest.solved_component import SolvedComponent
 except ImportError:
     pass
 
@@ -275,7 +278,9 @@ class WebServiceSource(BaseSource):
             return download_path
 
         # Check if component is in the cache
-        if validate_filtered_dir(self.component_cache_path(component), component.component_hash):
+        if validate_managed_component_by_manifest(
+            self.component_cache_path(component), component.component_hash
+        ):
             copy_directory(self.component_cache_path(component), download_path)
             return download_path
 

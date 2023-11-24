@@ -18,11 +18,11 @@ from idf_component_tools.manifest import (
     ComponentVersion,
     ManifestManager,
     ManifestValidator,
-    SolvedComponent,
 )
 from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS, known_targets
 from idf_component_tools.manifest.if_parser import OptionalDependency, parse_if_clause
 from idf_component_tools.manifest.manifest import OptionalRequirement
+from idf_component_tools.manifest.solved_component import SolvedComponent
 from idf_component_tools.messages import MetadataKeyWarning
 from idf_component_tools.sources import LocalSource
 

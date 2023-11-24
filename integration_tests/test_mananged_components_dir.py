@@ -83,3 +83,45 @@ def test_fullclean_managed_components(project):
         hash_file.write(u'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
     project_action(project, 'fullclean')
     assert Path(project, 'managed_components', 'example__cmp').is_dir()
+
+
+@pytest.mark.parametrize(
+    'project,result',
+    [
+        (
+            {
+                'components': {
+                    'main': {
+                        'dependencies': {
+                            'test/component_with_exclude_for_component_hash': {
+                                'version': '0.3.2',  # version without exclude
+                            },
+                        }
+                    }
+                }
+            },
+            'directory were modified on the disk since the last',
+        ),
+        (
+            {
+                'components': {
+                    'main': {
+                        'dependencies': {
+                            'test/component_with_exclude_for_component_hash': {
+                                'version': '0.3.3',  # version with exclude
+                            },
+                        }
+                    }
+                }
+            },
+            'Build files have been written to',
+        ),
+    ],
+    indirect=True,
+)
+def test_component_hash_exclude_built_files(project, result):
+    res = project_action(project, 'build')
+    assert 'Project build complete' in res
+
+    res = project_action(project, 'reconfigure')
+    assert result in res

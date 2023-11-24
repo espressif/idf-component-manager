@@ -3,15 +3,15 @@
 
 import os
 
-from idf_component_tools.errors import DependencySolveError, FetchingError, SolverError
+from idf_component_tools.errors import DependencySolveError, SolverError
 from idf_component_tools.manifest import (
     ComponentRequirement,
     ComponentWithVersions,
     Manifest,
     ProjectRequirements,
-    SolvedComponent,
-    SolvedManifest,
 )
+from idf_component_tools.manifest.solved_component import SolvedComponent
+from idf_component_tools.manifest.solved_manifest import SolvedManifest
 from idf_component_tools.registry.api_client_errors import ComponentNotFound, NetworkConnectionError
 from idf_component_tools.sources import BaseSource, LocalSource
 

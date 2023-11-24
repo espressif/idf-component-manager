@@ -20,9 +20,14 @@ from idf_component_tools.errors import (
     InvalidComponentHashError,
     SolverError,
 )
-from idf_component_tools.hash_tools import ValidatingHashError, validate_managed_component_hash
+from idf_component_tools.hash_tools.errors import ValidatingHashError
+from idf_component_tools.hash_tools.validate_managed_component import (
+    validate_managed_component_hash,
+)
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import ProjectRequirements, SolvedComponent, SolvedManifest
+from idf_component_tools.manifest import ProjectRequirements
+from idf_component_tools.manifest.solved_component import SolvedComponent
+from idf_component_tools.manifest.solved_manifest import SolvedManifest
 from idf_component_tools.messages import hint, warn
 from idf_component_tools.registry.api_client_errors import NetworkConnectionError
 from idf_component_tools.sources.fetcher import ComponentFetcher
