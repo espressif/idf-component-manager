@@ -80,6 +80,7 @@ from .core_utils import (
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
 from .service_details import get_api_client, get_storage_client
+from .sync import sync_components
 
 try:
     from typing import Optional, Tuple
@@ -965,3 +966,15 @@ class ComponentManager(object):
                     )
 
         return new_requirements
+
+    def sync_registry(
+        self, service_profile, save_path, interval=0, components=None, recursive=True
+    ):  # type: (str, str | Path, int, list[str] | None, bool) -> None
+        client, namespace = get_storage_client(None, service_profile)
+        save_path = Path(save_path)
+        if interval:
+            while True:
+                sync_components(client, self.path, namespace, save_path, components, recursive)
+                time.sleep(interval)
+        else:
+            sync_components(client, self.path, namespace, save_path, components, recursive)

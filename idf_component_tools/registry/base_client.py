@@ -102,7 +102,7 @@ class BaseClient(object):
     def __init__(self, sources=None):
         self.sources = sources
 
-    def _version_dependencies(self, version):
+    def version_dependencies(self, version):
         dependencies = []
         for dependency in version.get('dependencies', []):
             # Support only idf and service sources
@@ -159,7 +159,7 @@ class BaseClient(object):
                 tools.manifest.HashedComponentVersion(
                     version_string=version['version'],
                     component_hash=version['component_hash'],
-                    dependencies=self._version_dependencies(version),
+                    dependencies=self.version_dependencies(version),
                     targets=version['targets'],
                     all_build_keys_known=all_build_keys_known,
                 )

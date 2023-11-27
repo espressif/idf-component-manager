@@ -6,7 +6,7 @@ from pathlib import Path
 from .calculate import hash_dir
 
 try:
-    from typing import Any, Iterable, Text
+    from typing import Iterable, Text
 except ImportError:
     pass
 

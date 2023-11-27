@@ -49,7 +49,9 @@ CANONICAL_IDF_COMPONENT_REGISTRY_API_URL = 'https://api.components.espressif.com
 IDF_COMPONENT_REGISTRY_API_URL = '{}api/'.format(IDF_COMPONENT_REGISTRY_URL)
 
 
-def download_archive(url, download_dir):  # type: (str, str) -> str
+def download_archive(
+    url, download_dir, save_original_filename=False
+):  # type: (str, str, bool) -> str
     session = create_session(cache=False)
 
     try:
@@ -74,13 +76,21 @@ def download_archive(url, download_dir):  # type: (str, str) -> str
                 except IndexError:
                     raise FetchingError('Web Service returned invalid download url')
 
-            filename = 'component.%s' % extension
-            file_path = os.path.join(download_dir, filename)
+            filename = original_filename
+            if not save_original_filename:
+                filename = 'component.%s' % extension
 
-            with open(file_path, 'wb') as f:
+            tmp_file_path = os.path.join(download_dir, '%s.tmp' % filename)
+
+            with open(tmp_file_path, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=65536):
                     if chunk:
                         f.write(chunk)
+
+            file_path = os.path.join(download_dir, filename)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            shutil.move(tmp_file_path, file_path)
 
             return file_path
     except requests.exceptions.RequestException as e:

@@ -108,3 +108,7 @@ class VersionAlreadyExistsError(FatalError):
 
 class ProfileNotValid(FatalError):
     pass
+
+
+class SyncError(FatalError):
+    pass
