@@ -6,13 +6,14 @@ import os
 import warnings
 from collections import namedtuple
 
-from idf_component_manager.utils import lru_cache, print_info
+from idf_component_manager.utils import print_info
 from idf_component_tools.config import ConfigManager, component_registry_url
 from idf_component_tools.constants import DEFAULT_NAMESPACE
 from idf_component_tools.errors import FatalError
 from idf_component_tools.messages import UserDeprecationWarning
 from idf_component_tools.registry.api_client import APIClient
 from idf_component_tools.registry.multi_storage_client import MultiStorageClient
+from idf_component_tools.utils import lru_cache
 
 ServiceDetails = namedtuple(
     'ServiceDetails', ['registry_url', 'storage_urls', 'token', 'namespace']

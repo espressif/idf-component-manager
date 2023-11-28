@@ -3,15 +3,16 @@
 
 import re
 
-from schema import SchemaError
+from schema import Schema, SchemaError
 
 import idf_component_tools as tools
+from idf_component_tools.utils import lru_cache
 
 from ..errors import MetadataError, MetadataKeyError, SourceError
 from ..messages import MetadataKeyWarning, MetadataWarning, hint
 from .constants import FULL_SLUG_REGEX, known_targets
 from .metadata import Metadata
-from .schemas import BUILD_METADATA_KEYS, INFO_METADATA_KEYS, KNOWN_FILES_KEYS, MANIFEST_SCHEMA
+from .schemas import BUILD_METADATA_KEYS, INFO_METADATA_KEYS, KNOWN_FILES_KEYS, schema_builder
 
 try:
     from typing import List
@@ -36,6 +37,11 @@ class ManifestValidator(object):
         self._errors = []  # type: List[str]
 
         self.check_required_fields = check_required_fields
+
+    @property
+    @lru_cache(1)
+    def schema(self):  # type: () -> Schema
+        return schema_builder(validate_rules=False)
 
     def add_error(self, message):
         if message not in self._errors:
@@ -204,7 +210,7 @@ class ManifestValidator(object):
 
     def validate_normalize_schema(self):
         try:
-            self.manifest_tree = MANIFEST_SCHEMA.validate(self.manifest_tree)
+            self.manifest_tree = self.schema.validate(self.manifest_tree)
         except SchemaError as e:
             # Some format errors may not have detailed description, so avoid duplications
             errors = list(filter(None, e.errors))
@@ -221,7 +227,7 @@ class ManifestValidator(object):
             if isinstance(v, dict):
                 self.validate_duplicates(v)
 
-    def validate_normalize(self):
+    def validate_normalize(self):  # type: () -> list[str]
         self.validate_normalize_root_keys()
         self.validate_normalize_schema()
         self.validate_normalize_dependencies()
@@ -230,3 +236,12 @@ class ManifestValidator(object):
         self.validate_files()
         self.validate_duplicates(self.manifest_tree)
         return self._errors
+
+
+class ExpandedManifestValidator(ManifestValidator):
+    """Manifest Validator for the case of expanded environment variables"""
+
+    @property
+    @lru_cache(1)
+    def schema(self):  # type: () -> Schema
+        return schema_builder(validate_rules=True)

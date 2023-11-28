@@ -13,7 +13,7 @@ from .constants import MANIFEST_FILENAME
 from .env_expander import dump_yaml, expand_env_vars
 from .manifest import Manifest
 from .metadata import Metadata
-from .validator import ManifestValidator
+from .validator import ExpandedManifestValidator, ManifestValidator
 
 try:
     from typing import Any, Dict, List, Optional
@@ -34,19 +34,26 @@ class ManifestManager(object):
     """Parser for manifest files in the project"""
 
     def __init__(
-        self, path, name, check_required_fields=False, version=None
-    ):  # type: (str, str, bool, str | None) -> None
+        self,
+        path,  # type: str  # Path of manifest file
+        name,  # type: str
+        check_required_fields=False,  # type: bool
+        version=None,  # type: str | None
+        expand_environment=False,  # type: bool
+    ):  # type: (...) -> None
         # Path of manifest file
         self._path = path
         self._path_checked = False
         self.name = name
         self.version = version
-        self._manifest_tree = None  # type: Optional[Dict]
-        self._normalized_manifest_tree = None  # type: Optional[Dict]
+        self._manifest_tree = None  # type: Optional[Dict[str, Any]]
+        self._normalized_manifest_tree = None  # type: Optional[Dict[str, Any]]
         self._manifest = None
         self._is_valid = None
         self._validation_errors = []  # type: List[str]
         self.check_required_fields = check_required_fields
+        self.expand_environment = expand_environment
+        self._validator = ExpandedManifestValidator if expand_environment else ManifestValidator
 
     def validate(self):
         try:
@@ -54,7 +61,7 @@ class ManifestManager(object):
         except MetadataError as e:
             self._validation_errors = e.args
         else:
-            validator = ManifestValidator(
+            validator = self._validator(
                 self.manifest_tree,
                 check_required_fields=self.check_required_fields,
                 version=self.version,
@@ -118,12 +125,13 @@ class ManifestManager(object):
                 if manifest_data is None:
                     manifest_data = EMPTY_MANIFEST
 
-                expanded_manifest_data = expand_env_vars(manifest_data)
+                if self.expand_environment:
+                    manifest_data = expand_env_vars(manifest_data)
 
-                if not isinstance(expanded_manifest_data, dict):
+                if not isinstance(manifest_data, dict):
                     raise ManifestError('Unknown format of the manifest file: {}'.format(self.path))
 
-                return expanded_manifest_data
+                return manifest_data
 
             except yaml.YAMLError:
                 raise ManifestError(

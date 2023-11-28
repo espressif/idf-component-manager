@@ -32,7 +32,7 @@ class TestSolverResult(object):
         monkeypatch.setenv('IDF_VERSION', '5.0.0')
         monkeypatch.setenv('IDF_TARGET', 'esp32')
 
-        manifest_manager = ManifestManager(release_component_path, 'test')
+        manifest_manager = ManifestManager(release_component_path, 'test', expand_environment=True)
         manifest_manager.manifest_tree['dependencies'] = {
             'test': '1.2.3',
             'pest': {'version': '3.2.1'},
