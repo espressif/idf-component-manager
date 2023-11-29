@@ -11,6 +11,7 @@ from idf_component_tools.registry.api_schemas import ERROR_SCHEMA
 from .api_client_errors import (
     KNOWN_API_ERRORS,
     APIClientError,
+    ContentTooLargeError,
     NetworkConnectionError,
     StorageFileNotFound,
 )
@@ -77,6 +78,11 @@ def handle_response_errors(
                 raise StorageFileNotFound()
             raise APIClientError(
                 'Error during request.\nStatus code: {}'.format(response.status_code)
+            )
+        if response.status_code == 413:
+            raise ContentTooLargeError(
+                'Error during request. The provided content is too large '
+                'to process. Please reduce the size and try again.'
             )
         handle_4xx_error(response)
     elif 500 <= response.status_code < 600:

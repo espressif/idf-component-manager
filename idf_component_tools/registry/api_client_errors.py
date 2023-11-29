@@ -30,6 +30,10 @@ class NoRegistrySet(APIClientError):
     pass
 
 
+class ContentTooLargeError(APIClientError):
+    pass
+
+
 KNOWN_API_ERRORS = {
     'NamespaceNotFoundError': NamespaceNotFound,
     'ComponentNotFoundError': ComponentNotFound,
