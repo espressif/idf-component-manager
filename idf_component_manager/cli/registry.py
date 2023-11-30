@@ -39,10 +39,12 @@ def init_registry():
         help='Description for the token for future reference',
     )
     @click.option(
+        '--default-namespace',
         '--default_namespace',
         help='Default namespace to use for the components',
     )
     @click.option(
+        '--registry-url',
         '--registry_url',
         help='URL of the registry to use',
     )
