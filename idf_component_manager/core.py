@@ -626,12 +626,12 @@ class ComponentManager(object):
                     if status.status == 'failure':
                         if dry_run:
                             raise FatalError(
-                                'Uploaded version did not pass validation successfully.\n%s'
+                                'Uploaded component did not pass validation successfully.\n%s'
                                 % status.message
                             )
                         else:
                             raise FatalError(
-                                "Uploaded version wasn't processed successfully.\n%s"
+                                "Uploaded component wasn't processed successfully.\n%s"
                                 % status.message
                             )
                     elif status.status == 'success':
