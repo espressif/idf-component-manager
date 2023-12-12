@@ -24,6 +24,7 @@ DEFAULT_KNOWN_TARGETS = [
     'esp32c3',
     'esp32s3',
     'esp32c2',
+    'esp32c5',
     'esp32c6',
     'esp32h2',
     'esp32p4',
