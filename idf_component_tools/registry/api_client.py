@@ -6,13 +6,14 @@ import re
 from collections import namedtuple
 from functools import wraps
 from io import open
+from ssl import SSLEOFError
 
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 from schema import Schema
 from tqdm import tqdm
 
 from ..manifest import ComponentWithVersions
-from .api_client_errors import APIClientError, NoRegistrySet
+from .api_client_errors import APIClientError, ContentTooLargeError, NoRegistrySet
 from .api_schemas import (
     API_INFORMATION_SCHEMA,
     API_TOKEN_SCHEMA,
@@ -138,6 +139,13 @@ class APIClient(BaseClient):
                     headers=headers,
                     schema=VERSION_UPLOAD_SCHEMA,
                 )['job_id']
+            # Python 3.10+ can't process 413 error - https://github.com/urllib3/urllib3/issues/2733
+            except (SSLEOFError, ContentTooLargeError):
+                raise APIClientError(
+                    'The component archive exceeds the maximum allowed size. Please consider '
+                    'excluding unnecessary files from your component. If you think your component '
+                    'should be uploaded as it is, please contact components@espressif.com'
+                )
             finally:
                 progress_bar.close()
 

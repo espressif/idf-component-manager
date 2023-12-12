@@ -2,15 +2,17 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 import sys
+from ssl import SSLEOFError
 
 import pytest
 import vcr
+from requests import Response
 
 from idf_component_manager import version
 from idf_component_tools.config import component_registry_url
 from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL
 from idf_component_tools.registry.api_client import APIClient
-from idf_component_tools.registry.api_client_errors import NoRegistrySet
+from idf_component_tools.registry.api_client_errors import APIClientError, NoRegistrySet
 from idf_component_tools.registry.base_client import env_cache_time, user_agent
 from idf_component_tools.registry.multi_storage_client import MultiStorageClient
 from idf_component_tools.registry.request_processor import join_url
@@ -25,6 +27,16 @@ def base_url():
 @pytest.fixture
 def storage_url():
     return 'http://localhost:9000/test-public'
+
+
+def response_413(*_, **__):
+    response = Response()
+    response.status_code = 413
+    return response
+
+
+def raise_SSLEOFError(*_, **__):
+    raise SSLEOFError()
 
 
 class TestAPIClient(object):
@@ -210,3 +222,43 @@ class TestAPIClient(object):
 
         assert result.versions
         assert result.storage_url == 'https://components-file.espressif.com'
+
+    def test_upload_component_returns_413_status(self, tmp_path, base_url, monkeypatch):
+        monkeypatch.setattr(
+            'idf_component_tools.registry.request_processor.make_request', response_413
+        )
+        client = APIClient(
+            base_url=base_url,
+            auth_token='test',
+        )
+
+        file_path = str(tmp_path / 'cmp.tgz')
+        with open(file_path, 'w+') as f:
+            f.write('a')
+
+        with pytest.raises(APIClientError) as e:
+            client.upload_version(
+                component_name='kumekay/cmp',
+                file_path=file_path,
+            )
+        assert str(e.value).startswith('The component archive exceeds the maximum allowed size')
+
+    def test_upload_component_SSLEOFError(self, tmp_path, base_url, monkeypatch):
+        monkeypatch.setattr(
+            'idf_component_tools.registry.request_processor.make_request', raise_SSLEOFError
+        )
+        client = APIClient(
+            base_url=base_url,
+            auth_token='test',
+        )
+
+        file_path = str(tmp_path / 'cmp.tgz')
+        with open(file_path, 'w+') as f:
+            f.write('a')
+
+        with pytest.raises(APIClientError) as e:
+            client.upload_version(
+                component_name='kumekay/cmp',
+                file_path=file_path,
+            )
+        assert str(e.value).startswith('The component archive exceeds the maximum allowed size')
