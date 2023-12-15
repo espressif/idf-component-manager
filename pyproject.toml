@@ -114,7 +114,7 @@ extend_exclude = [
 ]
 
 [tool.deptry.per_rule_ignores]
-DEP001 = ["urlparse", "idf_py_actions", "functools32"]
+DEP001 = ["urlparse", "idf_py_actions", "functools32", "httplib"]
 DEP002 = ["colorama", "urllib3"]
 
 [tool.deptry.package_module_name_map]

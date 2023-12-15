@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Included the use of include/exclude filters from the manifest that is used for calculating the component hash.
 - Added a user-friendly message to handle a 413 HTTP error triggered by sending large component archive.
 - Add esp32c5 target
+- Add URL and status code to network error messages
 
 ### Fixed
 

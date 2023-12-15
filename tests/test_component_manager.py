@@ -9,6 +9,7 @@ from io import open
 from pathlib import Path
 
 import pytest
+import requests_mock
 import vcr
 import yaml
 from pytest import raises
@@ -102,6 +103,25 @@ def test_upload_component(mock_registry, pre_release_component_path, capsys):
     captured = capsys.readouterr()
 
     assert 'WARNING: A homepage URL has not been provided in the manifest file.' in captured.err
+
+
+def test_upload_component_http_error(mock_registry, pre_release_component_path):
+    with requests_mock.Mocker() as m:
+        # Mock the HTTP request to return a 502 error
+        m.get(
+            'http://localhost:5000/api/components/espressif/cmp',
+            status_code=502,
+            json={'error': 'Err', 'messages': ['Some error messages']},
+        )
+
+        with pytest.raises(
+            FatalError,
+            match='Internal server error happened while processing request.\n'
+            'URL: http://localhost:5000/api/components/espressif/cmp\n'
+            'Status code: 502 Bad Gateway',
+        ):
+            manager = ComponentManager(path=pre_release_component_path)
+            manager.upload_component('cmp')
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_check_only_component.yaml')

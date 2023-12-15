@@ -58,9 +58,9 @@ def make_request(
             allow_redirects=True,
         )
     except requests.exceptions.ConnectionError as e:
-        raise NetworkConnectionError(str(e))
+        raise NetworkConnectionError(str(e), endpoint=endpoint)
     except requests.exceptions.RequestException:
-        raise APIClientError('HTTP request error')
+        raise APIClientError('HTTP request error', endpoint=endpoint)
 
     return response
 
@@ -77,35 +77,44 @@ def handle_response_errors(
             if response.status_code == 404:
                 raise StorageFileNotFound()
             raise APIClientError(
-                'Error during request.\nStatus code: {}'.format(response.status_code)
-            )
-        if response.status_code == 413:
-            raise ContentTooLargeError(
-                'Error during request. The provided content is too large '
-                'to process. Please reduce the size and try again.'
+                'Error during request', endpoint=endpoint, status_code=response.status_code
             )
         handle_4xx_error(response)
     elif 500 <= response.status_code < 600:
         raise APIClientError(
-            'Internal server error happened while processing request to: {}\nStatus code: {}'.format(
-                endpoint, response.status_code
-            )
+            'Internal server error happened while processing request.',
+            endpoint=endpoint,
+            status_code=response.status_code,
         )
 
     return response.json()
 
 
-def handle_4xx_error(error):  # type: (requests.Response) -> None
+def handle_4xx_error(response):  # type: (requests.Response) -> None
+    if response.status_code == 413:
+        raise ContentTooLargeError(
+            'Error during request. The provided content is too large '
+            'to process. Please reduce the size and try again.',
+            endpoint=response.url,
+            status_code=response.status_code,
+        )
+
     try:
-        json = ERROR_SCHEMA.validate(error.json())
+        json = ERROR_SCHEMA.validate(response.json())
         name = json['error']
         messages = json['messages']
     except SchemaError as e:
         raise APIClientError(
-            'API Endpoint "{}: returned unexpected error description:\n{}'.format(error.url, str(e))
+            'API Endpoint returned unexpected error description:\n{}'.format(str(e)),
+            endpoint=response.url,
+            status_code=response.status_code,
         )
     except ValueError:
-        raise APIClientError('Server returned an error in unexpected format')
+        raise APIClientError(
+            'Server returned an error in unexpected format',
+            endpoint=response.url,
+            status_code=response.status_code,
+        )
 
     exception = KNOWN_API_ERRORS.get(name, APIClientError)
     if isinstance(messages, list):
@@ -113,7 +122,7 @@ def handle_4xx_error(error):  # type: (requests.Response) -> None
     else:
         raise exception(
             'Error during request:\n{}\nStatus code: {} Error code: {}'.format(
-                str(messages), error.status_code, name
+                str(messages), response.status_code, name
             )
         )
 
@@ -128,10 +137,11 @@ def validate_response(
             schema.validate(response_json)
     except SchemaError as e:
         raise APIClientError(
-            'API Endpoint "{}: returned unexpected JSON:\n{}'.format(endpoint, str(e))
+            'API Endpoint returned unexpected JSON:\n{}'.format(str(e)),
+            endpoint=endpoint,
         )
     except (ValueError, KeyError, IndexError):
-        raise APIClientError('Unexpected component server response')
+        raise APIClientError('Unexpected component server response', endpoint=endpoint)
 
     return response_json
 
