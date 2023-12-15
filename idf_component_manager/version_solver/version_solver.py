@@ -12,7 +12,7 @@ from idf_component_tools.manifest import (
 )
 from idf_component_tools.manifest.solved_component import SolvedComponent
 from idf_component_tools.manifest.solved_manifest import SolvedManifest
-from idf_component_tools.registry.api_client_errors import ComponentNotFound, NetworkConnectionError
+from idf_component_tools.registry.api_client_errors import ComponentNotFound
 from idf_component_tools.sources import BaseSource, LocalSource
 
 from ..utils import print_info, print_warn
@@ -123,8 +123,6 @@ class VersionSolver(object):
                 latest_source = source
                 if cmp_with_versions.versions:
                     break
-            except NetworkConnectionError:
-                raise NetworkConnectionError
             except ComponentNotFound:
                 pass
         return cmp_with_versions, latest_source

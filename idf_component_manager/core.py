@@ -108,13 +108,19 @@ def general_error_handler(func):
     def wrapper(self, *args, **kwargs):
         try:
             return func(self, *args, **kwargs)
-        except NetworkConnectionError:
+        except NetworkConnectionError as e:
             raise FatalError(
-                'Cannot establish a connection to the component registry. '
-                'Are you connected to the internet?'
+                '\n'.join(
+                    [
+                        'Cannot establish a connection to the component registry. '
+                        'Are you connected to the internet?',
+                    ]
+                    + e.request_info()
+                )
             )
+
         except APIClientError as e:
-            raise FatalError(e)
+            raise FatalError('\n'.join([str(e)] + e.request_info()))
 
     return wrapper
 
