@@ -28,12 +28,10 @@ class ManifestValidator(object):
         self,
         parsed_manifest,  # type: dict
         check_required_fields=False,  # type: bool
-        version=None,  # type: str | None
         metadata=None,  # type: Metadata | None
     ):  # type: (...) -> None
         self.manifest_tree = parsed_manifest
         self.metadata = metadata
-        self.version = version
         self._errors = []  # type: List[str]
 
         self.check_required_fields = check_required_fields
@@ -154,21 +152,15 @@ class ManifestValidator(object):
 
     def validate_normalize_required_keys(self):  # type: () -> None
         """Check for required keys in the manifest, if necessary"""
-        if self.version:
-            manifest_version = self.manifest_tree.get('version')
-            if manifest_version and manifest_version != self.version:
-                self.add_error(
-                    'Manifest version ({}) does not match the version '
-                    'specified in the command line ({}). Please either '
-                    'remove `--version` CLI parameter or update version in the manifest.'.format(
-                        manifest_version, self.version
-                    )
-                )
-            else:
-                self.manifest_tree['version'] = str(self.version)
-
         if not self.check_required_fields:
             return
+
+        if not self.manifest_tree.get('repository') and self.manifest_tree.get('commit_sha'):
+            self.add_error(
+                'The `repository` field is required in the `idf_component.yml` file when '
+                'the `commit_sha` field is set. Please make sure to include the '
+                'repository URL or delete the `commit_sha` field'
+            )
 
         if not self.manifest_tree.get('version'):
             self.add_error(
