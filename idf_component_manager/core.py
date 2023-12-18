@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Core module of component manager"""
 from __future__ import print_function
@@ -369,13 +369,8 @@ class ComponentManager(object):
 
     @general_error_handler
     def pack_component(
-        self,
-        name,
-        version,
-        dest_dir=None,
-        repository=None,
-        commit_sha=None,
-    ):  # type: (str, str, str | None, str | None, str | None) -> tuple[str, Manifest]
+        self, name, version, dest_dir=None, repository=None, commit_sha=None, repository_path=None
+    ):  # type: (str, str, str | None, str | None, str | None, str | None) -> tuple[str, Manifest]
         dest_path = os.path.join(self.path, dest_dir) if dest_dir else self.dist_path
 
         if version == 'git':
@@ -399,6 +394,7 @@ class ComponentManager(object):
             version=version,
             repository=repository,
             commit_sha=commit_sha,
+            repository_path=repository_path,
         )
         manifest = manifest_manager.load()
         dest_temp_dir = Path(dest_path, dist_name(manifest))
@@ -519,6 +515,7 @@ class ComponentManager(object):
         dest_dir=None,  # type: str | None
         repository=None,  # type: str | None
         commit_sha=None,  # type: str | None
+        repository_path=None,  # type: str | None
     ):  # type: (...) -> None
         """
         Uploads a component version to the registry.
@@ -550,6 +547,7 @@ class ComponentManager(object):
                 dest_dir=dest_dir,
                 repository=repository,
                 commit_sha=commit_sha,
+                repository_path=repository_path,
             )
 
         if not manifest.version:

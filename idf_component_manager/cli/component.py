@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import click
@@ -45,6 +45,11 @@ def init_component():
             default=None,
             help='Git commit SHA of the the component version. This option overwrites the value in the idf_component.yml',
         ),
+        click.option(
+            '--repository-path',
+            default=None,
+            help='Path to the component in the repository. This option overwrites the value in the idf_component.yml',
+        ),
     ]
 
     @component.command()
@@ -56,7 +61,7 @@ def init_component():
         + COMMIT_SHA_REPO_OPTION
     )
     def pack(
-        manager, namespace, name, version, dest_dir, repository, commit_sha
+        manager, namespace, name, version, dest_dir, repository, commit_sha, repository_path
     ):  # noqa: namespace is not used
         """
         Create component archive and store it in the dist directory.
@@ -67,6 +72,7 @@ def init_component():
             dest_dir=dest_dir,
             repository=repository,
             commit_sha=commit_sha,
+            repository_path=repository_path,
         )
 
     @component.command()
@@ -120,6 +126,7 @@ def init_component():
         dest_dir,
         repository,
         commit_sha,
+        repository_path,
     ):
         """
         Upload component to the component registry.
@@ -139,6 +146,7 @@ def init_component():
             dest_dir=dest_dir,
             repository=repository,
             commit_sha=commit_sha,
+            repository_path=repository_path,
         )
 
     @component.command()

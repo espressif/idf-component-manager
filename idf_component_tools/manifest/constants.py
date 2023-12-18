@@ -21,7 +21,7 @@ KNOWN_INFO_METADATA_FIELDS = [
     'tags',
     'examples',
     'license',
-    'commit_sha',
+    'repository_info',
 ] + LINKS
 KNOWN_BUILD_METADATA_FIELDS = ['name', 'dependencies', 'targets', 'version', 'files']
 
