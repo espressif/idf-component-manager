@@ -37,13 +37,13 @@ def init_component():
     COMMIT_SHA_REPO_OPTION = [
         click.option(
             '--repository',
-            default='',
-            help='Specify the URL of the repository where the component is located.',
+            default=None,
+            help='The URL of the component repository. This option overwrites the value in the idf_component.yml',
         ),
         click.option(
             '--commit-sha',
-            default='',
-            help='Specify the commit ID from the repository that will be used to upload the version.',
+            default=None,
+            help='Git commit SHA of the the component version. This option overwrites the value in the idf_component.yml',
         ),
     ]
 

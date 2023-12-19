@@ -144,7 +144,7 @@ def schema_builder(validate_rules=False):  # type: (bool) -> Schema
             Optional('discussion'): Regex(
                 COMPILED_URL_RE, error=LINKS_URL_ERROR.format('discussion')
             ),
-            Optional('commit_sha'): Regex(COMMIT_ID_RE, error='Commit ID is not SHA valid'),
+            Optional('commit_sha'): Regex(COMMIT_ID_RE, error='Invalid git commit SHA format'),
             # allow any other fields
             Optional(str): object,
         },
