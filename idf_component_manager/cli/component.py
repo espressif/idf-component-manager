@@ -34,19 +34,48 @@ def init_component():
         )
     ]
 
-    @component.command()
-    @add_options(
-        PROJECT_DIR_OPTION + NAMESPACE_NAME_OPTIONS + COMPONENT_VERSION_OPTION + DEST_DIR_OPTION
-    )
-    def pack(manager, namespace, name, version, dest_dir):  # noqa: namespace is not used
-        """
-        Create component archive and store it in the dist directory.
-        """
-        manager.pack_component(name=name, version=version, dest_dir=dest_dir)
+    COMMIT_SHA_REPO_OPTION = [
+        click.option(
+            '--repository',
+            default=None,
+            help='The URL of the component repository. This option overwrites the value in the idf_component.yml',
+        ),
+        click.option(
+            '--commit-sha',
+            default=None,
+            help='Git commit SHA of the the component version. This option overwrites the value in the idf_component.yml',
+        ),
+    ]
 
     @component.command()
     @add_options(
-        PROJECT_OPTIONS + NAMESPACE_NAME_OPTIONS + COMPONENT_VERSION_OPTION + DEST_DIR_OPTION
+        PROJECT_DIR_OPTION
+        + NAMESPACE_NAME_OPTIONS
+        + COMPONENT_VERSION_OPTION
+        + DEST_DIR_OPTION
+        + COMMIT_SHA_REPO_OPTION
+    )
+    def pack(
+        manager, namespace, name, version, dest_dir, repository, commit_sha
+    ):  # noqa: namespace is not used
+        """
+        Create component archive and store it in the dist directory.
+        """
+        manager.pack_component(
+            name=name,
+            version=version,
+            dest_dir=dest_dir,
+            repository=repository,
+            commit_sha=commit_sha,
+        )
+
+    @component.command()
+    @add_options(
+        PROJECT_OPTIONS
+        + NAMESPACE_NAME_OPTIONS
+        + COMPONENT_VERSION_OPTION
+        + DEST_DIR_OPTION
+        + COMMIT_SHA_REPO_OPTION
     )
     @click.option(
         '--archive',
@@ -89,6 +118,8 @@ def init_component():
         allow_existing,
         dry_run,
         dest_dir,
+        repository,
+        commit_sha,
     ):
         """
         Upload component to the component registry.
@@ -106,6 +137,8 @@ def init_component():
             allow_existing=allow_existing,
             dry_run=dry_run,
             dest_dir=dest_dir,
+            repository=repository,
+            commit_sha=commit_sha,
         )
 
     @component.command()

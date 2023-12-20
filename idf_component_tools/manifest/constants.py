@@ -15,7 +15,14 @@ IF_IDF_VERSION_REGEX = r'^(?P<keyword>idf_version) *(?P<comparison>[\^=~<>!]+)(?
 IF_TARGET_REGEX = r'^(?P<keyword>target) *(?P<comparison>!=|==|not in|in)(?P<targets>.+)$'
 
 LINKS = ['repository', 'documentation', 'issues', 'discussion', 'url']
-KNOWN_INFO_METADATA_FIELDS = ['maintainers', 'description', 'tags', 'examples', 'license'] + LINKS
+KNOWN_INFO_METADATA_FIELDS = [
+    'maintainers',
+    'description',
+    'tags',
+    'examples',
+    'license',
+    'commit_sha',
+] + LINKS
 KNOWN_BUILD_METADATA_FIELDS = ['name', 'dependencies', 'targets', 'version', 'files']
 
 DEFAULT_KNOWN_TARGETS = [

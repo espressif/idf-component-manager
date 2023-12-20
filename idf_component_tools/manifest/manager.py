@@ -40,12 +40,16 @@ class ManifestManager(object):
         check_required_fields=False,  # type: bool
         version=None,  # type: str | None
         expand_environment=False,  # type: bool
+        repository=None,  # type: str | None
+        commit_sha=None,  # type: str | None
     ):  # type: (...) -> None
         # Path of manifest file
         self._path = path
         self._path_checked = False
         self.name = name
         self.version = version
+        self.repository = repository
+        self.commit_sha = commit_sha
         self._manifest_tree = None  # type: Optional[Dict[str, Any]]
         self._normalized_manifest_tree = None  # type: Optional[Dict[str, Any]]
         self._manifest = None
@@ -64,7 +68,6 @@ class ManifestManager(object):
             validator = self._validator(
                 self.manifest_tree,
                 check_required_fields=self.check_required_fields,
-                version=self.version,
                 metadata=metadata,
             )
             self._validation_errors = validator.validate_normalize()
@@ -95,12 +98,17 @@ class ManifestManager(object):
 
         return self._path
 
+    def _overwrite_manifest_fields(self, *fields):  # type: (str) -> None
+        for field in fields:
+            value = getattr(self, field)
+            if value is not None:
+                self._manifest_tree[field] = value  # type: ignore
+
     @property
     def manifest_tree(self):
         if not self._manifest_tree:
             self._manifest_tree = self.parse_manifest_file()
-            if self.version:
-                self._manifest_tree['version'] = self.version
+            self._overwrite_manifest_fields('version', 'repository', 'commit_sha')
 
         return self._manifest_tree
 

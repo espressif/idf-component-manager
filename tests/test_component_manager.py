@@ -224,19 +224,24 @@ def test_pack_component_with_dest_dir(tmp_path, release_component_path):
     assert manifest.version == '2.3.4'
 
 
-def test_pack_component_with_version(tmp_path, release_component_path):
+def test_pack_component_with_replacing_manifest_params(tmp_path, release_component_path):
     copy_tree(release_component_path, str(tmp_path))
     component_manager = ComponentManager(path=str(tmp_path))
 
-    # remove the first version line
-    remove_version_line(tmp_path)
+    repository_url = 'https://github.com/kumekay/test_multiple_comp'
+    commit_id = '252f10c83610ebca1a059c0bae8255eba2f95be4d1d7bcfa89d7248a82d9f111'
 
-    component_manager.pack_component('cmp', '2.3.4')
+    component_manager.pack_component(
+        'cmp', '2.3.5', repository=repository_url, commit_sha=commit_id
+    )
 
     tempdir = os.path.join(tempfile.tempdir, 'cmp')
-    unpack_archive(os.path.join(component_manager.dist_path, 'cmp_2.3.4.tgz'), tempdir)
+    unpack_archive(os.path.join(component_manager.dist_path, 'cmp_2.3.5.tgz'), tempdir)
     manifest = ManifestManager(tempdir, 'cmp', check_required_fields=True).load()
-    assert manifest.version == '2.3.4'
+
+    assert manifest.version == '2.3.5'
+    assert manifest.links.repository == repository_url
+    assert manifest.commit_sha == commit_id
 
 
 def test_pack_component_with_examples(tmp_path, example_component_path):

@@ -369,8 +369,13 @@ class ComponentManager(object):
 
     @general_error_handler
     def pack_component(
-        self, name, version, dest_dir=None
-    ):  # type: (str, str, Optional[str]) -> Tuple[str, Manifest]
+        self,
+        name,
+        version,
+        dest_dir=None,
+        repository=None,
+        commit_sha=None,
+    ):  # type: (str, str, str | None, str | None, str | None) -> tuple[str, Manifest]
         dest_path = os.path.join(self.path, dest_dir) if dest_dir else self.dist_path
 
         if version == 'git':
@@ -388,7 +393,12 @@ class ComponentManager(object):
                 )
 
         manifest_manager = ManifestManager(
-            self.path, name, check_required_fields=True, version=version
+            self.path,
+            name,
+            check_required_fields=True,
+            version=version,
+            repository=repository,
+            commit_sha=commit_sha,
         )
         manifest = manifest_manager.load()
         dest_temp_dir = Path(dest_path, dist_name(manifest))
@@ -506,7 +516,9 @@ class ComponentManager(object):
         check_only=False,  # type: bool
         allow_existing=False,  # type: bool
         dry_run=False,  # type: bool
-        dest_dir=None,
+        dest_dir=None,  # type: str | None
+        repository=None,  # type: str | None
+        commit_sha=None,  # type: str | None
     ):  # type: (...) -> None
         """
         Uploads a component version to the registry.
@@ -532,7 +544,13 @@ class ComponentManager(object):
             finally:
                 shutil.rmtree(tempdir)
         else:
-            archive, manifest = self.pack_component(name=name, version=version, dest_dir=dest_dir)
+            archive, manifest = self.pack_component(
+                name=name,
+                version=version,
+                dest_dir=dest_dir,
+                repository=repository,
+                commit_sha=commit_sha,
+            )
 
         if not manifest.version:
             raise FatalError('"version" field is required when uploading the component')

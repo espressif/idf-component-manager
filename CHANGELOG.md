@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a user-friendly message to handle a 413 HTTP error triggered by sending large component archive.
 - Add esp32c5 target
 - Add URL and status code to network error messages
+- Added --repository and --commit-sha parameters for packing and uploading component
 
 ### Fixed
 

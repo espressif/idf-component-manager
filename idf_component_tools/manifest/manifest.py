@@ -67,6 +67,7 @@ class Manifest(object):
         links=None,  # type: ComponentLinks | None # Links of the component
         examples=None,  # type: list[dict[str, str]] | None # List of paths to the examples
         license_name=None,  # type: str | None # License of the component
+        commit_sha=None,  # type: str | None
         # manifest manager who generate this manifest
         manifest_manager=None,  # type: ManifestManager | None
     ):
@@ -101,6 +102,7 @@ class Manifest(object):
         self.links = links
         self.examples = examples
         self.license = license_name
+        self.commit_sha = commit_sha
 
         self._manifest_manager = manifest_manager
 
@@ -122,6 +124,7 @@ class Manifest(object):
             exclude_files=manifest_tree.get('files', {}).get('exclude'),
             examples=manifest_tree.get('examples', []),
             license_name=manifest_tree.get('license'),
+            commit_sha=manifest_tree.get('commit_sha'),
             manifest_manager=manifest_manager,
         )
 

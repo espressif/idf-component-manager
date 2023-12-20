@@ -12,6 +12,7 @@ from ..constants import COMPILED_GIT_URL_RE, COMPILED_URL_RE
 from ..errors import InternalError
 from ..semver import SimpleSpec, Version
 from .constants import (
+    COMMIT_ID_RE,
     FULL_SLUG_REGEX,
     KNOWN_BUILD_METADATA_FIELDS,
     KNOWN_INFO_METADATA_FIELDS,
@@ -143,6 +144,7 @@ def schema_builder(validate_rules=False):  # type: (bool) -> Schema
             Optional('discussion'): Regex(
                 COMPILED_URL_RE, error=LINKS_URL_ERROR.format('discussion')
             ),
+            Optional('commit_sha'): Regex(COMMIT_ID_RE, error='Invalid git commit SHA format'),
             # allow any other fields
             Optional(str): object,
         },

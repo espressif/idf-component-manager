@@ -102,13 +102,15 @@ def test_invalid_manifest(manifest, errors):
         assert error in produced_errors
 
 
-def test_validator_passed_version(valid_manifest):
-    errors = ManifestValidator(valid_manifest, version='5.0.0').validate_normalize()
+def test_validator_commit_sha_and_repo(valid_manifest):
+    valid_manifest[
+        'commit_sha'
+    ] = '252f10c83610ebca1a059c0bae8255eba2f95be4d1d7bcfa89d7248a82d9f111'
+    del valid_manifest['repository']
+
+    errors = ManifestValidator(valid_manifest, check_required_fields=True).validate_normalize()
     assert len(errors) == 1
-    assert (
-        'Manifest version (2.3.1~2) does not match the version specified '
-        'in the command line (5.0.0).' in errors[0]
-    )
+    assert 'The `repository` field is required in the `idf_component.yml` file when' in errors[0]
 
 
 @pytest.mark.parametrize(
