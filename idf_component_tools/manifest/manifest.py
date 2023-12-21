@@ -8,11 +8,13 @@ from functools import total_ordering
 
 import idf_component_tools as tools
 from idf_component_tools.build_system_tools import build_name, get_env_idf_target
+from idf_component_tools.errors import ManifestError
 from idf_component_tools.hash_tools.calculate import hash_object
+from idf_component_tools.manifest.env_expander import contains_env_variables
 from idf_component_tools.messages import notice
+from idf_component_tools.semver import Version
 from idf_component_tools.serialization import serializable
 
-from ..semver import Version
 from .constants import COMMIT_ID_RE, LINKS
 from .if_parser import OptionalDependency
 
@@ -145,7 +147,17 @@ class Manifest(object):
                 require=details.get('require', None),
             )
             # Optional dependencies, only if manifest_manager not present or environment is expanded
-            if not manifest_manager or manifest_manager.expand_environment:
+            if not manifest_manager or (manifest_manager and manifest_manager.process_opt_deps):
+                if (
+                    manifest_manager
+                    and not manifest_manager.expand_environment
+                    and contains_env_variables(details)
+                ):
+                    # This error is considered as programmer error, not user error
+                    raise ManifestError(
+                        'Environment variables are not allowed in '
+                        'rules/matches block of this manifest.'
+                    )
                 component.optional_requirement = OptionalRequirement.fromdict(details)
 
             manifest._dependencies.append(component)

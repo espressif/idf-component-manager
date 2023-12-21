@@ -678,7 +678,10 @@ class ComponentManager(object):
                 ProjectRequirements(
                     [
                         ManifestManager(
-                            self.root_managed_components_dir, 'root', expand_environment=True
+                            self.root_managed_components_dir,
+                            'root',
+                            expand_environment=True,
+                            process_opt_deps=True,
                         ).load()
                     ]
                 ),
@@ -718,7 +721,10 @@ class ComponentManager(object):
             for component in local_components:
                 manifests.append(
                     ManifestManager(
-                        component['path'], component['name'], expand_environment=True
+                        component['path'],
+                        component['name'],
+                        expand_environment=True,
+                        process_opt_deps=True,
                     ).load()
                 )
 
@@ -802,7 +808,9 @@ class ComponentManager(object):
         for component in components_with_manifests:
             component = component.strip()
             name = os.path.basename(component)
-            manifest = ManifestManager(component, name, expand_environment=True).load()
+            manifest = ManifestManager(
+                component, name, expand_environment=True, process_opt_deps=True
+            ).load()
             name_key = ComponentName('idf', name)
 
             for dependency in manifest.dependencies:

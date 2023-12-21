@@ -5,7 +5,6 @@ import re
 
 from schema import Schema, SchemaError
 
-import idf_component_tools as tools
 from idf_component_tools.utils import lru_cache
 
 from ..errors import MetadataError, MetadataKeyError, SourceError
@@ -74,6 +73,11 @@ class ManifestValidator(object):
                     self.manifest_tree.pop(manifest_root_key)
 
     def validate_normalize_dependencies(self):  # type: () -> None
+        """Check dependencies section of the manifest"""
+
+        # TODO: remove this import and avoid circular dependency somehow
+        from idf_component_tools.sources import BaseSource
+
         def _check_name(name):  # type: (str) -> None
             if not self.SLUG_REGEX_COMPILED.match(name):
                 self.add_error(
@@ -111,7 +115,7 @@ class ManifestValidator(object):
 
             if isinstance(details, dict):
                 try:
-                    sources = tools.sources.BaseSource.fromdict(component, details)  # type: ignore
+                    sources = BaseSource.fromdict(component, details)  # type: ignore
 
                     for source in sources:
                         if not source.validate_version_spec(str(details.get('version', ''))):
