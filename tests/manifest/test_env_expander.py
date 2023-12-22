@@ -5,6 +5,7 @@ import pytest
 
 from idf_component_tools.errors import ManifestError
 from idf_component_tools.manifest.env_expander import (
+    contains_env_variables,
     expand_env_vars,
     process_nested_strings,
     subst_vars_in_str,
@@ -102,3 +103,17 @@ def test_process_nested_strings(inp, exp_order, exp):
 
     assert exp == process_nested_strings(inp, acc)
     assert order == exp_order
+
+
+@pytest.mark.parametrize(
+    'obj,expected',
+    [
+        ({'a': 1, 'b': '2', 'c': [3, 4]}, False),
+        ({'a': '$VAR', 'b': '2', 'c': [3, '$VAR']}, True),
+        ({'a': {'b': '$VAR'}, 'c': ['$VAR', {'d': '$VAR'}]}, True),
+        ({}, False),
+        ('$VAR', True),
+    ],
+)
+def test_contains_env_variables(obj, expected):
+    assert contains_env_variables(obj) == expected

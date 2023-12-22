@@ -45,6 +45,25 @@ def expand_env_vars(
     return process_nested_strings(obj, expand_env_in_str)
 
 
+class EnvFoundException(Exception):
+    pass
+
+
+def _raise_on_env(s):  # type: (str) -> None
+    try:
+        Template(s).substitute({})
+    except (KeyError, ValueError) as e:
+        raise EnvFoundException
+
+
+def contains_env_variables(obj):  # type: (dict[str, Any] | list | str | Any) -> bool
+    try:
+        process_nested_strings(obj, _raise_on_env)
+        return False
+    except EnvFoundException:
+        return True
+
+
 def process_nested_strings(
     obj,  # type: dict[str, Any] | list | str | Any
     func,  # type: Callable[[str], Any]
@@ -66,13 +85,13 @@ def process_nested_strings(
     return obj
 
 
-def dump_yaml(d, path):  # type: (dict[str, Any], str) -> None
-    def _unescape_dollar_sign(s):
+def dump_escaped_yaml(d, path):  # type: (dict[str, Any], str) -> None
+    def _escape_dollar_sign(s):
         return s.replace('$', '$$')
 
     with open(path, 'w', encoding='utf-8') as fw:
         yaml.dump(
-            process_nested_strings(d, _unescape_dollar_sign),
+            process_nested_strings(d, _escape_dollar_sign),
             fw,
             allow_unicode=True,
             Dumper=yaml.SafeDumper,

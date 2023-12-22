@@ -10,7 +10,7 @@ import yaml
 from ..constants import UPDATE_SUGGESTION
 from ..errors import ManifestError, MetadataError
 from .constants import MANIFEST_FILENAME
-from .env_expander import dump_yaml, expand_env_vars
+from .env_expander import dump_escaped_yaml, expand_env_vars
 from .manifest import Manifest
 from .metadata import Metadata
 from .validator import ExpandedManifestValidator, ManifestValidator
@@ -23,15 +23,13 @@ except ImportError:
 EMPTY_MANIFEST = dict()  # type: Dict[str, Any]
 
 
-def dump_tree(path, manifest_tree):  # type: (str, dict) -> None
-    if os.path.isdir(path):
-        path = os.path.join(path, MANIFEST_FILENAME)
-
-    dump_yaml(manifest_tree, path)
-
-
 class ManifestManager(object):
-    """Parser for manifest files in the project"""
+    """
+    Parser for manifest files in the project.
+
+    If expand_environment is True, the manifest file will be parsed with environment variables expanded.
+    In this case, the dumped manifest file will contain the replaced values.
+    """
 
     def __init__(
         self,
@@ -40,6 +38,7 @@ class ManifestManager(object):
         check_required_fields=False,  # type: bool
         version=None,  # type: str | None
         expand_environment=False,  # type: bool
+        process_opt_deps=False,  # type: bool
         repository=None,  # type: str | None
         commit_sha=None,  # type: str | None
     ):  # type: (...) -> None
@@ -57,6 +56,7 @@ class ManifestManager(object):
         self._validation_errors = []  # type: List[str]
         self.check_required_fields = check_required_fields
         self.expand_environment = expand_environment
+        self.process_opt_deps = process_opt_deps
         self._validator = ExpandedManifestValidator if expand_environment else ManifestValidator
 
     def validate(self):
@@ -180,4 +180,16 @@ class ManifestManager(object):
         if path is None:
             path = self.path
 
-        dump_tree(path, self.manifest_tree)
+        if os.path.isdir(path):
+            path = os.path.join(path, MANIFEST_FILENAME)
+
+        if self.expand_environment:
+            dump_escaped_yaml(self.manifest_tree, path)
+        else:
+            with open(path, 'w', encoding='utf-8') as fw:
+                yaml.dump(
+                    self.manifest_tree,
+                    fw,
+                    allow_unicode=True,
+                    Dumper=yaml.SafeDumper,
+                )
