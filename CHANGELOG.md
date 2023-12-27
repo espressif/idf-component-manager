@@ -17,6 +17,7 @@ This changelog is managed with commitizen tool, don't update it manually.
 - Add esp32c5 target
 - Add URL and status code to network error messages
 - Added --repository and --commit-sha parameters for packing and uploading component
+- Added aliases for '--default_namespace' as '--default-namespace' and '--registry_url' as '--registry-url'. The previous versions have been marked as deprecated.
 
 ### Fixed
 

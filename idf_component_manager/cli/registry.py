@@ -40,13 +40,19 @@ def init_registry():
     )
     @click.option(
         '--default-namespace',
-        '--default_namespace',
         help='Default namespace to use for the components',
     )
     @click.option(
+        '--default_namespace',
+        help="This argument has been deprecated by 'default-namespace'",
+        hidden=True,
+    )
+    @click.option(
         '--registry-url',
-        '--registry_url',
         help='URL of the registry to use',
+    )
+    @click.option(
+        '--registry_url', help="This argument has been deprecated by 'registry-url'", hidden=True
     )
     def login(service_profile, no_browser, description, default_namespace, registry_url):
         """
