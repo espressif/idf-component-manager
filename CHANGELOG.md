@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add esp32c5 target
 - Add URL and status code to network error messages
 - Added --repository and --commit-sha parameters for packing and uploading component
+- Embed root certificates for the component registry
+- Add environment variable to disable TLS verification
 
 ### Fixed
 

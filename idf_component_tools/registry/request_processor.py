@@ -6,6 +6,7 @@ import requests
 from requests import Response
 from schema import Schema, SchemaError
 
+from idf_component_tools.environment import getenv_bool
 from idf_component_tools.registry.api_schemas import ERROR_SCHEMA
 
 from .api_client_errors import (
@@ -16,7 +17,22 @@ from .api_client_errors import (
     StorageFileNotFound,
 )
 
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse  # type: ignore
+
 DEFAULT_TIMEOUT = (6.05, 30.1)  # Connect timeout  # Read timeout
+
+KNOWN_ROOT_CA_FILES = {
+    # Production
+    'components.espressif.com': 'isrgrootx1.pem',  # TODO: replace with digicert_root_g2
+    'components-file.espressif.com': 'DigiCertGlobalRootG2.crt.pem',
+    'components-file.espressif.cn': 'DigiCertGlobalRootCA.crt.pem',
+    # Staging
+    'components-staging.espressif.com': 'DigiCertGlobalRootG2.crt.pem',
+    'd30mc2df6nu4o1.cloudfront.net': 'AmazonRootCA1.pem',
+}
 
 
 def join_url(*args):  # type: (*str) -> str
@@ -38,6 +54,23 @@ def get_timeout():  # type: () -> float | tuple[float, float]
         return DEFAULT_TIMEOUT
 
 
+def verify_ssl(
+    endpoint, ca_mapping=KNOWN_ROOT_CA_FILES
+):  # type: (str, dict[str, str]) -> bool | str
+    """Returns either True, False or a path to a CA bundle file"""
+
+    if not getenv_bool('IDF_COMPONENT_VERIFY_SSL', default=True):
+        return False
+
+    hostname = urlparse(endpoint).hostname
+    if hostname in ca_mapping:
+        return os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'certs', ca_mapping[hostname]
+        )
+
+    return True
+
+
 def make_request(
     method,  # type: str
     session,  # type: requests.Session
@@ -56,6 +89,7 @@ def make_request(
             headers=headers,
             timeout=timeout,
             allow_redirects=True,
+            verify=verify_ssl(endpoint),
         )
     except requests.exceptions.ConnectionError as e:
         raise NetworkConnectionError(str(e), endpoint=endpoint)
