@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import webbrowser
@@ -14,7 +14,7 @@ from idf_component_tools.errors import FatalError
 from idf_component_tools.registry.api_client_errors import APIClientError
 
 from .constants import get_service_profile_option
-from .utils import add_options
+from .utils import add_options, deprecated_option
 
 
 def init_registry():
@@ -46,13 +46,19 @@ def init_registry():
         '--default_namespace',
         help="This argument has been deprecated by 'default-namespace'",
         hidden=True,
+        callback=deprecated_option,
+        expose_value=False,
     )
     @click.option(
         '--registry-url',
         help='URL of the registry to use',
     )
     @click.option(
-        '--registry_url', help="This argument has been deprecated by 'registry-url'", hidden=True
+        '--registry_url',
+        help="This argument has been deprecated by 'registry-url'",
+        hidden=True,
+        callback=deprecated_option,
+        expose_value=False,
     )
     def login(service_profile, no_browser, description, default_namespace, registry_url):
         """
