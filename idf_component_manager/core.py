@@ -17,7 +17,7 @@ from pathlib import Path
 
 import requests
 
-from idf_component_manager.utils import ComponentType, print_info, print_warn
+from idf_component_manager.utils import ComponentSource, print_info, print_warn
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name, is_component
 from idf_component_tools.config import root_managed_components_dir
@@ -854,7 +854,7 @@ class ComponentManager(object):
                     main_reqs.append(name)
 
         if self.interface_version >= 3:
-            new_requirements = self._override_requirements_by_component_types(requirements)
+            new_requirements = self._override_requirements_by_component_sources(requirements)
         else:
             new_requirements = requirements
             # we still use this function to check name collisions before 5.2
@@ -869,7 +869,7 @@ class ComponentManager(object):
         requirements_manager.dump(new_requirements)
 
     @staticmethod
-    def _override_requirements_by_component_types(
+    def _override_requirements_by_component_sources(
         requirements,  # type: OrderedDict[ComponentName, dict[str, list[str] | str]]
     ):  # type: (...) -> OrderedDict[ComponentName, dict[str, list[str] | str]]
         # group the requirements, the overriding sequence here is:
@@ -882,13 +882,13 @@ class ComponentManager(object):
         project_components = OrderedDict()
         project_extra_components = OrderedDict()
         for comp_name, props in requirements.items():
-            if props['__COMPONENT_TYPE'] == ComponentType.IDF_COMPONENTS:
+            if props['__COMPONENT_SOURCE'] == ComponentSource.IDF_COMPONENTS:
                 idf_components[comp_name] = props
-            elif props['__COMPONENT_TYPE'] == ComponentType.PROJECT_MANAGED_COMPONENTS:
+            elif props['__COMPONENT_SOURCE'] == ComponentSource.PROJECT_MANAGED_COMPONENTS:
                 project_managed_components[comp_name] = props
-            elif props['__COMPONENT_TYPE'] == ComponentType.PROJECT_COMPONENTS:
+            elif props['__COMPONENT_SOURCE'] == ComponentSource.PROJECT_COMPONENTS:
                 project_components[comp_name] = props
-            elif props['__COMPONENT_TYPE'] == ComponentType.PROJECT_EXTRA_COMPONENTS:
+            elif props['__COMPONENT_SOURCE'] == ComponentSource.PROJECT_EXTRA_COMPONENTS:
                 project_extra_components[comp_name] = props
             else:
                 raise InternalError
@@ -923,8 +923,8 @@ class ComponentManager(object):
                 # we raise name collision error when same name components
                 # are introduced at the same level of the component type
                 elif (
-                    new_requirements[name_matched_before]['__COMPONENT_TYPE']
-                    == props['__COMPONENT_TYPE']
+                    new_requirements[name_matched_before]['__COMPONENT_SOURCE']
+                    == props['__COMPONENT_SOURCE']
                 ):
                     raise RequirementsProcessingError(
                         'Cannot process component requirements. '
@@ -932,7 +932,7 @@ class ComponentManager(object):
                         "Can't decide which one to pick.".format(
                             name_matched_before.name,
                             comp_name.name,
-                            props['__COMPONENT_TYPE'],
+                            props['__COMPONENT_SOURCE'],
                         )
                     )
                 # Give user a info when same name components got overriden
@@ -941,8 +941,8 @@ class ComponentManager(object):
                         '{} overrides {} since {} type got higher priority than {}'.format(
                             name_matched_before.name,
                             comp_name.name,
-                            new_requirements[name_matched_before]['__COMPONENT_TYPE'],
-                            props['__COMPONENT_TYPE'],
+                            new_requirements[name_matched_before]['__COMPONENT_SOURCE'],
+                            props['__COMPONENT_SOURCE'],
                         )
                     )
 

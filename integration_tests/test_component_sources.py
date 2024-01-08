@@ -14,7 +14,7 @@ from integration_tests.integration_test_helpers import project_action
     Version(get_idf_version()) < Version('5.3.0'), reason='only test it in master branch'
 )
 @pytest.mark.xfail(reason='not supported yet in ESP-IDF')
-class TestComponentTypes:
+class TestComponentSources:
     @pytest.mark.parametrize(
         'project',
         [
@@ -92,7 +92,7 @@ class TestComponentTypes:
         ],
         indirect=True,
     )
-    def test_component_override_fail_with_same_component_type(self, project):
+    def test_component_override_fail_with_same_component_source(self, project):
         res = project_action(project, 'reconfigure')
 
         # since the dependency introduced order is not fixed
