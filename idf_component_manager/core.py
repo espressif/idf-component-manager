@@ -872,31 +872,37 @@ class ComponentManager(object):
     def _override_requirements_by_component_sources(
         requirements,  # type: OrderedDict[ComponentName, dict[str, list[str] | str]]
     ):  # type: (...) -> OrderedDict[ComponentName, dict[str, list[str] | str]]
-        # group the requirements, the overriding sequence here is:
-        # - idf_components
-        # - project_managed_components
-        # - project_components
-        # - project_extra_components
+        """
+        group the requirements, the overriding sequence here is: (the latter, the higher priority)
+        - idf_components (IDF_PATH/components)
+        - idf_managed_components (IDF_TOOLS_DIR/root_managed_components/idf5.3/managed_components)
+        - project_managed_components (project_managed_components)
+        - project_extra_components (project_extra_components)
+        - project_components (PROJECT_DIR/components)
+
+        idf_managed_components is injected together with `project_managed_components`
+        in the `prepare_dep_dirs` step
+        """
         idf_components = OrderedDict()
         project_managed_components = OrderedDict()
-        project_components = OrderedDict()
         project_extra_components = OrderedDict()
+        project_components = OrderedDict()
         for comp_name, props in requirements.items():
             if props['__COMPONENT_SOURCE'] == ComponentSource.IDF_COMPONENTS:
                 idf_components[comp_name] = props
             elif props['__COMPONENT_SOURCE'] == ComponentSource.PROJECT_MANAGED_COMPONENTS:
                 project_managed_components[comp_name] = props
-            elif props['__COMPONENT_SOURCE'] == ComponentSource.PROJECT_COMPONENTS:
-                project_components[comp_name] = props
             elif props['__COMPONENT_SOURCE'] == ComponentSource.PROJECT_EXTRA_COMPONENTS:
                 project_extra_components[comp_name] = props
+            elif props['__COMPONENT_SOURCE'] == ComponentSource.PROJECT_COMPONENTS:
+                project_components[comp_name] = props
             else:
                 raise InternalError
 
         # overriding the sequence
-        new_requirements = project_extra_components
+        new_requirements = project_components
         for component_group in [
-            project_components,
+            project_extra_components,
             project_managed_components,
             idf_components,
         ]:

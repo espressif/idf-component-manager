@@ -52,12 +52,12 @@ class TestComponentSource(object):
         assert (
             ComponentSource.IDF_COMPONENTS
             < ComponentSource.PROJECT_MANAGED_COMPONENTS
-            < ComponentSource.PROJECT_COMPONENTS
             < ComponentSource.PROJECT_EXTRA_COMPONENTS
+            < ComponentSource.PROJECT_COMPONENTS
         )
         assert (
-            ComponentSource.PROJECT_EXTRA_COMPONENTS
-            > ComponentSource.PROJECT_COMPONENTS
+            ComponentSource.PROJECT_COMPONENTS
+            > ComponentSource.PROJECT_EXTRA_COMPONENTS
             > ComponentSource.PROJECT_MANAGED_COMPONENTS
             > ComponentSource.IDF_COMPONENTS
         )
