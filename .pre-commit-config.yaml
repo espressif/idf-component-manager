@@ -74,14 +74,7 @@ repos:
     hooks:
       - id: deptry
 
-  - repo: local
-    hooks:
-      - id: update-pyprojecttoml-version
-        name: Check versions in pyproject.toml and idf_component_tools/__version__.py to match
-        entry: ./hooks/check_versions.sh
-        language: script
-
-  - repo: https://github.com/espressif/conventional-precommit-linter #<----(and add this hook)
+  - repo: https://github.com/espressif/conventional-precommit-linter
     rev: v1.2.1
     hooks:
       - id: conventional-precommit-linter

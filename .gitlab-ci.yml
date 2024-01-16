@@ -18,16 +18,6 @@ workflow:
     - lint
     - internet
 
-check_changelog:
-  extends: .check
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-  script:
-    - |
-      (git diff-tree --name-only --no-commit-id "origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}" "${CI_COMMIT_SHA}" | grep "CHANGELOG.md") || \
-        [[ "${CI_MERGE_REQUEST_LABELS}" =~ ^(.*,)*no_changelog(,.*)*$ ]] || \
-        (echo "Please either update CHANGELOG.md file or add 'no_changelog' label" && exit 1)
-
 check_manifest_format_changes:
   extends: .check
   rules:
