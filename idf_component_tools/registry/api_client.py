@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Classes to work with Espressif Component Web Service"""
 import os
@@ -10,7 +10,6 @@ from ssl import SSLEOFError
 
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 from schema import Schema
-from tqdm import tqdm
 
 from ..manifest import ComponentWithVersions
 from .api_client_errors import APIClientError, ContentTooLargeError, NoRegistrySet
@@ -114,21 +113,12 @@ class APIClient(BaseClient):
     def token_information(self, request):  # type: (Callable) -> dict
         return request('get', ['tokens', 'current'], schema=API_TOKEN_SCHEMA)
 
-    def _upload_version_to_endpoint(self, request, file_path, endpoint):
+    def _upload_version_to_endpoint(self, request, file_path, endpoint, callback=None):
         with open(file_path, 'rb') as file:
             filename = os.path.basename(file_path)
 
             encoder = MultipartEncoder({'file': (filename, file, 'application/octet-stream')})
             headers = {'Content-Type': encoder.content_type}
-
-            progress_bar = tqdm(total=encoder.len, unit_scale=True, unit='B', disable=None)
-
-            def callback(
-                monitor, memo={'progress': 0}
-            ):  # type: (MultipartEncoderMonitor, dict) -> None
-                progress_bar.update(monitor.bytes_read - memo['progress'])
-                memo['progress'] = monitor.bytes_read
-
             data = MultipartEncoderMonitor(encoder, callback)
 
             try:
@@ -146,8 +136,6 @@ class APIClient(BaseClient):
                     'excluding unnecessary files from your component. If you think your component '
                     'should be uploaded as it is, please contact components@espressif.com'
                 )
-            finally:
-                progress_bar.close()
 
     @_request(cache=False)
     def versions(
@@ -160,14 +148,16 @@ class APIClient(BaseClient):
 
     @auth_required
     @_request(cache=False)
-    def upload_version(self, request, component_name, file_path):
+    def upload_version(self, request, component_name, file_path, callback=None):
         return self._upload_version_to_endpoint(
-            request, file_path, ['components', component_name.lower(), 'versions']
+            request, file_path, ['components', component_name.lower(), 'versions'], callback
         )
 
     @_request(cache=False)
-    def validate_version(self, request, file_path):
-        return self._upload_version_to_endpoint(request, file_path, ['components', 'validate'])
+    def validate_version(self, request, file_path, callback=None):
+        return self._upload_version_to_endpoint(
+            request, file_path, ['components', 'validate'], callback
+        )
 
     @auth_required
     @_request(cache=False)

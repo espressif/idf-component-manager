@@ -16,6 +16,7 @@ from io import open
 from pathlib import Path
 
 import requests
+from requests_toolbelt import MultipartEncoderMonitor
 
 from idf_component_manager.utils import ComponentType, print_info, print_warn
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
@@ -585,10 +586,24 @@ class ComponentManager(object):
         info_message = 'Uploading' if not dry_run else 'Validating'
         print_info('{} archive {}'.format(info_message, archive))
 
-        if dry_run:
-            job_id = client.validate_version(file_path=archive)
-        else:
-            job_id = client.upload_version(component_name=component_name, file_path=archive)
+        file_stat = os.stat(archive)  # type: ignore
+        with ProgressBar(
+            total=file_stat.st_size, unit='B', unit_scale=True, leave=False
+        ) as progress_bar:
+            memo = {'progress': 0}
+
+            def callback(monitor):  # type: (MultipartEncoderMonitor) -> None
+                progress_bar.update(monitor.bytes_read - memo['progress'])
+                memo['progress'] = monitor.bytes_read
+
+            if dry_run:
+                job_id = client.validate_version(file_path=archive, callback=callback)
+            else:
+                job_id = client.upload_version(
+                    component_name=component_name, file_path=archive, callback=callback
+                )
+
+            progress_bar.close()
 
         # Wait for processing
         profile_text = (
