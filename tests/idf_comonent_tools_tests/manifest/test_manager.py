@@ -1,6 +1,7 @@
-# SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
+from collections import OrderedDict
 
 import pytest
 import yaml
@@ -113,3 +114,44 @@ def test_validate_env_not_expanded(valid_manifest, tmp_path):
 
     # Check that file is not modified
     assert (test_dump_path / 'idf_component.yml').read_text() == yaml.dump(valid_manifest)
+
+
+@pytest.mark.parametrize(
+    ['manifest', 'overwrite', 'values', 'result'],
+    [
+        ({'version': '1.0.2'}, {'version': ['version']}, ('1.0.5',), {'version': '1.0.5'}),
+        (
+            {},
+            OrderedDict([('version', ['version']), ('test', ['new', 'field', 'into', 'another'])]),
+            ('1.0.0', 'new_value'),
+            {'version': '1.0.0', 'new': {'field': {'into': {'another': 'new_value'}}}},
+        ),
+        (
+            {
+                'repository_info': {
+                    'commit_sha': '1121cfccd5913f0a63fec40a6ffd44ea64f9dc135c66634ba001d10bcf4302a2'
+                }
+            },
+            {'commit_sha': ['repository_info', 'commit_sha']},
+            ('ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d',),
+            {
+                'repository_info': {
+                    'commit_sha': 'ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d'
+                }
+            },
+        ),
+    ],
+)
+def test_overwrite_manifest_fields(manifest, overwrite, values, result, tmp_path):
+    manifest_path = os.path.join(str(tmp_path), 'idf_component.yml')
+    with open(manifest_path, 'w') as fw:
+        yaml.dump(manifest, fw)
+
+    manager = ManifestManager(manifest_path, name='test')
+    manager.load()
+
+    for change, value in zip(overwrite.keys(), values):
+        setattr(manager, change, value)
+
+    manager._overwrite_manifest_fields(overwrite)
+    assert manager._manifest_tree == result

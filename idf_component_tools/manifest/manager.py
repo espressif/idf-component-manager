@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import copy
@@ -41,6 +41,7 @@ class ManifestManager(object):
         process_opt_deps=False,  # type: bool
         repository=None,  # type: str | None
         commit_sha=None,  # type: str | None
+        repository_path=None,  # type: str | None
     ):  # type: (...) -> None
         # Path of manifest file
         self._path = path
@@ -49,6 +50,7 @@ class ManifestManager(object):
         self.version = version
         self.repository = repository
         self.commit_sha = commit_sha
+        self.repository_path = repository_path
         self._manifest_tree = None  # type: Optional[Dict[str, Any]]
         self._normalized_manifest_tree = None  # type: Optional[Dict[str, Any]]
         self._manifest = None
@@ -98,17 +100,32 @@ class ManifestManager(object):
 
         return self._path
 
-    def _overwrite_manifest_fields(self, *fields):  # type: (str) -> None
-        for field in fields:
-            value = getattr(self, field)
+    def _overwrite_manifest_fields(self, manifest_fields_path):  # type: (dict) -> None
+        if self._manifest_tree is None:
+            return
+
+        for property_name, field_path in manifest_fields_path.items():
+            field_name = field_path[-1]
+            value = getattr(self, property_name)
+
             if value is not None:
-                self._manifest_tree[field] = value  # type: ignore
+                subtree = self._manifest_tree  # type: dict[str, Any]
+                for field in field_path[:-1]:
+                    subtree = subtree.setdefault(field, {})
+                subtree[field_name] = value
 
     @property
     def manifest_tree(self):
         if not self._manifest_tree:
             self._manifest_tree = self.parse_manifest_file()
-            self._overwrite_manifest_fields('version', 'repository', 'commit_sha')
+            self._overwrite_manifest_fields(
+                {
+                    'version': ['version'],
+                    'repository': ['repository'],
+                    'commit_sha': ['repository_info', 'commit_sha'],
+                    'repository_path': ['repository_info', 'path'],
+                }
+            )
 
         return self._manifest_tree
 

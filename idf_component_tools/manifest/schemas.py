@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import re
@@ -96,6 +96,15 @@ def dependency_schema_builder(rule_schema_builder):  # type: (t.Callable) -> Or
     )
 
 
+def repository_info_schema_builder():
+    return Schema(
+        {
+            Optional('commit_sha'): Regex(COMMIT_ID_RE, error='Invalid git commit SHA format'),
+            Optional('path'): _nonempty_string('repository_path'),
+        }
+    )
+
+
 def schema_builder(validate_rules=False):  # type: (bool) -> Schema
     if validate_rules:
         rule_builder = expanded_optional_dependency_schema_builder
@@ -103,6 +112,7 @@ def schema_builder(validate_rules=False):  # type: (bool) -> Schema
         rule_builder = optional_dependency_schema_builder
 
     dependency_schema = dependency_schema_builder(rule_builder)
+    repository_info_schema = repository_info_schema_builder()
 
     return Schema(
         {
@@ -144,7 +154,7 @@ def schema_builder(validate_rules=False):  # type: (bool) -> Schema
             Optional('discussion'): Regex(
                 COMPILED_URL_RE, error=LINKS_URL_ERROR.format('discussion')
             ),
-            Optional('commit_sha'): Regex(COMMIT_ID_RE, error='Invalid git commit SHA format'),
+            Optional('repository_info'): repository_info_schema,
             # allow any other fields
             Optional(str): object,
         },

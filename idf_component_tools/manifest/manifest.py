@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Classes to work with manifest file"""
 import json
@@ -51,6 +51,8 @@ class Manifest(object):
         'version',
         'links',
         'license',
+        {'name': 'commit_sha', 'default': None, 'serialize_default': False},
+        {'name': 'repository_path', 'default': None, 'serialize_default': False},
     ]
 
     def __init__(
@@ -70,6 +72,7 @@ class Manifest(object):
         examples=None,  # type: list[dict[str, str]] | None # List of paths to the examples
         license_name=None,  # type: str | None # License of the component
         commit_sha=None,  # type: str | None
+        repository_path=None,  # type: str | None
         # manifest manager who generate this manifest
         manifest_manager=None,  # type: ManifestManager | None
     ):
@@ -105,6 +108,7 @@ class Manifest(object):
         self.examples = examples
         self.license = license_name
         self.commit_sha = commit_sha
+        self.repository_path = repository_path
 
         self._manifest_manager = manifest_manager
 
@@ -126,7 +130,8 @@ class Manifest(object):
             exclude_files=manifest_tree.get('files', {}).get('exclude'),
             examples=manifest_tree.get('examples', []),
             license_name=manifest_tree.get('license'),
-            commit_sha=manifest_tree.get('commit_sha'),
+            commit_sha=manifest_tree.get('repository_info', {}).get('commit_sha'),
+            repository_path=manifest_tree.get('repository_info', {}).get('path'),
             manifest_manager=manifest_manager,
         )
 
