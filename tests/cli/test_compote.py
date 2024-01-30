@@ -1,11 +1,9 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import json
 import os
-import shutil
 import subprocess
 from copy import deepcopy
-from pathlib import Path
 
 import jsonschema
 import pytest
@@ -19,8 +17,7 @@ from idf_component_tools.__version__ import __version__
 from idf_component_tools.config import Config, ConfigManager
 from idf_component_tools.file_cache import FileCache
 from idf_component_tools.file_tools import directory_size
-from idf_component_tools.manifest import MANIFEST_FILENAME, ComponentRequirement, ManifestManager
-from idf_component_tools.sources import WebServiceSource
+from idf_component_tools.manifest import MANIFEST_FILENAME, ManifestManager
 
 
 @pytest.fixture(autouse=True)
