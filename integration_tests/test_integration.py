@@ -1,6 +1,6 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-
+import json
 import logging
 import os
 import shutil
@@ -9,10 +9,13 @@ from io import open
 from pathlib import Path
 
 import pytest
+import yaml
 
+from idf_component_tools.build_system_tools import get_idf_version
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import ManifestManager
 from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS
+from idf_component_tools.semver import Version
 
 from .integration_test_helpers import (
     build_project,
@@ -366,3 +369,64 @@ def test_update_dependencies_without_lock(project, monkeypatch):
 def test_idf_reconfigure_dependency_doesnt_exist(project):
     res = project_action(project, 'reconfigure')
     assert 'Component "example/boobobobob" not found' in res
+
+
+@pytest.mark.parametrize(
+    'project',
+    [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'example/cmp': {
+                            'version': '*',
+                        },
+                    }
+                }
+            }
+        },
+    ],
+    indirect=True,
+)
+@pytest.mark.parametrize(
+    'component_name',
+    [
+        'example__cmp',  # work with long name
+        'cmp',  # also short name
+    ],
+)
+@pytest.mark.skipif(
+    Version(get_idf_version()) < Version('5.3.0'), reason='only master branch support it'
+)
+@pytest.mark.xfail(reason='not supported yet in ESP-IDF')
+def test_idf_build_inject_dependencies_even_with_set_components(project, component_name):
+    project_cmake_filepath = os.path.join(project, 'CMakeLists.txt')
+    with open(project_cmake_filepath) as fr:
+        s = fr.read()
+
+    with open(project_cmake_filepath, 'w') as fw:
+        fw.write(s.replace('project(main)', 'set(COMPONENTS main)\nproject(main)'))
+
+    res = project_action(project, 'reconfigure')
+    assert 'Generating done' in res
+
+    os.makedirs(os.path.join(project, 'components'))
+    shutil.copytree(
+        os.path.join(project, 'managed_components', 'example__cmp'),
+        os.path.join(project, 'components', component_name),
+    )
+
+    project_action(project, 'fullclean')  # clean the downloaded component
+
+    res = project_action(project, 'reconfigure')
+    print(res)
+    with open(os.path.join(project, 'dependencies.lock')) as fr:
+        lock = yaml.safe_load(fr)
+    assert component_name in lock['dependencies']
+    assert lock['dependencies'][component_name]['source']['path'] == os.path.join(
+        project, 'components', component_name
+    )
+    assert lock['dependencies'][component_name]['source']['type'] == 'local'
+
+    # didn't download the component
+    assert not os.path.isdir(os.path.join(project, 'managed_components'))

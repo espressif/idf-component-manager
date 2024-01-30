@@ -318,11 +318,26 @@ class ComponentRequirement(object):
 
     @property
     def name(self):
+        """
+        Full name of the component with the namespace.
+
+        For components from the registry, it contains the namespace, like <namespace>/<name>
+        """
         return self.source.normalized_name(self._name)
 
     @property
     def build_name(self):
+        """
+        Name of the component with the namespace, but escaped the `/`.
+
+        Usually used for build system, where `/` is not allowed.
+        """
         return build_name(self.name)
+
+    @property
+    def short_name(self):
+        """Name of the component without the namespace"""
+        return self.name.rsplit('/', 1)[-1]
 
     @property
     def version_spec(self):
