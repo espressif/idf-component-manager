@@ -1,8 +1,13 @@
-# SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 from pytest import mark, raises
 
-from idf_component_tools.environment import detect_ci, getenv_bool, getenv_int
+from idf_component_tools.environment import (
+    detect_ci,
+    getenv_bool,
+    getenv_bool_or_string,
+    getenv_int,
+)
 
 
 @mark.parametrize(
@@ -73,3 +78,35 @@ def test_detect_ci(monkeypatch):
     # Test when running in an unknown CI environment
     monkeypatch.setenv('CI', '1')
     assert detect_ci() == 'unknown'
+
+
+@mark.parametrize(
+    ('name', 'env', 'expected'),
+    [
+        ('TEST_ENV_VAR', 'True', True),
+        ('TEST_ENV_VAR', 'False', False),
+        ('TEST_ENV_VAR', 'yes', True),
+        ('TEST_ENV_VAR', 'no', False),
+        ('TEST_ENV_VAR', '1', True),
+        ('TEST_ENV_VAR', '0', False),
+        ('TEST_ENV_VAR', 't', True),
+        ('TEST_ENV_VAR', 'f', False),
+        ('TEST_ENV_VAR', 'y', True),
+        ('TEST_ENV_VAR', 'n', False),
+        ('TEST_ENV_VAR', 'true', True),
+        ('TEST_ENV_VAR', 'false', False),
+        ('TEST_ENV_VAR', 'yes', True),
+        ('TEST_ENV_VAR', 'no', False),
+        ('TEST_ENV_VAR', 'other', 'other'),
+    ],
+)
+def test_getenv_bool_or_string(name, env, expected, monkeypatch):
+    monkeypatch.setenv('TEST_ENV_VAR', str(env))
+    assert getenv_bool_or_string(name) == expected
+
+
+def test_getenv_bool_or_string_unset(monkeypatch):
+    monkeypatch.delenv('TEST_ENV_VAR', raising=False)
+    assert getenv_bool_or_string('TEST_ENV_VAR', False) == False
+    assert getenv_bool_or_string('TEST_ENV_VAR', True) == True
+    assert getenv_bool_or_string('TEST_ENV_VAR', 'default') == 'default'
