@@ -31,7 +31,7 @@ test:
     - build_wheel
   before_script:
     - ls ./dist/*.whl | xargs pip install
-    - pip install pytest pytest-cov pytest-mock requests-mock vcrpy "jsonschema==2.5.1;python_version=='3.4'" "jsonschema;python_version!='3.4'"
+    - pip install "pytest<8" pytest-cov pytest-mock requests-mock vcrpy "jsonschema==2.5.1;python_version=='3.4'" "jsonschema;python_version!='3.4'"
   script:
     - pytest --cov=. --cov-report=xml
   artifacts:

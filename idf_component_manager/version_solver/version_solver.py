@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -197,21 +197,29 @@ class VersionSolver(object):
         for dep in dependencies:
             # replace version dependencies to local one if exists
             # use build_name in both recording and replacing
+            matching_dep_name = None
             if dep.build_name in self._local_root_requirements:
-                print_info(
-                    'Using component placed at {} for dependency {}{}{}'.format(
-                        # must be a local source here
-                        self._local_root_requirements[dep.build_name].source._path,  # type: ignore
-                        dep,
-                        '(introduced by component {})'.format(component_name)
-                        if component_name
-                        else '',
-                        ', specified in {}'.format(manifest_path) if manifest_path else '',
-                    )
-                )
-                deps.append(self._local_root_requirements[dep.build_name])
-            else:
+                matching_dep_name = dep.build_name
+            elif dep.short_name in self._local_root_requirements:
+                matching_dep_name = dep.short_name
+
+            if not matching_dep_name:
                 deps.append(dep)
+                continue
+
+            print_info(
+                'Using component placed at {path} '
+                'for dependency {dep}{introduced_by}{specified_in}'.format(
+                    # must be a local source here
+                    path=self._local_root_requirements[matching_dep_name].source._path,  # type: ignore
+                    dep=dep,
+                    introduced_by='(introduced by component {})'.format(component_name)
+                    if component_name
+                    else '',
+                    specified_in=', specified in {}'.format(manifest_path) if manifest_path else '',
+                )
+            )
+            deps.append(self._local_root_requirements[matching_dep_name])
 
         return deps
 
