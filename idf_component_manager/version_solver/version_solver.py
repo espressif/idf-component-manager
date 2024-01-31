@@ -207,11 +207,15 @@ class VersionSolver(object):
                 deps.append(dep)
                 continue
 
+            component_path = self._local_root_requirements[
+                matching_dep_name
+            ].source._path  # type: ignore
+
             print_info(
                 'Using component placed at {path} '
                 'for dependency {dep}{introduced_by}{specified_in}'.format(
                     # must be a local source here
-                    path=self._local_root_requirements[matching_dep_name].source._path,  # type: ignore
+                    path=component_path,
                     dep=dep,
                     introduced_by='(introduced by component {})'.format(component_name)
                     if component_name
