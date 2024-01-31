@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Filter yanked versions while getting the list of versions for a component
+- Limit "requests-file" version to <2 to avoid incompatibility with older python versions
 
 ## [1.4.1] - 2023-10-02
 
