@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import sys
@@ -138,13 +138,18 @@ class TestAPIClient(object):
             storage_url, '5390a837-5bc7-4564-b747-3adb22ad55f8.tgz'
         )
 
-    def test_no_registry_url_error(self, monkeypatch):
+    def test_no_registry_url_error(self, monkeypatch, tmp_path):
         monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'http://localhost:9000/test-public')
 
         registry_url, _ = component_registry_url()
         client = APIClient(base_url=registry_url, auth_token='test')
+
+        file_path = str(tmp_path / 'cmp.tgz')
+        with open(file_path, 'w+') as f:
+            f.write('a')
+
         with pytest.raises(NoRegistrySet):
-            client.upload_version(component_name='example/cmp')
+            client.upload_version(component_name='example/cmp', file_path=file_path)
 
     def test_env_var_for_upload_empty(self, monkeypatch):
         monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', '')
