@@ -69,7 +69,7 @@ dependencies:
     override_path: "../../" # use component in a local directory, not from registry
   namespace/no_required_component:
     version: "*"
-    require: no # Download component but don't add it as a requirement
+    require: "no" # Download component but don't add it as a requirement
   namespace/pre_release_component:
     version: "*"
     pre_release: true # Allow downloading of pre-release versions
