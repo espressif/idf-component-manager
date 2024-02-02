@@ -1,8 +1,7 @@
-# SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import platform
-from functools import wraps
 
 import requests
 from cachecontrol import CacheControlAdapter
@@ -10,7 +9,6 @@ from cachecontrol.caches import FileCache
 from cachecontrol.heuristics import ExpiresAfter
 from requests.adapters import HTTPAdapter
 from requests_file import FileAdapter
-from schema import SchemaError
 
 import idf_component_tools as tools
 from idf_component_tools.__version__ import __version__
@@ -24,7 +22,7 @@ from .api_schemas import COMPONENT_SCHEMA
 from .token_auth import TokenAuth
 
 try:
-    from typing import Any, Callable, Optional
+    from typing import Callable
 except ImportError:
     pass
 
@@ -139,13 +137,15 @@ class BaseClient(object):
         body = request('get', ['components', component_name.lower()], schema=COMPONENT_SCHEMA)
 
         versions = []
-        for version in body['versions']:
+        filtered_versions = filter_versions(body['versions'], spec, component_name)
+
+        for version in filtered_versions:
             if not semantic_spec.match(Version(version['version'])):
                 continue
 
             all_build_keys_known = True
             if version.get('build_metadata_keys', None) is not None:
-                for build_key in version.get('build_metadata_keys'):
+                for build_key in version['build_metadata_keys']:
                     if build_key not in BUILD_METADATA_KEYS:
                         all_build_keys_known = False
                         break
@@ -166,3 +166,39 @@ class BaseClient(object):
                 for version, all_build_keys_known in versions
             ],
         )
+
+
+def filter_versions(
+    versions, spec, component_name
+):  # type: (list[dict], str | None, str) -> list[dict]
+    if spec and spec != '*':
+        requested_version = SimpleSpec(str(spec))
+        filtered_versions = [v for v in versions if requested_version.match(Version(v['version']))]
+
+        if not filtered_versions or not any([bool(v.get('yanked_at')) for v in filtered_versions]):
+            return filtered_versions
+
+        clause = requested_version.clause.simplify()
+        # Some clauses don't have an operator attribute, need to check
+        if (
+            hasattr(clause, 'operator')
+            and clause.operator == '=='
+            and filtered_versions[0]['yanked_at']
+        ):
+            warn(
+                'The version "{}" of the "{}" component you have selected has '
+                'been yanked from the repository due to the following reason: "{}". '
+                'We recommend that you update to a different version. '
+                'Please note that continuing to use a yanked version can '
+                'result in unexpected behavior and issues with your project.'.format(
+                    clause.target,
+                    component_name.lower(),
+                    filtered_versions[0]['yanked_message'],
+                )
+            )
+        else:
+            filtered_versions = [v for v in filtered_versions if not v.get('yanked_at')]
+    else:
+        filtered_versions = [v for v in versions if not v.get('yanked_at')]
+
+    return filtered_versions
