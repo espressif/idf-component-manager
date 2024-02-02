@@ -17,6 +17,7 @@ from idf_component_tools.registry.base_client import env_cache_time, user_agent
 from idf_component_tools.registry.multi_storage_client import MultiStorageClient
 from idf_component_tools.registry.request_processor import join_url
 from idf_component_tools.registry.storage_client import StorageClient
+from idf_component_tools.semver import Version
 
 
 @pytest.fixture
@@ -178,7 +179,7 @@ class TestAPIClient(object):
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
     @pytest.mark.parametrize(
-        'version',
+        'spec',
         [
             '>1.0.0',
             '^1.0.0',
@@ -187,11 +188,28 @@ class TestAPIClient(object):
             None,
         ],
     )
-    def test_filter_yanked_version(self, storage_url, version):
+    def test_filter_yanked_version_for_component(self, storage_url, spec):
         client = StorageClient(storage_url=storage_url)
-        result = client.component(component_name='example/cmp_yanked', version=version)
+        result = client.component(component_name='example/cmp_yanked', version=spec)
 
         assert result.version == '1.0.1'
+
+    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
+    @pytest.mark.parametrize(
+        'spec',
+        [
+            '>1.0.0',
+            '^1.0.0',
+            '1.*.*',
+            '*',
+            None,
+        ],
+    )
+    def test_filter_yanked_version_for_component_versions(self, storage_url, spec):
+        client = StorageClient(storage_url=storage_url)
+
+        result = client.versions(component_name='example/cmp_yanked', spec=spec)
+        assert result.versions[0].semver == Version('1.0.1')
 
     def test_token_information(self, base_url, mock_registry, mock_token_information):
         client = APIClient(base_url=base_url, auth_token='test')
