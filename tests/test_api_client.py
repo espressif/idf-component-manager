@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import sys
@@ -11,6 +11,7 @@ from idf_component_tools.api_client import APIClient, env_cache_time, join_url, 
 from idf_component_tools.api_client_errors import NoRegistrySet
 from idf_component_tools.config import component_registry_url
 from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL
+from idf_component_tools.semver import Version
 
 
 @pytest.fixture
@@ -154,7 +155,7 @@ class TestAPIClient(object):
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
     @pytest.mark.parametrize(
-        'version',
+        'spec',
         [
             '>1.0.0',
             '^1.0.0',
@@ -163,11 +164,28 @@ class TestAPIClient(object):
             None,
         ],
     )
-    def test_filter_yanked_version(self, base_url, version):
+    def test_filter_yanked_version_for_component(self, base_url, spec):
         client = APIClient(base_url=base_url)
-        result = client.component(component_name='example/cmp_yanked', version=version)
+        result = client.component(component_name='example/cmp_yanked', version=spec)
 
         assert result.version == '1.0.1'
+
+    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
+    @pytest.mark.parametrize(
+        'spec',
+        [
+            '>1.0.0',
+            '^1.0.0',
+            '1.*.*',
+            '*',
+            None,
+        ],
+    )
+    def test_filter_yanked_version_for_component_versions(self, base_url, spec):
+        client = APIClient(base_url=base_url)
+
+        result = client.versions(component_name='example/cmp_yanked', spec=spec)
+        assert result.versions[0].semver == Version('1.0.1')
 
     def test_token_information(self, base_url, mock_registry, mock_token_information):
         client = APIClient(base_url=base_url, auth_token='test')

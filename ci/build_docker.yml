@@ -27,7 +27,7 @@ build:
     - /kaniko/executor
       --dockerfile "ci/Dockerfile"
       --destination "${IMAGE_TAG}"
-      --build-arg IDF_FILE_API_URL=https://${GITLAB_HTTPS_SERVER}/api/v4/projects/${IDF_PROJ_ID}/repository/files
+      --build-arg IDF_GIT_URL=${GITLAB_HTTPS_SERVER}/espressif/esp-idf.git
       --build-arg API_TOKEN="${IDF_API_TOKEN}"
       --build-arg PYTHON_IMAGE_TAG="${PYTHON_IMAGE_TAG}"
       --build-arg IDF_BRANCH="${UNESCAPED_IDF_BRANCH}"

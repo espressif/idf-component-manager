@@ -421,8 +421,10 @@ class APIClient(object):
         semantic_spec = SimpleSpec(spec or '*')
         body = _component_request(request, component_name)
 
+        filtered_versions = filter_versions(body['versions'], spec, component_name)
+
         versions = []
-        for version in body['versions']:
+        for version in filtered_versions:
             if not semantic_spec.match(Version(version['version'])):
                 continue
 
