@@ -17,34 +17,33 @@ cachecontrol = { version = '*', extras = ["filecache"] }
 click = '*'
 colorama = '*'
 packaging = "*"
-python = ">=3.7,<4.0"
+pyparsing = '*'
+python = ">=3.8,<4.0"
 pyyaml = "*"
 requests = "*"
-urllib3 = "<2"
 requests-file = "*"
 requests-toolbelt = "*"
 schema = "*"
 six = "*"
 tqdm = '*'
-pyparsing = '*'
+urllib3 = "<2"
 
 [tool.poetry.group.docs.dependencies]
 sphinx_collapse = "==0.1.2"
+sphinx-click = "==4.4.0"
 sphinx-copybutton = "==0.5.1"
 sphinx-rtd-theme = "==1.1.1"
-sphinx-click = "==4.4.0"
 sphinx-tabs = "==3.4.0"
 
 [tool.poetry.group.dev.dependencies]
-types-requests = "^2.31.0.1"
-types-six = "^1.16.21.8"
-types-pyyaml = "^6.0.12.10"
-requests-mock = "^1.11.0"
+black = { version = "==23.7.0", python = ">=3.8,<4.0" }
 comment-parser = "*"
+commitizen = { version = "^3.13.0", python = ">=3.8,<4.0" }
 coverage = '*'
 deptry = { version = ">=0.12.0", python = ">=3.9,<4.0" }
 flake8 = '*'
 Flake8-pyproject = "*"
+flake8-pyproject = "^1.2.3"
 flake8-quotes = '*'
 jinja2 = "*"
 jsonschema = "*"
@@ -55,15 +54,17 @@ pytest = '*'
 pytest-cov = '*'
 pytest-mock = '*'
 pytest-rerunfailures = "*"
+requests-mock = "^1.11.0"
 rope = '*'
 setuptools = "*"
 thefuzz = "*"
 twine = "*"
+types-pyyaml = "^6.0.12.10"
+types-requests = "^2.31.0.1"
+types-six = "^1.16.21.8"
 unify = '*'
 vcrpy = '<5'
 wheel = "*"
-black = { version = "==23.7.0", python = ">=3.8,<4.0" }
-flake8-pyproject = "^1.2.3"
 
 [tool.poetry.scripts]
 compote = { callable = "idf_component_manager.cli:safe_cli" }
@@ -232,3 +233,12 @@ DEP002 = ["colorama", "urllib3"]
 
 [tool.deptry.package_module_name_map]
 pyyaml = ["yaml"]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "v$version"
+version_scheme = "semver"
+version_provider = "poetry"
+version_files = ["idf_component_tools/__version__.py:__version__"]
+update_changelog_on_bump = true
+bump_message = "change: bump version from v$current_version to v$new_version"
