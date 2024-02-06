@@ -25,7 +25,6 @@ from idf_component_tools.config import root_managed_components_dir
 from idf_component_tools.environment import getenv_int
 from idf_component_tools.errors import (
     FatalError,
-    GitError,
     InternalError,
     ManifestError,
     NothingToDoError,
@@ -375,18 +374,15 @@ class ComponentManager(object):
         dest_path = os.path.join(self.path, dest_dir) if dest_dir else self.dist_path
 
         if version == 'git':
-            try:
-                version = str(GitClient().get_tag_version())
-            except GitError:
-                raise FatalError('An error happened while getting version from git tag')
+            version = str(GitClient().get_tag_version(cwd=self.path))
         elif version:
             try:
                 Version.parse(version)
             except ValueError:
                 raise FatalError(
                     'Version parameter must be either "git" or a valid version. '
-                    'Documentation: https://docs.espressif.com/projects/idf-component-manager/'
-                    'en/latest/reference/versioning.html#versioning-scheme'
+                    'Documentation: https://docs.espressif.com/projects/idf-component-manager/en/'
+                    'latest/reference/versioning.html#versioning-scheme'
                 )
 
         manifest_manager = ManifestManager(
