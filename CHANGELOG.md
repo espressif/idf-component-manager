@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v1.5.0-dev1 (2024-02-06)
+
+### Feat
+
+- Add environment variable to disable TLS verification
+- add repository_info block to the manifest
+- add commitizen for changelog management
+
+### Fix
+
+- add missing commitizen config to pyproject.toml
+- filter versions when api_client getting versions
+- local components should override dependencies with same short name
+- move tqdm progress_bar from api_client.py to core.py
+- project_components priority should be higher than project_extra_components
+- rename component_type to component_source
+
 ## v1.5.0-dev0 (2023-12-31)
 
 ### Added
