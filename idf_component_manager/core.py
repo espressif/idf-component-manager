@@ -385,7 +385,8 @@ class ComponentManager(object):
             except ValueError:
                 raise FatalError(
                     'Version parameter must be either "git" or a valid version. '
-                    'Documentation: https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/versioning.html#versioning-scheme'
+                    'Documentation: https://docs.espressif.com/projects/idf-component-manager/'
+                    'en/latest/reference/versioning.html#versioning-scheme'
                 )
 
         manifest_manager = ManifestManager(
@@ -441,7 +442,7 @@ class ComponentManager(object):
             )
 
         client.delete_version(component_name=component_name, component_version=version)
-        print_info('Deleted version {} of the component {}'.format(component_name, version))
+        print_info('Deleted version {} of the component {}'.format(version, component_name))
 
     @general_error_handler
     def yank_version(
@@ -677,7 +678,7 @@ class ComponentManager(object):
         if os.path.isfile(self.lock_path):
             os.remove(self.lock_path)
 
-    ## Function executed from CMake
+    # Function executed from CMake
 
     @general_error_handler
     def prepare_dep_dirs(
