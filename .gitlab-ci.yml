@@ -110,3 +110,5 @@ include:
 
 run-danger-mr-linter:
   stage: check
+  variables:
+    ENABLE_CHECK_UPDATED_CHANGELOG: "false"

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -13,14 +13,22 @@ from .messages import warn
 from .semver import Version
 
 try:
-    from typing import Any, Callable, List, Optional, Union
+    from typing import Any, Callable, Union
 except ImportError:
     pass
 
 
-# Git error that is supposed to be handled in the code, non-fatal
 class GitCommandError(Exception):
-    pass
+    """
+    Exception class for git errors.
+
+    Git error that is supposed to be handled in the code in the code of this class,
+    not in the user code.
+    """
+
+    def __init__(self, *args, **kwargs):  # type: (Any, Any) -> None
+        self.exit_code = kwargs.get('exit_code')
+        super(GitCommandError, self).__init__(*args)
 
 
 def clean_tag_version(tag):  # type: (str) -> str
@@ -211,7 +219,25 @@ class GitClient(object):
             '.gitmodules' in self.run(['ls-tree', '--name-only', ref], cwd=bare_path).splitlines()
         )
 
-    def run(self, args, cwd=None, env=None):  # type: (List[str], str | None, dict | None) -> str
+    def run(self, args, cwd=None, env=None):
+        """
+        Executes a Git command with the given arguments.
+
+        Args:
+            args (List[str]): The list of command-line arguments for the Git command.
+            cwd (str | None):
+                The current working directory for the Git command.
+                If None, the current working directory is used.
+            env (dict | None):
+                The environment variables for the Git command.
+                If None, the current environment variables are used.
+
+        Returns:
+            str: The output of the Git command as a string.
+
+        Raises:
+            GitCommandError: If the Git command fails with a non-zero exit code.
+        """
         if cwd is None:
             cwd = os.getcwd()
         env_copy = dict(os.environ)
@@ -232,8 +258,10 @@ class GitClient(object):
                 warn(stderr.decode('utf-8'))
         else:
             raise GitCommandError(
-                "'git %s' failed with exit code %d \n%s\n%s"
-                % (' '.join(args), p.returncode, stderr.decode('utf-8'), stdout.decode('utf-8'))
+                "'git {}' failed with exit code {} \n{}\n{}".format(
+                    ' '.join(args), p.returncode, stderr.decode('utf-8'), stdout.decode('utf-8')
+                ),
+                exit_code=p.returncode,
             )
 
         return stdout.decode('utf-8')
@@ -256,7 +284,7 @@ class GitClient(object):
                 [self.git_command, '--version'], stderr=subprocess.STDOUT
             ).decode('utf-8')
         except OSError:
-            raise GitError("git command wasn't found")
+            raise GitError('"git" command was not found')
 
         ver_match = re.match(r'^git version (\d+\.\d+\.\d+)', git_version_str)
 
@@ -269,14 +297,22 @@ class GitClient(object):
             raise GitError('Cannot recognize git version')
 
     @_git_cmd
-    def get_tag_version(self):  # type: () -> Optional[Version]
+    def get_tag_version(self, cwd=None):  # type: (str | None) -> Version
+        """
+        Return a valid component version of the current commit if it is tagged,
+        otherwise a `GitError` is raised.
+        """
+
         try:
-            tag_str = self.run(['describe', '--exact-match'])
-        except GitCommandError:
-            return None
+            tag_str = self.run(['describe', '--tags', '--exact-match'], cwd=cwd)
+        except GitCommandError as e:
+            if e.exit_code == 128:
+                raise GitError('Not a tagged commit, cannot get version')
+            else:
+                raise GitError('Cannot get tag version due to git error\n{}'.format(e))
 
         try:
             semantic_version = Version(clean_tag_version(tag_str))
             return semantic_version
         except ValueError:
-            return None
+            raise GitError('Git tag does not contain a valid component version: {}'.format(tag_str))

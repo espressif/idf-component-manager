@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -11,8 +11,8 @@ from idf_component_tools.errors import GitError
 from idf_component_tools.git_client import GitClient, clean_tag_version
 
 
-@pytest.fixture(scope='session')
-def git_repository_with_two_branches(tmpdir_factory):
+@pytest.fixture()
+def git_repository(tmpdir_factory):
     temp_dir = tmpdir_factory.mktemp('git_repo')
     subprocess.check_output(['git', 'init', temp_dir.strpath])
 
@@ -27,25 +27,30 @@ def git_repository_with_two_branches(tmpdir_factory):
     subprocess.check_output(['git', 'add', '*'], cwd=temp_dir.strpath)
     subprocess.check_output(['git', 'commit', '-m', '"Init commit"'], cwd=temp_dir.strpath)
 
+    return temp_dir
+
+
+@pytest.fixture()
+def git_repository_with_two_branches(git_repository):
     main_commit_id = subprocess.check_output(
-        ['git', 'rev-parse', 'default'], cwd=temp_dir.strpath
+        ['git', 'rev-parse', 'default'], cwd=git_repository.strpath
     ).strip()
 
-    subprocess.check_output(['git', 'checkout', '-b', 'new_branch'], cwd=temp_dir.strpath)
+    subprocess.check_output(['git', 'checkout', '-b', 'new_branch'], cwd=git_repository.strpath)
 
-    f = temp_dir.mkdir('component2').join('test_file')
+    f = git_repository.mkdir('component2').join('test_file')
     f.write(u'component2')
 
-    subprocess.check_output(['git', 'add', '*'], cwd=temp_dir.strpath)
-    subprocess.check_output(['git', 'commit', '-m', '"Add new branch"'], cwd=temp_dir.strpath)
+    subprocess.check_output(['git', 'add', '*'], cwd=git_repository.strpath)
+    subprocess.check_output(['git', 'commit', '-m', '"Add new branch"'], cwd=git_repository.strpath)
 
     branch_commit_id = subprocess.check_output(
-        ['git', 'rev-parse', 'new_branch'], cwd=temp_dir.strpath
+        ['git', 'rev-parse', 'new_branch'], cwd=git_repository.strpath
     ).strip()
-    subprocess.check_output(['git', 'checkout', 'default'], cwd=temp_dir.strpath)
+    subprocess.check_output(['git', 'checkout', 'default'], cwd=git_repository.strpath)
 
     return {
-        'path': temp_dir.strpath,
+        'path': git_repository.strpath,
         'default_head': main_commit_id.decode('utf-8'),
         'new_branch_head': branch_commit_id.decode('utf-8'),
     }
@@ -142,3 +147,26 @@ def test_git_path_does_not_exist(git_repository_with_two_branches, tmpdir_factor
 )
 def test_clean_tag_version(input_str, expected_output):
     assert clean_tag_version(input_str) == expected_output
+
+
+def test_get_tag_version(git_repository):
+    client = GitClient()
+    git_repo = git_repository.strpath
+
+    # Create a lightweight tag
+    client.run(['tag', 'v1.2.3'], cwd=git_repo)
+    assert str(client.get_tag_version(cwd=git_repo)) == '1.2.3'
+
+    # Remove the tag
+    client.run(['tag', '-d', 'v1.2.3'], cwd=git_repo)
+
+    # Create an annotated tag
+    client.run(['tag', '-a', 'v1.2.4', '-m', 'Test tag'], cwd=git_repo)
+    assert str(client.get_tag_version(cwd=git_repo)) == '1.2.4'
+
+    # Remove the tag
+    client.run(['tag', '-d', 'v1.2.4'], cwd=git_repo)
+
+    # Not a tag raises an error
+    with pytest.raises(GitError, match='Not a tagged commit'):
+        client.get_tag_version(cwd=git_repo)

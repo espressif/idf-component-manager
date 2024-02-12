@@ -183,7 +183,7 @@ def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_comp
     # remove the first version line
     remove_version_line(tmp_path)
 
-    def mock_git_tag(self):
+    def mock_git_tag(self, cwd=None):
         return Version('3.0.0')
 
     monkeypatch.setattr(GitClient, 'get_tag_version', mock_git_tag)
