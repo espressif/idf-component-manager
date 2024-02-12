@@ -90,7 +90,7 @@ def test_login_with_non_existing_service_profile(
     assert 'non-existing' in config_content
 
 
-def test_login_arguments(monkeypatch, tmp_path, mock_token_information):
+def test_login_deprecated_arguments(monkeypatch, tmp_path, mock_token_information):
     monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
 
     runner = CliRunner()
@@ -104,6 +104,34 @@ def test_login_arguments(monkeypatch, tmp_path, mock_token_information):
             '--registry_url',
             'http://localhost:5000',
             '--default_namespace',
+            'testspace',
+        ],
+        input='test_token',
+        env={'IDF_TOOLS_PATH': str(tmp_path)},
+    )
+
+    config_content = open(str(tmp_path / 'idf_component_manager.yml')).read()
+
+    assert output.exit_code == 0
+    # assert that profile is created with provided namespace and registry_url
+    assert 'testspace' in config_content
+    assert 'http://localhost:5000' in config_content
+
+
+def test_login_updated_arguments(monkeypatch, tmp_path, mock_token_information):
+    monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
+
+    runner = CliRunner()
+    cli = initialize_cli()
+    output = runner.invoke(
+        cli,
+        [
+            'registry',
+            'login',
+            '--no-browser',
+            '--registry-url',
+            'http://localhost:5000',
+            '--default-namespace',
             'testspace',
         ],
         input='test_token',
