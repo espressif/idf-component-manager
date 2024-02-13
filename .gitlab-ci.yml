@@ -112,3 +112,4 @@ run-danger-mr-linter:
   stage: check
   variables:
     ENABLE_CHECK_UPDATED_CHANGELOG: "false"
+    COMMIT_MESSAGE_ALLOWED_TYPES: "change,chore,ci,docs,feat,fix,refactor,remove,revert,test"
