@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v1.5.0 (2024-02-13)
+
+### Feat
+
+- add sync command to synchronize local mirror
+- used callback to deprecate msg
+- add alias for default_namespace and registry_url
+
+### Fix
+
+- optimize import list in .py files, drop unused imports
+- fix packing and uploading of the components with lightweight tags
+- **cli**: create test for updated login flags
+- Delete log typo
+- add missing commitizen config to pyproject.toml
+
 ## v1.5.0-dev1 (2024-02-06)
 
 ### Feat
