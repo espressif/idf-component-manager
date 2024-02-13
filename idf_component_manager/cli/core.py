@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import sys
 import warnings
@@ -6,7 +6,12 @@ import warnings
 import click
 
 from idf_component_manager import version as idf_component_manager_version
-from idf_component_manager.utils import CLICK_SUPPORTS_SHOW_DEFAULT, print_error, print_info
+from idf_component_manager.utils import (
+    CLICK_SUPPORTS_SHOW_DEFAULT,
+    print_error,
+    print_info,
+    showwarning,
+)
 from idf_component_tools.errors import FatalError
 
 from .autocompletion import init_autocomplete
@@ -64,6 +69,7 @@ def safe_cli():
     CLI entrypoint with error handling.
     """
     try:
+        warnings.showwarning = showwarning
         cli = initialize_cli()
         cli()
     except UserWarning as e:

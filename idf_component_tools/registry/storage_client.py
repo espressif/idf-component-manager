@@ -15,7 +15,7 @@ from idf_component_tools.registry.api_schemas import COMPONENT_SCHEMA
 from idf_component_tools.registry.base_client import BaseClient, create_session, filter_versions
 from idf_component_tools.registry.component_details import ComponentDetailsWithStorageURL
 from idf_component_tools.registry.request_processor import base_request, join_url
-from idf_component_tools.semver import Version
+from idf_component_tools.semver import SimpleSpec, Version
 
 try:
     from typing import Any, Callable
@@ -90,23 +90,17 @@ class StorageClient(BaseClient):
             cmp_with_versions, self.storage_url
         )
 
-    @_request(cache=True)
     def component(
-        self, request, component_name, version=None
-    ):  # type: (Callable, str, str | None) -> ComponentDetailsWithStorageURL
+        self, component_name, version=None
+    ):  # type: (str, str | None) -> ComponentDetailsWithStorageURL
         """
         Manifest for given version of component, if version is None highest version is returned
         """
 
         component_name = component_name.lower()
-        try:
-            response = request(
-                'get', ['components', component_name.lower()], schema=COMPONENT_SCHEMA
-            )
-        except StorageFileNotFound:
-            raise ComponentNotFound('Component "{}" not found'.format(component_name))
+        info = self.get_component_info(component_name=component_name)
 
-        versions = response['versions']
+        versions = info['versions']
         filtered_versions = filter_versions(versions, version, component_name)
 
         if not filtered_versions:
@@ -135,9 +129,9 @@ class StorageClient(BaseClient):
             example.update({'url': join_url(self.storage_url, example['url'])})
 
         return ComponentDetailsWithStorageURL(
-            name=('%s/%s' % (response['namespace'], response['name'])),
+            name=('%s/%s' % (info['namespace'], info['name'])),
             version=tools.manifest.ComponentVersion(best_version['version']),
-            dependencies=self._version_dependencies(best_version),
+            dependencies=self.version_dependencies(best_version),
             maintainers=None,
             download_url=download_url,
             documents=documents,
@@ -146,3 +140,25 @@ class StorageClient(BaseClient):
             examples=examples,
             storage_url=self.storage_url,
         )
+
+    @_request(cache=True)
+    def get_component_info(
+        self, request, component_name, spec='*'
+    ):  # type: (Callable, str, str) -> dict
+        try:
+            response = request(
+                'get', ['components', component_name.lower()], schema=COMPONENT_SCHEMA
+            )
+        except StorageFileNotFound:
+            raise ComponentNotFound('Component "{}" not found'.format(component_name))
+
+        if spec != '*':
+            versions = []
+            for version in response['versions']:
+                if not SimpleSpec(spec).match(Version(version['version'])):
+                    continue
+                versions.append(version)
+
+            response['versions'] = versions
+
+        return response

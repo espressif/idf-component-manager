@@ -1,0 +1,49 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.4.1 (Darwin/22.1.0 arm64; python/3.11.1)
+    method: GET
+    uri: http://localhost:9000/test-public/components/unknown/component.json
+  response:
+    body:
+      string: '<?xml version="1.0" encoding="UTF-8"?>
+
+        <Error><Code>NoSuchKey</Code><Message>The specified key does not exist.</Message><Key>components/unknown/component.json</Key><BucketName>test-public</BucketName><Resource>/test-public/components/unknown/component.json</Resource><RequestId>17A06DEF66B9B9BA</RequestId><HostId>f09cbec4-9d4d-497f-a8b9-148ea7dca914</HostId></Error>'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '367'
+      Content-Security-Policy:
+      - block-all-mixed-content
+      Content-Type:
+      - application/xml
+      Date:
+      - Wed, 13 Dec 2023 15:32:14 GMT
+      No-Gzip-Compression:
+      - 'true'
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      - Accept-Encoding
+      X-Amz-Request-Id:
+      - 17A06DEF66B9B9BA
+      X-Content-Type-Options:
+      - nosniff
+      X-Xss-Protection:
+      - 1; mode=block
+    status:
+      code: 404
+      message: Not Found
+version: 1

@@ -2,10 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 import re
+from collections import namedtuple
 from pathlib import Path
 
 from tqdm import tqdm
 
+from idf_component_tools.constants import DEFAULT_NAMESPACE
 from idf_component_tools.errors import ComponentModifiedError, FatalError
 from idf_component_tools.file_tools import copy_directories, filtered_paths
 from idf_component_tools.hash_tools.constants import HASH_FILENAME
@@ -18,6 +20,11 @@ CREATE_PROJECT_FROM_EXAMPLE_NAME_REGEX = (
     r'(?P<component>{slug})'
     r'(?P<version>[<=>!^~\*].+)?:'
     r'(?P<example>[/a-zA-Z\d_\-\.\+]+)$'
+).format(slug=SLUG_BODY_REGEX)
+
+
+SYNC_REGISTRY_COMPONENT_NAME_REGEX = (
+    r'^((?P<namespace>{slug})\/)?' r'(?P<component>{slug})' r'(?P<version>[<=>!^~\*].+)?'
 ).format(slug=SLUG_BODY_REGEX)
 
 
@@ -94,6 +101,32 @@ def parse_example(example, namespace):  # type: (str, str) -> tuple[str, str, st
         )
 
     return '{}/{}'.format(namespace, component), version_spec, example_name
+
+
+ComponentInfo = namedtuple('ComponentInfo', ['component_name', 'version_spec'])
+
+
+def parse_component(component_name, namespace):  # type: (str, str) -> ComponentInfo
+    match = re.match(SYNC_REGISTRY_COMPONENT_NAME_REGEX, component_name)
+    if not match:
+        raise FatalError(
+            'Cannot parse COMPONENT argument. ' 'Please use format like: namespace/component=1.0.0'
+        )
+
+    namespace = match.group('namespace') or namespace or DEFAULT_NAMESPACE
+    component = match.group('component')
+    version_spec = match.group('version') or '*'
+
+    try:
+        SimpleSpec(version_spec)
+    except ValueError:
+        raise FatalError(
+            'Invalid version specification: "{}". Please use format like ">=1" or "*".'.format(
+                version_spec
+            )
+        )
+
+    return ComponentInfo('{}/{}'.format(namespace, component), version_spec)
 
 
 def collect_directories(dir_path):  # type: (Path) -> list[str]

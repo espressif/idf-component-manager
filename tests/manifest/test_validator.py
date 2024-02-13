@@ -5,14 +5,12 @@ import re
 import warnings
 
 import pytest
-import yaml
 
 from idf_component_manager.dependencies import detect_unused_components
 from idf_component_tools.manifest import (
     SLUG_REGEX,
     ComponentVersion,
     ExpandedManifestValidator,
-    ManifestManager,
     ManifestValidator,
 )
 from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS, known_targets

@@ -13,7 +13,8 @@ from idf_component_tools.config import ConfigManager
 from idf_component_tools.errors import FatalError
 from idf_component_tools.registry.api_client_errors import APIClientError
 
-from .constants import get_service_profile_option
+from ..core import ComponentManager
+from .constants import get_project_dir_option, get_service_profile_option
 from .utils import add_options, deprecated_option
 
 
@@ -151,5 +152,40 @@ def init_registry():
         ConfigManager().dump(config)
 
         print_info('Successfully logged out')
+
+    @registry.command()
+    @add_options(get_service_profile_option() + get_project_dir_option())
+    @click.option(
+        '--interval',
+        default=0,
+        help='Sets the frequency (in seconds) for component synchronization. '
+        'If set to 0, the program will run once and terminate.',
+    )
+    @click.option(
+        '--recursive',
+        '-R',
+        is_flag=True,
+        default=False,
+        help='Search components recursively',
+    )
+    @click.option(
+        '--component',
+        multiple=True,
+        default=[],
+        help='Specify the components you want to upload to the mirror. '
+        'Use multiple --component options for multiple components. '
+        'Format: namespace/name<version_spec>. Example: example/cmp==1.0.0',
+    )
+    @click.argument('path', required=True)
+    def sync(
+        manager, service_profile, interval, component, recursive, path
+    ):  # type: (ComponentManager, str, int, list[str], bool, str) -> None
+        manager.sync_registry(
+            service_profile,
+            path,
+            interval=interval,
+            components=component,
+            recursive=recursive,
+        )
 
     return registry
