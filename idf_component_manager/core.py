@@ -36,7 +36,7 @@ from idf_component_tools.file_tools import (
     copy_filtered_directory,
     create_directory,
 )
-from idf_component_tools.git_client import GitClient
+from idf_component_tools.git_client import GitClient, clean_tag_version
 from idf_component_tools.hash_tools.errors import (
     HashDoesNotExistError,
     HashNotEqualError,
@@ -378,12 +378,15 @@ class ComponentManager(object):
             version = str(GitClient().get_tag_version(cwd=self.path))
         elif version:
             try:
+                # In CI the version can come from a git tag, handle it with the same logic
+                version = clean_tag_version(version)
                 Version.parse(version)
             except ValueError:
                 raise FatalError(
-                    'Version parameter must be either "git" or a valid version. '
+                    'Version parameter must be either "git" or a valid version.\n'
+                    'Received: "{}"\n'
                     'Documentation: https://docs.espressif.com/projects/idf-component-manager/en/'
-                    'latest/reference/versioning.html#versioning-scheme'
+                    'latest/reference/versioning.html#versioning-scheme'.format(version)
                 )
 
         manifest_manager = ManifestManager(

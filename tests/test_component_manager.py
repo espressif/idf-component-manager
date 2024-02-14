@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 '''Test Core commands'''
 import os
@@ -206,7 +206,15 @@ def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_comp
     )
 
 
-def test_pack_component_with_dest_dir(tmp_path, release_component_path):
+@pytest.mark.parametrize(
+    'version, expected_version',
+    [
+        ('2.3.4', '2.3.4'),
+        ('2.3.4.1', '2.3.4~1'),
+        ('2.3.4~1', '2.3.4~1'),
+    ],
+)
+def test_pack_component_with_dest_dir(version, expected_version, tmp_path, release_component_path):
     copy_tree(release_component_path, str(tmp_path))
     component_manager = ComponentManager(path=str(tmp_path))
 
@@ -216,12 +224,12 @@ def test_pack_component_with_dest_dir(tmp_path, release_component_path):
     # remove the first version line
     remove_version_line(tmp_path)
 
-    component_manager.pack_component('cmp', '2.3.4', 'dest_dir')
+    component_manager.pack_component('cmp', version, 'dest_dir')
 
     tempdir = os.path.join(tempfile.tempdir, 'cmp')
-    unpack_archive(os.path.join(str(dest_path), 'cmp_2.3.4.tgz'), tempdir)
+    unpack_archive(os.path.join(str(dest_path), 'cmp_{}.tgz'.format(expected_version)), tempdir)
     manifest = ManifestManager(tempdir, 'cmp', check_required_fields=True).load()
-    assert manifest.version == '2.3.4'
+    assert manifest.version == expected_version
 
 
 def test_pack_component_with_replacing_manifest_params(tmp_path, release_component_path):
