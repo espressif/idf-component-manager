@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v1.5.1 (2024-02-14)
+
+### Fix
+
+- Handle git compatible version with revision in CLI
+
 ## v1.5.0 (2024-02-13)
 
 ### Feat
