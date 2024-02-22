@@ -230,8 +230,25 @@ def manifest_json_schema():  # type: () -> dict
     json_schema['properties']['targets']['items']['type'] = 'string'
     _anyof[1]['properties']['pre_release']['type'] = 'boolean'
     _anyof[1]['properties']['public']['type'] = 'boolean'
-    _anyof[1]['properties']['require']['type'] = 'string'
 
+    # Require field might be a boolean or enum string
+    _anyof[1]['properties']['require'] = {
+        'type': 'object',
+        'anyOf': [
+            {
+                'enum': [
+                    'public',
+                    'private',
+                    'no',
+                ],
+                'type': 'string',
+            },
+            {
+                'type': 'boolean',
+                'enum': [False],  # Require can be only public, private or no/False
+            },
+        ],
+    }
     # normalize the final json schema
     json_schema = process_json_schema(json_schema)
 
