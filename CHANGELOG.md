@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v1.5.2 (2024-02-23)
+
+### Fix
+
+- wrongly terminate the version solver when versions not been found at the first round
+- support boolean type for require field
+
 ## v1.5.1 (2024-02-14)
 
 ### Fix
