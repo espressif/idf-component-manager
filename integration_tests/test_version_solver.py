@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import shutil
@@ -474,3 +474,34 @@ def test_multiple_storage_urls(monkeypatch, project):
     assert 'Configuring done' in output
     assert 'example/cmp (3.3.3)' in output
     assert 'test/cmp2 (1.0.0) from file:///' in output
+
+
+@pytest.mark.parametrize(
+    'project',
+    [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'usb_host_ch34x_vcp': {'version': '^2'},
+                        'usb_host_cp210x_vcp': {'version': '^2'},
+                        'usb_host_ftdi_vcp': {'version': '^2'},
+                        'usb_host_vcp': {'version': '^1'},
+                    }
+                },
+            },
+        }
+    ],
+    indirect=True,
+)
+@pytest.mark.skipif(
+    (os.getenv('IDF_BRANCH', 'master') or 'master') != 'master',
+    reason='only test it in master branch',
+)
+def test_complex_version_solving(monkeypatch, project):
+    output = project_action(project, 'reconfigure')
+    assert 'version solving failed' in output
+
+    shutil.rmtree(os.path.join(project, 'build'))
+    output = project_action(project, '--preview', 'set-target', 'esp32p4', 'reconfigure')
+    assert 'Configuring done' in output

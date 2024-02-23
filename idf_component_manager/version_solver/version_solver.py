@@ -3,7 +3,7 @@
 
 import os
 
-from idf_component_tools.errors import DependencySolveError, SolverError
+from idf_component_tools.errors import DependencySolveError, FetchingError, SolverError
 from idf_component_tools.manifest import (
     ComponentRequirement,
     ComponentWithVersions,
@@ -123,7 +123,9 @@ class VersionSolver(object):
                 latest_source = source
                 if cmp_with_versions.versions:
                     break
-            except ComponentNotFound:
+            # ComponentNotFound will be raised by API client
+            # FetchingError will be raised by sources
+            except (ComponentNotFound, FetchingError):
                 pass
         return cmp_with_versions, latest_source
 
