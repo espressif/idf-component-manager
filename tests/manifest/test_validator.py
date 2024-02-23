@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import re
@@ -350,6 +350,27 @@ class TestManifestValidator(object):
 
         assert len(errors) == 1
         assert 'require' in errors[0]
+
+    def test_validate_require_field_support_boolean_string(self, valid_manifest):
+        valid_manifest['dependencies']['test']['require'] = 'public'
+        validator = ManifestValidator(valid_manifest)
+        errors = validator.validate_normalize()
+
+        assert not errors
+
+        valid_manifest['dependencies']['test']['require'] = False
+        validator = ManifestValidator(valid_manifest)
+        errors = validator.validate_normalize()
+
+        assert not errors
+
+    def test_validate_require_field_true_error(self, valid_manifest):
+        valid_manifest['dependencies']['test']['require'] = True
+        validator = ManifestValidator(valid_manifest)
+        errors = validator.validate_normalize()
+
+        assert len(errors) == 4
+        assert 'require' in errors[-1]
 
     def test_validate_links_wrong_url(self, valid_manifest):
         valid_manifest['issues'] = 'test.com/tracker'
