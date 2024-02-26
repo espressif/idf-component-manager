@@ -50,7 +50,7 @@ def config_dir():
 
 
 def root_managed_components_dir():
-    return os.path.join(config_dir(), 'root_managed_components', 'idf{}'.format(get_idf_version()))
+    return os.path.join(config_dir(), 'root_managed_components', f'idf{get_idf_version()}')
 
 
 class ConfigError(FatalError):
@@ -88,7 +88,7 @@ class Config:
             self._config = CONFIG_SCHEMA.validate(self._config)
             return self
         except SchemaError as e:
-            raise ConfigError('Config format is not valid:\n{}'.format(str(e)))
+            raise ConfigError(f'Config format is not valid:\n{e}')
 
 
 class ConfigManager:
@@ -119,9 +119,9 @@ def get_api_url(url):  # type: (str) -> str
     url = url.rstrip('/')
 
     if url.endswith('/api'):
-        return '{}/'.format(url)
+        return f'{url}/'
 
-    return '{}/api/'.format(url)
+    return f'{url}/api/'
 
 
 def replace_default_value(storage_urls):  # type: (list[str]) -> list[str]
@@ -191,7 +191,7 @@ def component_registry_url(
             storage_urls = [profile_storage_urls]
         else:
             raise ProfileNotValid(
-                '`storage_url` field should be string or list, not {}'.format(storage_urls)
+                f'`storage_url` field should be string or list, not {storage_urls}'
             )
 
     registry_url = None

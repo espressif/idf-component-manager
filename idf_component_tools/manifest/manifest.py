@@ -251,7 +251,7 @@ class OptionalRequirement:
             elif isinstance(d, dict):
                 return OptionalDependency.fromdict(d)
 
-            raise ValueError('Invalid optional dependency: {}, type {}'.format(d, type(d)))
+            raise ValueError(f'Invalid optional dependency: {d}, type {type(d)}')
 
         return cls(
             matches=[_to_optional_dependency(match) for match in d.get('matches', [])],
@@ -353,7 +353,7 @@ class ComponentRequirement:
         ):
             return True
 
-        notice('Skipping optional dependency: {}'.format(self.name))
+        notice(f'Skipping optional dependency: {self.name}')
         return False
 
     def __repr__(self):  # type: () -> str
@@ -362,7 +362,7 @@ class ComponentRequirement:
         )
 
     def __str__(self):  # type: () -> str
-        return '{}({})'.format(self.name, self.version_spec)
+        return f'{self.name}({self.version_spec})'
 
 
 @total_ordering
@@ -412,7 +412,7 @@ class ComponentVersion:
         return self._semver > other._semver
 
     def __repr__(self):
-        return 'ComponentVersion("{}")'.format(self._version_string)
+        return f'ComponentVersion("{self._version_string}")'
 
     def __str__(self):
         return self._version_string

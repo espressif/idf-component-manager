@@ -42,7 +42,7 @@ if TYPE_CHECKING:
     from ..manifest.solved_component import SolvedComponent
 
 CANONICAL_IDF_COMPONENT_REGISTRY_API_URL = 'https://api.components.espressif.com/'
-IDF_COMPONENT_REGISTRY_API_URL = '{}api/'.format(IDF_COMPONENT_REGISTRY_URL)
+IDF_COMPONENT_REGISTRY_API_URL = f'{IDF_COMPONENT_REGISTRY_URL}api/'
 
 
 def download_archive(
@@ -61,7 +61,7 @@ def download_archive(
                 extension = None
 
             if r.status_code != 200:
-                raise FetchingError('Server returned HTTP code {}'.format(r.status_code))
+                raise FetchingError(f'Server returned HTTP code {r.status_code}')
 
             # If didn't find anything useful, trying content disposition
             content_disposition = r.headers.get('content-disposition')
@@ -74,9 +74,9 @@ def download_archive(
 
             filename = original_filename
             if not save_original_filename:
-                filename = 'component.%s' % extension
+                filename = f'component.{extension}'
 
-            tmp_file_path = os.path.join(download_dir, '%s.tmp' % filename)
+            tmp_file_path = os.path.join(download_dir, f'{filename}.tmp')
 
             with open(tmp_file_path, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=65536):
@@ -223,7 +223,7 @@ class WebServiceSource(BaseSource):
 
         cmp_with_versions.versions = versions
         if not versions:
-            current_target = '"{}"'.format(target) if target else ''
+            current_target = f'"{target}"' if target else ''
 
             if pre_release_versions:
                 hint(
@@ -278,7 +278,7 @@ class WebServiceSource(BaseSource):
             raise FetchingError('Component hash is required for componets from web service')
 
         if not component.version:
-            raise FetchingError('Version should be provided for %s' % component.name)
+            raise FetchingError(f'Version should be provided for {component.name}')
 
         if self.up_to_date(component, download_path):
             return download_path

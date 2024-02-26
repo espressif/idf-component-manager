@@ -109,7 +109,7 @@ def main():
 
     for step in inject_step_data:
         inject_step = subparsers.add_parser(
-            step['name'], help='Inject requirements to CMake%s' % step.get('extra_help', '')
+            step['name'], help=f"Inject requirements to CMake{step.get('extra_help', '')}"
         )
         inject_step.set_defaults(func=inject_requirements)
         inject_step.add_argument(

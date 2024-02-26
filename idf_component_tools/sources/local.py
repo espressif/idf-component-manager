@@ -113,9 +113,7 @@ class LocalSource(BaseSource):
             and component_with_namespace != directory_name
         ):
             alternative_name = (
-                ' or "{}"'.format(component_with_namespace)
-                if len(namespace_and_component) == 2
-                else ''
+                f' or "{component_with_namespace}"' if len(namespace_and_component) == 2 else ''
             )
             warn(
                 'Component name "{component_name}" doesn\'t match the '
@@ -126,10 +124,7 @@ class LocalSource(BaseSource):
                 + 'ESP-IDF CMake build system uses directory names as names '
                 + 'of components, so different names may break '
                 + 'requirements resolution. To avoid the problem rename the component directory to '
-                + '"{component_without_namespace}"{alternative_name}'.format(
-                    component_without_namespace=component_without_namespace,
-                    alternative_name=alternative_name,
-                )
+                + f'"{component_without_namespace}"{alternative_name}'
             )
         return str(self._path)
 

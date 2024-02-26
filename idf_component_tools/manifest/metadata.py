@@ -47,9 +47,7 @@ def _flatten_manifest_file_keys(manifest_tree, stack=None, level=1):
         elif isinstance(manifest_tree, type(None)):
             pass
         else:
-            raise MetadataError(
-                'Unknown key type {} for key {}'.format(type(manifest_tree), manifest_tree)
-            )
+            raise MetadataError(f'Unknown key type {type(manifest_tree)} for key {manifest_tree}')
 
     return res
 
@@ -109,7 +107,7 @@ class Metadata:
             if 'type:' in part:
                 types.append(part)
             elif part == '*':  # any str could be the key
-                key = '{}:*'.format(parts[i - 1])
+                key = f'{parts[i - 1]}:*'
                 break
             else:
                 key = part
@@ -117,7 +115,7 @@ class Metadata:
 
         if not key:
             raise ValueError(
-                'manifest key is not found in metadata key: "{}"'.format(metadata_key)
+                f'manifest key is not found in metadata key: "{metadata_key}"'
             ).with_traceback(None)
 
         return key, ' of '.join([_t.split('type:')[-1] for _t in types[::-1]])

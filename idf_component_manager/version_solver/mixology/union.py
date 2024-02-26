@@ -221,9 +221,9 @@ class Union:
 
     def __str__(self):
         if self.excludes_single_version():
-            return '!={}'.format(Range().difference(self))
+            return f'!={Range().difference(self)}'
 
         return ' || '.join([str(r) for r in self._ranges])
 
     def __repr__(self):
-        return '<Union {}>'.format(str(self))
+        return f'<Union {self}>'

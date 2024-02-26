@@ -51,7 +51,7 @@ class FileCache:
             os.makedirs(self._path)
         except OSError as e:
             if e.errno != errno.EEXIST:
-                raise FatalError('Failed to create cache directory: {}'.format(self._path))
+                raise FatalError(f'Failed to create cache directory: {self._path}')
 
         return self._path
 

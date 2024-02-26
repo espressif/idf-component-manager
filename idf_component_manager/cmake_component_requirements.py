@@ -59,7 +59,7 @@ def parse_requirements_line(line):  # type: (str) -> ComponentProperty
     match = REQ_RE.match(line)
 
     if not match:
-        raise RequirementsProcessingError('Cannot parse CMake requirements line: %s' % line)
+        raise RequirementsProcessingError(f'Cannot parse CMake requirements line: {line}')
 
     return ComponentProperty(
         ComponentName(match.group('prefix'), match.group('name')),

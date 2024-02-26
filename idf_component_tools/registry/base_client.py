@@ -76,15 +76,13 @@ def user_agent():  # type: () -> str
     """
 
     environment_info = [
-        '{os}/{release} {arch}'.format(
-            os=platform.system(), release=platform.release(), arch=platform.machine()
-        ),
-        'python/{version}'.format(version=platform.python_version()),
+        f'{platform.system()}/{platform.release()} {platform.machine()}',
+        f'python/{platform.python_version()}',
     ]
 
     ci_name = detect_ci()
     if ci_name:
-        environment_info.append('ci/{}'.format(ci_name))
+        environment_info.append(f'ci/{ci_name}')
 
     user_agent = 'idf-component-manager/{version} ({env})'.format(
         version=__version__,
@@ -113,7 +111,7 @@ class BaseClient:
 
             dependencies.append(
                 tools.manifest.ComponentRequirement(
-                    name='{}/{}'.format(dependency['namespace'], dependency['name']),
+                    name=f"{dependency['namespace']}/{dependency['name']}",
                     version_spec=dependency['spec'],
                     sources=sources,
                     public=is_public,

@@ -55,7 +55,7 @@ class BaseSource:
         return self.name, self.hash_key
 
     def cache_path(self):  # type: () -> str
-        path = os.path.join(self.system_cache_path, '{}_{}'.format(self.NAME, self.hash_key[:8]))
+        path = os.path.join(self.system_cache_path, f'{self.NAME}_{self.hash_key[:8]}')
         return path
 
     def __eq__(self, other):  # type: (object) -> bool
@@ -68,7 +68,7 @@ class BaseSource:
         return hash(self._hash_values())
 
     def __repr__(self):  # type: () -> str
-        return '{}({})'.format(type(self).__name__, self.hash_key)
+        return f'{type(self).__name__}({self.hash_key})'
 
     @staticmethod
     def fromdict(
@@ -86,7 +86,7 @@ class BaseSource:
             else:
                 continue
 
-        raise SourceError('Unknown source for component: %s' % name)
+        raise SourceError(f'Unknown source for component: {name}')
 
     @staticmethod
     def create_sources_if_valid(

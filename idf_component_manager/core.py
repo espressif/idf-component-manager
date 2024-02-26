@@ -295,7 +295,7 @@ class ComponentManager:
             name, spec = match.groups()
         else:
             raise FatalError(
-                'Invalid dependency: "{}". Please use format "namespace/name".'.format(dependency)
+                f'Invalid dependency: "{dependency}". Please use format "namespace/name".'
             )
 
         if not spec:
@@ -338,7 +338,7 @@ class ComponentManager:
             file_lines.append('\ndependencies:\n')
             index = len(file_lines) + 1
 
-        file_lines.insert(index, '  {}: "{}"\n'.format(name, spec))
+        file_lines.insert(index, f'  {name}: "{spec}\"\n')
 
         # Check result for correctness
         with tempfile.NamedTemporaryFile(delete=False) as temp_manifest_file:
@@ -407,7 +407,7 @@ class ComponentManager:
         check_unexpected_component_files(str(dest_temp_dir))
 
         archive_filepath = os.path.join(dest_path, archive_filename(manifest))
-        print_info('Saving archive to "{}"'.format(archive_filepath))
+        print_info(f'Saving archive to "{archive_filepath}"')
         pack_archive(str(dest_temp_dir), archive_filepath)
         return archive_filepath, manifest
 
@@ -435,7 +435,7 @@ class ComponentManager:
             )
 
         client.delete_version(component_name=component_name, component_version=version)
-        print_info('Deleted version {} of the component {}'.format(version, component_name))
+        print_info(f'Deleted version {version} of the component {component_name}')
 
     @general_error_handler
     def yank_version(
@@ -522,7 +522,7 @@ class ComponentManager:
 
         if archive:
             if not os.path.isfile(archive):
-                raise FatalError('Cannot find archive to upload: {}'.format(archive))
+                raise FatalError(f'Cannot find archive to upload: {archive}')
 
             if version:
                 raise FatalError(
@@ -552,7 +552,7 @@ class ComponentManager:
             raise FatalError('Only components with semantic versions are allowed on the service')
 
         if manifest.version.semver.prerelease and skip_pre_release:
-            raise NothingToDoError('Skipping pre-release version {}'.format(manifest.version))
+            raise NothingToDoError(f'Skipping pre-release version {manifest.version}')
 
         component_name = '/'.join([namespace, manifest.name])
         # Checking if current version already uploaded
@@ -578,7 +578,7 @@ class ComponentManager:
 
         # Uploading/validating the component
         info_message = 'Uploading' if not dry_run else 'Validating'
-        print_info('{} archive {}'.format(info_message, archive))
+        print_info(f'{info_message} archive {archive}')
 
         file_stat = os.stat(archive)  # type: ignore
         with ProgressBar(
@@ -603,7 +603,7 @@ class ComponentManager:
         profile_text = (
             ''
             if service_profile is None or service_profile == 'default'
-            else ' --service-profile={}'.format(service_profile)
+            else f' --service-profile={service_profile}'
         )
         print_info(
             'Wait for processing, it is safe to press CTRL+C and exit\n'
@@ -651,9 +651,8 @@ class ComponentManager:
                     time.sleep(CHECK_INTERVAL)
         except TimeoutError:
             raise FatalError(
-                "Component wasn't processed in {} seconds. Check processing status later.".format(
-                    get_processing_timeout()
-                )
+                f"Component wasn't processed in {get_processing_timeout()} seconds. "
+                'Check processing status later.'
             )
 
     @general_error_handler
@@ -663,9 +662,9 @@ class ComponentManager:
         client, _ = get_api_client(None, service_profile)
         status = client.task_status(job_id=job_id)
         if status.status == 'failure':
-            raise FatalError("Uploaded version wasn't processed successfully.\n%s" % status.message)
+            raise FatalError(f"Uploaded version wasn't processed successfully.\n{status.message}")
         else:
-            print_info('Status: {}. {}'.format(status.status, status.message))
+            print_info(f'Status: {status.status}. {status.message}')
 
     def update_dependencies(self, **kwargs):
         if os.path.isfile(self.lock_path):
@@ -842,7 +841,7 @@ class ComponentManager:
 
                 add_req(requirement_key)
 
-                managed_requirement_key = 'MANAGED_{}'.format(requirement_key)
+                managed_requirement_key = f'MANAGED_{requirement_key}'
                 add_req(managed_requirement_key)
 
                 # In interface v0, component_requires_file contains also common requirements

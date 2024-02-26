@@ -113,7 +113,7 @@ def handle_4xx_error(response):  # type: (requests.Response) -> None
         messages = json['messages']
     except SchemaError as e:
         raise APIClientError(
-            'API Endpoint returned unexpected error description:\n{}'.format(str(e)),
+            f'API Endpoint returned unexpected error description:\n{e}',
             endpoint=response.url,
             status_code=response.status_code,
         )
@@ -145,7 +145,7 @@ def validate_response(
             schema.validate(response_json)
     except SchemaError as e:
         raise APIClientError(
-            'API Endpoint returned unexpected JSON:\n{}'.format(str(e)),
+            f'API Endpoint returned unexpected JSON:\n{e}',
             endpoint=endpoint,
         )
     except (ValueError, KeyError, IndexError):

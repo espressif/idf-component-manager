@@ -61,11 +61,7 @@ class ManifestValidator:
                 _k, _type = Metadata.get_closest_manifest_key_and_type(key)
                 hint(MetadataKeyWarning(_k, _type))
                 if manifest_root_key in self.manifest_tree:
-                    hint(
-                        MetadataWarning(
-                            'Dropping key "{}" from manifest.'.format(manifest_root_key)
-                        )
-                    )
+                    hint(MetadataWarning(f'Dropping key "{manifest_root_key}" from manifest.'))
                     self.manifest_tree.pop(manifest_root_key)
 
     def validate_normalize_dependencies(self):  # type: () -> None
@@ -83,7 +79,7 @@ class ManifestValidator:
 
             if '__' in name:
                 self.add_error(
-                    'Component\'s name "%s" should not contain two consecutive underscores.' % name
+                    f'Component\'s name "{name}" should not contain two consecutive underscores.'
                 )
 
         if (
@@ -115,9 +111,7 @@ class ManifestValidator:
 
                     for source in sources:
                         if not source.validate_version_spec(str(details.get('version', ''))):
-                            self.add_error(
-                                'Version specifications for "%s" are invalid.' % component
-                            )
+                            self.add_error(f'Version specifications for "{component}" are invalid.')
 
                         # check the version defined in optional requirements as well
                         optional_dependencies = details.get('rules', []) + details.get(
@@ -139,9 +133,7 @@ class ManifestValidator:
                         self.add_error('Don\'t use "public" and "require" fields at the same time.')
                 except SourceError as unknown_keys_error:
                     self.add_error(
-                        str(unknown_keys_error).replace(
-                            'dependency', 'dependency "{}"'.format(component)
-                        )
+                        str(unknown_keys_error).replace('dependency', f'dependency "{component}"')
                     )
             else:
                 self.add_error(
@@ -198,7 +190,7 @@ class ManifestValidator:
         files = self.manifest_tree.get('files', {})
         for key in files:
             if key not in KNOWN_FILES_KEYS:
-                self.add_error('"files" section contains unknown key: %s' % key)
+                self.add_error(f'"files" section contains unknown key: {key}')
 
     def validate_normalize_schema(self):
         try:
@@ -214,7 +206,7 @@ class ManifestValidator:
                 v = [i.lower() for i in v if isinstance(i, str)]
                 duplicates = {i for i in v if v.count(i) > 1}
                 if duplicates:
-                    self.add_error('Duplicate item in "{}": {}'.format(k, duplicates))
+                    self.add_error(f'Duplicate item in "{k}": {duplicates}')
 
             if isinstance(v, dict):
                 self.validate_duplicates(v)

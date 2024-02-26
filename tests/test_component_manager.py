@@ -226,7 +226,7 @@ def test_pack_component_with_dest_dir(version, expected_version, tmp_path, relea
     component_manager.pack_component('cmp', version, 'dest_dir')
 
     tempdir = os.path.join(tempfile.tempdir, 'cmp')
-    unpack_archive(os.path.join(str(dest_path), 'cmp_{}.tgz'.format(expected_version)), tempdir)
+    unpack_archive(os.path.join(str(dest_path), f'cmp_{expected_version}.tgz'), tempdir)
     manifest = ManifestManager(tempdir, 'cmp', check_required_fields=True).load()
     assert manifest.version == expected_version
 

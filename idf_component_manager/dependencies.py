@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -71,9 +71,9 @@ def detect_unused_components(
     unused_components = get_unused_components(unused_files_with_components, managed_components_path)
     unused_files = unused_files_with_components - unused_components
     if unused_components:
-        print_info('Deleting {} unused components'.format(len(unused_components)))
+        print_info(f'Deleting {len(unused_components)} unused components')
         for unused_component_name in unused_components:
-            print_info(' {}'.format(unused_component_name))
+            print_info(f' {unused_component_name}')
             shutil.rmtree(os.path.join(managed_components_path, unused_component_name))
     if unused_files and not getenv_bool('IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS'):
         warning = (
@@ -82,7 +82,7 @@ def detect_unused_components(
         warning = warning.format(len(unused_files))
 
         for unexpected_name in unused_files:
-            warning += ' {}'.format(unexpected_name)
+            warning += f' {unexpected_name}'
 
         warning += (
             '\nContent of the managed components directory is managed automatically '
@@ -126,18 +126,18 @@ def is_solve_required(project_requirements, solution):
             # get the same version one
             try:
                 component_versions = component.source.versions(
-                    component.name, spec='=={}'.format(component.version.semver)
+                    component.name, spec=f'=={component.version.semver}'
                 )
             except FetchingError:
                 print_warn(
-                    'Version {} of dependency {} not found, probably it was deleted, solving dependencies.'.format(
-                        component.version, component.name
-                    )
+                    f'Version {component.version} of dependency {component.name} not found, '
+                    'probably it was deleted, solving dependencies.'
                 )
                 return True
             except NetworkConnectionError:
                 hint(
-                    'Cannot establish a connection to the component registry. Skipping checks of dependency changes.'
+                    'Cannot establish a connection to the component registry. '
+                    'Skipping checks of dependency changes.'
                 )
                 return False
 
@@ -157,9 +157,7 @@ def is_solve_required(project_requirements, solution):
             # Should check for all types of source, but after version checking
             if component_version.component_hash != component.component_hash:
                 if component.source.volatile:
-                    print_info(
-                        'Dependency "{}" has changed, solving dependencies.'.format(component)
-                    )
+                    print_info(f'Dependency "{component}" has changed, solving dependencies.')
                     return True
                 else:
                     raise InvalidComponentHashError(
@@ -174,7 +172,7 @@ def is_solve_required(project_requirements, solution):
                     )
 
         except IndexError:
-            print_info('Dependency "{}" version changed, solving dependencies.'.format(component))
+            print_info(f'Dependency "{component}" version changed, solving dependencies.')
             return True
 
     return False
@@ -246,9 +244,8 @@ def check_for_new_component_versions(project_requirements, old_solution):
             if updateable_components_messages:
                 hint(
                     '\nFollowing dependencies have new versions available:\n{}'
-                    '\nConsider running "idf.py update-dependencies" to update your lock file.\n'.format(
-                        '\n'.join(updateable_components_messages)
-                    )
+                    '\nConsider running "idf.py update-dependencies" to update '
+                    'your lock file.\n'.format('\n'.join(updateable_components_messages))
                 )
 
         except (SolverFailure, NetworkConnectionError):
@@ -291,7 +288,7 @@ def download_project_dependencies(
                     )
                 )
             raise SolverError(str(e))
-        print_info('Updating lock file at %s' % lock_path)
+        print_info(f'Updating lock file at {lock_path}')
         lock_manager.dump(solution)
 
     else:
@@ -321,14 +318,10 @@ def download_project_dependencies(
     if requirement_dependencies:
         number_of_components = len(requirement_dependencies)
         changed_components = []
-        print_info('Processing {} dependencies:'.format(number_of_components))
+        print_info(f'Processing {number_of_components} dependencies:')
 
         for index, component in enumerate(requirement_dependencies):
-            print_info(
-                '[{index}/{num_components}] {component}'.format(
-                    index=index + 1, num_components=number_of_components, component=str(component)
-                )
-            )
+            print_info(f'[{index + 1}/{number_of_components}] {str(component)}')
             fetcher = ComponentFetcher(component, managed_components_path)
             try:
                 download_path = fetcher.download()

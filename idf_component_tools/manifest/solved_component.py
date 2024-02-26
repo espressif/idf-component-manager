@@ -39,17 +39,13 @@ class SolvedComponent:
         self.targets = targets or []
 
     def __repr__(self):
-        return 'SolvedComponent <{}({}) {}>'.format(self.name, self.version, self.component_hash)
+        return f'SolvedComponent <{self.name}({self.version}) {self.component_hash}>'
 
     def __str__(self):
         if self.source.name == 'service' and self.source._storage_url != IDF_COMPONENT_STORAGE_URL:
-            return '{name} ({version}) from {storage_url}'.format(
-                name=self.name,
-                version=self.version,
-                storage_url=self.source._storage_url,
-            )
+            return f'{self.name} ({self.version}) from {self.source._storage_url}'
         else:
-            return '{name} ({version})'.format(name=self.name, version=self.version)
+            return f'{self.name} ({self.version})'
 
     @classmethod
     def fromdict(cls, details):

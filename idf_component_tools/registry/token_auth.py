@@ -9,5 +9,5 @@ class TokenAuth(requests.auth.AuthBase):
 
     def __call__(self, request):
         if self.token:
-            request.headers['Authorization'] = 'Bearer %s' % self.token
+            request.headers['Authorization'] = f'Bearer {self.token}'
         return request

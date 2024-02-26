@@ -305,10 +305,10 @@ class GitClient:
             if e.exit_code == 128:
                 raise GitError('Not a tagged commit, cannot get version')
             else:
-                raise GitError('Cannot get tag version due to git error\n{}'.format(e))
+                raise GitError(f'Cannot get tag version due to git error\n{e}')
 
         try:
             semantic_version = Version(clean_tag_version(tag_str))
             return semantic_version
         except ValueError:
-            raise GitError('Git tag does not contain a valid component version: {}'.format(tag_str))
+            raise GitError(f'Git tag does not contain a valid component version: {tag_str}')

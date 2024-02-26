@@ -62,4 +62,4 @@ class ComponentFetcher:
 
             if not os.path.isfile(hash_file):
                 with open(hash_file, mode='w+', encoding='utf-8') as f:
-                    f.write('{}'.format(component_hash))
+                    f.write(f'{component_hash}')

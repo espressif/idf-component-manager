@@ -30,7 +30,7 @@ def getenv_int(name, default):  # type: (str, int) -> int
     try:
         return int(os.environ.get(name, default))
     except ValueError:
-        raise ValueError('Environment variable "{}" must contain a numeric value'.format(name))
+        raise ValueError(f'Environment variable "{name}" must contain a numeric value')
 
 
 def getenv_bool(name, default=False):  # type: (str, bool) -> bool

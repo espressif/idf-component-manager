@@ -65,7 +65,7 @@ class VersionSolver:
                 break
 
         logger.info('Version solving took {:.3f} seconds.\n'.format(time.time() - start))
-        logger.info('Tried {} solutions.'.format(self._solution.attempted_solutions))
+        logger.info(f'Tried {self._solution.attempted_solutions} solutions.')
 
         return SolverResult(self._solution.decisions, self._solution.attempted_solutions)
 
@@ -159,7 +159,7 @@ class VersionSolver:
         if unsatisfied is None:
             return _conflict
 
-        logger.info('derived: {}'.format(unsatisfied.inverse))
+        logger.info(f'derived: {unsatisfied.inverse}')
 
         self._solution.derive(
             unsatisfied.constraint, not unsatisfied.is_positive(), incompatibility
@@ -179,7 +179,7 @@ class VersionSolver:
         .. _conflict resolution:
         https://github.com/dart-lang/pub/tree/master/doc/solver.md#conflict-resolution
         """
-        logger.info('conflict: {}'.format(incompatibility))
+        logger.info(f'conflict: {incompatibility}')
 
         new_incompatibility = False
         while not incompatibility.is_failure():
@@ -295,8 +295,8 @@ class VersionSolver:
                     bang, most_recent_term, partially, most_recent_satisfier
                 )
             )
-            logger.info('{} which is caused by "{}"'.format(bang, most_recent_satisfier.cause))
-            logger.info('{} thus: {}'.format(bang, incompatibility))
+            logger.info(f'{bang} which is caused by "{most_recent_satisfier.cause}"')
+            logger.info(f'{bang} thus: {incompatibility}')
 
         raise SolverFailure(incompatibility)
 
@@ -356,12 +356,12 @@ class VersionSolver:
 
         if not conflict:
             self._solution.decide(term.package, version)
-            logger.info('selecting {} ({})'.format(term.package, str(version)))
+            logger.info(f'selecting {term.package} ({str(version)})')
 
         return term.package
 
     def _add_incompatibility(self, incompatibility):  # type: (Incompatibility) -> None
-        logger.info('fact: {}'.format(incompatibility))
+        logger.info(f'fact: {incompatibility}')
 
         for term in incompatibility.terms:
             if term.package not in self._incompatibilities:

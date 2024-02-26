@@ -41,7 +41,7 @@ def dump_metadata(metadata, save_path):  # type: (dict[str, ComponentStaticVersi
             if e.errno != errno.EEXIST:
                 raise e
 
-        with open(str(path / '{}.json'.format(name)), 'w') as f:
+        with open(str(path / f'{name}.json'), 'w') as f:
             json.dump(component_info.metadata, f)
 
 
@@ -70,9 +70,7 @@ def download_components_archives(
     loading_data = {}  # type: dict[str, int]
     for component_name, component_info in metadata.items():
         for version in component_info.versions:
-            progress_bar.set_description(
-                'Downloading {}({})'.format(component_name, version.version)
-            )
+            progress_bar.set_description(f'Downloading {component_name}({version.version})')
             status = download_dependency(version, Path(save_path))
             progress_bar.update(1)
             if status:
@@ -196,7 +194,7 @@ def load_saved_metadata(path):  # type: (Path) -> dict[str, ComponentStaticVersi
     components_json_path = path / 'components'
     metadata = {}
     for json_filename in components_json_path.rglob('*.json'):
-        component_name = '{}/{}'.format(json_filename.parent.name, json_filename.stem)
+        component_name = f'{json_filename.parent.name}/{json_filename.stem}'
         versions = []
         try:
             with open(str(json_filename)) as f:
@@ -280,10 +278,10 @@ def sync_components(
     recursive=False,  # type: bool
 ):  # type: (...) -> None
     save_path = Path(save_path)
-    print_info('Collecting metadata files into the folder "{}"'.format(save_path.absolute()))
+    print_info(f'Collecting metadata files into the folder "{save_path.absolute()}"')
 
     metadata = load_saved_metadata(Path(save_path))
-    print_info('{} metadata loaded from "{}" folder'.format(len(metadata), save_path))
+    print_info(f'{len(metadata)} metadata loaded from "{save_path}" folder')
 
     new_metadata = collect_metadata(client, path, namespace, save_path, components, recursive)
     if not len(new_metadata):
@@ -301,7 +299,7 @@ def sync_components(
 
     print_info('Updating metadata')
     metadata = update_static_versions(metadata, new_metadata)
-    print_info('Collected {} components. Downloading archives'.format(len(metadata)))
+    print_info(f'Collected {len(metadata)} components. Downloading archives')
 
     loading_data = download_components_archives(metadata, save_path)
 

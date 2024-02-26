@@ -19,7 +19,7 @@ def test_create_project_from_example_path(tmp_path):
 def test_create_project_from_example_no_path(tmp_path):
     example_name = 'cmp_ex'
     res = project_action(
-        str(tmp_path), 'create-project-from-example', 'example/cmp=3.3.8:{}'.format(example_name)
+        str(tmp_path), 'create-project-from-example', f'example/cmp=3.3.8:{example_name}'
     )
 
     example_path = tmp_path / example_name
@@ -35,7 +35,7 @@ def test_create_project_from_example_project_dir(tmp_path):
         '--project-dir',
         str(tmp_path),
         'create-project-from-example',
-        'example/cmp=3.3.8:{}'.format(example_name),
+        f'example/cmp=3.3.8:{example_name}',
     )
 
     example_path = tmp_path / example_name

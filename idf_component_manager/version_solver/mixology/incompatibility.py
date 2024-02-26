@@ -135,13 +135,13 @@ class Incompatibility:
             assert len(self._terms) == 1
             assert self._terms[0].is_positive()
 
-            return "{} doesn't exist".format(self._terms[0].package)
+            return f"{self._terms[0].package} doesn't exist"
         elif isinstance(self._cause, RootCause):
             assert len(self._terms) == 1
             assert not self._terms[0].is_positive()
             assert self._terms[0].package == Package.root()
 
-            return '{} is {}'.format(self._terms[0].package, self._terms[0].constraint)
+            return f'{self._terms[0].package} is {self._terms[0].constraint}'
 
     def __str__(self):
         cause_string = self.handle_cause()
@@ -172,9 +172,9 @@ class Incompatibility:
                     package1 = term1.package if term1.constraint.is_any() else self._terse(term1)
                     package2 = term2.package if term2.constraint.is_any() else self._terse(term2)
 
-                    return '{} is incompatible with {}'.format(package1, package2)
+                    return f'{package1} is incompatible with {package2}'
                 else:
-                    return 'either {} or {}'.format(self._terse(term1), self._terse(term2))
+                    return f'either {self._terse(term1)} or {self._terse(term2)}'
 
         positive = []
         negative = []
@@ -218,7 +218,7 @@ class Incompatibility:
         if this_line is not None:
             buffer.append(' ' + this_line)
 
-        buffer.append(' and {}'.format(str(other)))
+        buffer.append(f' and {str(other)}')
 
         if other_line is not None:
             buffer.append(' ' + other_line)
@@ -260,14 +260,14 @@ class Incompatibility:
         else:
             buffer.append('requires')
 
-        buffer.append(' both {}'.format(this_negatives))
+        buffer.append(f' both {this_negatives}')
         if this_line is not None:
-            buffer.append(' ({})'.format(this_line))
+            buffer.append(f' ({this_line})')
 
-        buffer.append(' and {}'.format(other_negatives))
+        buffer.append(f' and {other_negatives}')
 
         if other_line is not None:
-            buffer.append(' ({})'.format(other_line))
+            buffer.append(f' ({other_line})')
 
         return ''.join(buffer)
 
@@ -316,7 +316,7 @@ class Incompatibility:
         buffer = []
         if len(prior_positives) > 1:
             prior_string = ' or '.join([self._terse(term) for term in prior_positives])
-            buffer.append('if {} then '.format(prior_string))
+            buffer.append(f'if {prior_string} then ')
         else:
             if isinstance(prior.cause, DependencyCause):
                 verb = 'depends on'
@@ -327,7 +327,7 @@ class Incompatibility:
 
         buffer.append(prior_negative.inverse.to_string())
         if prior_line is not None:
-            buffer.append(' ({})'.format(prior_line))
+            buffer.append(f' ({prior_line})')
 
         buffer.append(' which ')
 
@@ -343,7 +343,7 @@ class Incompatibility:
         )
 
         if latter_line is not None:
-            buffer.append(' ({})'.format(latter_line))
+            buffer.append(f' ({latter_line})')
 
         return ''.join(buffer)
 
@@ -376,7 +376,7 @@ class Incompatibility:
         buffer = []
         if len(positives) > 1:
             prior_string = ' or '.join([self._terse(term) for term in positives])
-            buffer.append('if {} then '.format(prior_string))
+            buffer.append(f'if {prior_string} then ')
         else:
             buffer.append(self._terse(positives[0], allow_every=True))
             if isinstance(prior.cause, DependencyCause):
@@ -386,7 +386,7 @@ class Incompatibility:
 
         buffer.append(latter.terms[0].to_string(allow_every=True) + ' ')
         if prior_line is not None:
-            buffer.append('({}) '.format(prior_line))
+            buffer.append(f'({prior_line}) ')
 
         if isinstance(latter.cause, NoVersionsCause):
             buffer.append("which doesn't match any versions")
@@ -396,7 +396,7 @@ class Incompatibility:
             buffer.append('which is forbidden')
 
         if latter_line is not None:
-            buffer.append(' ({})'.format(latter_line))
+            buffer.append(f' ({latter_line})')
 
         return ''.join(buffer)
 
@@ -417,4 +417,4 @@ class Incompatibility:
         return found
 
     def __repr__(self):
-        return '<{} {}>'.format(self.__class__.__name__, str(self))
+        return f'<{self.__class__.__name__} {str(self)}>'

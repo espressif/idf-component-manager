@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import filecmp
@@ -35,7 +35,7 @@ class TestComponentWebServiceSource:
             'cmp', ComponentVersion('1.0.0'), source=source, component_hash=self.CMP_HASH
         )
         assert source.component_cache_path(component).endswith(
-            'service_{}/espressif__cmp_1.0.0_{}'.format(self.EXAMPLE_HASH[:8], self.CMP_HASH[:8])
+            f'service_{self.EXAMPLE_HASH[:8]}/espressif__cmp_1.0.0_{self.CMP_HASH[:8]}'
         )
 
     # If you re-record this cassette, make sure the file downloaded only once
@@ -99,14 +99,14 @@ class TestComponentWebServiceSource:
     def test_download_local_file(self, fixtures_path, tmp_path):
         source_file = os.path.join(fixtures_path, 'archives', 'cmp_1.0.0.tar.gz')
 
-        file = download_archive('file://{}'.format(source_file), str(tmp_path))
+        file = download_archive(f'file://{source_file}', str(tmp_path))
         assert filecmp.cmp(source_file, file)
 
     def test_download_local_file_not_existing(self, tmp_path):
         source_file = os.path.join(str(tmp_path), 'cmp_1.0.0.tar.gz')
 
         with pytest.raises(FetchingError):
-            download_archive('file://{}'.format(source_file), tmp_path)
+            download_archive(f'file://{source_file}', tmp_path)
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_pre_release.yaml')
     def test_pre_release_exists(self, capsys):

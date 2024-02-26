@@ -51,7 +51,7 @@ def get_format_from_path(path):
     elif path.endswith('.tar'):
         return ('tar', 'tar', unpack_tar)
     else:
-        raise ArchiveError('Unknown archive extension for path: %s' % path)
+        raise ArchiveError(f'Unknown archive extension for path: {path}')
 
 
 def is_known_format(fmt):
@@ -68,7 +68,7 @@ def unpack_tar(file, destination_directory):
         tar = tarfile.open(file)
         prepare_empty_directory(destination_directory)
     except tarfile.TarError:
-        raise ArchiveError('%s is not a valid tar archive' % file)
+        raise ArchiveError(f'{file} is not a valid tar archive')
 
     try:
         tar.extractall(destination_directory)
@@ -81,7 +81,7 @@ def unpack_zip(file, destination_directory):
     import zipfile
 
     if not zipfile.is_zipfile(file):
-        raise ArchiveError('%s is not a zip file' % file)
+        raise ArchiveError(f'{file} is not a zip file')
 
     prepare_empty_directory(destination_directory)
 
@@ -94,7 +94,7 @@ def unpack_archive(file, destination_directory):  # type: (Union[Text, Path], Te
     prepare_empty_directory(destination_directory)
     archive_format, ext, handler = get_format_from_path(file)
     if not is_known_format(archive_format):
-        raise ArchiveError('.%s files are not supported on your system' % ext)
+        raise ArchiveError(f'.{ext} files are not supported on your system')
     handler(file, destination_directory)
 
 
@@ -104,4 +104,4 @@ def pack_archive(source_dir, archive_filepath):  # type: (Union[Text, Path], Tex
         with tarfile.open(archive_filepath, 'w:gz') as archive:
             archive.add(source_dir, arcname='')
     except tarfile.TarError:
-        raise ArchiveError('%s is not a valid tar archive' % archive_filepath)
+        raise ArchiveError(f'{archive_filepath} is not a valid tar archive')

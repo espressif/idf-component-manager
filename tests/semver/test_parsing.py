@@ -98,17 +98,11 @@ class ComparisonTestCase(unittest.TestCase):
                 second_ver = semver.Version(second)
                 with self.subTest(first=first, second=second):
                     if i < j:
-                        self.assertTrue(
-                            first_ver < second_ver, '{!r} !< {!r}'.format(first_ver, second_ver)
-                        )
+                        self.assertTrue(first_ver < second_ver, f'{first_ver!r} !< {second_ver!r}')
                     elif i == j:
-                        self.assertTrue(
-                            first_ver == second_ver, '{!r} != {!r}'.format(first_ver, second_ver)
-                        )
+                        self.assertTrue(first_ver == second_ver, f'{first_ver!r} != {second_ver!r}')
                     else:
-                        self.assertTrue(
-                            first_ver > second_ver, '{!r} !> {!r}'.format(first_ver, second_ver)
-                        )
+                        self.assertTrue(first_ver > second_ver, f'{first_ver!r} !> {second_ver!r}')
 
                     cmp_res = -1 if i < j else (1 if i > j else 0)
                     self.assertEqual(cmp_res, semver.compare(first, second))
@@ -136,14 +130,14 @@ class ComparisonTestCase(unittest.TestCase):
                 with self.subTest(a=a, b=b):
                     v1 = semver.Version(a)
                     v2 = semver.Version(b)
-                    self.assertTrue(v1 == v1, '{!r} != {!r}'.format(v1, v1))
-                    self.assertFalse(v1 != v1, '{!r} != {!r}'.format(v1, v1))
-                    self.assertFalse(v1 == v2, '{!r} == {!r}'.format(v1, v2))
-                    self.assertTrue(v1 != v2, '{!r} !!= {!r}'.format(v1, v2))
-                    self.assertFalse(v1 < v2, '{!r} !< {!r}'.format(v1, v2))
-                    self.assertTrue(v1 <= v2, '{!r} !<= {!r}'.format(v1, v2))
-                    self.assertFalse(v2 > v1, '{!r} !> {!r}'.format(v2, v1))
-                    self.assertTrue(v2 >= v1, '{!r} !>= {!r}'.format(v2, v1))
+                    self.assertTrue(v1 == v1, f'{v1!r} != {v1!r}')
+                    self.assertFalse(v1 != v1, f'{v1!r} != {v1!r}')
+                    self.assertFalse(v1 == v2, f'{v1!r} == {v2!r}')
+                    self.assertTrue(v1 != v2, f'{v1!r} !!= {v2!r}')
+                    self.assertFalse(v1 < v2, f'{v1!r} !< {v2!r}')
+                    self.assertTrue(v1 <= v2, f'{v1!r} !<= {v2!r}')
+                    self.assertFalse(v2 > v1, f'{v2!r} !> {v1!r}')
+                    self.assertTrue(v2 >= v1, f'{v2!r} !>= {v1!r}')
 
 
 if __name__ == '__main__':  # pragma: no cover

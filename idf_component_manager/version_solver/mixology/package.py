@@ -46,7 +46,7 @@ class Package:
         return self._name
 
     def __repr__(self):  # type: () -> str
-        return 'Package("{}" {})'.format(self.name, self.source)
+        return f'Package("{self.name}" {self.source})'
 
     def __hash__(self):
         return hash(self.name)

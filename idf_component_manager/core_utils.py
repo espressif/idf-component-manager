@@ -43,7 +43,7 @@ def dist_name(manifest):  # type: (Manifest) -> str
 
 
 def archive_filename(manifest):  # type: (Manifest) -> str
-    return '{}.tgz'.format(dist_name(manifest))
+    return f'{dist_name(manifest)}.tgz'
 
 
 def raise_component_modified_error(
@@ -98,7 +98,7 @@ def parse_example(example, namespace):  # type: (str, str) -> tuple[str, str, st
             f'Invalid version specification: "{version_spec}". Please use format like ">=1" or "*".'
         )
 
-    return '{}/{}'.format(namespace, component), version_spec, example_name
+    return f'{namespace}/{component}', version_spec, example_name
 
 
 ComponentInfo = namedtuple('ComponentInfo', ['component_name', 'version_spec'])
@@ -122,7 +122,7 @@ def parse_component(component_name, namespace):  # type: (str, str) -> Component
             f'Invalid version specification: "{version_spec}". Please use format like ">=1" or "*".'
         )
 
-    return ComponentInfo('{}/{}'.format(namespace, component), version_spec)
+    return ComponentInfo(f'{namespace}/{component}', version_spec)
 
 
 def collect_directories(dir_path):  # type: (Path) -> list[str]

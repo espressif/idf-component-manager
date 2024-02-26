@@ -15,7 +15,7 @@ class APIClientError(Exception):
     def request_info(self):  # type: () -> list[str]
         messages = []
         if self.endpoint is not None:
-            messages.append('URL: {}'.format(self.endpoint))
+            messages.append(f'URL: {self.endpoint}')
 
         if self.status_code is not None:
             messages.append(

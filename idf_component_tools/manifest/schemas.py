@@ -35,7 +35,7 @@ LINKS_GIT_ERROR = 'Invalid URL in the "{}" field. Check that link is a valid Git
 
 
 def _nonempty_string(field):  # type: (str) -> And
-    return And(str, len, error='Non-empty string is required in the "{}" field'.format(field))
+    return And(str, len, error=f'Non-empty string is required in the "{field}" field')
 
 
 def expanded_optional_dependency_schema_builder():  # type: () -> Schema

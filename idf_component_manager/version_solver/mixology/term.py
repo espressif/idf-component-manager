@@ -58,7 +58,7 @@ class Term:
         allowed by this term and another.
         """
         if self.package != other.package:
-            raise ValueError('{} should refer to {}'.format(other, self.package))
+            raise ValueError(f'{other} should refer to {self.package}')
 
         if other.is_positive():
             if self.is_positive():
@@ -118,7 +118,7 @@ class Term:
         allowed by both this term and another
         """
         if self.package != other.package:
-            raise ValueError('{} should refer to {}'.format(other, self.package))
+            raise ValueError(f'{other} should refer to {self.package}')
 
         if self.is_compatible_with(other):
             if self.is_positive() != other.is_positive():
@@ -172,10 +172,10 @@ class Term:
         if self.is_positive():
             return self.constraint.to_string(allow_every=allow_every)
 
-        return 'not {}'.format(self.constraint)
+        return f'not {self.constraint}'
 
     def __str__(self):
         return self.to_string()
 
     def __repr__(self):
-        return '<Term {}>'.format(str(self))
+        return f'<Term {str(self)}>'

@@ -15,7 +15,7 @@ CLICK_SUPPORTS_SHOW_DEFAULT = version.parse(click.__version__) >= version.parse(
 def print_prefixed(
     prefix, color, message, stderr
 ):  # type: (str, str, Exception | str, bool) -> None
-    styled_prefix = click.style('{}: '.format(prefix), fg=color)
+    styled_prefix = click.style(f'{prefix}: ', fg=color)
     click.echo(styled_prefix + str(message), err=stderr)
 
 
@@ -55,7 +55,7 @@ def print_info(
     bold=None,  # type: str | None
     underline=None,  # type: str | None
     blink=None,  # type: str | None
-    **kwargs
+    **kwargs,
 ):  # type: (...) -> None
     click.secho(message, fg=fg, bg=bg, bold=bold, underline=underline, blink=blink, **kwargs)
 

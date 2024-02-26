@@ -55,7 +55,7 @@ class IfClause:
         try:
             return literal_eval(_s)
         except (ValueError, SyntaxError):
-            raise SchemaError(None, 'Invalid string "{}" in "if" clause'.format(s))
+            raise SchemaError(None, f'Invalid string "{s}" in "if" clause')
 
     @staticmethod
     def eval_list(s):  # type: (str) -> list[str]
@@ -67,7 +67,7 @@ class IfClause:
         try:
             return [IfClause.eval_str(part) for part in _s.split(',')]
         except (ValueError, SyntaxError):
-            raise SchemaError(None, 'Invalid list "{}" in "if" clause'.format(s))
+            raise SchemaError(None, f'Invalid list "{s}" in "if" clause')
 
     @staticmethod
     def regex_str():
@@ -83,7 +83,7 @@ class IfClause:
         # remove the first ^ and the last $ and make it as a group
         if_target = '(' + if_target[1:-1] + ')'
 
-        return '^{}|{}$'.format(if_idf_version, if_target)
+        return f'^{if_idf_version}|{if_target}$'
 
     @classmethod
     def from_string(cls, s):  # type: (str) -> IfClause
@@ -103,11 +103,11 @@ class IfIdfVersionClause(IfClause):
         self.spec = spec
 
     def __repr__(self):  # type: () -> str
-        return '{} ({})'.format(self.clause, self.bool_value)
+        return f'{self.clause} ({self.bool_value})'
 
     @property
     def clause(self):  # type: () -> str
-        return 'idf_version {}'.format(self.spec)
+        return f'idf_version {self.spec}'
 
     @property
     def bool_value(self):  # type: () -> bool
@@ -135,11 +135,11 @@ class IfTargetClause(IfClause):
         self.target_str = target_str
 
     def __repr__(self):
-        return '{} ({})'.format(self.clause, self.bool_value)
+        return f'{self.clause} ({self.bool_value})'
 
     @property
     def clause(self):  # type: () -> str
-        return 'target {} {}'.format(self.operator, self.target_str)
+        return f'target {self.operator} {self.target_str}'
 
     @property
     def bool_value(self):
@@ -168,7 +168,7 @@ class BoolAnd(IfClause):
 
     @property
     def clause(self):  # type: () -> str
-        return '{} and {}'.format(self.left.clause, self.right.clause)
+        return f'{self.left.clause} and {self.right.clause}'
 
     @property
     def bool_value(self):  # type: () -> bool
@@ -182,7 +182,7 @@ class BoolOr(IfClause):
 
     @property
     def clause(self):  # type: () -> str
-        return '{} or {}'.format(self.left.clause, self.right.clause)
+        return f'{self.left.clause} or {self.right.clause}'
 
     @property
     def bool_value(self):  # type: () -> bool
@@ -195,9 +195,7 @@ def _parse_if_idf_version_clause(mat):  # type: (re.Match) -> IfClause
     spec = ','.join([part.strip() for part in spec.split(',')])
 
     try:
-        simple_spec = SimpleSpec(
-            '{}{}'.format(IfClause.eval_str(comparison), IfClause.eval_str(spec))
-        )
+        simple_spec = SimpleSpec(f'{IfClause.eval_str(comparison)}{IfClause.eval_str(spec)}')
     except ValueError:
         raise SchemaError(
             None,

@@ -84,7 +84,7 @@ class LockManager:
                     data=lock, stream=f, encoding='utf-8', allow_unicode=True, Dumper=SafeDumper
                 )
         except SchemaError as e:
-            raise LockError('Lock format is not valid:\n%s' % str(e))
+            raise LockError(f'Lock format is not valid:\n{e}')
 
     def load(self):  # type: () -> SolvedManifest
         if not self.exists():

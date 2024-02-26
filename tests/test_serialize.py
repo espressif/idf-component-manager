@@ -120,7 +120,7 @@ def test_serialize_in_inner_class():
             self.test_field = test_field
 
         def serialize(self):
-            return 'Serialize: {}'.format(self.test_field)
+            return f'Serialize: {self.test_field}'
 
     serializable_object = TestSerializableClass(TestSerializeFunctionClass('field'))
     serialize = serializable_object.serialize()
@@ -140,7 +140,7 @@ def test_serialize_in_class():
             self.test_field = test_field
 
         def serialize(self):
-            return 'Check: {}'.format(self.test_field)
+            return f'Check: {self.test_field}'
 
     serializable_object = TestSerializeFunctionClass('test')
     serialize = serializable_object.serialize()
@@ -159,7 +159,7 @@ def test_serialize_like_str():
             self.field1 = field
 
         def __str__(self):
-            return 'Serialize: {}'.format(self.field1)
+            return f'Serialize: {self.field1}'
 
     serializable_object = TestSerializeClass('test')
     serialize = serializable_object.serialize()

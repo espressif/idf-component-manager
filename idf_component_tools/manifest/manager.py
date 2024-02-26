@@ -150,7 +150,7 @@ class ManifestManager:
                     manifest_data = expand_env_vars(manifest_data)
 
                 if not isinstance(manifest_data, dict):
-                    raise ManifestError('Unknown format of the manifest file: {}'.format(self.path))
+                    raise ManifestError(f'Unknown format of the manifest file: {self.path}')
 
                 return manifest_data
 
@@ -166,7 +166,7 @@ class ManifestManager:
         if not self.is_valid:
             error_count = len(self.validation_errors)
             if error_count == 1:
-                error_desc = ['A problem was found in the manifest file %s:' % self.path]
+                error_desc = [f'A problem was found in the manifest file {self.path}:']
             else:
                 error_desc = [
                     '%i problems were found in the manifest file %s:' % (error_count, self.path)

@@ -86,7 +86,7 @@ def init_registry():
             raise_on_missing_profile=False,
         )
 
-        auth_url = '{}/tokens/'.format(api_client.frontend_url)
+        auth_url = f'{api_client.frontend_url}/tokens/'
 
         auth_params = {
             'scope': 'user write:components',
@@ -120,9 +120,7 @@ def init_registry():
                 token_valid = True
             except APIClientError as e:
                 # Handle 401 and 403 explicitly
-                print_error(
-                    'Provided token does not seem to be working: {}\nPlease try again.'.format(e)
-                )
+                print_error(f'Provided token does not seem to be working: {e}\nPlease try again.')
                 continue
 
         # Update config with token and default namespace, registry URL if they are provided

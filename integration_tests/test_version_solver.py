@@ -468,7 +468,7 @@ def test_check_for_newer_component_versions(project, tmp_path, monkeypatch, fixt
 )
 def test_multiple_storage_urls(monkeypatch, project):
     fixtures = os.path.join(os.path.dirname(__file__), 'fixtures')
-    monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'file://{};default'.format(fixtures))
+    monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', f'file://{fixtures};default')
     output = project_action(project, 'reconfigure')
 
     assert 'Configuring done' in output

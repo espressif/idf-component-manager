@@ -14,7 +14,7 @@ def main():
     args = parser.parse_args()
 
     if args.command == 'clone':
-        print("Cloning into '%s'..." % args.options[1])
+        print(f"Cloning into '{args.options[1]}'...")
 
 
 if __name__ == '__main__':

@@ -249,14 +249,14 @@ def test_add_dependency_with_path(project):
 def test_create_manifest(project):
     res = project_action(project, 'create-manifest')
     path = os.path.join(project, 'main', 'idf_component.yml')
-    assert 'Created "{}"'.format(path) in res
+    assert f'Created "{path}"' in res
 
 
 @pytest.mark.parametrize('project', [{}], indirect=True)
 def test_create_manifest_with_path(project):
     res = project_action(project, 'create-manifest', '--path', project)
     path = os.path.join(project, 'idf_component.yml')
-    assert 'Created "{}"'.format(path) in res
+    assert f'Created "{path}"' in res
 
 
 @pytest.mark.parametrize(

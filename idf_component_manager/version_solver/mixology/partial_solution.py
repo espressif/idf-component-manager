@@ -194,7 +194,7 @@ class PartialSolution:
             if assigned_term.satisfies(term):
                 return assignment
 
-        raise RuntimeError('[BUG] {} is not satisfied.'.format(term))
+        raise RuntimeError(f'[BUG] {term} is not satisfied.')
 
     def satisfies(self, term):  # type: (Term) -> bool
         return self.relation(term) == SetRelation.SUBSET

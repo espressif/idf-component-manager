@@ -159,7 +159,7 @@ class VersionSolver:
         cmp_with_versions, source = self.get_versions_from_sources(requirement)
 
         if not cmp_with_versions or not cmp_with_versions.versions or not source:
-            print_warn('Component "{}" not found'.format(requirement.name))
+            print_warn(f'Component "{requirement.name}" not found')
             return
 
         for version in cmp_with_versions.versions:

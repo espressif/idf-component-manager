@@ -98,7 +98,7 @@ class GitSource(BaseSource):
 
     def cache_path(self):
         # Using `b_` prefix for bare git repos in cache
-        path = os.path.join(self.system_cache_path, 'b_{}_{}'.format(self.NAME, self.hash_key[:8]))
+        path = os.path.join(self.system_cache_path, f'b_{self.NAME}_{self.hash_key[:8]}')
         return path
 
     def download(self, component, download_path):  # type: (SolvedComponent, str) -> str | None
@@ -107,7 +107,7 @@ class GitSource(BaseSource):
             raise FetchingError('Component hash is required for components from git repositories')
 
         if not component.version:
-            raise FetchingError('Version should provided for %s' % component.name)
+            raise FetchingError(f'Version should provided for {component.name}')
 
         if self.up_to_date(component, download_path):
             return download_path
@@ -153,7 +153,7 @@ class GitSource(BaseSource):
             source_path = os.path.join(str(temp_dir), self.component_path)
 
             if not os.path.isdir(source_path):
-                dependency_description = 'commit id "{}"'.format(commit_id)
+                dependency_description = f'commit id "{commit_id}"'
                 if version:
                     dependency_description = 'version "{}" ({})'.format(
                         version, dependency_description

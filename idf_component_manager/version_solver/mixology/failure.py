@@ -35,15 +35,13 @@ class _Writer:
         required_python_version = None
 
         if required_python_version is not None:
-            buffer.append(
-                'The current supported Python versions are {}'.format(required_python_version)
-            )
+            buffer.append(f'The current supported Python versions are {required_python_version}')
             buffer.append('')
 
         if isinstance(self._root.cause, ConflictCause):
             self._visit(self._root, {})
         else:
-            self._write(self._root, 'Because {}, version solving failed.'.format(self._root))
+            self._write(self._root, f'Because {self._root}, version solving failed.')
 
         padding = (
             0
@@ -138,7 +136,7 @@ class _Writer:
                     self._visit(second, details_for_cause)
                     self._write(
                         incompatibility,
-                        'Thus, {}.'.format(incompatibility_string),
+                        f'Thus, {incompatibility_string}.',
                         numbered=numbered,
                     )
                 else:
@@ -203,7 +201,7 @@ class _Writer:
                 self._visit(derived, details_for_cause)
                 self._write(
                     incompatibility,
-                    '{} because {}, {}.'.format(conjunction, str(ext), incompatibility_string),
+                    f'{conjunction} because {str(ext)}, {incompatibility_string}.',
                     numbered=numbered,
                 )
         else:

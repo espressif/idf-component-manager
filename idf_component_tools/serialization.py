@@ -76,7 +76,7 @@ def serializable(_cls=None, like='dict'):
                 return str(self)
 
         else:
-            raise TypeError("'%s' is not known type for serialization" % like)
+            raise TypeError(f"'{like}' is not known type for serialization")
 
         setattr(cls, 'serialize', _serialize)
         return cls

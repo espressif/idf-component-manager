@@ -371,7 +371,7 @@ class Range:
 
         if self.min is not None:
             if self.min == self.max and self.include_min and self.include_max:
-                return '{}'.format(self.min)
+                return f'{self.min}'
 
             text += '>=' if self.include_min else '>'
             text += self.min.text
@@ -388,7 +388,7 @@ class Range:
         return text
 
     def __repr__(self):
-        return '<Range ({})>'.format(str(self))
+        return f'<Range ({str(self)})>'
 
     def __hash__(self):
         if self._hash is None:

@@ -99,7 +99,7 @@ class Constraint:
         if self.package == Package.root():
             return 'project'
         elif allow_every and self.is_any():
-            return 'every version of {}'.format(self.package)
+            return f'every version of {self.package}'
 
         return '{} ({})'.format(self.package, '*' if self.is_any() else str(self.constraint))
 

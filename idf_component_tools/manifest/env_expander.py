@@ -14,7 +14,7 @@ def subst_vars_in_str(s, env):  # type: (str, dict[str, Any]) -> str
     try:
         return Template(s).substitute(env)
     except KeyError as e:
-        raise ManifestError('Environment variable "{}" is not set'.format(e.args[0]))
+        raise ManifestError(f'Environment variable "{e.args[0]}" is not set')
     except ValueError:
         raise ManifestError(
             'Invalid format of environment variable in the value: "{}".\n'

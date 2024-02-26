@@ -22,7 +22,7 @@ from idf_component_tools.constants import COMPILED_FILE_RE, COMPILED_GIT_URL_RE
     ],
 )
 def test_valid_git_urls(url):
-    assert COMPILED_GIT_URL_RE.match(url), 'Failed to match valid URL: {}'.format(url)
+    assert COMPILED_GIT_URL_RE.match(url), f'Failed to match valid URL: {url}'
 
 
 @mark.parametrize(
@@ -39,7 +39,7 @@ def test_valid_git_urls(url):
     ],
 )
 def test_invalid_git_urls(url):
-    assert not COMPILED_GIT_URL_RE.match(url), 'Matched invalid URL: {}'.format(url)
+    assert not COMPILED_GIT_URL_RE.match(url), f'Matched invalid URL: {url}'
 
 
 @mark.parametrize(

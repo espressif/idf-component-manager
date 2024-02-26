@@ -111,7 +111,7 @@ def pytest_configure(config):
     for name, description in {
         'snapshot': 'snapshot the specified files/folders and revert the content after test case'
     }.items():
-        config.addinivalue_line('markers', '{}: {}'.format(name, description))
+        config.addinivalue_line('markers', f'{name}: {description}')
 
 
 @pytest.fixture(scope='session')

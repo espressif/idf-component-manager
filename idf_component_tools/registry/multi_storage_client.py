@@ -38,7 +38,7 @@ class MultiStorageClient:
         if latest_cmp_with_version:
             return latest_cmp_with_version
 
-        raise ComponentNotFound('Component "{}" not found'.format(component_name))
+        raise ComponentNotFound(f'Component "{component_name}" not found')
 
     def component(
         self, component_name, version=None

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
@@ -71,14 +71,14 @@ def create_component(project_path, component_name, component_dict, env, function
     create_manifest(project_path, component_dict, libraries_for_manifest, component_name)
 
     generate_from_template(
-        os.path.join(component_path, '{}.c'.format(component_name)),
+        os.path.join(component_path, f'{component_name}.c'),
         env.get_template(os.path.join('src', 'sample_src.c')),
-        header_files=['{}.h'.format(component_name)] + include_list,
+        header_files=[f'{component_name}.h'] + include_list,
         func_name=function_name,
     )
 
     generate_from_template(
-        os.path.join(component_path, 'include', '{}.h'.format(component_name)),
+        os.path.join(component_path, 'include', f'{component_name}.h'),
         env.get_template(os.path.join('include', 'sample_header.h')),
         func_name=function_name,
     )
@@ -86,8 +86,7 @@ def create_component(project_path, component_name, component_dict, env, function
     component_register_parameters = []
     if 'cmake_lists' in component_dict.keys():
         component_register_parameters = [
-            '{} {}'.format(key.upper(), value)
-            for key, value in component_dict['cmake_lists'].items()
+            f'{key.upper()} {value}' for key, value in component_dict['cmake_lists'].items()
         ]
 
     generate_from_template(

@@ -80,7 +80,7 @@ class StorageClient(BaseClient):
                 request=request, component_name=component_name, spec=spec
             )
         except StorageFileNotFound:
-            raise ComponentNotFound('Component "{}" not found'.format(component_name))
+            raise ComponentNotFound(f'Component "{component_name}" not found')
 
         return ComponentWithVersionsAndStorageURL.from_component_with_versions(
             cmp_with_versions, self.storage_url
@@ -125,7 +125,7 @@ class StorageClient(BaseClient):
             example.update({'url': join_url(self.storage_url, example['url'])})
 
         return ComponentDetailsWithStorageURL(
-            name=('{}/{}'.format(info['namespace'], info['name'])),
+            name=f"{info['namespace']}/{info['name']}",
             version=tools.manifest.ComponentVersion(best_version['version']),
             dependencies=self.version_dependencies(best_version),
             maintainers=None,
@@ -146,7 +146,7 @@ class StorageClient(BaseClient):
                 'get', ['components', component_name.lower()], schema=COMPONENT_SCHEMA
             )
         except StorageFileNotFound:
-            raise ComponentNotFound('Component "{}" not found'.format(component_name))
+            raise ComponentNotFound(f'Component "{component_name}" not found')
 
         if spec != '*':
             versions = []

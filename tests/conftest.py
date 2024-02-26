@@ -186,7 +186,7 @@ def hash_component(fixtures_path):
         return os.path.join(
             fixtures_path,
             'hash_examples',
-            'component_%s' % id,
+            f'component_{id}',
         )
 
     return inner
