@@ -22,9 +22,11 @@ DEFAULT_EXCLUDE = [
     '**/.git/**/*',
     # SVN
     '**/.svn/**/*',
-    # dist and build artefacts
+    # dist and build artifacts
     '**/dist/**/*',
     '**/build/**/*',
+    # idf-build-apps artifacts
+    '**/build_*/**/*',
     # artifacts from example projects
     '**/managed_components/**/*',
     '**/dependencies.lock',
