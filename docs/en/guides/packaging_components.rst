@@ -1,42 +1,39 @@
 Packaging ESP-IDF Components
 ============================
 
-This tutorial will guide you through packaging a simple ESP-IDF component. You'll learn how to create all the necessary files and upload your component to our  `component registry <https://components.espressif.com>`_.
+This tutorial will guide you through packaging a simple ESP-IDF component. You will learn how to create all the necessary files and upload your component to the `ESP Component Registry <https://components.espressif.com>`_.
 
 Prerequisites
 -------------
 
-In this tutorial, we assume that you've installed ESP-IDF already. If it's not installed, please refer to our `ESP-IDF Get Started Guide <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html>`_.
+In this tutorial, we assume that you have already installed ESP-IDF. If it is not installed, please refer to our `ESP-IDF Get Started Guide <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html>`_.
 
 A Simple ESP-IDF Component
 --------------------------
 
-An ESP-IDF component could be created by
+An ESP-IDF component can be created by running the following command:
 
 .. code-block:: shell
 
    idf.py create-component test_cmp
 
-Now your component local file tree would look like
+After running the command, your component's local file tree will look like this:
 
 .. code-block:: text
 
    .
    └── test_cmp
        ├── CMakeLists.txt
-       ├── idf_component.yml
        ├── include
        │   └── test_cmp.h
-       ├── LICENSE
-       ├── README.md
        └── test_cmp.c
 
-Now you've created your first simple component. Please go inside this folder and let's move on.
+You have created your first bare minimum component. These files are sufficient for local use, however, to publish your component on the ESP Component Registry it is necessary to provide more details. Please navigate to the component directory and continue with the next steps.
 
 Extra Packaging Files
 ---------------------
 
-In this section, you would add files that are used to help component registry know better about your component. When this section is finished, the file structure would look like:
+In this section, you would add files that are used to help component registry know your component better. When this section is finished, the file structure would look like:
 
 .. code-block:: text
 
@@ -64,13 +61,13 @@ Here's the minimal ``idf_component.yml``:
 The Component registry only requires the ``version`` of the component in the `idf_component.yml`.
 ``version`` must follow :ref:`versioning scheme <reference/versioning:Versioning Scheme>`.
 
-However, we recommend adding ``url`` and ``description``. Otherwise, a warning will be printed
+However, we recommend adding ``url`` and ``description``. Otherwise, a warning will be printed.
 
 .. code-block:: yaml
 
    version: "0.0.1"
    description: "This is a test component"
-   url: "[YOUR URL]"  # The homepage of the component. It can be a GitHub repository page.
+   url: "https://mycomponent.com"  # The homepage of the component. It can be a GitHub repository page.
 
 For information about additional fields in the manifest please check the :ref:`manifest format reference <reference/manifest_file:Manifest File \`\`idf_component.yml\`\` Format Reference>`.
 
