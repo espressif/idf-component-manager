@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import re
@@ -39,7 +39,7 @@ def dist_name(manifest):  # type: (Manifest) -> str
     if manifest.version is None:
         raise ValueError('Version is required in this manifest')
 
-    return '{}_{}'.format(manifest.name, manifest.version)
+    return f'{manifest.name}_{manifest.version}'
 
 
 def archive_filename(manifest):  # type: (Manifest) -> str
@@ -95,9 +95,7 @@ def parse_example(example, namespace):  # type: (str, str) -> tuple[str, str, st
         SimpleSpec(version_spec)
     except ValueError:
         raise FatalError(
-            'Invalid version specification: "{}". Please use format like ">=1" or "*".'.format(
-                version_spec
-            )
+            f'Invalid version specification: "{version_spec}". Please use format like ">=1" or "*".'
         )
 
     return '{}/{}'.format(namespace, component), version_spec, example_name
@@ -121,9 +119,7 @@ def parse_component(component_name, namespace):  # type: (str, str) -> Component
         SimpleSpec(version_spec)
     except ValueError:
         raise FatalError(
-            'Invalid version specification: "{}". Please use format like ">=1" or "*".'.format(
-                version_spec
-            )
+            f'Invalid version specification: "{version_spec}". Please use format like ">=1" or "*".'
         )
 
     return ComponentInfo('{}/{}'.format(namespace, component), version_spec)
@@ -197,9 +193,8 @@ def copy_examples_folders(
         error_messages = []
         for first_path, second_path, example_name in duplicate_paths:
             error_messages.append(
-                'Examples from "{}" and "{}" have the same name: {}.'.format(
-                    first_path, second_path, example_name
-                )
+                f'Examples from "{first_path}" and "{second_path}" '
+                f'have the same name: {example_name}.'
             )
         error_messages.append('Please rename one of them, or delete if there are the same')
 

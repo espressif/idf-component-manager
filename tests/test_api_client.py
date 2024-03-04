@@ -40,7 +40,7 @@ def raise_SSLEOFError(*_, **__):
     raise SSLEOFError()
 
 
-class TestAPIClient(object):
+class TestAPIClient:
     def test_join_url(self):
         tests = [
             {

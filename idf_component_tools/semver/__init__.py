@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2016 Python-SemanticVersion project
 # SPDX-License-Identifier: BSD 2-Clause License
 # SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD

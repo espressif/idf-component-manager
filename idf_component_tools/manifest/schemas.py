@@ -4,12 +4,10 @@
 import re
 
 from schema import And, Optional, Or, Regex, Schema, Use
-from six import reraise, string_types
 
 from idf_component_manager.utils import RE_PATTERN
 
 from ..constants import COMPILED_GIT_URL_RE, COMPILED_URL_RE
-from ..errors import InternalError
 from ..semver import SimpleSpec, Version
 from .constants import (
     COMMIT_ID_RE,
@@ -37,9 +35,7 @@ LINKS_GIT_ERROR = 'Invalid URL in the "{}" field. Check that link is a valid Git
 
 
 def _nonempty_string(field):  # type: (str) -> And
-    return And(
-        Or(*string_types), len, error='Non-empty string is required in the "{}" field'.format(field)
-    )
+    return And(str, len, error='Non-empty string is required in the "{}" field'.format(field))
 
 
 def expanded_optional_dependency_schema_builder():  # type: () -> Schema
@@ -47,7 +43,7 @@ def expanded_optional_dependency_schema_builder():  # type: () -> Schema
         {
             'if': Use(parse_if_clause),
             Optional('version'): Or(
-                None, *string_types, error='Dependency version spec format in rule/match is invalid'
+                None, str, error='Dependency version spec format in rule/match is invalid'
             ),
         },
         Use(OptionalDependency.fromdict),
@@ -56,20 +52,18 @@ def expanded_optional_dependency_schema_builder():  # type: () -> Schema
 
 def optional_dependency_schema_builder():  # type: () -> Schema
     return {
-        'if': Or(*string_types),
+        'if': str,
         Optional('version'): Or(
-            None, *string_types, error='Dependency version spec format in rule/match is invalid'
+            None, str, error='Dependency version spec format in rule/match is invalid'
         ),
     }
 
 
 def dependency_schema_builder(rule_schema_builder):  # type: (t.Callable) -> Or
     return Or(
-        Or(None, *string_types, error='Dependency version spec format is invalid'),
+        Or(None, str, error='Dependency version spec format is invalid'),
         {
-            Optional('version'): Or(
-                None, *string_types, error='Dependency version spec format is invalid'
-            ),
+            Optional('version'): Or(None, str, error='Dependency version spec format is invalid'),
             Optional('public'): Use(
                 bool,
                 error='Invalid format of dependency public flag',
@@ -116,7 +110,7 @@ def schema_builder(validate_rules=False):  # type: (bool) -> Schema
 
     return Schema(
         {
-            Optional('name'): Or(*string_types),
+            Optional('name'): str,
             Optional('version'): Or(
                 Version.parse, error='Component version should be valid semantic version'
             ),
@@ -323,7 +317,7 @@ for _key in sorted(_flatten_json_schema_keys(JSON_SCHEMA)):
     elif _key[0] in KNOWN_INFO_METADATA_FIELDS:
         _info_metadata_keys.append(_key)
     else:
-        reraise(InternalError, ValueError('Unknown JSON Schema key {}'.format(_key[0])))
+        raise ValueError('Unknown JSON Schema key {}'.format(_key[0])).with_traceback(None)
 
 BUILD_METADATA_KEYS = serialize_list_of_list_of_strings(_build_metadata_keys)
 INFO_METADATA_KEYS = serialize_list_of_list_of_strings(_info_metadata_keys)

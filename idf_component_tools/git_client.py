@@ -7,15 +7,11 @@ import subprocess  # nosec
 import time
 from datetime import datetime
 from functools import wraps
+from typing import Any, Callable, Union
 
 from .errors import GitError
 from .messages import warn
 from .semver import Version
-
-try:
-    from typing import Any, Callable, Union
-except ImportError:
-    pass
 
 
 class GitCommandError(Exception):
@@ -28,7 +24,7 @@ class GitCommandError(Exception):
 
     def __init__(self, *args, **kwargs):  # type: (Any, Any) -> None
         self.exit_code = kwargs.get('exit_code')
-        super(GitCommandError, self).__init__(*args)
+        super().__init__(*args)
 
 
 def clean_tag_version(tag):  # type: (str) -> str
@@ -45,7 +41,7 @@ def clean_tag_version(tag):  # type: (str) -> str
     return tag
 
 
-class GitClient(object):
+class GitClient:
     """Set of tools for working with git repos"""
 
     def __init__(
@@ -204,7 +200,7 @@ class GitClient(object):
             try:
                 self.run(['branch', '--contains', ref], cwd=bare_path)
             except GitCommandError:
-                raise GitError('Branch "%s" doesn\'t exist in repo "%s"' % (ref, repo))
+                raise GitError(f'Branch "{ref}" doesn\'t exist in repo "{repo}"')
 
         else:
             # Set to latest commit from remote's HEAD

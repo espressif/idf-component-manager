@@ -32,7 +32,7 @@ def check_required_args(args, required_field=None):
 
 
 def main(command_args=None):  # type: (list[str] | None) -> None
-    parser = argparse.ArgumentParser(description='IDF component manager v{}'.format(version))
+    parser = argparse.ArgumentParser(description=f'IDF component manager v{version}')
     parser.add_argument('command', choices=KNOWN_ACTIONS, help='Command to execute')
     parser.add_argument(
         '--path',
@@ -111,7 +111,7 @@ def main(command_args=None):  # type: (list[str] | None) -> None
                 DeprecationWarning,
             )
             check_required_args(args, ['namespace', 'name', 'example', 'version'])
-            example = '{}/{}={}:{}'.format(args.namespace, args.name, args.version, args.example)
+            example = f'{args.namespace}/{args.name}={args.version}:{args.example}'
             manager.create_project_from_example(example=example)
         elif args.command == 'delete-version':
             warnings.warn(

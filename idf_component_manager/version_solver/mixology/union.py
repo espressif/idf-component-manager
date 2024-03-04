@@ -1,18 +1,14 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
-try:
-    from typing import List
-    from typing import Union as _Union
-except ImportError:
-    pass
+from typing import List
+from typing import Union as _Union
 
 from .range import EmptyRange, Range
 
 
-class Union(object):
+class Union:
     """
     An union of Ranges.
     """

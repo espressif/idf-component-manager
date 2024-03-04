@@ -1,12 +1,8 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
-try:
-    from typing import Union as _Union
-except ImportError:
-    pass
+from typing import Union as _Union
 
 from .package import Package
 from .range import Range
@@ -14,7 +10,7 @@ from .set_relation import SetRelation
 from .union import Union
 
 
-class Constraint(object):
+class Constraint:
     """
     A term constraint.
     """

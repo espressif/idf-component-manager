@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2016 Python-SemanticVersion project
 # SPDX-License-Identifier: BSD 2-Clause License
-# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
 import functools
 import re
@@ -11,7 +10,7 @@ def _has_leading_zero(value):
     return value and value[0] == '0' and value.isdigit() and value != '0'
 
 
-class MaxIdentifier(object):
+class MaxIdentifier:
     __slots__ = []  # type: list[str]
 
     def __repr__(self):
@@ -22,7 +21,7 @@ class MaxIdentifier(object):
 
 
 @functools.total_ordering
-class NumericIdentifier(object):
+class NumericIdentifier:
     __slots__ = ['value']
 
     def __init__(self, value):
@@ -48,7 +47,7 @@ class NumericIdentifier(object):
 
 
 @functools.total_ordering
-class AlphaIdentifier(object):
+class AlphaIdentifier:
     __slots__ = ['value']
 
     def __init__(self, value):
@@ -73,7 +72,7 @@ class AlphaIdentifier(object):
             return NotImplemented
 
 
-class Version(object):
+class Version:
     version_re = re.compile(
         r'^(\d+)\.(\d+)\.(\d+)(?:~(\d+))?(?:-([0-9a-zA-Z.-]+))?(?:\+([0-9a-zA-Z.-]+))?$'
     )
@@ -245,9 +244,9 @@ class Version(object):
         build = build.replace('+', '.')
 
         if prerelease:
-            version = '%s-%s' % (version, prerelease)
+            version = '{}-{}'.format(version, prerelease)
         if build:
-            version = '%s+%s' % (version, build)
+            version = '{}+{}'.format(version, build)
 
         return cls(version, revision=revision)
 
@@ -305,7 +304,7 @@ class Version(object):
         for item in identifiers:
             if not item:
                 raise ValueError(
-                    'Invalid empty identifier %r in %r' % (item, '.'.join(identifiers))
+                    'Invalid empty identifier {!r} in {!r}'.format(item, '.'.join(identifiers))
                 )
 
             if item[0] == '0' and item.isdigit() and item != '0' and not allow_leading_zeroes:
@@ -342,9 +341,9 @@ class Version(object):
         if self.revision:
             version = '%s~%d' % (version, self.revision)
         if self.prerelease:
-            version = '%s-%s' % (version, '.'.join(self.prerelease))
+            version = '{}-{}'.format(version, '.'.join(self.prerelease))
         if self.build:
-            version = '%s+%s' % (version, '.'.join(self.build))
+            version = '{}+{}'.format(version, '.'.join(self.build))
         return version
 
     def __repr__(self):
@@ -447,7 +446,7 @@ def validate(version_string):
 DEFAULT_SYNTAX = 'simple'
 
 
-class BaseSpec(object):
+class BaseSpec:
     """A specification of compatible versions.
 
     Usage:
@@ -463,7 +462,7 @@ class BaseSpec(object):
     """
 
     def __init__(self, expression):
-        super(BaseSpec, self).__init__()
+        super().__init__()
         self.expression = expression
         self.clause = self._parse_to_clause(expression)
 
@@ -513,7 +512,7 @@ class BaseSpec(object):
         return self.expression
 
     def __repr__(self):
-        return '<%s: %r>' % (self.__class__.__name__, self.expression)
+        return '<{}: {!r}>'.format(self.__class__.__name__, self.expression)
 
     @classmethod
     def _contains_prerelease(cls, clause):  # type: (Clause) -> bool
@@ -529,7 +528,7 @@ class BaseSpec(object):
         return self._contains_prerelease(self.clause)
 
 
-class Clause(object):
+class Clause:
     __slots__ = []  # type: list[str]
 
     def match(self, version):
@@ -567,7 +566,7 @@ class AnyOf(Clause):
     __slots__ = ['clauses']
 
     def __init__(self, *clauses):
-        super(AnyOf, self).__init__()
+        super().__init__()
         self.clauses = frozenset(clauses)
 
     def match(self, version):
@@ -608,7 +607,7 @@ class AnyOf(Clause):
         if isinstance(other, AnyOf):
             clauses = list(self.clauses | other.clauses)
         elif isinstance(other, Matcher) or isinstance(other, AllOf):
-            clauses = list(self.clauses | set([other]))
+            clauses = list(self.clauses | {other})
         else:
             return NotImplemented
         return AnyOf(*clauses)
@@ -630,7 +629,7 @@ class AllOf(Clause):
     __slots__ = ['clauses']
 
     def __init__(self, *clauses):
-        super(AllOf, self).__init__()
+        super().__init__()
         self.clauses = frozenset(clauses)
 
     def match(self, version):
@@ -661,7 +660,7 @@ class AllOf(Clause):
 
     def __and__(self, other):
         if isinstance(other, Matcher) or isinstance(other, AnyOf):
-            clauses = list(self.clauses | set([other]))
+            clauses = list(self.clauses | {other})
         elif isinstance(other, AllOf):
             clauses = list(self.clauses | other.clauses)
         else:
@@ -780,10 +779,10 @@ class Range(Matcher):
     def __init__(
         self, operator, target, prerelease_policy=PRERELEASE_NATURAL, build_policy=BUILD_IMPLICIT
     ):
-        super(Range, self).__init__()
+        super().__init__()
         if target.build and operator not in (self.OP_EQ, self.OP_NEQ):
             raise ValueError(
-                'Invalid range %s%s: build numbers have no ordering.' % (operator, target)
+                'Invalid range {}{}: build numbers have no ordering.'.format(operator, target)
             )
         self.operator = operator
         self.target = target  # type: Version
@@ -851,7 +850,7 @@ class Range(Matcher):
         )
 
     def __str__(self):
-        return '%s%s' % (self.operator, self.target)
+        return '{}{}'.format(self.operator, self.target)
 
     def __repr__(self):
         policy_part = (
@@ -863,7 +862,7 @@ class Range(Matcher):
             if self.build_policy == self.BUILD_IMPLICIT
             else ', build_policy=%r' % self.build_policy
         )
-        return 'Range(%r, %r%s)' % (
+        return 'Range({!r}, {!r}{})'.format(
             self.operator,
             self.target,
             policy_part,

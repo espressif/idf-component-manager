@@ -5,7 +5,6 @@ import os
 import shutil
 import tempfile
 from distutils.dir_util import copy_tree
-from io import open
 from pathlib import Path
 
 import pytest
@@ -44,7 +43,7 @@ def test_init_project(mock_registry, tmp_path):
         manager.create_manifest(component='foo')
 
         for filepath in [main_manifest_path, foo_manifest_path]:
-            with open(filepath, mode='r') as file:
+            with open(filepath) as file:
                 assert file.readline().startswith('## IDF Component Manager')
 
         manager.add_dependency('cmp==4.0.3')
@@ -194,7 +193,7 @@ def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_comp
     unpack_archive(os.path.join(component_manager.dist_path, 'pre_3.0.0.tgz'), tempdir)
     manifest = ManifestManager(tempdir, 'pre', check_required_fields=True).load()
     assert manifest.version == '3.0.0'
-    assert set(list_dir(tempdir)) == set(
+    assert set(list_dir(tempdir)) == {
         os.path.join(tempdir, file)
         for file in [
             'idf_component.yml',
@@ -203,7 +202,7 @@ def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_comp
             'LICENSE',
             os.path.join('include', 'cmp.h'),
         ]
-    )
+    }
 
 
 @pytest.mark.parametrize(
@@ -322,7 +321,7 @@ def test_pack_component_with_examples_errors(tmp_path, example_component_path, e
 
 def test_create_example_project_path_not_a_directory(tmp_path):
     existing_file = tmp_path / 'example'
-    existing_file.write_text(u'test')
+    existing_file.write_text('test')
 
     manager = ComponentManager(path=str(tmp_path))
 
@@ -334,7 +333,7 @@ def test_create_example_project_path_not_empty(tmp_path):
     example_dir = tmp_path / 'example'
     example_dir.mkdir()
     existing_file = example_dir / 'test'
-    existing_file.write_text(u'test')
+    existing_file.write_text('test')
 
     manager = ComponentManager(path=str(tmp_path))
 

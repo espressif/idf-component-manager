@@ -1,16 +1,11 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import re
 from collections import OrderedDict, namedtuple
-from io import open
+from typing import Mapping
 
 from idf_component_tools.errors import FatalError
-
-try:
-    from typing import Mapping
-except ImportError:
-    pass
 
 ComponentProperty = namedtuple('ComponentProperty', ['component', 'prop', 'value'])
 ITERABLE_PROPS = ['REQUIRES', 'PRIV_REQUIRES', 'MANAGED_REQUIRES', 'MANAGED_PRIV_REQUIRES']
@@ -29,7 +24,7 @@ def name_without_namespace(name):  # type: (str) -> str
         return name_parts[0]
 
 
-class ComponentName(object):
+class ComponentName:
     def __init__(self, prefix, name):  # type: (str, str) -> None
         self.prefix = prefix
         self.name = name
@@ -46,7 +41,7 @@ class ComponentName(object):
         return hash((self.prefix, self.name))
 
     def __repr__(self):  # type: () -> str
-        return 'ComponentName({}, {})'.format(self.prefix, self.name)
+        return f'ComponentName({self.prefix}, {self.name})'
 
     @property
     def name_without_namespace(self):  # type: ()  -> str
@@ -73,7 +68,7 @@ def parse_requirements_line(line):  # type: (str) -> ComponentProperty
     )
 
 
-class CMakeRequirementsManager(object):
+class CMakeRequirementsManager:
     def __init__(self, path):
         self.path = path
 
@@ -85,7 +80,7 @@ class CMakeRequirementsManager(object):
                         value = '"{}"'.format(';'.join(value))
 
                     f.write(
-                        u'__component_set_property(___{prefix}_{name} {prop} {value})\n'.format(
+                        '__component_set_property(___{prefix}_{name} {prop} {value})\n'.format(
                             prefix=name.prefix, name=name.name, prop=prop, value=value
                         )
                     )
@@ -93,7 +88,7 @@ class CMakeRequirementsManager(object):
     def load(self):  # type: () -> OrderedDict[ComponentName, dict[str, list[str] | str]]
         requirements = OrderedDict()  # type: OrderedDict[ComponentName, dict[str, list[str] | str]]
 
-        with open(self.path, mode='r', encoding='utf-8') as f:
+        with open(self.path, encoding='utf-8') as f:
             for line in f:
                 if line.strip():
                     prop = parse_requirements_line(line)
@@ -153,7 +148,7 @@ def _choose_component(component, known_components):  # type: (str, list[str]) ->
 
     # Name without namespace is required, but one with namespace is known
     # Or the the opposite: namespaced is known but required one without namespace
-    namespaced_name = '__{}'.format(component)
+    namespaced_name = f'__{component}'
     for known_component in known_components:
         if (
             known_component.endswith(namespaced_name)
@@ -183,7 +178,8 @@ def handle_project_requirements(
     """
     Use local components with higher priority.
     For example if in some manifest has a dependency `namespace/component`,
-    but there is a local component named `namespace__component` or `component` it will be used instead.
+    but there is a local component named `namespace__component` or `component`
+    it will be used instead.
     """
     known_components = [component_name.name for component_name in requirements.keys()]
     for component, requirement in requirements.items():

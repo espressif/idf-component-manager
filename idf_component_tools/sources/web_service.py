@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Component source that downloads components from web service"""
 
@@ -7,7 +7,6 @@ import re
 import shutil
 import tempfile
 from hashlib import sha256
-from io import open
 
 import requests
 
@@ -36,14 +35,11 @@ try:
 except ImportError:
     from urlparse import urlparse  # type: ignore
 
-try:
-    from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Dict
 
-    if TYPE_CHECKING:
-        from ..manifest import ManifestManager
-        from ..manifest.solved_component import SolvedComponent
-except ImportError:
-    pass
+if TYPE_CHECKING:
+    from ..manifest import ManifestManager
+    from ..manifest.solved_component import SolvedComponent
 
 CANONICAL_IDF_COMPONENT_REGISTRY_API_URL = 'https://api.components.espressif.com/'
 IDF_COMPONENT_REGISTRY_API_URL = '{}api/'.format(IDF_COMPONENT_REGISTRY_URL)
@@ -101,7 +97,7 @@ class WebServiceSource(BaseSource):
     NAME = 'service'
 
     def __init__(self, source_details=None, **kwargs):
-        super(WebServiceSource, self).__init__(source_details=source_details, **kwargs)
+        super().__init__(source_details=source_details, **kwargs)
 
         # Use URL from source details with the high priority
         self.base_url = self.source_details.get('service_url')

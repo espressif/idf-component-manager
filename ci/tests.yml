@@ -25,7 +25,7 @@ test:
     - internet
   parallel:
     matrix:
-      - PYTHON_IMAGE_TAG: [2.7-buster, 3.4-stretch, 3.5-buster, 3.11-bullseye]
+      - PYTHON_IMAGE_TAG: [3.7-buster, 3.11-bookworm]
   image: python:${PYTHON_IMAGE_TAG}
   needs:
     - build_wheel

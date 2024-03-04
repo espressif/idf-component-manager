@@ -3,7 +3,7 @@
 
 import copy
 import os
-from io import open
+from typing import Any, Dict, List, Optional
 
 import yaml
 
@@ -15,19 +15,15 @@ from .manifest import Manifest
 from .metadata import Metadata
 from .validator import ExpandedManifestValidator, ManifestValidator
 
-try:
-    from typing import Any, Dict, List, Optional
-except ImportError:
-    pass
-
 EMPTY_MANIFEST = dict()  # type: Dict[str, Any]
 
 
-class ManifestManager(object):
+class ManifestManager:
     """
     Parser for manifest files in the project.
 
-    If expand_environment is True, the manifest file will be parsed with environment variables expanded.
+    If expand_environment is True, the manifest file will be parsed
+    with environment variables expanded.
     In this case, the dumped manifest file will contain the replaced values.
     """
 
@@ -143,7 +139,7 @@ class ManifestManager(object):
         if not self.exists():
             return EMPTY_MANIFEST
 
-        with open(self.path, mode='r', encoding='utf-8') as f:
+        with open(self.path, encoding='utf-8') as f:
             try:
                 manifest_data = yaml.safe_load(f.read())
 

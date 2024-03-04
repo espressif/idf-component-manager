@@ -1,15 +1,12 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+
+from typing import Dict, List, Optional
 
 from .solved_component import SolvedComponent
 
-try:
-    from typing import Dict, List, Optional
-except ImportError:
-    pass
 
-
-class SolvedManifest(object):
+class SolvedManifest:
     def __init__(
         self, solved_components, manifest_hash, target=None
     ):  # type: (Optional[List[SolvedComponent]], str, Optional[str]) -> None

@@ -1,19 +1,15 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
-try:
-    from typing import Optional
-except ImportError:
-    pass
+from typing import Optional
 
 from .constraint import Constraint
 from .package import Package
 from .set_relation import SetRelation
 
 
-class Term(object):
+class Term:
     """
     A statement about a package which is true or false for a given selection of
     package versions.

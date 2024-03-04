@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import re
@@ -12,11 +12,6 @@ from idf_component_tools.errors import FetchingError, ProcessingError
 from idf_component_tools.manifest.constants import IF_IDF_VERSION_REGEX, IF_TARGET_REGEX
 from idf_component_tools.semver import SimpleSpec, Version
 from idf_component_tools.serialization import serializable
-
-try:
-    from typing import Literal
-except ImportError:
-    pass
 
 IF_IDF_VERSION_REGEX_COMPILED = re.compile(IF_IDF_VERSION_REGEX)
 IF_TARGET_REGEX_COMPILED = re.compile(IF_TARGET_REGEX)
@@ -126,9 +121,16 @@ class IfIdfVersionClause(IfClause):
 
 @serializable
 class IfTargetClause(IfClause):
-    def __init__(
-        self, operator, target_str
-    ):  # type: (Literal['==', '!=', 'in', 'not in'], str) -> None
+    def __init__(self, operator: str, target_str: str):
+        """
+        Initialize the IfParser object.
+
+        :param operator: The operator to be used for comparison. One of '==', '!=', 'in', 'not in'.
+        :type operator: str
+        :param target_str: The target string to be compared.
+        :type target_str: str
+        :returns: None
+        """
         self.operator = operator
         self.target_str = target_str
 
@@ -215,7 +217,8 @@ def _parser_if_target_clause(mat):  # type: (re.Match) -> IfClause
     if operator not in ['==', '!=', 'in', 'not in']:
         raise SchemaError(
             None,
-            'Invalid if clause format for target: {clause}. You can specify rules based on target using '
+            'Invalid if clause format for target: {clause}. '
+            'You can specify rules based on target using '
             '"==", "!=", "in" or "not in" like: "target in [esp32, esp32c3]", "target == esp32"\n'
             'Documentation: '
             'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference'
@@ -240,7 +243,7 @@ def _parse_if_clause(s):  # type: (str) -> IfClause
         'Invalid if clause format "{clause}". '
         'You can specify rules based on current ESP-IDF version or target like: '
         '"idf_version >=3.3,<5.0" or "target in [esp32, esp32c3]"\nDocumentation: '
-        'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/manifest_file.html#rules'.format(
+        'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/manifest_file.html#rules'.format(  # noqa
             clause=s
         ),
     )

@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Core module of component manager"""
-from __future__ import print_function
 
 import functools
 import os
@@ -12,8 +11,8 @@ import tempfile
 import time
 from collections import OrderedDict
 from datetime import datetime, timedelta
-from io import open
 from pathlib import Path
+from typing import Optional, Tuple
 
 import requests
 from requests_toolbelt import MultipartEncoderMonitor
@@ -82,11 +81,6 @@ from .local_component_list import parse_component_list
 from .service_details import get_api_client, get_storage_client
 from .sync import sync_components
 
-try:
-    from typing import Optional, Tuple
-except ImportError:
-    pass
-
 
 # PROCESSING_TIMEOUT
 def get_processing_timeout():
@@ -135,11 +129,11 @@ def _create_manifest_if_missing(manifest_dir):  # type: (str) -> bool
     )
     create_directory(manifest_dir)
     shutil.copyfile(example_path, manifest_filepath)
-    print_info('Created "{}"'.format(manifest_filepath))
+    print_info(f'Created "{manifest_filepath}"')
     return True
 
 
-class ComponentManager(object):
+class ComponentManager:
     def __init__(self, path, lock_path=None, manifest_path=None, interface_version=0):
         # type: (str, Optional[str], Optional[str], int) -> None
 
@@ -233,7 +227,7 @@ class ComponentManager(object):
     def create_manifest(self, component='main', path=None):  # type: (str, Optional[str]) -> None
         manifest_filepath, created = self._get_manifest(component=component, path=path)
         if not created:
-            print_info('"{}" already exists, skipping...'.format(manifest_filepath))
+            print_info(f'"{manifest_filepath}" already exists, skipping...')
 
     @general_error_handler
     def create_project_from_example(self, example, path=None, service_profile=None):
@@ -253,9 +247,9 @@ class ComponentManager(object):
 
         if os.path.isdir(project_path) and os.listdir(project_path):
             raise FatalError(
-                'The directory {} is not empty. '
+                f'The directory {project_path} is not empty. '
                 'To create an example you must empty the directory or '
-                'choose a different path.'.format(project_path),
+                'choose a different path.',
                 exit_code=3,
             )
 
@@ -267,9 +261,8 @@ class ComponentManager(object):
             ][-1]
         except IndexError:
             raise FatalError(
-                'Cannot find example "{}" for "{}" version "{}"'.format(
-                    example_name, component_name, version_spec
-                ),
+                f'Cannot find example "{example_name}" for "{component_name}" '
+                f'version "{version_spec}"',
                 exit_code=2,
             )
 
@@ -332,7 +325,7 @@ class ComponentManager(object):
                     )
                 )
 
-        with open(manifest_filepath, 'r', encoding='utf-8') as file:
+        with open(manifest_filepath, encoding='utf-8') as file:
             file_lines = file.readlines()
 
         index = 0
@@ -672,7 +665,7 @@ class ComponentManager(object):
         if status.status == 'failure':
             raise FatalError("Uploaded version wasn't processed successfully.\n%s" % status.message)
         else:
-            print_info('Status: %s. %s' % (status.status, status.message))
+            print_info('Status: {}. {}'.format(status.status, status.message))
 
     def update_dependencies(self, **kwargs):
         if os.path.isfile(self.lock_path):
@@ -762,13 +755,13 @@ class ComponentManager(object):
             for is_root, group in enumerate([downloaded_components, root_managed_components]):
                 for downloaded_component in group:
                     file.write(
-                        u'idf_build_component("{}" "{}")\n'.format(
+                        'idf_build_component("{}" "{}")\n'.format(
                             downloaded_component.abs_posix_path,
                             'idf_components' if is_root == 1 else 'project_managed_components',
                         )
                     )
                     file.write(
-                        u'idf_component_set_property({} {} "{}")\n'.format(
+                        'idf_component_set_property({} {} "{}")\n'.format(
                             downloaded_component.name,
                             'COMPONENT_VERSION',
                             downloaded_component.version,
@@ -777,7 +770,7 @@ class ComponentManager(object):
 
                     if downloaded_component.targets:
                         file.write(
-                            u'idf_component_set_property({} {} "{}")\n'.format(
+                            'idf_component_set_property({} {} "{}")\n'.format(
                                 downloaded_component.name,
                                 'REQUIRED_IDF_TARGETS',
                                 ' '.join(downloaded_component.targets),
@@ -785,18 +778,18 @@ class ComponentManager(object):
                         )
 
             file.write(
-                u'set(managed_components "%s")\n'
+                'set(managed_components "%s")\n'
                 % ';'.join(component.name for component in all_managed_components)
             )
 
         # Saving list of all components with manifests for use on requirements injection step
         all_components = sorted(
-            set(component.abs_path for component in all_managed_components).union(
+            {component.abs_path for component in all_managed_components}.union(
                 component['path'] for component in local_components
             )
         )
         with open(component_list_file, mode='w', encoding='utf-8') as file:
-            file.write(u'\n'.join(all_components))
+            file.write('\n'.join(all_components))
 
     @general_error_handler
     def inject_requirements(
@@ -809,7 +802,7 @@ class ComponentManager(object):
         requirements = requirements_manager.load()
 
         try:
-            with open(component_list_file, mode='r', encoding='utf-8') as f:
+            with open(component_list_file, encoding='utf-8') as f:
                 components_with_manifests = f.readlines()
             os.remove(component_list_file)
         except FileNotFoundError:

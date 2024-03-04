@@ -1,9 +1,7 @@
-# SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
-from six import reraise
-
-from ..errors import InternalError, MetadataError
+from ..errors import MetadataError
 from .constants import KNOWN_BUILD_METADATA_FIELDS, KNOWN_INFO_METADATA_FIELDS
 from .schemas import serialize_list_of_list_of_strings
 
@@ -56,7 +54,7 @@ def _flatten_manifest_file_keys(manifest_tree, stack=None, level=1):
     return res
 
 
-class Metadata(object):
+class Metadata:
     def __init__(self, build_metadata_keys=None, info_metadata_keys=None):
         self.build_metadata_keys = build_metadata_keys or []
         self.info_metadata_keys = info_metadata_keys or []
@@ -118,9 +116,8 @@ class Metadata(object):
                 break
 
         if not key:
-            reraise(
-                InternalError,
-                ValueError('manifest key is not found in metadata key: "{}"'.format(metadata_key)),
-            )
+            raise ValueError(
+                'manifest key is not found in metadata key: "{}"'.format(metadata_key)
+            ).with_traceback(None)
 
         return key, ' of '.join([_t.split('type:')[-1] for _t in types[::-1]])

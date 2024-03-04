@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2016 Python-SemanticVersion project
 # SPDX-License-Identifier: BSD 2-Clause License
-# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
 import itertools
 import sys
@@ -100,15 +99,15 @@ class ComparisonTestCase(unittest.TestCase):
                 with self.subTest(first=first, second=second):
                     if i < j:
                         self.assertTrue(
-                            first_ver < second_ver, '%r !< %r' % (first_ver, second_ver)
+                            first_ver < second_ver, '{!r} !< {!r}'.format(first_ver, second_ver)
                         )
                     elif i == j:
                         self.assertTrue(
-                            first_ver == second_ver, '%r != %r' % (first_ver, second_ver)
+                            first_ver == second_ver, '{!r} != {!r}'.format(first_ver, second_ver)
                         )
                     else:
                         self.assertTrue(
-                            first_ver > second_ver, '%r !> %r' % (first_ver, second_ver)
+                            first_ver > second_ver, '{!r} !> {!r}'.format(first_ver, second_ver)
                         )
 
                     cmp_res = -1 if i < j else (1 if i > j else 0)
@@ -137,14 +136,14 @@ class ComparisonTestCase(unittest.TestCase):
                 with self.subTest(a=a, b=b):
                     v1 = semver.Version(a)
                     v2 = semver.Version(b)
-                    self.assertTrue(v1 == v1, '%r != %r' % (v1, v1))
-                    self.assertFalse(v1 != v1, '%r != %r' % (v1, v1))
-                    self.assertFalse(v1 == v2, '%r == %r' % (v1, v2))
-                    self.assertTrue(v1 != v2, '%r !!= %r' % (v1, v2))
-                    self.assertFalse(v1 < v2, '%r !< %r' % (v1, v2))
-                    self.assertTrue(v1 <= v2, '%r !<= %r' % (v1, v2))
-                    self.assertFalse(v2 > v1, '%r !> %r' % (v2, v1))
-                    self.assertTrue(v2 >= v1, '%r !>= %r' % (v2, v1))
+                    self.assertTrue(v1 == v1, '{!r} != {!r}'.format(v1, v1))
+                    self.assertFalse(v1 != v1, '{!r} != {!r}'.format(v1, v1))
+                    self.assertFalse(v1 == v2, '{!r} == {!r}'.format(v1, v2))
+                    self.assertTrue(v1 != v2, '{!r} !!= {!r}'.format(v1, v2))
+                    self.assertFalse(v1 < v2, '{!r} !< {!r}'.format(v1, v2))
+                    self.assertTrue(v1 <= v2, '{!r} !<= {!r}'.format(v1, v2))
+                    self.assertFalse(v2 > v1, '{!r} !> {!r}'.format(v2, v1))
+                    self.assertTrue(v2 >= v1, '{!r} !>= {!r}'.format(v2, v1))
 
 
 if __name__ == '__main__':  # pragma: no cover

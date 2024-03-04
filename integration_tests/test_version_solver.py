@@ -350,7 +350,7 @@ def test_version_solver_on_local_components_with_higher_versions(project):
         os.path.join(project, 'managed_components', 'example__cmp'),
         os.path.join(project, 'components', 'example__cmp'),
     )
-    with open(os.path.join(project, 'components', 'example__cmp', 'idf_component.yml'), 'r') as fr:
+    with open(os.path.join(project, 'components', 'example__cmp', 'idf_component.yml')) as fr:
         d = yaml.safe_load(fr)
 
     with open(os.path.join(project, 'components', 'example__cmp', 'idf_component.yml'), 'w') as fw:
@@ -361,7 +361,7 @@ def test_version_solver_on_local_components_with_higher_versions(project):
         yaml.safe_dump(d, fw)
 
     # update the dependency
-    with open(os.path.join(project, 'main', 'idf_component.yml'), 'r') as fr:
+    with open(os.path.join(project, 'main', 'idf_component.yml')) as fr:
         d = yaml.safe_load(fr)
 
     with open(os.path.join(project, 'main', 'idf_component.yml'), 'w') as fw:

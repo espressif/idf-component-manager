@@ -8,7 +8,7 @@ import jsonschema
 from idf_component_tools.manifest import JSON_SCHEMA, ComponentVersion
 
 
-class TestComponentVersion(object):
+class TestComponentVersion:
     def test_comparison(self):
         versions = [
             ComponentVersion('3.0.4'),

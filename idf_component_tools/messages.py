@@ -17,7 +17,7 @@ class MetadataWarning(UserHint):
 
 class MetadataKeyWarning(MetadataWarning):
     def __init__(self, field_name, field_type):
-        super(MetadataKeyWarning, self).__init__(
+        super().__init__(
             'Unknown {} field "{}" in the manifest file'.format(field_type, field_name)
         )
 

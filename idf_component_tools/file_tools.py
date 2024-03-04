@@ -1,17 +1,13 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Set of tools and constants to work with files and directories """
 import os
 import shutil
 from pathlib import Path
 from shutil import copytree, rmtree
+from typing import Iterable
 
 from idf_component_tools.messages import warn
-
-try:
-    from typing import Iterable
-except ImportError:
-    pass
 
 DEFAULT_EXCLUDE = [
     # Python files

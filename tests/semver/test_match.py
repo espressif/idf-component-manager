@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2016 Python-SemanticVersion project
 # SPDX-License-Identifier: BSD 2-Clause License
-# SPDX-FileContributor: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
 import sys
 import unittest
@@ -177,7 +176,9 @@ class MatchTestCase(unittest.TestCase):
                     self.assertNotEqual(spec, spec_text)
                     version = semver.Version(version_text)
                     self.assertIn(version, spec)
-                    self.assertTrue(spec.match(version), '%r does not match %r' % (version, spec))
+                    self.assertTrue(
+                        spec.match(version), '{!r} does not match {!r}'.format(version, spec)
+                    )
                     self.assertTrue(semver.match(spec_text, version_text))
 
     def test_contains(self):
@@ -185,22 +186,26 @@ class MatchTestCase(unittest.TestCase):
         self.assertFalse('0.1.0' in spec, '0.1.0 should not be in %r' % spec)
 
         version = semver.Version('0.1.1+4.2')
-        self.assertTrue(version in spec, '%r should be in %r' % (version, spec))
+        self.assertTrue(version in spec, '{!r} should be in {!r}'.format(version, spec))
 
         version = semver.Version('0.1.1-rc1+4.2')
-        self.assertTrue(version in spec, '%r should be in %r' % (version, spec))
+        self.assertTrue(version in spec, '{!r} should be in {!r}'.format(version, spec))
 
     def test_prerelease_check(self):
         strict_spec = semver.SimpleSpec('>=0.1.1-')
         lax_spec = semver.SimpleSpec('>=0.1.1')
         version = semver.Version('0.1.1-rc1+4.2')
-        self.assertFalse(version in lax_spec, '%r should not be in %r' % (version, lax_spec))
-        self.assertFalse(version in strict_spec, '%r should not be in %r' % (version, strict_spec))
+        self.assertFalse(
+            version in lax_spec, '{!r} should not be in {!r}'.format(version, lax_spec)
+        )
+        self.assertFalse(
+            version in strict_spec, '{!r} should not be in {!r}'.format(version, strict_spec)
+        )
 
     def test_build_check(self):
         spec = semver.SimpleSpec('<=0.1.1-rc1')
         version = semver.Version('0.1.1-rc1+4.2')
-        self.assertTrue(version in spec, '%r should be in %r' % (version, spec))
+        self.assertTrue(version in spec, '{!r} should be in {!r}'.format(version, spec))
 
 
 if __name__ == '__main__':  # pragma: no cover

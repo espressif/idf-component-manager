@@ -1,13 +1,9 @@
-# SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 from pathlib import Path
+from typing import Iterable, Text
 
 from .calculate import hash_dir
-
-try:
-    from typing import Iterable, Text
-except ImportError:
-    pass
 
 
 def validate_dir(

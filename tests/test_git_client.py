@@ -3,7 +3,6 @@
 
 import os
 import subprocess
-from io import open
 
 import pytest
 
@@ -22,7 +21,7 @@ def git_repository(tmpdir_factory):
     subprocess.check_output(['git', 'checkout', '-b', 'default'], cwd=temp_dir.strpath)
 
     f = temp_dir.mkdir('component1').join('test_file')
-    f.write(u'component1')
+    f.write('component1')
 
     subprocess.check_output(['git', 'add', '*'], cwd=temp_dir.strpath)
     subprocess.check_output(['git', 'commit', '-m', '"Init commit"'], cwd=temp_dir.strpath)
@@ -39,7 +38,7 @@ def git_repository_with_two_branches(git_repository):
     subprocess.check_output(['git', 'checkout', '-b', 'new_branch'], cwd=git_repository.strpath)
 
     f = git_repository.mkdir('component2').join('test_file')
-    f.write(u'component2')
+    f.write('component2')
 
     subprocess.check_output(['git', 'add', '*'], cwd=git_repository.strpath)
     subprocess.check_output(['git', 'commit', '-m', '"Add new branch"'], cwd=git_repository.strpath)
@@ -68,7 +67,7 @@ def test_bare_repository_in_cache(tmpdir_factory):
     except GitError:
         config_file = os.path.join(cache_path, 'config')
 
-        with open(config_file, 'r', encoding='utf-8') as f:
+        with open(config_file, encoding='utf-8') as f:
             config = f.read()
             assert 'bare = true' in config
 

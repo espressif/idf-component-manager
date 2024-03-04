@@ -4,7 +4,6 @@
 import logging
 import os
 import subprocess
-from io import open
 
 import yaml
 from jinja2 import Environment, Template

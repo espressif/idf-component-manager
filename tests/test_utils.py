@@ -10,7 +10,7 @@ from idf_component_manager.utils import (
 )
 
 
-class TestUtils(object):
+class TestUtils:
     def test_print_error_string(self, capsys):
         print_error('Hello')
         captured = capsys.readouterr()
@@ -47,7 +47,7 @@ class TestUtils(object):
         assert '' == captured.err
 
 
-class TestComponentSource(object):
+class TestComponentSource:
     def test_component_source_order(self):
         assert (
             ComponentSource.IDF_COMPONENTS

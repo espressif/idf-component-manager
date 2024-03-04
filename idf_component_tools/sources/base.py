@@ -1,11 +1,11 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
 from abc import ABCMeta, abstractmethod
+from typing import TYPE_CHECKING, Callable
 
-from schema import Optional, Or
-from six import string_types
+from schema import Optional
 
 import idf_component_tools as tools
 from idf_component_tools.hash_tools.validate_managed_component import (
@@ -16,22 +16,17 @@ from ..errors import FetchingError, SourceError
 from ..file_cache import FileCache
 from ..semver import SimpleSpec
 
-try:
-    from typing import TYPE_CHECKING, Callable
-
-    if TYPE_CHECKING:
-        from ..manifest import ComponentWithVersions, ManifestManager
-        from ..manifest.solved_component import SolvedComponent
-except ImportError:
-    pass
+if TYPE_CHECKING:
+    from ..manifest import ComponentWithVersions, ManifestManager
+    from ..manifest.solved_component import SolvedComponent
 
 VALUE_TYPES = {
-    'str': Or(*string_types),
+    'str': str,
     'bool': bool,
 }
 
 
-class BaseSource(object):
+class BaseSource:
     __metaclass__ = ABCMeta
     NAME = 'base'
 

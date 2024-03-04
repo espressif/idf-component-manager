@@ -1,12 +1,10 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
 from collections import OrderedDict
-from io import open
 
 from schema import And, Optional, Or, Schema, SchemaError, Use
-from six import string_types
 from yaml import Node, SafeDumper, YAMLError
 from yaml import dump as dump_yaml
 from yaml import safe_load
@@ -27,19 +25,19 @@ EMPTY_LOCK = {
     'version': FORMAT_VERSION,
 }
 
-HASH_SCHEMA = Or(And(Or(*string_types), lambda h: len(h) == 64), None)
+HASH_SCHEMA = Or(And(str, lambda h: len(h) == 64), None)
 
 LOCK_SCHEMA = Schema(
     {
         Optional('dependencies'): {
-            Optional(Or(*string_types)): {
+            Optional(str): {
                 'source': Or(*[source.schema() for source in tools.sources.KNOWN_SOURCES]),
-                'version': Or(*string_types),
+                'version': str,
                 Optional('component_hash'): HASH_SCHEMA,
             }
         },
         'manifest_hash': HASH_SCHEMA,
-        'version': And(Or(*string_types), len),
+        'version': And(str, len),
         Optional('target'): And(Use(str.lower), lambda s: s in known_targets()),
     }
 )
@@ -54,7 +52,6 @@ def _unicode_representer(dumper, data):  # type: (SafeDumper, str) -> Node
 
 
 SafeDumper.add_representer(OrderedDict, _ordered_dict_representer)
-SafeDumper.add_representer(string_types, _unicode_representer)  # type: ignore
 
 
 class LockManager:
@@ -93,7 +90,7 @@ class LockManager:
         if not self.exists():
             return SolvedManifest.fromdict(EMPTY_LOCK)
 
-        with open(self._path, mode='r', encoding='utf-8') as f:
+        with open(self._path, encoding='utf-8') as f:
             try:
                 content = f.read()
 

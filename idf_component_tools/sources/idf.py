@@ -1,15 +1,12 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+
+from typing import Dict
 
 from .. import semver
 from ..build_system_tools import get_idf_path, get_idf_version
 from ..manifest import ComponentWithVersions, HashedComponentVersion
 from .base import BaseSource
-
-try:
-    from typing import Dict
-except ImportError:
-    pass
 
 
 class IDFSource(BaseSource):

@@ -18,7 +18,7 @@ from idf_component_tools.sources import WebServiceSource
 from idf_component_tools.sources.web_service import IDF_COMPONENT_REGISTRY_API_URL, download_archive
 
 
-class TestComponentWebServiceSource(object):
+class TestComponentWebServiceSource:
     EXAMPLE_HASH = 'ed55692af0eed2feb68f6d7a2ef95a0142b20518a53a0ceb7c699795359d7dc5'
     LOCALHOST_HASH = '02d9269ed8690352e6bfc5f6a6c60e859fa6cbfc56efe75a1199b35bdd6c54c8'
     CMP_HASH = '15a658f759a13f1767ca3810cd822e010aba1e36b3a980d140cc5e80e823f422'

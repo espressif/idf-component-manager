@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 from functools import wraps
+from typing import Any, Callable
 
 from schema import Schema
 
@@ -17,17 +18,12 @@ from idf_component_tools.registry.component_details import ComponentDetailsWithS
 from idf_component_tools.registry.request_processor import base_request, join_url
 from idf_component_tools.semver import SimpleSpec, Version
 
-try:
-    from typing import Any, Callable
-except ImportError:
-    pass
-
 
 class ComponentWithVersionsAndStorageURL(ComponentWithVersions):
     def __init__(
         self, name, versions, storage_url
     ):  # type: (str, list[HashedComponentVersion], str | None) -> None
-        super(ComponentWithVersionsAndStorageURL, self).__init__(name, versions)
+        super().__init__(name, versions)
         self.storage_url = storage_url
 
     @classmethod
@@ -37,7 +33,7 @@ class ComponentWithVersionsAndStorageURL(ComponentWithVersions):
 
 class StorageClient(BaseClient):
     def __init__(self, storage_url=None, sources=None):
-        super(StorageClient, self).__init__(sources)
+        super().__init__(sources)
         self.storage_url = storage_url
 
     def _request(cache=False):  # type: (BaseClient | bool) -> Callable
@@ -80,7 +76,7 @@ class StorageClient(BaseClient):
     ):  # type: (Callable, str, str) -> ComponentWithVersionsAndStorageURL
         """List of versions for given component with required spec"""
         try:
-            cmp_with_versions = super(StorageClient, self).versions(
+            cmp_with_versions = super().versions(
                 request=request, component_name=component_name, spec=spec
             )
         except StorageFileNotFound:
@@ -129,7 +125,7 @@ class StorageClient(BaseClient):
             example.update({'url': join_url(self.storage_url, example['url'])})
 
         return ComponentDetailsWithStorageURL(
-            name=('%s/%s' % (info['namespace'], info['name'])),
+            name=('{}/{}'.format(info['namespace'], info['name'])),
             version=tools.manifest.ComponentVersion(best_version['version']),
             dependencies=self.version_dependencies(best_version),
             maintainers=None,

@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os.path
-from io import open
 
 import pytest
 
@@ -37,7 +36,7 @@ def test_fetcher_download_and_create_hash(fixtures_path):
 
         hash_file = os.path.join(component_path, HASH_FILENAME)
         with open(hash_file, mode='w+', encoding='utf-8') as f:
-            f.write(u'Wrong hash')
+            f.write('Wrong hash')
 
         with pytest.raises(InvalidComponentHashError, match='File .component_hash for component *'):
             fetcher.download()

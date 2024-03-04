@@ -9,7 +9,7 @@ from idf_component_tools.manifest.solved_component import SolvedComponent
 from idf_component_tools.sources import WebServiceSource
 
 
-class TestSolverResult(object):
+class TestSolverResult:
     def test_load_valid_lock(self, fixtures_path):
         valid_lock_path = os.path.join(
             fixtures_path,

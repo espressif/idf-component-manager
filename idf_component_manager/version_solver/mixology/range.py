@@ -1,19 +1,15 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
-try:
-    from typing import TYPE_CHECKING, Any, NoReturn, Optional
-    from typing import Union as _Union
+from typing import TYPE_CHECKING, Any, NoReturn, Optional
+from typing import Union as _Union
 
-    if TYPE_CHECKING:
-        from .union import Union
-except ImportError:
-    pass
+if TYPE_CHECKING:
+    from .union import Union
 
 
-class Range(object):
+class Range:
     """
     A range of versions represented by a minimum version,
     a maximum version and whether they are included in the range.

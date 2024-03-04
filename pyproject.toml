@@ -18,13 +18,12 @@ click = '*'
 colorama = '*'
 packaging = "*"
 pyparsing = '*'
-python = ">=3.8,<4.0"
+python = ">=3.7,<4.0"
 pyyaml = "*"
 requests = "*"
 requests-file = "*"
 requests-toolbelt = "*"
 schema = "*"
-six = "*"
 tqdm = '*'
 urllib3 = "<2"
 
@@ -42,12 +41,11 @@ commitizen = { version = "^3.13.0", python = ">=3.8,<4.0" }
 coverage = '*'
 deptry = { version = ">=0.12.0", python = ">=3.9,<4.0" }
 flake8 = '*'
-Flake8-pyproject = "*"
-flake8-pyproject = "^1.2.3"
+flake8-pyproject = "*"
 flake8-quotes = '*'
 jinja2 = "*"
 jsonschema = "*"
-mypy = { extras = ["python2"], version = '*' }
+mypy = "*"
 pexpect = "*"
 pre-commit = '*'
 pytest = '*'
@@ -61,7 +59,6 @@ thefuzz = "*"
 twine = "*"
 types-pyyaml = "^6.0.12.10"
 types-requests = "^2.31.0.1"
-types-six = "^1.16.21.8"
 unify = '*'
 vcrpy = '<5'
 wheel = "*"
@@ -70,7 +67,7 @@ wheel = "*"
 compote = { callable = "idf_component_manager.cli:safe_cli" }
 
 [tool.black]
-target-version = ['py35']
+target-version = ['py37']
 line-length = 100
 skip-string-normalization = true
 

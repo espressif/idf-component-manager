@@ -1,6 +1,8 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Results of the solver"""
+
+from typing import Iterable
 
 from idf_component_tools.serialization import serializable
 
@@ -9,14 +11,9 @@ from ..errors import LockError
 from ..manifest import ComponentRequirement, ComponentVersion
 from ..sources.base import BaseSource
 
-try:
-    from typing import Iterable
-except ImportError:
-    pass
-
 
 @serializable
-class SolvedComponent(object):
+class SolvedComponent:
     _serialization_properties = [
         'component_hash',
         'name',

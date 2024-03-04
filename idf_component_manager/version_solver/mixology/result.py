@@ -1,12 +1,8 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
-try:
-    from typing import Dict
-except ImportError:
-    pass
+from typing import Dict
 
 from idf_component_manager.version_solver.mixology.package import Package
 from idf_component_tools.manifest import HashedComponentVersion

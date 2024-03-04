@@ -1,17 +1,13 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
-try:
-    from typing import Optional
-except ImportError:
-    pass
+from typing import Optional
 
 from idf_component_tools.sources import BaseSource
 
 
-class Package(object):
+class Package:
     """
     A project's package.
     """

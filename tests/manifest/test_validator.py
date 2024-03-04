@@ -21,7 +21,7 @@ from idf_component_tools.messages import MetadataKeyWarning
 from idf_component_tools.sources import LocalSource
 
 
-class TestManifestValidator(object):
+class TestManifestValidator:
     def test_validate_unknown_root_key(self, valid_manifest, recwarn):
         # unknown root keys
         valid_manifest['unknown'] = 'test'
@@ -38,7 +38,7 @@ class TestManifestValidator(object):
         assert len(recwarn) == 2
 
         # manifest_tree is not sorted. compare set not list
-        assert set(warning.message.args[0] for warning in recwarn) == {
+        assert {warning.message.args[0] for warning in recwarn} == {
             'Unknown string field "foo" in the manifest file',
             'Dropping key "maintainers" from manifest.',
         }
@@ -293,7 +293,7 @@ class TestManifestValidator(object):
         managed_components_path.mkdir()
 
         unused_file = managed_components_path / 'unused_file'
-        unused_file.write_text(u'test')
+        unused_file.write_text('test')
 
         project_requirements = []
         with warnings.catch_warnings(record=True) as w:
@@ -310,7 +310,7 @@ class TestManifestValidator(object):
         managed_components_path.mkdir()
 
         unused_file = managed_components_path / 'unused_file'
-        unused_file.write_text(u'test')
+        unused_file.write_text('test')
 
         with pytest.warns(UserWarning, match='1 unexpected files and directories were found*'):
             detect_unused_components([], str(managed_components_path))
@@ -465,7 +465,7 @@ class TestManifestValidator(object):
         assert not errors
 
 
-class TestExpandedManifestValidator(object):
+class TestExpandedManifestValidator:
     def test_validate_optional_dependency_success(
         self, valid_optional_dependency_manifest_with_idf
     ):

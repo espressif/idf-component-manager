@@ -4,7 +4,9 @@
 import json
 import re
 from collections import namedtuple
+from collections.abc import Mapping
 from functools import total_ordering
+from typing import TYPE_CHECKING
 
 import idf_component_tools as tools
 from idf_component_tools.build_system_tools import build_name, get_env_idf_target
@@ -18,28 +20,18 @@ from idf_component_tools.serialization import serializable
 from .constants import COMMIT_ID_RE, LINKS
 from .if_parser import OptionalDependency
 
-try:
-    from collections.abc import Mapping
-except ImportError:
-    from collections import Mapping  # type: ignore
+if TYPE_CHECKING:
+    from typing import Any
 
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from typing import Any
-
-        from ..sources import BaseSource
-        from . import ManifestManager
-except ImportError:
-    pass
+    from ..sources import BaseSource
+    from . import ManifestManager
 
 # Ignore error with using variable in namedtuple
 ComponentLinks = namedtuple('ComponentLinks', LINKS)  # type: ignore
 
 
 @serializable
-class Manifest(object):
+class Manifest:
     _serialization_properties = [
         'dependencies',
         'description',
@@ -197,7 +189,7 @@ class Manifest(object):
 
 
 @serializable
-class OptionalRequirement(object):
+class OptionalRequirement:
     """
     Stores the list of `matches` and `rules` for the requirement dependency.
     Each rule represented as `OptionalDependency` object.
@@ -224,7 +216,7 @@ class OptionalRequirement(object):
         - All the IfClauses that are true among all the specified `rules`
 
         :return:
-            - if the optional dependency matches, return the version spec if specified, else return '*'
+            - if the optional dependency matches, return the version spec if specified, else return '*' # noqa
             - else, return None
         """
         if not self.matches and not self.rules:
@@ -268,7 +260,7 @@ class OptionalRequirement(object):
 
 
 @serializable
-class ComponentRequirement(object):
+class ComponentRequirement:
     _serialization_properties = [
         'name',
         'public',
@@ -375,7 +367,7 @@ class ComponentRequirement(object):
 
 @total_ordering
 @serializable(like='str')
-class ComponentVersion(object):
+class ComponentVersion:
     def __init__(
         self, version_string, dependencies=None
     ):  # type: (str, list[ComponentRequirement] | None) -> None
@@ -439,7 +431,7 @@ class HashedComponentVersion(ComponentVersion):
         dependencies = kwargs.pop('dependencies', []) or []
         targets = kwargs.pop('targets', [])
         all_build_keys_known = kwargs.pop('all_build_keys_known', True)
-        super(HashedComponentVersion, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.component_hash = component_hash
         self.dependencies = dependencies
@@ -454,13 +446,13 @@ class HashedComponentVersion(ComponentVersion):
         return str(self)
 
 
-class ComponentWithVersions(object):
+class ComponentWithVersions:
     def __init__(self, name, versions):  # type: (str, list[HashedComponentVersion]) -> None
         self.versions = versions
         self.name = name
 
 
-class ProjectRequirements(object):
+class ProjectRequirements:
     '''Representation of all manifests required by project'''
 
     def __init__(self, manifests):  # type: (list[Manifest]) -> None

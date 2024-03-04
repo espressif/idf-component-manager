@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import pytest
 
@@ -7,7 +7,7 @@ from idf_component_tools.serialization import serializable
 
 def test_serialize_default_fields():
     @serializable
-    class TestSerializableClass(object):
+    class TestSerializableClass:
         _serialization_properties = [
             'field1',
             {'name': 'field2', 'default': True, 'serialize_default': False},
@@ -25,7 +25,7 @@ def test_serialize_default_fields():
 
 def test_serialize_object_field():
     @serializable
-    class TestSerializableClass(object):
+    class TestSerializableClass:
         _serialization_properties = [
             'another_class',
         ]
@@ -34,7 +34,7 @@ def test_serialize_object_field():
             self.another_class = another_class
 
     @serializable
-    class TestSerializableAnotherClass(object):
+    class TestSerializableAnotherClass:
         _serialization_properties = ['field1', 'field2']
 
         def __init__(self, field1, field2):
@@ -53,7 +53,7 @@ def test_serialize_object_field():
 
 def test_serialize_object_cyclic_references():
     @serializable
-    class TestSerializableClass(object):
+    class TestSerializableClass:
         _serialization_properties = [
             'another_class',
         ]
@@ -62,7 +62,7 @@ def test_serialize_object_cyclic_references():
             self.another_class = another_class
 
     @serializable
-    class TestSerializableAnotherClass(object):
+    class TestSerializableAnotherClass:
         _serialization_properties = [
             'another_class',
         ]
@@ -82,7 +82,7 @@ def test_serialize_object_cyclic_references():
 
 def test_serialize_optional_arguments():
     @serializable
-    class TestSerializableClass(object):
+    class TestSerializableClass:
         _serialization_properties = [
             'req_field',
             'none_field',
@@ -107,7 +107,7 @@ def test_serialize_optional_arguments():
 
 def test_serialize_in_inner_class():
     @serializable
-    class TestSerializableClass(object):
+    class TestSerializableClass:
         _serialization_properties = [
             'another_class',
         ]
@@ -115,7 +115,7 @@ def test_serialize_in_inner_class():
         def __init__(self, another_class):
             self.another_class = another_class
 
-    class TestSerializeFunctionClass(object):
+    class TestSerializeFunctionClass:
         def __init__(self, test_field):
             self.test_field = test_field
 
@@ -131,7 +131,7 @@ def test_serialize_in_inner_class():
 
 def test_serialize_in_class():
     @serializable
-    class TestSerializeFunctionClass(object):
+    class TestSerializeFunctionClass:
         _serialization_properties = [
             'test_field',
         ]
@@ -150,7 +150,7 @@ def test_serialize_in_class():
 
 def test_serialize_like_str():
     @serializable(like='str')
-    class TestSerializeClass(object):
+    class TestSerializeClass:
         _serialization_properties = [
             'field1',
         ]
@@ -171,13 +171,13 @@ def test_serialize_like_unknown_type():
     with pytest.raises(TypeError):
 
         @serializable(like='bool')
-        class TestSerializeClass(object):
+        class TestSerializeClass:
             pass
 
 
 def test_serialize_dictionary():
     @serializable
-    class TestSerializableClass(object):
+    class TestSerializableClass:
         _serialization_properties = [
             'dict_field',
         ]
@@ -206,7 +206,7 @@ def test_serialize_dictionary():
 
 def test_serialize_list():
     @serializable
-    class TestSerializableClass(object):
+    class TestSerializableClass:
         _serialization_properties = [
             'list_field',
         ]

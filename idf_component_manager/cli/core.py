@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import sys
 import warnings
+from typing import Any
 
 import click
 
@@ -20,11 +21,6 @@ from .component import init_component
 from .manifest import init_manifest
 from .project import init_project
 from .registry import init_registry
-
-try:
-    from typing import Any
-except ImportError:
-    pass
 
 DEFAULT_SETTINGS = {
     'help_option_names': ['-h', '--help'],
