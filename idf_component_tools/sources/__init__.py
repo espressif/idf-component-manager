@@ -9,12 +9,12 @@ from .idf import IDFSource
 from .local import LocalSource
 from .web_service import WebServiceSource
 
-KNOWN_SOURCES = [
+KNOWN_SOURCES: List[Type[BaseSource]] = [
     IDFSource,
     GitSource,
     LocalSource,
     WebServiceSource,
-]  # type: List[Type[BaseSource]]
+]
 
 __all__ = [
     'BaseSource',

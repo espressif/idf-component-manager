@@ -1,9 +1,11 @@
 # SPDX-FileCopyrightText: 2016 Python-SemanticVersion project
 # SPDX-License-Identifier: BSD 2-Clause License
 # SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
+from __future__ import annotations
 
 import functools
 import re
+from typing import List
 
 
 def _has_leading_zero(value):
@@ -11,7 +13,7 @@ def _has_leading_zero(value):
 
 
 class MaxIdentifier:
-    __slots__ = []  # type: list[str]
+    __slots__: List[str] = []
 
     def __repr__(self):
         return 'MaxIdentifier()'
@@ -515,7 +517,7 @@ class BaseSpec:
         return f'<{self.__class__.__name__}: {self.expression!r}>'
 
     @classmethod
-    def _contains_prerelease(cls, clause):  # type: (Clause) -> bool
+    def _contains_prerelease(cls, clause: Clause) -> bool:
         if hasattr(clause, 'clauses'):
             return any(cls._contains_prerelease(c) for c in clause.clauses)
         elif isinstance(clause, Range):
@@ -524,12 +526,12 @@ class BaseSpec:
             return False
 
     @property
-    def contains_prerelease(self):  # type: () -> bool
+    def contains_prerelease(self) -> bool:
         return self._contains_prerelease(self.clause)
 
 
 class Clause:
-    __slots__ = []  # type: list[str]
+    __slots__: List[str] = []
 
     def match(self, version):
         raise NotImplementedError()
@@ -691,7 +693,7 @@ class AllOf(Clause):
 
 
 class Matcher(Clause):
-    __slots__ = []  # type: list[str]
+    __slots__: List[str] = []
 
     def __and__(self, other):
         if isinstance(other, AllOf):
@@ -711,7 +713,7 @@ class Matcher(Clause):
 
 
 class Never(Matcher):
-    __slots__ = []  # type: list[str]
+    __slots__: List[str] = []
 
     def match(self, version):
         return False
@@ -733,7 +735,7 @@ class Never(Matcher):
 
 
 class Always(Matcher):
-    __slots__ = []  # type: list[str]
+    __slots__: List[str] = []
 
     def match(self, version):
         return True
@@ -783,7 +785,7 @@ class Range(Matcher):
         if target.build and operator not in (self.OP_EQ, self.OP_NEQ):
             raise ValueError(f'Invalid range {operator}{target}: build numbers have no ordering.')
         self.operator = operator
-        self.target = target  # type: Version
+        self.target: Version = target
         self.prerelease_policy = prerelease_policy
         self.build_policy = self.BUILD_STRICT if target.build else build_policy
 

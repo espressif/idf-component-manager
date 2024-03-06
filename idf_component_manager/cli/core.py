@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import sys
 import warnings
-from typing import Any
+from typing import Any, Dict
 
 import click
 
@@ -22,9 +22,9 @@ from .manifest import init_manifest
 from .project import init_project
 from .registry import init_registry
 
-DEFAULT_SETTINGS = {
+DEFAULT_SETTINGS: Dict[str, Any] = {
     'help_option_names': ['-h', '--help'],
-}  # type: dict[str, Any]
+}
 
 if CLICK_SUPPORTS_SHOW_DEFAULT:
     DEFAULT_SETTINGS['show_default'] = True

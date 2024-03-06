@@ -10,34 +10,34 @@ from idf_component_tools.errors import FatalError
 
 from .core import ComponentManager
 
-SERVICE_PROFILE = [
+SERVICE_PROFILE: List[Dict[str, Any]] = [
     {
         'names': ['--service-profile'],
         'help': 'Profile for the component registry to use. '
         'By default profile named "default" will be used.',
         'envvar': 'IDF_COMPONENT_SERVICE_PROFILE',
     },
-]  # type: List[Dict[str, Any]]
+]
 
-NAMESPACE = [
+NAMESPACE: List[Dict[str, Any]] = [
     {
         'names': ['--namespace'],
         'help': 'Namespace for the component. Can be set in the config file.',
         'envvar': 'IDF_COMPONENT_NAMESPACE',
     },
-]  # type: List[Dict[str, Any]]
+]
 
-NAME = [
+NAME: List[Dict[str, Any]] = [
     {
         'names': ['--name'],
         'help': 'Component name.',
         'required': True,
     },
-]  # type: List[Dict[str, Any]]
+]
 
 SERVICE_OPTIONS = SERVICE_PROFILE + NAMESPACE + NAME
 
-LOCAL_MANIFEST_OPTIONS = [
+LOCAL_MANIFEST_OPTIONS: List[Dict[str, Any]] = [
     {
         'names': ['--component'],
         'default': 'main',
@@ -48,7 +48,7 @@ LOCAL_MANIFEST_OPTIONS = [
         'help': 'Path to the component. The component name is ignored when path the is specified.',
         'default': None,
     },
-]  # type: list[dict[str, Any]]
+]
 
 if CLICK_SUPPORTS_SHOW_DEFAULT:
     LOCAL_MANIFEST_OPTIONS[0]['show_default'] = True

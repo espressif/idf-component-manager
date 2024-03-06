@@ -5,6 +5,7 @@ import os
 import shutil
 from functools import total_ordering
 from pathlib import Path
+from typing import List, Set
 
 from idf_component_manager.core_utils import raise_component_modified_error
 from idf_component_manager.utils import print_info, print_warn
@@ -33,7 +34,7 @@ from idf_component_tools.registry.api_client_errors import NetworkConnectionErro
 from idf_component_tools.sources.fetcher import ComponentFetcher
 
 
-def check_manifests_targets(project_requirements):  # type: (ProjectRequirements) -> None
+def check_manifests_targets(project_requirements: ProjectRequirements) -> None:
     for manifest in project_requirements.manifests:
         if not manifest.targets:
             continue
@@ -47,8 +48,8 @@ def check_manifests_targets(project_requirements):  # type: (ProjectRequirements
 
 
 def get_unused_components(
-    unused_files_with_components, managed_components_path
-):  # type: (set[str], str) -> set[str]
+    unused_files_with_components: Set[str], managed_components_path: str
+) -> Set[str]:
     unused_components = set()
 
     for component in unused_files_with_components:
@@ -62,8 +63,8 @@ def get_unused_components(
 
 
 def detect_unused_components(
-    requirement_dependencies, managed_components_path
-):  # type: (list[SolvedComponent], str) -> None
+    requirement_dependencies: List[SolvedComponent], managed_components_path: str
+) -> None:
     downloaded_components = os.listdir(managed_components_path)
     unused_files_with_components = set(downloaded_components) - {
         build_name(component.name) for component in requirement_dependencies
@@ -93,9 +94,7 @@ def detect_unused_components(
         warn(warning)
 
 
-def is_solve_required(project_requirements, solution):
-    # type: (ProjectRequirements, SolvedManifest) -> bool
-
+def is_solve_required(project_requirements: ProjectRequirements, solution: SolvedManifest) -> bool:
     if not solution.manifest_hash:
         print_info('Dependencies lock doesn\'t exist, solving dependencies.')
         return True
@@ -184,7 +183,7 @@ def print_dot():
 
 @total_ordering
 class DownloadedComponent:
-    def __init__(self, downloaded_path, targets, version):  # type: (str, list[str], str) -> None
+    def __init__(self, downloaded_path: str, targets: List[str], version: str) -> None:
         self.downloaded_path = downloaded_path
         self.targets = targets
         self.version = version
@@ -205,7 +204,7 @@ class DownloadedComponent:
         return self.abs_path < other.abs_path
 
     @property
-    def name(self):  # type: () -> str
+    def name(self) -> str:
         return os.path.basename(self.abs_path)
 
     @property
@@ -213,7 +212,7 @@ class DownloadedComponent:
         return os.path.abspath(self.downloaded_path)
 
     @property
-    def abs_posix_path(self):  # type: () -> str
+    def abs_posix_path(self) -> str:
         return Path(self.abs_path).as_posix()
 
 
@@ -253,9 +252,11 @@ def check_for_new_component_versions(project_requirements, old_solution):
 
 
 def download_project_dependencies(
-    project_requirements, lock_path, managed_components_path, is_idf_root_dependencies=False
-):
-    # type: (ProjectRequirements, str, str, bool) -> set[DownloadedComponent]
+    project_requirements: ProjectRequirements,
+    lock_path: str,
+    managed_components_path: str,
+    is_idf_root_dependencies: bool = False,
+) -> Set[DownloadedComponent]:
     """Solves dependencies and download components"""
     lock_manager = LockManager(lock_path)
     solution = lock_manager.load()

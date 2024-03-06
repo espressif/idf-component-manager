@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
 # SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
+from __future__ import annotations
 
 from typing import Optional
 
@@ -15,7 +16,7 @@ class Term:
     package versions.
     """
 
-    def __init__(self, constraint, is_positive):  # type: (Constraint, bool) -> None
+    def __init__(self, constraint: Constraint, is_positive: bool) -> None:
         self._constraint = constraint
         self._package = constraint.package
         self._positive = is_positive
@@ -23,19 +24,19 @@ class Term:
         self._empty = None
 
     @property
-    def inverse(self):  # type: () -> Term
+    def inverse(self) -> Term:
         return Term(self.constraint, not self.is_positive())
 
     @property
-    def package(self):  # type: () -> Package
+    def package(self) -> Package:
         return self._package
 
     @property
-    def constraint(self):  # type: () -> Constraint
+    def constraint(self) -> Constraint:
         return self._constraint
 
     @property
-    def normalized_constraint(self):  # type: () -> Constraint
+    def normalized_constraint(self) -> Constraint:
         if self._normalized_constraint is None:
             self._normalized_constraint = (
                 self.constraint if self.is_positive() else self.constraint.inverse
@@ -43,16 +44,16 @@ class Term:
 
         return self._normalized_constraint
 
-    def is_positive(self):  # type: () -> bool
+    def is_positive(self) -> bool:
         return self._positive
 
-    def satisfies(self, other):  # type: (Term) -> bool
+    def satisfies(self, other: Term) -> bool:
         """
         Returns whether this term satisfies another.
         """
         return self._package == other.package and self.relation(other) == SetRelation.SUBSET
 
-    def relation(self, other):  # type: (Term) -> SetRelation
+    def relation(self, other: Term) -> SetRelation:
         """
         Returns the relationship between the package versions
         allowed by this term and another.
@@ -112,7 +113,7 @@ class Term:
                 # not foo ^1.5.0 is a superset of not foo ^1.0.0
                 return SetRelation.OVERLAPPING
 
-    def intersect(self, other):  # type: (Term) -> Optional[Term]
+    def intersect(self, other: Term) -> Optional[Term]:
         """
         Returns a Term that represents the packages
         allowed by both this term and another
@@ -140,35 +141,33 @@ class Term:
         else:
             return
 
-    def difference(self, other):  # type: (Term) -> Term
+    def difference(self, other: Term) -> Term:
         """
         Returns a Term that represents packages
         allowed by this term and not by the other
         """
         return self.intersect(other.inverse)
 
-    def is_compatible_with(self, other):  # type: (Term) -> bool
+    def is_compatible_with(self, other: Term) -> bool:
         return (
             self.package == Package.root()
             or other.package == Package.root()
             or self.package == other.package
         )
 
-    def is_empty(self):  # type: () -> bool
+    def is_empty(self) -> bool:
         if self._empty is None:
             self._empty = self.normalized_constraint.is_empty()
 
         return self._empty
 
-    def _non_empty_term(
-        self, constraint, is_positive
-    ):  # type: (Constraint, bool) -> Optional[Term]
+    def _non_empty_term(self, constraint: Constraint, is_positive: bool) -> Optional[Term]:
         if constraint.is_empty():
             return
 
         return Term(constraint, is_positive)
 
-    def to_string(self, allow_every=False):  # type: (bool) -> str
+    def to_string(self, allow_every: bool = False) -> str:
         if self.is_positive():
             return self.constraint.to_string(allow_every=allow_every)
 

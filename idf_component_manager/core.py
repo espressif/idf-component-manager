@@ -12,7 +12,9 @@ import time
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Dict, List, Optional
+from typing import OrderedDict as OrderedDictType
+from typing import Tuple, Union
 
 import requests
 from requests_toolbelt import MultipartEncoderMonitor
@@ -120,7 +122,7 @@ def general_error_handler(func):
     return wrapper
 
 
-def _create_manifest_if_missing(manifest_dir):  # type: (str) -> bool
+def _create_manifest_if_missing(manifest_dir: str) -> bool:
     manifest_filepath = os.path.join(manifest_dir, MANIFEST_FILENAME)
     if os.path.exists(manifest_filepath):
         return False
@@ -134,9 +136,13 @@ def _create_manifest_if_missing(manifest_dir):  # type: (str) -> bool
 
 
 class ComponentManager:
-    def __init__(self, path, lock_path=None, manifest_path=None, interface_version=0):
-        # type: (str, Optional[str], Optional[str], int) -> None
-
+    def __init__(
+        self,
+        path: str,
+        lock_path: Optional[str] = None,
+        manifest_path: Optional[str] = None,
+        interface_version: int = 0,
+    ) -> None:
         # Working directory
         path = os.path.abspath(path)
         self.path = path
@@ -172,7 +178,7 @@ class ComponentManager:
 
         self.interface_version = interface_version
 
-    def _get_manifest_dir(self, component='main', path=None):  # type: (str, Optional[str]) -> str
+    def _get_manifest_dir(self, component: str = 'main', path: Optional[str] = None) -> str:
         if component != 'main' and path is not None:
             raise FatalError(
                 'Cannot determine manifest directory. Please specify either component or path.'
@@ -206,17 +212,17 @@ class ComponentManager:
 
     @property
     @lru_cache(1)
-    def root_managed_components_dir(self):  # type: () -> str
+    def root_managed_components_dir(self) -> str:
         return root_managed_components_dir()  # type: ignore
 
     @property
     @lru_cache(1)
-    def root_managed_components_lock_path(self):  # type: () -> str
+    def root_managed_components_lock_path(self) -> str:
         return os.path.join(self.root_managed_components_dir, 'dependencies.lock')  # type: ignore
 
     def _get_manifest(
-        self, component='main', path=None
-    ):  # type: (str, Optional[str]) -> Tuple[str, bool]
+        self, component: str = 'main', path: Optional[str] = None
+    ) -> Tuple[str, bool]:
         manifest_dir = self._get_manifest_dir(component=component, path=path)
         manifest_filepath = os.path.join(manifest_dir, MANIFEST_FILENAME)
         # Create manifest file if it doesn't exist in work directory
@@ -224,14 +230,15 @@ class ComponentManager:
         return manifest_filepath, manifest_created
 
     @general_error_handler
-    def create_manifest(self, component='main', path=None):  # type: (str, Optional[str]) -> None
+    def create_manifest(self, component: str = 'main', path: Optional[str] = None) -> None:
         manifest_filepath, created = self._get_manifest(component=component, path=path)
         if not created:
             print_info(f'"{manifest_filepath}" already exists, skipping...')
 
     @general_error_handler
-    def create_project_from_example(self, example, path=None, service_profile=None):
-        # type: (str, str | None, str | None) -> None
+    def create_project_from_example(
+        self, example: str, path: Optional[str] = None, service_profile: Optional[str] = None
+    ) -> None:
         client, namespace = get_storage_client(None, service_profile)
         component_name, version_spec, example_name = parse_example(example, namespace)
         project_path = path or os.path.join(self.path, os.path.basename(example_name))
@@ -277,8 +284,12 @@ class ComponentManager:
 
     @general_error_handler
     def add_dependency(
-        self, dependency, component='main', path=None, service_profile=None
-    ):  # type: (str, str, Optional[str], str | None) -> None
+        self,
+        dependency: str,
+        component: str = 'main',
+        path: Optional[str] = None,
+        service_profile: Optional[str] = None,
+    ) -> None:
         manifest_filepath, _ = self._get_manifest(component=component, path=path)
         client, _ = get_storage_client(None, service_profile)
 
@@ -363,8 +374,14 @@ class ComponentManager:
 
     @general_error_handler
     def pack_component(
-        self, name, version, dest_dir=None, repository=None, commit_sha=None, repository_path=None
-    ):  # type: (str, str, str | None, str | None, str | None, str | None) -> tuple[str, Manifest]
+        self,
+        name: str,
+        version: str,
+        dest_dir: Optional[str] = None,
+        repository: Optional[str] = None,
+        commit_sha: Optional[str] = None,
+        repository_path: Optional[str] = None,
+    ) -> Tuple[str, Manifest]:
         dest_path = os.path.join(self.path, dest_dir) if dest_dir else self.dist_path
 
         if version == 'git':
@@ -414,11 +431,11 @@ class ComponentManager:
     @general_error_handler
     def delete_version(
         self,
-        name,  # type: str
-        version,  # type: str
-        service_profile=None,  # type: str | None
-        namespace=None,  # type: str | None
-    ):  # type: (...) -> None
+        name: str,
+        version: str,
+        service_profile: Optional[str] = None,
+        namespace: Optional[str] = None,
+    ) -> None:
         client, namespace = get_api_client(namespace, service_profile)
         if not version:
             raise FatalError('Argument "version" is required')
@@ -440,11 +457,11 @@ class ComponentManager:
     @general_error_handler
     def yank_version(
         self,
-        name,  # type: str
-        version,  # type: str
-        message,  # type: str
-        service_profile=None,  # type: str | None
-        namespace=None,  # type: str | None
+        name: str,
+        version: str,
+        message: str,
+        service_profile: Optional[str] = None,
+        namespace: Optional[str] = None,
     ):
         client, namespace = get_api_client(namespace, service_profile)
         component_name = '/'.join([namespace, name])
@@ -498,20 +515,20 @@ class ComponentManager:
     @general_error_handler
     def upload_component(
         self,
-        name,  # type: str
-        version=None,  # type: str | None
-        service_profile=None,  # type: str | None
-        namespace=None,  # type: str | None
-        archive=None,  # type: str | None
-        skip_pre_release=False,  # type: bool
-        check_only=False,  # type: bool
-        allow_existing=False,  # type: bool
-        dry_run=False,  # type: bool
-        dest_dir=None,  # type: str | None
-        repository=None,  # type: str | None
-        commit_sha=None,  # type: str | None
-        repository_path=None,  # type: str | None
-    ):  # type: (...) -> None
+        name: str,
+        version: Optional[str] = None,
+        service_profile: Optional[str] = None,
+        namespace: Optional[str] = None,
+        archive: Optional[str] = None,
+        skip_pre_release: bool = False,
+        check_only: bool = False,
+        allow_existing: bool = False,
+        dry_run: bool = False,
+        dest_dir: Optional[str] = None,
+        repository: Optional[str] = None,
+        commit_sha: Optional[str] = None,
+        repository_path: Optional[str] = None,
+    ) -> None:
         """
         Uploads a component version to the registry.
         """
@@ -586,7 +603,7 @@ class ComponentManager:
         ) as progress_bar:
             memo = {'progress': 0}
 
-            def callback(monitor):  # type: (MultipartEncoderMonitor) -> None
+            def callback(monitor: MultipartEncoderMonitor) -> None:
                 progress_bar.update(monitor.bytes_read - memo['progress'])
                 memo['progress'] = monitor.bytes_read
 
@@ -656,9 +673,7 @@ class ComponentManager:
             )
 
     @general_error_handler
-    def upload_component_status(
-        self, job_id, service_profile=None
-    ):  # type: (str, str | None) -> None
+    def upload_component_status(self, job_id: str, service_profile: Optional[str] = None) -> None:
         client, _ = get_api_client(None, service_profile)
         status = client.task_status(job_id=job_id)
         if status.status == 'failure':
@@ -793,8 +808,8 @@ class ComponentManager:
     @general_error_handler
     def inject_requirements(
         self,
-        component_requires_file,  # type: Path | str
-        component_list_file,  # type: Path | str
+        component_requires_file: Union[Path, str],
+        component_list_file: Union[Path, str],
     ):
         '''Set build dependencies for components with manifests'''
         requirements_manager = CMakeRequirementsManager(component_requires_file)
@@ -831,7 +846,7 @@ class ComponentManager:
                 dependency_name = build_name(dependency.name)
                 requirement_key = 'REQUIRES' if dependency.public else 'PRIV_REQUIRES'
 
-                def add_req(key):  # type: (str) -> None
+                def add_req(key: str) -> None:
                     if key not in requirements[name_key]:
                         requirements[name_key][key] = []
 
@@ -878,8 +893,8 @@ class ComponentManager:
 
     @staticmethod
     def _override_requirements_by_component_sources(
-        requirements,  # type: OrderedDict[ComponentName, dict[str, list[str] | str]]
-    ):  # type: (...) -> OrderedDict[ComponentName, dict[str, list[str] | str]]
+        requirements: OrderedDictType[ComponentName, Dict[str, Union[List[str], str]]],
+    ) -> OrderedDictType[ComponentName, Dict[str, Union[List[str], str]]]:
         """
         group the requirements, the overriding sequence here is: (the latter, the higher priority)
         - idf_components (IDF_PATH/components)
@@ -963,8 +978,13 @@ class ComponentManager:
         return new_requirements
 
     def sync_registry(
-        self, service_profile, save_path, interval=0, components=None, recursive=True
-    ):  # type: (str, str | Path, int, list[str] | None, bool) -> None
+        self,
+        service_profile: str,
+        save_path: Union[str, Path],
+        interval: int = 0,
+        components: Optional[List[str]] = None,
+        recursive: bool = True,
+    ) -> None:
         client, namespace = get_storage_client(None, service_profile)
         save_path = Path(save_path)
         if interval:

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 import webbrowser
+from typing import List
 
 import click
 import requests
@@ -175,8 +176,13 @@ def init_registry():
     )
     @click.argument('path', required=True)
     def sync(
-        manager, service_profile, interval, component, recursive, path
-    ):  # type: (ComponentManager, str, int, list[str], bool, str) -> None
+        manager: ComponentManager,
+        service_profile: str,
+        interval: int,
+        component: List[str],
+        recursive: bool,
+        path: str,
+    ) -> None:
         manager.sync_registry(
             service_profile,
             path,

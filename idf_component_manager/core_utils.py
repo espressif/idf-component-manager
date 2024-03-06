@@ -4,6 +4,7 @@ import os
 import re
 from collections import namedtuple
 from pathlib import Path
+from typing import Dict, List, Optional, Set, Tuple
 
 from tqdm import tqdm
 
@@ -31,24 +32,22 @@ SYNC_REGISTRY_COMPONENT_NAME_REGEX = (
 class ProgressBar(tqdm):
     """Wrapper for tqdm for updating progress bar status"""
 
-    def update_to(self, count):  # type: (int) -> bool | None
+    def update_to(self, count: int) -> Optional[bool]:
         return self.update(count - self.n)
 
 
-def dist_name(manifest):  # type: (Manifest) -> str
+def dist_name(manifest: Manifest) -> str:
     if manifest.version is None:
         raise ValueError('Version is required in this manifest')
 
     return f'{manifest.name}_{manifest.version}'
 
 
-def archive_filename(manifest):  # type: (Manifest) -> str
+def archive_filename(manifest: Manifest) -> str:
     return f'{dist_name(manifest)}.tgz'
 
 
-def raise_component_modified_error(
-    managed_components_dir, components
-):  # type: (str, list[str]) -> None
+def raise_component_modified_error(managed_components_dir: str, components: List[str]) -> None:
     project_path = Path(managed_components_dir).parent
     component_example_name = components[0].replace('/', '__')
     managed_component_dir = Path(managed_components_dir, component_example_name)
@@ -78,7 +77,7 @@ def raise_component_modified_error(
     raise ComponentModifiedError(error)
 
 
-def parse_example(example, namespace):  # type: (str, str) -> tuple[str, str, str]
+def parse_example(example: str, namespace: str) -> Tuple[str, str, str]:
     match = re.match(CREATE_PROJECT_FROM_EXAMPLE_NAME_REGEX, example)
     if not match:
         raise FatalError(
@@ -104,7 +103,7 @@ def parse_example(example, namespace):  # type: (str, str) -> tuple[str, str, st
 ComponentInfo = namedtuple('ComponentInfo', ['component_name', 'version_spec'])
 
 
-def parse_component(component_name, namespace):  # type: (str, str) -> ComponentInfo
+def parse_component(component_name: str, namespace: str) -> ComponentInfo:
     match = re.match(SYNC_REGISTRY_COMPONENT_NAME_REGEX, component_name)
     if not match:
         raise FatalError(
@@ -125,8 +124,8 @@ def parse_component(component_name, namespace):  # type: (str, str) -> Component
     return ComponentInfo(f'{namespace}/{component}', version_spec)
 
 
-def collect_directories(dir_path):  # type: (Path) -> list[str]
-    directories = []  # type: list[str]
+def collect_directories(dir_path: Path) -> List[str]:
+    directories: List[str] = []
     if not dir_path.is_dir():
         return directories
 
@@ -139,7 +138,7 @@ def collect_directories(dir_path):  # type: (Path) -> list[str]
     return directories
 
 
-def detect_duplicate_examples(example_folders, example_path, example_name):  # type ()
+def detect_duplicate_examples(example_folders, example_path, example_name):
     for key, value in example_folders.items():
         if example_name in value:
             return key, example_path, example_name
@@ -147,12 +146,12 @@ def detect_duplicate_examples(example_folders, example_path, example_name):  # t
 
 
 def copy_examples_folders(
-    examples_manifest,  # type: list[dict[str,str]]
-    working_path,  # type: Path
-    dist_dir,  # type: Path
-    include=None,  # type: set[str] | None
-    exclude=None,  # type: set[str] | None
-):  # type: (...) -> None
+    examples_manifest: List[Dict[str, str]],
+    working_path: Path,
+    dist_dir: Path,
+    include: Optional[Set[str]] = None,
+    exclude: Optional[Set[str]] = None,
+) -> None:
     examples_path = working_path / 'examples'
     example_folders = {'examples': collect_directories(examples_path)}
     error_paths = []

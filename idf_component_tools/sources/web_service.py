@@ -35,19 +35,16 @@ try:
 except ImportError:
     from urlparse import urlparse  # type: ignore
 
-from typing import TYPE_CHECKING, Dict
+from typing import Dict, List, Optional
 
-if TYPE_CHECKING:
-    from ..manifest import ManifestManager
-    from ..manifest.solved_component import SolvedComponent
+from ..manifest import ManifestManager
+from ..manifest.solved_component import SolvedComponent
 
 CANONICAL_IDF_COMPONENT_REGISTRY_API_URL = 'https://api.components.espressif.com/'
 IDF_COMPONENT_REGISTRY_API_URL = f'{IDF_COMPONENT_REGISTRY_URL}api/'
 
 
-def download_archive(
-    url, download_dir, save_original_filename=False
-):  # type: (str, str, bool) -> str
+def download_archive(url: str, download_dir: str, save_original_filename: bool = False) -> str:
     session = create_session(cache=False)
 
     try:
@@ -149,8 +146,8 @@ class WebServiceSource(BaseSource):
 
     @staticmethod
     def create_sources_if_valid(
-        name, details, manifest_manager=None
-    ):  # type: (str, dict, ManifestManager | None) -> list[BaseSource]
+        name: str, details: Dict, manifest_manager: Optional[ManifestManager] = None
+    ) -> List[BaseSource]:
         # This should be run last
         if not details:
             details_copy = {}
@@ -176,7 +173,7 @@ class WebServiceSource(BaseSource):
         if not storage_urls:
             return [WebServiceSource(details_copy, manifest_manager=manifest_manager)]
 
-        sources = []  # type: list[BaseSource]
+        sources: List[BaseSource] = []
         if storage_urls:
             for storage_url in storage_urls:
                 details_copy['storage_url'] = storage_url
@@ -184,7 +181,7 @@ class WebServiceSource(BaseSource):
 
         return sources
 
-    def component_cache_path(self, component):  # type: (SolvedComponent) -> str
+    def component_cache_path(self, component: SolvedComponent) -> str:
         component_dir_name = '_'.join(
             [
                 self.normalized_name(component.name).replace('/', '__'),
@@ -262,17 +259,17 @@ class WebServiceSource(BaseSource):
         return cmp_with_versions
 
     @property
-    def component_hash_required(self):  # type: () -> bool
+    def component_hash_required(self) -> bool:
         return True
 
     @property
-    def downloadable(self):  # type: () -> bool
+    def downloadable(self) -> bool:
         return True
 
     def normalized_name(self, name):
         return utils.normalized_name(name)
 
-    def download(self, component, download_path):  # type: (SolvedComponent, str) -> str
+    def download(self, component: SolvedComponent, download_path: str) -> str:
         # Check for required components
         if not component.component_hash:
             raise FetchingError('Component hash is required for componets from web service')
@@ -322,7 +319,7 @@ class WebServiceSource(BaseSource):
     def service_url(self):
         return self.base_url
 
-    def serialize(self):  # type: () -> Dict
+    def serialize(self) -> Dict:
         source = {'type': self.name}
 
         service_url = self.base_url

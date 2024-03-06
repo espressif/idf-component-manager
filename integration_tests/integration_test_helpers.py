@@ -4,6 +4,7 @@
 import logging
 import os
 import subprocess
+from typing import Dict, List, Tuple, Union
 
 import yaml
 from jinja2 import Environment, Template
@@ -11,8 +12,9 @@ from jinja2 import Environment, Template
 from idf_component_manager.core import ComponentManager
 
 
-def generate_from_template(file_path, template, **kwargs):
-    # type: (str, Template, str | list[str]) -> None
+def generate_from_template(
+    file_path: str, template: Template, **kwargs: Union[str, List[str]]
+) -> None:
     """
     Generates file according to the template with given arguments
     """
@@ -21,8 +23,7 @@ def generate_from_template(file_path, template, **kwargs):
         cmake_lists.write(target_cmake_lists)
 
 
-def get_component_path(project_path, component_name):
-    # type: (str, str) -> str
+def get_component_path(project_path: str, component_name: str) -> str:
     """
     Assemblies component path,
     if the component is `main` it is not placed in the `components` folder
@@ -32,8 +33,9 @@ def get_component_path(project_path, component_name):
     )
 
 
-def create_manifest(project_path, component_dict, libraries, component_name):
-    # type: (str, dict, list, str) -> None
+def create_manifest(
+    project_path: str, component_dict: Dict, libraries: list, component_name: str
+) -> None:
     """
     If the component contains some dependencies
     creates idf_component.yml file for the component and
@@ -56,8 +58,13 @@ def create_manifest(project_path, component_dict, libraries, component_name):
         yaml.dump(manifest_dict, new_manifest, default_flow_style=False, allow_unicode=True)
 
 
-def create_component(project_path, component_name, component_dict, env, function_name='app_main'):
-    # type: (str, str, dict, Environment, str) -> None
+def create_component(
+    project_path: str,
+    component_name: str,
+    component_dict: Dict,
+    env: Environment,
+    function_name: str = 'app_main',
+) -> None:
     """
     Procedure creates the component in the project that contains
     source and header files (with same name as component), and CMakeLists.txt.
@@ -97,8 +104,7 @@ def create_component(project_path, component_name, component_dict, env, function
     )
 
 
-def get_dependencies(component_dict):
-    # type: (dict) -> tuple
+def get_dependencies(component_dict: Dict) -> Tuple:
     """
     Returns tuple of two lists - dependencies for including in the source file
     and dependencies for adding to manifest

@@ -4,6 +4,7 @@ import errno
 import json
 from collections import namedtuple
 from pathlib import Path
+from typing import Dict, List, Optional, Tuple, Union
 
 from tqdm import tqdm
 
@@ -18,20 +19,19 @@ from idf_component_tools.registry.multi_storage_client import MultiStorageClient
 from idf_component_tools.registry.request_processor import join_url
 from idf_component_tools.sources.web_service import WebServiceSource, download_archive
 
+ComponentVersion = namedtuple('ComponentVersion', ['version', 'file_path', 'storage_url'])
+
 
 class ComponentStaticVersions:  # Should be mutable for updating metadata
-    metadata = {}  # type: dict[str, str]
-    versions = []  # type: list[ComponentVersion]
+    metadata: Dict[str, str] = {}
+    versions: List[ComponentVersion] = []
 
     def __init__(self, metadata, versions):
         self.metadata = metadata
         self.versions = versions
 
 
-ComponentVersion = namedtuple('ComponentVersion', ['version', 'file_path', 'storage_url'])
-
-
-def dump_metadata(metadata, save_path):  # type: (dict[str, ComponentStaticVersions], Path) -> None
+def dump_metadata(metadata: Dict[str, ComponentStaticVersions], save_path: Path) -> None:
     for component_name, component_info in metadata.items():
         namespace, name = component_name.split('/')
         path = save_path / 'components' / namespace
@@ -45,7 +45,7 @@ def dump_metadata(metadata, save_path):  # type: (dict[str, ComponentStaticVersi
             json.dump(component_info.metadata, f)
 
 
-def download_dependency(version, path):  # type: (ComponentVersion, Path) -> bool
+def download_dependency(version: ComponentVersion, path: Path) -> bool:
     if version.storage_url is None:  # Local component
         return False
     filename = Path(version.file_path)
@@ -64,10 +64,10 @@ def download_dependency(version, path):  # type: (ComponentVersion, Path) -> boo
 
 
 def download_components_archives(
-    metadata, save_path
-):  # type: (dict[str, ComponentStaticVersions], Path) -> dict[str, int]
+    metadata: Dict[str, ComponentStaticVersions], save_path: Path
+) -> Dict[str, int]:
     progress_bar = tqdm(total=sum([len(x.versions) for x in metadata.values()]))
-    loading_data = {}  # type: dict[str, int]
+    loading_data: Dict[str, int] = {}
     for component_name, component_info in metadata.items():
         for version in component_info.versions:
             progress_bar.set_description(f'Downloading {component_name}({version.version})')
@@ -80,7 +80,7 @@ def download_components_archives(
     return loading_data
 
 
-def update_component_metadata(component_metadata, api_metadata):  # type: (dict, dict) -> dict
+def update_component_metadata(component_metadata: Dict, api_metadata: Dict) -> Dict:
     for api_version in api_metadata['versions']:
         for i, component_version in enumerate(component_metadata['versions']):
             if component_version['version'] == api_version['version']:
@@ -94,8 +94,8 @@ def update_component_metadata(component_metadata, api_metadata):  # type: (dict,
 
 
 def update_static_versions(
-    old, new
-):  # type: (dict[str, ComponentStaticVersions], dict[str, ComponentStaticVersions]) -> dict
+    old: Dict[str, ComponentStaticVersions], new: Dict[str, ComponentStaticVersions]
+) -> Dict:
     result = old.copy()
     for component_name, component_info in new.items():
         if component_name not in result:
@@ -116,13 +116,13 @@ def update_static_versions(
 
 
 def get_component_metadata(
-    client,  # type: MultiStorageClient
-    requirement,  # type: ComponentRequirement
-    version_spec,  # type: str | None
-    metadata,  # type: dict
-    warnings,  # type: list[str]
-    progress_bar=None,  # type: tqdm | None
-):  # type: (...) -> tuple[dict, list[str]]
+    client: MultiStorageClient,
+    requirement: ComponentRequirement,
+    version_spec: Optional[str],
+    metadata: Dict,
+    warnings: List[str],
+    progress_bar: Optional[tqdm] = None,
+) -> Tuple[Dict, List[str]]:
     try:
         component_info = client.get_component_info(
             component_name=requirement.name, spec=version_spec
@@ -162,12 +162,12 @@ def get_component_metadata(
 
 
 def prepare_metadata(
-    client,  # type: MultiStorageClient
-    dependencies,  # type: list[ComponentRequirement]
-    progress_bar=None,  # type: tqdm | None
-    metadata=None,  # type: dict | None
-    warnings=None,  # type: list | None
-):  # type: (...) -> tuple[dict, list[str]]
+    client: MultiStorageClient,
+    dependencies: List[ComponentRequirement],
+    progress_bar: Optional[tqdm] = None,
+    metadata: Optional[Dict] = None,
+    warnings: Optional[List] = None,
+) -> Tuple[Dict, List[str]]:
     if metadata is None:
         metadata = {}
     if warnings is None:
@@ -190,7 +190,7 @@ def prepare_metadata(
     return metadata, warnings
 
 
-def load_saved_metadata(path):  # type: (Path) -> dict[str, ComponentStaticVersions]
+def load_saved_metadata(path: Path) -> Dict[str, ComponentStaticVersions]:
     components_json_path = path / 'components'
     metadata = {}
     for json_filename in components_json_path.rglob('*.json'):
@@ -209,16 +209,16 @@ def load_saved_metadata(path):  # type: (Path) -> dict[str, ComponentStaticVersi
 
 
 def collect_metadata(
-    client,  # type: MultiStorageClient
-    path,  # type: str | Path
-    namespace,  # type: str
-    save_path,  # type: str | Path
-    components=None,  # type: list[str] | None
-    recursive=False,  # type: bool
-):  # type: (...) -> dict[str, ComponentStaticVersions]
-    metadata = {}  # type: dict[str, ComponentStaticVersions]
+    client: MultiStorageClient,
+    path: Union[str, Path],
+    namespace: str,
+    save_path: Union[str, Path],
+    components: Optional[List[str]] = None,
+    recursive: bool = False,
+) -> Dict[str, ComponentStaticVersions]:
+    metadata: Dict[str, ComponentStaticVersions] = {}
     path = Path(path)
-    warnings = []  # type: list[str]
+    warnings: List[str] = []
     progress_bar = tqdm(
         total=10000,
         desc='Metadata downloaded from the registry',
@@ -256,7 +256,7 @@ def collect_metadata(
     return metadata
 
 
-def metadata_has_changes(old, new):  # type: (dict, dict) -> bool
+def metadata_has_changes(old: Dict, new: Dict) -> bool:
     if not all(
         x in old['versions'] for x in new['versions']
     ):  # In old metadata may be more versions than in new
@@ -270,13 +270,13 @@ def metadata_has_changes(old, new):  # type: (dict, dict) -> bool
 
 
 def sync_components(
-    client,  # type: MultiStorageClient
-    path,  # type: str | Path
-    namespace,  # type: str
-    save_path,  # type: Path
-    components=None,  # type: list[str] | None
-    recursive=False,  # type: bool
-):  # type: (...) -> None
+    client: MultiStorageClient,
+    path: Union[str, Path],
+    namespace: str,
+    save_path: Path,
+    components: Optional[List[str]] = None,
+    recursive: bool = False,
+) -> None:
     save_path = Path(save_path)
     print_info(f'Collecting metadata files into the folder "{save_path.absolute()}"')
 

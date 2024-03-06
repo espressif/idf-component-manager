@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
+from typing import Dict, List, Optional, Tuple, Union
 
 import requests
 from requests import Response
@@ -20,7 +21,7 @@ from .api_client_errors import (
 DEFAULT_TIMEOUT = (6.05, 30.1)  # Connect timeout  # Read timeout
 
 
-def join_url(*args):  # type: (*str) -> str
+def join_url(*args) -> str:
     """
     Joins given arguments into an url and add trailing slash
     """
@@ -28,7 +29,7 @@ def join_url(*args):  # type: (*str) -> str
     return '/'.join(parts)
 
 
-def get_timeout():  # type: () -> float | tuple[float, float]
+def get_timeout() -> Union[float, Tuple[float, float]]:
     try:
         return float(os.environ['IDF_COMPONENT_SERVICE_TIMEOUT'])
     except ValueError:
@@ -39,21 +40,21 @@ def get_timeout():  # type: () -> float | tuple[float, float]
         return DEFAULT_TIMEOUT
 
 
-def verify_ssl():  # type: () -> bool | str
+def verify_ssl() -> Union[bool, str]:
     """Returns either True, False or a path to a CA bundle file"""
 
     return getenv_bool_or_string('IDF_COMPONENT_VERIFY_SSL', True)
 
 
 def make_request(
-    method,  # type: str
-    session,  # type: requests.Session
-    endpoint,  # type: str
-    data,  # type: dict | None
-    json,  # type: dict | None
-    headers,  # type: dict | None
-    timeout,  # type: float | tuple[float, float]
-):  # type: (...) -> Response
+    method: str,
+    session: requests.Session,
+    endpoint: str,
+    data: Optional[Dict],
+    json: Optional[Dict],
+    headers: Optional[Dict],
+    timeout: Union[float, Tuple[float, float]],
+) -> Response:
     try:
         response = session.request(
             method,
@@ -74,10 +75,10 @@ def make_request(
 
 
 def handle_response_errors(
-    response,  # type:  requests.Response
-    endpoint,  # type:  str
-    use_storage,  # type:  bool
-):  # type: (...) -> dict
+    response: requests.Response,
+    endpoint: str,
+    use_storage: bool,
+) -> Dict:
     if response.status_code == 204:  # NO CONTENT
         return {}
     elif 400 <= response.status_code < 500:
@@ -98,7 +99,7 @@ def handle_response_errors(
     return response.json()
 
 
-def handle_4xx_error(response):  # type: (requests.Response) -> None
+def handle_4xx_error(response: requests.Response) -> None:
     if response.status_code == 413:
         raise ContentTooLargeError(
             'Error during request. The provided content is too large '
@@ -136,10 +137,10 @@ def handle_4xx_error(response):  # type: (requests.Response) -> None
 
 
 def validate_response(
-    response_json,  # type: dict
-    schema,  # type:  Schema | None
-    endpoint,  # type: str
-):  # type: (...) -> dict
+    response_json: Dict,
+    schema: Optional[Schema],
+    endpoint: str,
+) -> Dict:
     try:
         if schema is not None:
             schema.validate(response_json)
@@ -155,16 +156,16 @@ def validate_response(
 
 
 def base_request(
-    url,  # type: str
-    session,  # type: requests.Session
-    method,  # type: str
-    path,  # type: list[str]
-    data=None,  # type: dict | None
-    json=None,  # type: dict | None
-    headers=None,  # type: dict | None
-    schema=None,  # type: Schema
-    use_storage=False,  # type: bool
-):  # type: (...) -> dict
+    url: str,
+    session: requests.Session,
+    method: str,
+    path: List[str],
+    data: Optional[Dict] = None,
+    json: Optional[Dict] = None,
+    headers: Optional[Dict] = None,
+    schema: Schema = None,
+    use_storage: bool = False,
+) -> Dict:
     endpoint = join_url(url, *path)
     timeout = get_timeout()
     response = make_request(method, session, endpoint, data, json, headers, timeout)

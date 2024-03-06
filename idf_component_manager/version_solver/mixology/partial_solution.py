@@ -24,19 +24,19 @@ class PartialSolution:
     # See https://github.com/dart-lang/mixology/tree/master/doc/solver.md#partial-solution.
     """
 
-    def __init__(self):  # type: () -> None
+    def __init__(self) -> None:
         # The assignments that have been made so far, in the order they were
         # assigned.
-        self._assignments = []  # type: List[Assignment]
+        self._assignments: List[Assignment] = []
 
         # The decisions made for each package.
-        self._decisions = OrderedDict()  # type: Dict[Package, HashedComponentVersion]
+        self._decisions: Dict[Package, HashedComponentVersion] = OrderedDict()
 
         # The intersection of all positive Assignments for each package, minus any
         # negative Assignments that refer to that package.
         #
         # This is derived from self._assignments.
-        self._positive = OrderedDict()  # type: Dict[Package, Term]
+        self._positive: Dict[Package, Term] = OrderedDict()
 
         # The union of all negative Assignments for each package.
         #
@@ -44,7 +44,7 @@ class PartialSolution:
         # map.
         #
         # This is derived from self._assignments.
-        self._negative = OrderedDict()  # type: Dict[Package, Dict[Package, Term]]
+        self._negative: Dict[Package, Dict[Package, Term]] = OrderedDict()
 
         # The number of distinct solutions that have been attempted so far.
         self._attempted_solutions = 1
@@ -53,22 +53,22 @@ class PartialSolution:
         self._backtracking = False
 
     @property
-    def decisions(self):  # type: () -> Dict[Package, HashedComponentVersion]
+    def decisions(self) -> Dict[Package, HashedComponentVersion]:
         return self._decisions
 
     @property
-    def decision_level(self):  # type: () -> int
+    def decision_level(self) -> int:
         return len(self._decisions)
 
     @property
-    def attempted_solutions(self):  # type: () -> int
+    def attempted_solutions(self) -> int:
         return self._attempted_solutions
 
     @property
-    def unsatisfied(self):  # type: () -> List[Term]
+    def unsatisfied(self) -> List[Term]:
         return [term for term in self._positive.values() if term.package not in self._decisions]
 
-    def decide(self, package, version):  # type: (Package, HashedComponentVersion) -> None
+    def decide(self, package: Package, version: HashedComponentVersion) -> None:
         """
         Adds an assignment of package as a decision
         and increments the decision level.
@@ -87,9 +87,7 @@ class PartialSolution:
             Assignment.decision(package, version, self.decision_level, len(self._assignments))
         )
 
-    def derive(
-        self, constraint, is_positive, cause
-    ):  # type: (Constraint, bool, Incompatibility) -> None
+    def derive(self, constraint: Constraint, is_positive: bool, cause: Incompatibility) -> None:
         """
         Adds an assignment of package as a derivation.
         """
@@ -103,14 +101,14 @@ class PartialSolution:
             )
         )
 
-    def _assign(self, assignment):  # type: (Assignment) -> None
+    def _assign(self, assignment: Assignment) -> None:
         """
         Adds an Assignment to _assignments and _positive or _negative.
         """
         self._assignments.append(assignment)
         self._register(assignment)
 
-    def backtrack(self, decision_level):  # type: (int) -> None
+    def backtrack(self, decision_level: int) -> None:
         """
         Resets the current decision level to decision_level, and removes all
         assignments made after that level.
@@ -136,7 +134,7 @@ class PartialSolution:
             if assignment.package in packages:
                 self._register(assignment)
 
-    def _register(self, assignment):  # type: (Assignment) -> None
+    def _register(self, assignment: Assignment) -> None:
         """
         Registers an Assignment in _positive or _negative.
         """
@@ -166,12 +164,12 @@ class PartialSolution:
 
             self._negative[package][package] = term
 
-    def satisfier(self, term):  # type: (Term) -> Assignment
+    def satisfier(self, term: Term) -> Assignment:
         """
         Returns the first Assignment in this solution such that the sublist of
         assignments up to and including that entry collectively satisfies term.
         """
-        assigned_term = None  # type: Term
+        assigned_term: Term = None
 
         for assignment in self._assignments:
             if assignment.package != term.package:
@@ -196,10 +194,10 @@ class PartialSolution:
 
         raise RuntimeError(f'[BUG] {term} is not satisfied.')
 
-    def satisfies(self, term):  # type: (Term) -> bool
+    def satisfies(self, term: Term) -> bool:
         return self.relation(term) == SetRelation.SUBSET
 
-    def relation(self, term):  # type: (Term) -> SetRelation
+    def relation(self, term: Term) -> SetRelation:
         positive = self._positive.get(term.package)
         if positive is not None:
             return positive.relation(term)

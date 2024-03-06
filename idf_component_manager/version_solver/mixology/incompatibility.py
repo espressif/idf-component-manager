@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
 # SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
+from __future__ import annotations
 
 from typing import Dict, Generator, Hashable, List, Optional
 
@@ -18,7 +19,7 @@ from .term import Term
 
 
 class Incompatibility:
-    def __init__(self, terms, cause):  # type: (List[Term], IncompatibilityCause) -> None
+    def __init__(self, terms: List[Term], cause: IncompatibilityCause) -> None:
         # Remove the root package from generated incompatibilities, since it will
         # always be satisfied. This makes error reporting clearer, and may also
         # make solving more efficient.
@@ -44,7 +45,7 @@ class Incompatibility:
             terms = terms
         else:
             # Coalesce multiple terms about the same package if possible.
-            by_name = {}  # type: Dict[Hashable, Dict[Hashable, Term]]
+            by_name: Dict[Hashable, Dict[Hashable, Term]] = {}
             for term in terms:
                 if term.package not in by_name:
                     by_name[term.package] = {}
@@ -79,35 +80,35 @@ class Incompatibility:
         self._cause = cause
 
     @property
-    def terms(self):  # type: () -> List[Term]
+    def terms(self) -> List[Term]:
         return self._terms
 
     @property
-    def cause(self):  # type: () -> ConflictCause
+    def cause(self) -> ConflictCause:
         return self._cause
 
     @property
-    def external_incompatibilities(self):  # type: () -> Generator[Incompatibility]
+    def external_incompatibilities(self) -> Generator[Incompatibility]:
         """
         Returns all external incompatibilities in this incompatibility's
         derivation graph.
         """
         if isinstance(self._cause, ConflictCause):
-            cause = self._cause  # type: ConflictCause
+            cause: ConflictCause = self._cause
             yield from cause.conflict.external_incompatibilities
 
             yield from cause.other.external_incompatibilities
         else:
             yield self
 
-    def is_failure(self):  # type: () -> bool
+    def is_failure(self) -> bool:
         return len(self._terms) == 0 or (
             len(self._terms) == 1
             and self._terms[0].package == Package.root()
             and self._terms[0].is_positive()
         )
 
-    def handle_cause(self):  # type: () -> Optional[str]
+    def handle_cause(self) -> Optional[str]:
         if isinstance(self._cause, (DependencyCause, SelfDependentCause)):
             assert len(self._terms) == 2
 
@@ -200,8 +201,8 @@ class Incompatibility:
             return 'one of {} must be true'.format(' or '.join(negative))
 
     def and_to_string(
-        self, other, details, this_line, other_line
-    ):  # type: (Incompatibility, dict, int, int) -> str
+        self, other: Incompatibility, details: Dict, this_line: int, other_line: int
+    ) -> str:
         requires_both = self._try_requires_both(other, details, this_line, other_line)
         if requires_both is not None:
             return requires_both
@@ -226,8 +227,8 @@ class Incompatibility:
         return '\n'.join(buffer)
 
     def _try_requires_both(
-        self, other, details, this_line, other_line
-    ):  # type: (Incompatibility, dict, int, int) -> Optional[str]
+        self, other: Incompatibility, details: Dict, this_line: int, other_line: int
+    ) -> Optional[str]:
         if len(self._terms) == 1 or len(other.terms) == 1:
             return
 
@@ -272,8 +273,8 @@ class Incompatibility:
         return ''.join(buffer)
 
     def _try_requires_through(
-        self, other, details, this_line, other_line
-    ):  # type: (Incompatibility, dict, int, int) -> Optional[str]
+        self, other: Incompatibility, details: Dict, this_line: int, other_line: int
+    ) -> Optional[str]:
         if len(self._terms) == 1 or len(other.terms) == 1:
             return
 
@@ -348,8 +349,8 @@ class Incompatibility:
         return ''.join(buffer)
 
     def _try_requires_forbidden(
-        self, other, details, this_line, other_line
-    ):  # type: (Incompatibility, dict, int, int) -> Optional[str]
+        self, other: Incompatibility, details: Dict, this_line: int, other_line: int
+    ) -> Optional[str]:
         if len(self._terms) != 1 and len(other.terms) != 1:
             return None
 
@@ -400,10 +401,10 @@ class Incompatibility:
 
         return ''.join(buffer)
 
-    def _terse(self, term, allow_every=False):  # type: (Term, bool) -> str
+    def _terse(self, term: Term, allow_every: bool = False) -> str:
         return term.to_string(allow_every=allow_every)
 
-    def _single_term_where(self, callable):  # type: (callable) -> Optional[Term]
+    def _single_term_where(self, callable: callable) -> Optional[Term]:
         found = None
         for term in self._terms:
             if not callable(term):

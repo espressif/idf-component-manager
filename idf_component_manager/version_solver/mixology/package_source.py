@@ -60,20 +60,20 @@ class PackageSource:
     __eq__() should be defined.
     """
 
-    def __init__(self):  # type: () -> None
+    def __init__(self) -> None:
         self._root_package = Package.root()
 
     @property
-    def root(self):  # type: () -> Package
+    def root(self) -> Package:
         return Package.root()
 
     @property
-    def root_version(self):  # type: () -> HashedComponentVersion
+    def root_version(self) -> HashedComponentVersion:
         raise NotImplementedError()
 
     def versions_for(
-        self, package, constraint=None
-    ):  # type: (Package, Any) -> List[HashedComponentVersion]
+        self, package: Package, constraint: Any = None
+    ) -> List[HashedComponentVersion]:
         """
         Search for the specifications that match the given constraint.
         """
@@ -83,23 +83,21 @@ class PackageSource:
         return self._versions_for(package, constraint)
 
     def _versions_for(
-        self, package, constraint=None
-    ):  # type: (Package, Any) -> List[HashedComponentVersion]
+        self, package: Package, constraint: Any = None
+    ) -> List[HashedComponentVersion]:
         raise NotImplementedError()
 
-    def dependencies_for(self, package, version):  # type: (Package, Any) -> List[Any]
+    def dependencies_for(self, package: Package, version: Any) -> List[Any]:
         raise NotImplementedError()
 
-    def convert_dependency(self, dependency):  # type: (Any) -> _Union[Constraint, Range, Union]
+    def convert_dependency(self, dependency: Any) -> _Union[Constraint, Range, Union]:
         """
         Converts a user-defined dependency (returned by dependencies_for())
         into a format Mixology understands.
         """
         raise NotImplementedError()
 
-    def incompatibilities_for(
-        self, package, version
-    ):  # type: (Package, Any) -> List[Incompatibility]
+    def incompatibilities_for(self, package: Package, version: Any) -> List[Incompatibility]:
         """
         Returns the incompatibilities of a given package and version
         """

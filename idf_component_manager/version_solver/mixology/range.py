@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: MIT License
 # SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any, NoReturn, Optional
 from typing import Union as _Union
 
@@ -22,12 +24,12 @@ class Range:
 
     def __init__(
         self,
-        min=None,
-        max=None,
-        include_min=False,
-        include_max=False,
-        string=None,
-    ):  # type: (Any, Any, bool, bool, Optional[str]) -> None
+        min: Any = None,
+        max: Any = None,
+        include_min: bool = False,
+        include_max: bool = False,
+        string: Optional[str] = None,
+    ) -> None:
         self._min = min
         self._max = max
         self._include_min = include_min
@@ -52,7 +54,7 @@ class Range:
         return self._include_max
 
     @property
-    def inverse(self):  # type: () -> _Union[Range, Union]
+    def inverse(self) -> _Union[Range, Union]:
         if self.is_any():
             return EmptyRange()
 
@@ -73,7 +75,7 @@ class Range:
     def is_any(self):
         return self._min is None and self._max is None
 
-    def allows_all(self, other):  # type: (Range) -> bool
+    def allows_all(self, other: Range) -> bool:
         from .union import Union  # fool the interpreter
 
         if other.is_empty():
@@ -84,7 +86,7 @@ class Range:
 
         return not other.allows_lower(self) and not other.allows_higher(self)
 
-    def allows_any(self, other):  # type: (Range) -> bool
+    def allows_any(self, other: Range) -> bool:
         from .union import Union  # fool the interpreter
 
         if other.is_empty():
@@ -95,7 +97,7 @@ class Range:
 
         return not other.is_strictly_lower(self) and not other.is_strictly_higher(self)
 
-    def intersect(self, other):  # type: (_Union[Range, Union]) -> _Union[Range, Union]
+    def intersect(self, other: _Union[Range, Union]) -> _Union[Range, Union]:
         from .union import Union  # fool the interpreter
 
         if other.is_empty():
@@ -144,7 +146,7 @@ class Range:
         # If we got here, there is an actual range.
         return Range(intersect_min, intersect_max, intersect_include_min, intersect_include_max)
 
-    def union(self, other):  # type: (Range) -> _Union[Range, Union]
+    def union(self, other: Range) -> _Union[Range, Union]:
         from .union import Union  # fool the interpreter
 
         if isinstance(other, Union):
@@ -174,7 +176,7 @@ class Range:
             include_max=union_include_max,
         )
 
-    def is_contiguous_to(self, other):  # type: (Range) -> bool
+    def is_contiguous_to(self, other: Range) -> bool:
         if other.is_empty():
             return False
 
@@ -184,7 +186,7 @@ class Range:
             or (self.min == other.max and (self.include_min or other.include_max))
         )
 
-    def difference(self, other):  # type: (_Union[Range, Union]) -> _Union[Range, Union]
+    def difference(self, other: _Union[Range, Union]) -> _Union[Range, Union]:
         from .union import Union  # fool the interpreter
 
         if other.is_empty():
@@ -248,7 +250,7 @@ class Range:
 
         return Union.of(before, after)
 
-    def allows_lower(self, other):  # type: (Range) -> bool
+    def allows_lower(self, other: Range) -> bool:
         if self.min is None:
             return other.min is not None
 
@@ -263,7 +265,7 @@ class Range:
 
         return self.include_min and not other.include_min
 
-    def allows_higher(self, other):  # type: (Range) -> bool
+    def allows_higher(self, other: Range) -> bool:
         if self.max is None:
             return other.max is not None
 
@@ -278,7 +280,7 @@ class Range:
 
         return self.include_max and not other.include_max
 
-    def is_strictly_lower(self, other):  # type: (Range) -> bool
+    def is_strictly_lower(self, other: Range) -> bool:
         if self.max is None or other.min is None:
             return False
 
@@ -290,10 +292,10 @@ class Range:
 
         return not self.include_max or not other.include_min
 
-    def is_strictly_higher(self, other):  # type: (Range) -> bool
+    def is_strictly_higher(self, other: Range) -> bool:
         return other.is_strictly_lower(self)
 
-    def is_adjacent_to(self, other):  # type: (Range) -> bool
+    def is_adjacent_to(self, other: Range) -> bool:
         if self.max != other.min:
             return False
 
@@ -301,7 +303,7 @@ class Range:
             self.include_max and not other.include_min or not self.include_max and other.include_min
         )
 
-    def is_single_version(self):  # type: () -> bool
+    def is_single_version(self) -> bool:
         return (
             self.min is not None and self.min == self.max and self.include_min and self.include_max
         )
@@ -329,7 +331,7 @@ class Range:
     def __ge__(self, other):
         return self._cmp(other) >= 0
 
-    def _cmp(self, other):  # type: (Range) -> int
+    def _cmp(self, other: Range) -> int:
         if self.min is None:
             if other.min is None:
                 return self._compare_max(other)
@@ -346,7 +348,7 @@ class Range:
 
         return self._compare_max(other)
 
-    def _compare_max(self, other):  # type: (Range) -> int
+    def _compare_max(self, other: Range) -> int:
         if self.max is None:
             if other.max is None:
                 return 0
@@ -401,45 +403,45 @@ class Range:
 
 class EmptyRange(Range):
     @property
-    def min(self):  # type: () -> NoReturn
+    def min(self) -> NoReturn:
         raise NotImplementedError()
 
     @property
-    def max(self):  # type: () -> NoReturn
+    def max(self) -> NoReturn:
         raise NotImplementedError()
 
     @property
-    def include_min(self):  # type: () -> NoReturn
+    def include_min(self) -> NoReturn:
         raise NotImplementedError()
 
     @property
-    def include_max(self):  # type: () -> NoReturn
+    def include_max(self) -> NoReturn:
         raise NotImplementedError()
 
-    def is_empty(self):  # type: () -> bool
+    def is_empty(self) -> bool:
         return True
 
-    def is_any(self):  # type: () -> bool
+    def is_any(self) -> bool:
         return False
 
-    def __eq__(self, other):  # type: (Range) -> bool
+    def __eq__(self, other: Range) -> bool:
         return other.is_empty()
 
-    def intersect(self, other):  # type: (Range) -> Range
+    def intersect(self, other: Range) -> Range:
         return self
 
-    def allows_all(self, other):  # type: (Range) -> bool
+    def allows_all(self, other: Range) -> bool:
         return other.is_empty()
 
-    def allows_any(self, other):  # type: (Range) -> bool
+    def allows_any(self, other: Range) -> bool:
         return other.is_empty()
 
-    def is_single_version(self):  # type: () -> bool
+    def is_single_version(self) -> bool:
         return False
 
     @property
-    def inverse(self):  # type: () -> _Union[Range, Union]
+    def inverse(self) -> _Union[Range, Union]:
         return Range()
 
-    def __str__(self):  # type: () -> str
+    def __str__(self) -> str:
         return '(no versions)'

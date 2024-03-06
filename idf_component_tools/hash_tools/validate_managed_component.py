@@ -3,7 +3,7 @@
 import os
 import re
 from pathlib import Path
-from typing import Text
+from typing import Union
 
 from idf_component_tools.environment import getenv_bool
 from idf_component_tools.hash_tools.validator import validate_dir
@@ -14,9 +14,9 @@ from .errors import HashDoesNotExistError, HashNotEqualError, HashNotSHA256Error
 
 
 def validate_managed_component_by_manifest(
-    root,  # type: Text | Path
-    component_hash,  # type: str
-):  # type: (...) -> bool
+    root: Union[str, Path],
+    component_hash: str,
+) -> bool:
     """Validate component in managed directory"""
     manifest_file_path = os.path.join(root, MANIFEST_FILENAME)
 
@@ -31,7 +31,7 @@ def validate_managed_component_by_manifest(
     )
 
 
-def validate_managed_component_hash(root):  # type: (str) -> None
+def validate_managed_component_hash(root: str) -> None:
     '''Validate managed components directory, raise exception if validation fails'''
     if getenv_bool('IDF_COMPONENT_OVERWRITE_MANAGED_COMPONENTS'):
         return

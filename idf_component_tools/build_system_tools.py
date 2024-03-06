@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 '''Tools for interaction with IDF build system'''
 import os
@@ -21,7 +21,7 @@ def build_name(name):
     return '__'.join(name_parts)
 
 
-def get_env_idf_target():  # type: () -> str
+def get_env_idf_target() -> str:
     """
     `IDF_TARGET` should be set automatically while compiling with cmake
     """
@@ -65,14 +65,14 @@ def get_idf_version():
         )
 
 
-def get_idf_path():  # type: () -> str
+def get_idf_path() -> str:
     try:
         return os.environ['IDF_PATH']
     except KeyError:
         raise FetchingError('Please set IDF_PATH environment variable with a valid path to ESP-IDF')
 
 
-def is_component(path):  # type: (Path) -> bool
+def is_component(path: Path) -> bool:
     '''
     This function is used in the manifest processing to determine,
     if the given path is a component or not.

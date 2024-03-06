@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2019-2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2019-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 #
 # Contains elements taken from "appdirs" python package
@@ -12,12 +12,13 @@ import errno
 import os
 import shutil
 import sys
+from typing import Optional
 
 from idf_component_tools.errors import FatalError
 from idf_component_tools.file_tools import directory_size
 
 
-def system_cache_path():  # type: () -> str
+def system_cache_path() -> str:
     """Path of system cache directory"""
     system_cache_path = SystemCachePath()
 
@@ -36,10 +37,10 @@ def system_cache_path():  # type: () -> str
 class FileCache:
     """Common functions to work with components cache"""
 
-    def __init__(self, path=None):  # type: (str | None) -> None
-        self._path = path  # type: str | None
+    def __init__(self, path: Optional[str] = None) -> None:
+        self._path: Optional[str] = path
 
-    def path(self):  # type: () -> str
+    def path(self) -> str:
         """Path of cache directory. Make directory if it doesn't exist"""
         if not self._path:
             self._path = os.getenv('IDF_COMPONENT_CACHE_PATH')
@@ -55,11 +56,11 @@ class FileCache:
 
         return self._path
 
-    def clear(self):  # type: () -> None
+    def clear(self) -> None:
         '''Clear cache directory'''
         shutil.rmtree(self.path())
 
-    def size(self):  # type: () -> int
+    def size(self) -> int:
         """Disk usage of cache directory"""
         return directory_size(self.path())
 

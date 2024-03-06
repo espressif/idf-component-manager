@@ -6,7 +6,7 @@ import re
 import tarfile
 from pathlib import Path
 from shutil import get_archive_formats
-from typing import Text, Union
+from typing import Union
 
 from .errors import FatalError
 from .file_tools import prepare_empty_directory
@@ -90,7 +90,7 @@ def unpack_zip(file, destination_directory):
             archive.extract(item, destination_directory)
 
 
-def unpack_archive(file, destination_directory):  # type: (Union[Text, Path], Text) -> None
+def unpack_archive(file: Union[str, Path], destination_directory: str) -> None:
     prepare_empty_directory(destination_directory)
     archive_format, ext, handler = get_format_from_path(file)
     if not is_known_format(archive_format):
@@ -98,7 +98,7 @@ def unpack_archive(file, destination_directory):  # type: (Union[Text, Path], Te
     handler(file, destination_directory)
 
 
-def pack_archive(source_dir, archive_filepath):  # type: (Union[Text, Path], Text) -> None
+def pack_archive(source_dir: Union[str, Path], archive_filepath: str) -> None:
     """Create tar+gzip archive"""
     try:
         with tarfile.open(archive_filepath, 'w:gz') as archive:

@@ -3,6 +3,7 @@
 
 import os
 from collections import OrderedDict
+from typing import OrderedDict as OrderedDictType
 
 from schema import And, Optional, Or, Schema, SchemaError, Use
 from yaml import Node, SafeDumper, YAMLError
@@ -43,11 +44,11 @@ LOCK_SCHEMA = Schema(
 )
 
 
-def _ordered_dict_representer(dumper, data):  # type: (SafeDumper, OrderedDict) -> Node
+def _ordered_dict_representer(dumper: SafeDumper, data: OrderedDictType) -> Node:
     return dumper.represent_data(dict(data))
 
 
-def _unicode_representer(dumper, data):  # type: (SafeDumper, str) -> Node
+def _unicode_representer(dumper: SafeDumper, data: str) -> Node:
     return dumper.represent_str(data.encode('utf-8'))  # type: ignore
 
 
@@ -61,7 +62,7 @@ class LockManager:
     def exists(self):
         return os.path.isfile(self._path)
 
-    def dump(self, solution):  # type: (SolvedManifest) -> None
+    def dump(self, solution: SolvedManifest) -> None:
         """Writes updated lockfile to disk"""
         # add idf version if not in solution.dependencies
         if 'idf' not in solution.solved_components:
@@ -86,7 +87,7 @@ class LockManager:
         except SchemaError as e:
             raise LockError(f'Lock format is not valid:\n{e}')
 
-    def load(self):  # type: () -> SolvedManifest
+    def load(self) -> SolvedManifest:
         if not self.exists():
             return SolvedManifest.fromdict(EMPTY_LOCK)
 

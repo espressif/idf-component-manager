@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: MIT License
 # SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
+from __future__ import annotations
+
 from typing import List
 from typing import Union as _Union
 
@@ -62,7 +64,7 @@ class Union:
     def is_any(self):
         return False
 
-    def allows_all(self, other):  # type: (_Union[Range, Union]) -> bool
+    def allows_all(self, other: _Union[Range, Union]) -> bool:
         our_ranges = iter(self._ranges)
         their_ranges = iter(self._ranges_for(other))
 
@@ -77,7 +79,7 @@ class Union:
 
         return their_current_range is None
 
-    def allows_any(self, other):  # type: (_Union[Range, Union]) -> bool
+    def allows_any(self, other: _Union[Range, Union]) -> bool:
         our_ranges = iter(self._ranges)
         their_ranges = iter(self._ranges_for(other))
 
@@ -95,7 +97,7 @@ class Union:
 
         return False
 
-    def intersect(self, other):  # type: (_Union[Range, Union]) -> _Union[Range, Union]
+    def intersect(self, other: _Union[Range, Union]) -> _Union[Range, Union]:
         our_ranges = iter(self._ranges)
         their_ranges = iter(self._ranges_for(other))
         new_ranges = []
@@ -116,10 +118,10 @@ class Union:
 
         return Union.of(*new_ranges)
 
-    def union(self, other):  # type: (_Union[Range, Union]) -> _Union[Range, Union]
+    def union(self, other: _Union[Range, Union]) -> _Union[Range, Union]:
         return Union.of(self, other)
 
-    def difference(self, other):  # type: (_Union[Range, Union]) -> _Union[Range, Union]
+    def difference(self, other: _Union[Range, Union]) -> _Union[Range, Union]:
         our_ranges = iter(self._ranges)
         their_ranges = iter(self._ranges_for(other))
         new_ranges = []
@@ -199,12 +201,12 @@ class Union:
 
         return Union.of(*new_ranges)
 
-    def excludes_single_version(self):  # type: () -> bool
+    def excludes_single_version(self) -> bool:
         difference = self.difference(Range())
 
         return isinstance(difference, Range) and difference.is_single_version()
 
-    def _ranges_for(self, constraint):  # type: (_Union[Union, Range]) -> List[Range]
+    def _ranges_for(self, constraint: _Union[Union, Range]) -> List[Range]:
         if constraint.is_empty():
             return []
 

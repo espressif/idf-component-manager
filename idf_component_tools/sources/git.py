@@ -6,7 +6,7 @@ import re
 import shutil
 import tempfile
 from hashlib import sha256
-from typing import TYPE_CHECKING, Dict
+from typing import Dict, List, Optional, Union
 from urllib.parse import urlparse  # type: ignore
 
 from idf_component_tools.hash_tools.calculate import hash_dir
@@ -21,10 +21,8 @@ from ..manifest import (
     HashedComponentVersion,
     ManifestManager,
 )
+from ..manifest.solved_component import SolvedComponent
 from .base import BaseSource
-
-if TYPE_CHECKING:
-    from ..manifest.solved_component import SolvedComponent
 
 BRANCH_TAG_RE = re.compile(
     r'^(?!.*/\.)(?!.*\.\.)(?!/)(?!.*//)(?!.*@\{)(?!.*\\)[^\177\s~^:?*\[]+[^.]$'
@@ -43,10 +41,10 @@ class GitSource(BaseSource):
 
     def _checkout_git_source(
         self,
-        version,  # type: str | ComponentVersion | None
-        path,  # type: str
-        selected_paths=None,  # type: list[str] | None
-    ):  # type: (...) -> str
+        version: Union[str, ComponentVersion, None],
+        path: str,
+        selected_paths: Optional[List[str]] = None,
+    ) -> str:
         if version is not None:
             version = None if version == '*' else str(version)
         return self._client.prepare_ref(
@@ -60,8 +58,8 @@ class GitSource(BaseSource):
 
     @staticmethod
     def create_sources_if_valid(
-        name, details, manifest_manager=None
-    ):  # type: (str, dict, ManifestManager | None) -> list[BaseSource] | None
+        name: str, details: Dict, manifest_manager: Optional[ManifestManager] = None
+    ) -> Optional[List[BaseSource]]:
         if details.get('git', None):
             return [GitSource(details, manifest_manager=manifest_manager)]
         return None
@@ -75,11 +73,11 @@ class GitSource(BaseSource):
         return {'path': 'str'}
 
     @property
-    def component_hash_required(self):  # type: () -> bool
+    def component_hash_required(self) -> bool:
         return True
 
     @property
-    def downloadable(self):  # type: () -> bool
+    def downloadable(self) -> bool:
         return True
 
     @property
@@ -93,7 +91,7 @@ class GitSource(BaseSource):
         return self._hash_key
 
     @property
-    def volatile(self):  # type: () -> bool
+    def volatile(self) -> bool:
         return True
 
     def cache_path(self):
@@ -101,7 +99,7 @@ class GitSource(BaseSource):
         path = os.path.join(self.system_cache_path, f'b_{self.NAME}_{self.hash_key[:8]}')
         return path
 
-    def download(self, component, download_path):  # type: (SolvedComponent, str) -> str | None
+    def download(self, component: SolvedComponent, download_path: str) -> Optional[str]:
         # Check for required components
         if not component.component_hash:
             raise FetchingError('Component hash is required for components from git repositories')
@@ -202,7 +200,7 @@ class GitSource(BaseSource):
             ],
         )
 
-    def serialize(self):  # type: () -> Dict
+    def serialize(self) -> Dict:
         source = {
             'git': self.git_repo,
             'type': self.name,
@@ -213,13 +211,13 @@ class GitSource(BaseSource):
 
         return source
 
-    def validate_version_spec(self, spec):  # type: (str) -> bool
+    def validate_version_spec(self, spec: str) -> bool:
         if not spec or spec == '*':
             return True
 
         return bool(BRANCH_TAG_RE.match(spec))
 
-    def normalize_spec(self, spec):  # type: (str) -> str
+    def normalize_spec(self, spec: str) -> str:
         if not spec:
             return '*'
         ref = None if spec == '*' else spec

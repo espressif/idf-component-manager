@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 from functools import wraps
-from typing import Any, Callable
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from schema import Schema
 
@@ -21,8 +21,8 @@ from idf_component_tools.semver import SimpleSpec, Version
 
 class ComponentWithVersionsAndStorageURL(ComponentWithVersions):
     def __init__(
-        self, name, versions, storage_url
-    ):  # type: (str, list[HashedComponentVersion], str | None) -> None
+        self, name: str, versions: List[HashedComponentVersion], storage_url: Optional[str]
+    ) -> None:
         super().__init__(name, versions)
         self.storage_url = storage_url
 
@@ -36,20 +36,20 @@ class StorageClient(BaseClient):
         super().__init__(sources)
         self.storage_url = storage_url
 
-    def _request(cache=False):  # type: (BaseClient | bool) -> Callable
-        def decorator(f):  # type: (Callable[..., Any]) -> Callable
+    def _request(cache: Union[BaseClient, bool] = False) -> Callable:
+        def decorator(f: Callable[..., Any]) -> Callable:
             @wraps(f)  # type: ignore
             def wrapper(self, *args, **kwargs):
                 url = self.storage_url
                 session = create_session(cache=cache)
 
                 def request(
-                    method,  # type: str
-                    path,  # type: list[str]
-                    data=None,  # type: dict | None
-                    json=None,  # type: dict | None
-                    headers=None,  # type: dict | None
-                    schema=None,  # type: Schema | None
+                    method: str,
+                    path: List[str],
+                    data: Optional[Dict] = None,
+                    json: Optional[Dict] = None,
+                    headers: Optional[Dict] = None,
+                    schema: Optional[Schema] = None,
                 ):
                     path[-1] += '.json'
                     return base_request(
@@ -72,8 +72,8 @@ class StorageClient(BaseClient):
 
     @_request(cache=True)
     def versions(
-        self, request, component_name, spec='*'
-    ):  # type: (Callable, str, str) -> ComponentWithVersionsAndStorageURL
+        self, request: Callable, component_name: str, spec: str = '*'
+    ) -> ComponentWithVersionsAndStorageURL:
         """List of versions for given component with required spec"""
         try:
             cmp_with_versions = super().versions(
@@ -87,8 +87,8 @@ class StorageClient(BaseClient):
         )
 
     def component(
-        self, component_name, version=None
-    ):  # type: (str, str | None) -> ComponentDetailsWithStorageURL
+        self, component_name: str, version: Optional[str] = None
+    ) -> ComponentDetailsWithStorageURL:
         """
         Manifest for given version of component, if version is None highest version is returned
         """
@@ -138,9 +138,7 @@ class StorageClient(BaseClient):
         )
 
     @_request(cache=True)
-    def get_component_info(
-        self, request, component_name, spec='*'
-    ):  # type: (Callable, str, str) -> dict
+    def get_component_info(self, request: Callable, component_name: str, spec: str = '*') -> Dict:
         try:
             response = request(
                 'get', ['components', component_name.lower()], schema=COMPONENT_SCHEMA

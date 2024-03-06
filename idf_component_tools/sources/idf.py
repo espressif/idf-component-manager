@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
+
 from typing import Dict
 
 from .. import semver
@@ -26,7 +27,7 @@ class IDFSource(BaseSource):
     def meta(self):
         return True
 
-    def normalized_name(self, name):  # type: (str) -> str
+    def normalized_name(self, name: str) -> str:
         return self.NAME
 
     def versions(self, name, details=None, spec='*', target=None):
@@ -43,5 +44,5 @@ class IDFSource(BaseSource):
         get_idf_path()
         return None
 
-    def serialize(self):  # type: () -> Dict
+    def serialize(self) -> Dict:
         return {'type': self.name}

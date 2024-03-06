@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Results of the solver"""
 
-from typing import Iterable
+from typing import Iterable, List, Optional
 
 from idf_component_tools.serialization import serializable
 
@@ -23,14 +23,13 @@ class SolvedComponent:
 
     def __init__(
         self,
-        name,  # type: str
-        version,  # type: ComponentVersion
-        source,  # type: BaseSource
-        component_hash=None,  # type: str | None
-        dependencies=None,  # type: Iterable[ComponentRequirement] | None
-        targets=None,  # type: list[str] | None
-    ):
-        # type: (...) -> None
+        name: str,
+        version: ComponentVersion,
+        source: BaseSource,
+        component_hash: Optional[str] = None,
+        dependencies: Optional[Iterable[ComponentRequirement]] = None,
+        targets: Optional[List[str]] = None,
+    ) -> None:
         self.name = name
         self.version = version
         self.source = source

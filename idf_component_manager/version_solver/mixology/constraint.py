@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
 # SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
+from __future__ import annotations
 
 from typing import Union as _Union
 
@@ -15,37 +16,37 @@ class Constraint:
     A term constraint.
     """
 
-    def __init__(self, package, constraint):  # type: (Package, _Union[Range, Union]) -> None
+    def __init__(self, package: Package, constraint: _Union[Range, Union]) -> None:
         self._package = package
         self._constraint = constraint
 
     @property
-    def package(self):  # type: () -> Package
+    def package(self) -> Package:
         return self._package
 
     @property
-    def constraint(self):  # type: () -> _Union[Range, Union]
+    def constraint(self) -> _Union[Range, Union]:
         return self._constraint
 
     @property
-    def inverse(self):  # type: () -> Constraint
+    def inverse(self) -> Constraint:
         new_constraint = self.constraint.inverse
 
         return self.__class__(self.package, new_constraint)
 
-    def allows_all(self, other):  # type: (Constraint) -> bool
+    def allows_all(self, other: Constraint) -> bool:
         return self.constraint.allows_all(other.constraint)
 
-    def allows_any(self, other):  # type: (Constraint) -> bool
+    def allows_any(self, other: Constraint) -> bool:
         return self.constraint.allows_any(other.constraint)
 
-    def difference(self, other):  # type: (Constraint) -> Constraint
+    def difference(self, other: Constraint) -> bool:
         if not isinstance(self.package.source, type(other.package.source)):
             raise ValueError('Cannot tell difference of two different source types')
 
         return self.__class__(self.package, self.constraint.difference(other.constraint))
 
-    def intersect(self, other):  # type: (Constraint) -> Constraint
+    def intersect(self, other: Constraint) -> Constraint:
         if other.package != self.package:
             raise ValueError('Cannot intersect two constraints for different packages')
 
@@ -54,7 +55,7 @@ class Constraint:
 
         return self.__class__(self.package, self.constraint.intersect(other.constraint))
 
-    def union(self, other):  # type: (Constraint) -> Constraint
+    def union(self, other: Constraint) -> Constraint:
         if other.package != self.package:
             raise ValueError('Cannot build an union of two constraints for different packages')
 
@@ -63,16 +64,16 @@ class Constraint:
 
         return self.__class__(self.package, self.constraint.union(other.constraint))
 
-    def is_subset_of(self, other):  # type: (Constraint) -> bool
+    def is_subset_of(self, other: Constraint) -> bool:
         return other.allows_all(self)
 
-    def overlaps(self, other):  # type: (Constraint) -> bool
+    def overlaps(self, other: Constraint) -> bool:
         return other.allows_any(self)
 
-    def is_disjoint_from(self, other):  # type: (Constraint) -> bool
+    def is_disjoint_from(self, other: Constraint) -> bool:
         return not self.overlaps(other)
 
-    def relation(self, other):  # type: (Constraint) -> SetRelation
+    def relation(self, other: Constraint) -> SetRelation:
         if self.is_subset_of(other):
             return SetRelation.SUBSET
         elif self.overlaps(other):
@@ -80,13 +81,13 @@ class Constraint:
         else:
             return SetRelation.DISJOINT
 
-    def is_any(self):  # type: () -> bool
+    def is_any(self) -> bool:
         return self._constraint.is_any()
 
-    def is_empty(self):  # type: () -> bool
+    def is_empty(self) -> bool:
         return self._constraint.is_empty()
 
-    def __eq__(self, other):  # type: (Constraint) -> bool
+    def __eq__(self, other: Constraint) -> bool:
         if not isinstance(other, Constraint):
             return NotImplemented
 
@@ -95,7 +96,7 @@ class Constraint:
     def __hash__(self):
         return hash(self.package) ^ hash(self.constraint)
 
-    def to_string(self, allow_every=False):  # type: (bool) -> str
+    def to_string(self, allow_every: bool = False) -> str:
         if self.package == Package.root():
             return 'project'
         elif allow_every and self.is_any():

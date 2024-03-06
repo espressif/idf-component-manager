@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 import subprocess  # nosec
+from typing import List, Optional, Union
 
 import click
 
@@ -13,7 +14,7 @@ CLI_NAME = 'compote'
 CLICK_VERSION = Version.coerce(click.__version__)
 
 
-def _get_shell_completion(shell):  # type: (str) -> str
+def _get_shell_completion(shell: str) -> str:
     if CLICK_VERSION.major == 7:
         return 'source_' + shell
     elif CLICK_VERSION.major > 7:
@@ -23,11 +24,11 @@ def _get_shell_completion(shell):  # type: (str) -> str
 
 
 def _append_text_line(
-    strings,  # type: str | list[str]
-    filepath,  # type: str
-    write_string=None,  # type: str | None
-    dry_run=False,  # type: bool
-):  # type: (...) -> None
+    strings: Union[str, List[str]],
+    filepath: str,
+    write_string: Optional[str] = None,
+    dry_run: bool = False,
+) -> None:
     if isinstance(strings, str):
         strings = [strings]
 

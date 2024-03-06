@@ -37,7 +37,7 @@ class LocalSource(BaseSource):
         )
 
     @property
-    def _path(self):  # type: () -> Path
+    def _path(self) -> Path:
         try:
             if self._manifest_manager:
                 path = (Path(self._manifest_manager.path).parent / self._raw_path).resolve()
@@ -75,7 +75,7 @@ class LocalSource(BaseSource):
         return path
 
     @property
-    def component_hash_required(self):  # type: () -> bool
+    def component_hash_required(self) -> bool:
         return False
 
     @classmethod
@@ -100,7 +100,7 @@ class LocalSource(BaseSource):
         return self.source_details.get('path')
 
     @property
-    def volatile(self):  # type: () -> bool
+    def volatile(self) -> bool:
         return True
 
     def download(self, component, download_path):
@@ -157,7 +157,7 @@ class LocalSource(BaseSource):
             ],
         )
 
-    def serialize(self):  # type: () -> Dict
+    def serialize(self) -> Dict:
         return {
             'path': str(self._path),
             'type': self.name,

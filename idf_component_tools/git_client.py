@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+from __future__ import annotations
 
 import os
 import re
@@ -7,7 +8,7 @@ import subprocess  # nosec
 import time
 from datetime import datetime
 from functools import wraps
-from typing import Any, Callable, Union
+from typing import Any, Callable, List, Optional, Union
 
 from .errors import GitError
 from .messages import warn
@@ -22,12 +23,12 @@ class GitCommandError(Exception):
     not in the user code.
     """
 
-    def __init__(self, *args, **kwargs):  # type: (Any, Any) -> None
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         self.exit_code = kwargs.get('exit_code')
         super().__init__(*args)
 
 
-def clean_tag_version(tag):  # type: (str) -> str
+def clean_tag_version(tag: str) -> str:
     """Clean version from tag before processing it"""
     tag = tag.strip()
 
@@ -45,8 +46,8 @@ class GitClient:
     """Set of tools for working with git repos"""
 
     def __init__(
-        self, git_command='git', min_supported='2.0.0'
-    ):  # type: (str, Union[str, Version]) -> None
+        self, git_command: str = 'git', min_supported: Union[str, Version] = '2.0.0'
+    ) -> None:
         self.git_command = git_command or 'git'
         self.git_min_supported = (
             min_supported if isinstance(min_supported, Version) else Version(min_supported)
@@ -55,7 +56,7 @@ class GitClient:
         self._git_checked = False
         self._repo_updated = False
 
-    def _git_cmd(func):  # type: (Union[GitClient, Callable[..., Any]]) -> Callable
+    def _git_cmd(func: Union[GitClient, Callable[..., Any]]) -> Callable:
         @wraps(func)  # type: ignore
         def wrapper(self, *args, **kwargs):
             if not self._git_checked:
@@ -89,7 +90,7 @@ class GitClient:
         if not os.path.isfile(fetch_file) or current_time - os.stat(fetch_file).st_mtime > 60:
             self.run(['fetch', 'origin'], cwd=bare_path)
 
-    def _bare_repo(func):  # type: (Union[GitClient, Callable[..., Any]]) -> Callable
+    def _bare_repo(func: Union[GitClient, Callable[..., Any]]) -> Callable:
         @wraps(func)  # type: ignore
         def wrapper(self, *args, **kwargs):
             if not self._repo_updated:
@@ -101,11 +102,11 @@ class GitClient:
         return wrapper
 
     @_git_cmd
-    def commit_id(self, path):  # type: (str) -> str
+    def commit_id(self, path: str) -> str:
         return self.run(['show', '--format="%H"', '--no-patch'], cwd=path)
 
     @_git_cmd
-    def is_dirty(self, path):  # type: (str) -> bool
+    def is_dirty(self, path: str) -> bool:
         try:
             self.run(['diff', '--quiet'], cwd=path)
             return False
@@ -113,7 +114,7 @@ class GitClient:
             return True
 
     @_git_cmd
-    def is_git_dir(self, path):  # type: (str) -> bool
+    def is_git_dir(self, path: str) -> bool:
         try:
             return self.run(['rev-parse', '--is-inside-work-tree'], cwd=path).strip() == 'true'
         except GitCommandError:
@@ -123,13 +124,13 @@ class GitClient:
     @_bare_repo
     def prepare_ref(
         self,
-        repo,  # type: str
-        bare_path,  # type: str
-        checkout_path,  # type: str
-        ref=None,  # type: str | None
-        with_submodules=True,  # type: bool
-        selected_paths=None,  # type: list[str] | None
-    ):  # type: (...) -> str
+        repo: str,
+        bare_path: str,
+        checkout_path: str,
+        ref: Optional[str] = None,
+        with_submodules: bool = True,
+        selected_paths: Optional[List[str]] = None,
+    ) -> str:
         """
         Checkout required branch to desired path. Create a bare repo, if necessary
 
@@ -194,7 +195,7 @@ class GitClient:
 
     @_git_cmd
     @_bare_repo
-    def get_commit_id_by_ref(self, repo, bare_path, ref):  # type: (str, str, str) -> str
+    def get_commit_id_by_ref(self, repo: str, bare_path: str, ref: str) -> str:
         if ref:
             # If branch is provided check that exists
             try:
@@ -210,7 +211,7 @@ class GitClient:
 
     @_git_cmd
     @_bare_repo
-    def has_gitmodules_by_ref(self, repo, bare_path, ref):  # type: (str, str, str) -> bool
+    def has_gitmodules_by_ref(self, repo: str, bare_path: str, ref: str) -> bool:
         return (
             '.gitmodules' in self.run(['ls-tree', '--name-only', ref], cwd=bare_path).splitlines()
         )
@@ -262,7 +263,7 @@ class GitClient:
 
         return stdout.decode('utf-8')
 
-    def check_version(self):  # type: () -> None
+    def check_version(self) -> None:
         version = self.version()
 
         if version < self.git_min_supported:
@@ -274,7 +275,7 @@ class GitClient:
                 )
             )
 
-    def version(self):  # type: () -> Version
+    def version(self) -> Version:
         try:
             git_version_str = subprocess.check_output(  # nosec
                 [self.git_command, '--version'], stderr=subprocess.STDOUT
@@ -293,7 +294,7 @@ class GitClient:
             raise GitError('Cannot recognize git version')
 
     @_git_cmd
-    def get_tag_version(self, cwd=None):  # type: (str | None) -> Version
+    def get_tag_version(self, cwd: Optional[str] = None) -> Version:
         """
         Return a valid component version of the current commit if it is tagged,
         otherwise a `GitError` is raised.
