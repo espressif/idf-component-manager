@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2016 Python-SemanticVersion project
 # SPDX-License-Identifier: BSD 2-Clause License
-# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 """Test the various functions from 'base'."""
 
 import sys
@@ -40,7 +39,9 @@ class TopLevelTestCase(unittest.TestCase):
                 self.assertEqual(
                     expected,
                     result,
-                    'compare(%r, %r) should be %r instead of %r' % (a, b, expected, result),
+                    'compare({!r}, {!r}) should be {!r} instead of {!r}'.format(
+                        a, b, expected, result
+                    ),
                 )
 
     matches = (
@@ -54,7 +55,9 @@ class TopLevelTestCase(unittest.TestCase):
     def test_match(self):
         for spec, version in self.matches:
             with self.subTest(spec=spec, version=version):
-                self.assertTrue(base.match(spec, version), '%r should accept %r' % (spec, version))
+                self.assertTrue(
+                    base.match(spec, version), '{!r} should accept {!r}'.format(spec, version)
+                )
 
     valid_strings = (
         '1.0.0-alpha',
@@ -81,7 +84,9 @@ class TopLevelTestCase(unittest.TestCase):
     def test_validate_valid(self):
         for version in self.valid_strings:
             with self.subTest(version=version):
-                self.assertTrue(base.validate(version), '%r should be a valid version' % (version,))
+                self.assertTrue(
+                    base.validate(version), '{!r} should be a valid version'.format(version)
+                )
 
     invalid_strings = (
         '1',
@@ -100,7 +105,7 @@ class TopLevelTestCase(unittest.TestCase):
         for version in self.invalid_strings:
             with self.subTest(version=version):
                 self.assertFalse(
-                    base.validate(version), '%r should not be a valid version' % (version,)
+                    base.validate(version), '{!r} should not be a valid version'.format(version)
                 )
 
 

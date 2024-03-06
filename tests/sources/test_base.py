@@ -4,7 +4,7 @@
 from idf_component_tools import sources
 
 
-class TestValidateBaseSource(object):
+class TestValidateBaseSource:
     def test_validate_version_spec_any(self):
         source = sources.BaseSource.fromdict('test', {})
         assert source[0].validate_version_spec('*')

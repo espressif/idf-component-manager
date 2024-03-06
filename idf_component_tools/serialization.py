@@ -1,18 +1,16 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 '''Class decorators to help with serialization'''
 
 from collections import OrderedDict
 from numbers import Number
 
-from six import string_types
-
 try:
     from collections.abc import Iterable, Mapping
 except ImportError:
-    from collections import Iterable, Mapping  # type: ignore
+    from collections.abc import Iterable, Mapping  # type: ignore
 
-BASIC_TYPES = (Number, type(None)) + string_types
+BASIC_TYPES = (Number, type(None), str)
 
 
 def _by_key(item):

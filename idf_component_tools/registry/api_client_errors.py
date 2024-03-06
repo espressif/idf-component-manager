@@ -1,22 +1,14 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
-try:
-    import http.client as http_client
-except ImportError:
-    # Python 2
-    import httplib as http_client  # type: ignore
-
-try:
-    from typing import Any
-except ImportError:
-    pass
+import http.client as http_client
+from typing import Any
 
 
 class APIClientError(Exception):
     def __init__(self, message='API Request Error', endpoint=None, status_code=None):
         # type: (Any, str | None, int | None) -> None
-        super(APIClientError, self).__init__(message)
+        super().__init__(message)
         self.endpoint = endpoint
         self.status_code = status_code
 

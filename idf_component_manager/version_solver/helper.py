@@ -1,20 +1,15 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
+from typing import Any, Dict, List, Optional
+from typing import Union as _Union
+
 from idf_component_tools.manifest import HashedComponentVersion
-
-from .mixology.failure import SolverFailure
-
-try:
-    from typing import Any, Dict, List, Optional
-    from typing import Union as _Union
-except ImportError:
-    pass
-
 from idf_component_tools.semver import Range as SemverRange
 from idf_component_tools.semver import SimpleSpec
 
 from .mixology.constraint import Constraint
+from .mixology.failure import SolverFailure
 from .mixology.package import Package
 from .mixology.package_source import PackageSource as BasePackageSource
 from .mixology.range import Range
@@ -83,7 +78,7 @@ class PackageSource(BasePackageSource):
         self._root_dependencies = []  # type: List[Dependency]
         self._packages = {}  # type: Dict[Package, Dict[HashedComponentVersion, List[Dependency]]]
 
-        super(PackageSource, self).__init__()
+        super().__init__()
 
     @property
     def root_version(self):

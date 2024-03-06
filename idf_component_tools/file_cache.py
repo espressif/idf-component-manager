@@ -33,7 +33,7 @@ def system_cache_path():  # type: () -> str
         return os.path.join(cache_directory, 'Espressif', 'ComponentManager')
 
 
-class FileCache(object):
+class FileCache:
     """Common functions to work with components cache"""
 
     def __init__(self, path=None):  # type: (str | None) -> None
@@ -64,7 +64,7 @@ class FileCache(object):
         return directory_size(self.path())
 
 
-class SystemCachePath(object):
+class SystemCachePath:
     """Methods to fetch user specific cache path for every platform"""
 
     PY3 = sys.version_info[0] == 3

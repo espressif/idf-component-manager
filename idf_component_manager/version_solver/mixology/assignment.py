@@ -1,12 +1,8 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
-try:
-    from typing import Any, Optional
-except ImportError:
-    pass
+from typing import Any, Optional
 
 from .constraint import Constraint
 from .incompatibility import Incompatibility
@@ -23,7 +19,7 @@ class Assignment(Term):
     def __init__(
         self, constraint, is_positive, decision_level, index, cause=None
     ):  # type: (Constraint, bool, int, int, Optional[Incompatibility]) -> None
-        super(Assignment, self).__init__(constraint, is_positive)
+        super().__init__(constraint, is_positive)
 
         self._decision_level = decision_level
         self._index = index

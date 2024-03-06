@@ -30,7 +30,7 @@ def archive_path(fixtures_path):
     return inner
 
 
-class TestUtilsArchive(object):
+class TestUtilsArchive:
     def test_get_format_from_path(self):
         with pytest.raises(ArchiveError):
             get_format_from_path('sdf')

@@ -1,12 +1,8 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
-try:
-    from typing import Dict, List, Tuple
-except ImportError:
-    pass
+from typing import Dict, List, Tuple
 
 from .incompatibility import Incompatibility
 from .incompatibility_cause import ConflictCause

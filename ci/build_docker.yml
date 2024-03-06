@@ -9,15 +9,11 @@ build:
   timeout: 2h
   parallel:
     matrix:
-      - IDF_BRANCH_TAG: [release-v4.2]
-        PYTHON_IMAGE_TAG: [2.7-buster, 3.5-buster, 3.11-bullseye]
-      - IDF_BRANCH_TAG: [release-v4.3]
-        PYTHON_IMAGE_TAG: [3.5-buster, 3.11-bullseye]
       - IDF_BRANCH_TAG: [release-v4.4]
         PYTHON_IMAGE_TAG: [3.7-bullseye, 3.11-bullseye]
       - IDF_BRANCH_TAG: [release-v5.0, release-v5.1]
         PYTHON_IMAGE_TAG: [3.7-bullseye, 3.11-bullseye]
-      - IDF_BRANCH_TAG: [master]
+      - IDF_BRANCH_TAG: [release-v5.2, master]
         PYTHON_IMAGE_TAG: [3.8-bullseye, 3.11-bullseye]
   script:
     - BRANCH_NAME=$(echo $IDF_BRANCH_TAG | sed -e "s/release-v/release\/v/g")

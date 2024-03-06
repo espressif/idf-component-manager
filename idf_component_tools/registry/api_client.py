@@ -5,8 +5,8 @@ import os
 import re
 from collections import namedtuple
 from functools import wraps
-from io import open
 from ssl import SSLEOFError
+from typing import Any, Callable
 
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 from schema import Schema
@@ -24,14 +24,6 @@ from .request_processor import base_request
 
 # Import whole module to avoid circular dependencies
 
-try:
-    from typing import TYPE_CHECKING, Any, Callable
-
-    if TYPE_CHECKING:
-        from idf_component_tools.sources import BaseSource
-except ImportError:
-    pass
-
 TaskStatus = namedtuple('TaskStatus', ['message', 'status', 'progress', 'warnings'])
 
 
@@ -48,7 +40,7 @@ def auth_required(f):  # type: (Callable) -> Callable
 class APIClient(BaseClient):
     def __init__(self, base_url=None, auth_token=None):
         # type: (str | None, str | None) -> None
-        super(APIClient, self).__init__()
+        super().__init__()
         self.auth_token = auth_token
         self.base_url = base_url
         self._frontend_url = None
@@ -142,9 +134,7 @@ class APIClient(BaseClient):
         self, request, component_name, spec='*'
     ):  # type: (Callable, str, str) -> ComponentWithVersions
         """List of versions for given component with required spec"""
-        return super(APIClient, self).versions(
-            request=request, component_name=component_name, spec=spec
-        )
+        return super().versions(request=request, component_name=component_name, spec=spec)
 
     @auth_required
     @_request(cache=False)

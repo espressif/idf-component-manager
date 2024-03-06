@@ -1,18 +1,13 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Tools for hashing and hash validation for whole packages"""
 import json
 from hashlib import sha256
-from io import open
 from pathlib import Path
+from typing import Any, Iterable, Text
 
 from idf_component_tools.file_tools import filtered_paths
 from idf_component_tools.hash_tools.constants import BLOCK_SIZE
-
-try:
-    from typing import Any, Iterable, Text
-except ImportError:
-    pass
 
 
 def hash_object(obj):  # type: (Any) -> str

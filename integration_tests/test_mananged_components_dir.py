@@ -1,8 +1,7 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import shutil
-from io import open
 from pathlib import Path
 
 import pytest
@@ -32,7 +31,7 @@ def test_changes_in_component(project):
     assert 'Build files have been written to' in res
 
     with open(os.path.join(project, 'managed_components', 'example__cmp', 'README.md'), 'w') as f:
-        f.write(u'TEST STRING')
+        f.write('TEST STRING')
     shutil.rmtree(os.path.join(project, 'build'))
     res = project_action(project, 'reconfigure')
 
@@ -80,7 +79,7 @@ def test_fullclean_managed_components(project):
     project_action(project, 'reconfigure')
     component_hash = Path(project, 'managed_components', 'example__cmp', '.component_hash')
     with component_hash.open(mode='wt') as hash_file:
-        hash_file.write(u'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+        hash_file.write('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
     project_action(project, 'fullclean')
     assert Path(project, 'managed_components', 'example__cmp').is_dir()
 

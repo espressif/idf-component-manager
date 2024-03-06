@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -6,6 +6,8 @@ import re
 import shutil
 import tempfile
 from hashlib import sha256
+from typing import TYPE_CHECKING, Dict
+from urllib.parse import urlparse  # type: ignore
 
 from idf_component_tools.hash_tools.calculate import hash_dir
 
@@ -21,18 +23,8 @@ from ..manifest import (
 )
 from .base import BaseSource
 
-try:
-    from urllib.parse import urlparse  # type: ignore
-except ImportError:
-    from urlparse import urlparse  # type: ignore
-
-try:
-    from typing import TYPE_CHECKING, Dict
-
-    if TYPE_CHECKING:
-        from ..manifest.solved_component import SolvedComponent
-except ImportError:
-    pass
+if TYPE_CHECKING:
+    from ..manifest.solved_component import SolvedComponent
 
 BRANCH_TAG_RE = re.compile(
     r'^(?!.*/\.)(?!.*\.\.)(?!/)(?!.*//)(?!.*@\{)(?!.*\\)[^\177\s~^:?*\[]+[^.]$'
@@ -43,7 +35,7 @@ class GitSource(BaseSource):
     NAME = 'git'
 
     def __init__(self, source_details=None, **kwargs):
-        super(GitSource, self).__init__(source_details=source_details, **kwargs)
+        super().__init__(source_details=source_details, **kwargs)
         self.git_repo = self.source_details['git']
         self.component_path = self.source_details.get('path') or '.'
 

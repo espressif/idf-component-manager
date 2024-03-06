@@ -1,7 +1,8 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import re
+from typing import List
 
 from schema import Schema, SchemaError
 
@@ -13,13 +14,8 @@ from .constants import FULL_SLUG_REGEX, known_targets
 from .metadata import Metadata
 from .schemas import BUILD_METADATA_KEYS, INFO_METADATA_KEYS, KNOWN_FILES_KEYS, schema_builder
 
-try:
-    from typing import List
-except ImportError:
-    pass
 
-
-class ManifestValidator(object):
+class ManifestValidator:
     SLUG_REGEX_COMPILED = re.compile(FULL_SLUG_REGEX)
     """Validator for manifest object, checks for structure, known fields and valid values"""
 
@@ -216,7 +212,7 @@ class ManifestValidator(object):
         for k, v in tree.items():
             if isinstance(v, list):
                 v = [i.lower() for i in v if isinstance(i, str)]
-                duplicates = set([i for i in v if v.count(i) > 1])
+                duplicates = {i for i in v if v.count(i) > 1}
                 if duplicates:
                     self.add_error('Duplicate item in "{}": {}'.format(k, duplicates))
 

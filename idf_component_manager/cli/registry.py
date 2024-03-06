@@ -5,7 +5,6 @@ import webbrowser
 
 import click
 import requests
-from six.moves import input
 
 from idf_component_manager.service_details import get_api_client
 from idf_component_manager.utils import print_error, print_info

@@ -1,15 +1,11 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
+
+from typing import Any, List
+from typing import Union as _Union
 
 from idf_component_tools.manifest import HashedComponentVersion
-
-try:
-    from typing import Any, List
-    from typing import Union as _Union
-except ImportError:
-    pass
 
 from .constraint import Constraint
 from .incompatibility import Incompatibility
@@ -20,7 +16,7 @@ from .term import Term
 from .union import Union
 
 
-class PackageSource(object):
+class PackageSource:
     """
     Provides information about specifications and dependencies to the resolver,
     allowing the VersionResolver class to remain generic while still providing power

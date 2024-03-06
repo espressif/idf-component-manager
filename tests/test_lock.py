@@ -1,11 +1,10 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import filecmp
 import os
 import shutil
 import textwrap
-from io import open
 from pathlib import Path
 
 import pytest
@@ -65,7 +64,7 @@ def connection_error_request():
         yield m
 
 
-class TestLockManager(object):
+class TestLockManager:
     def test_load_valid_lock(self, valid_lock_path):
         parser = LockManager(valid_lock_path)
 
@@ -214,7 +213,7 @@ class TestLockManager(object):
                         'dependencies',
                         {
                             'example/cmp': {
-                                'component_hash': '8644358a11a35a986b0ce4d325ba3d1aa9491b9518111acd4ea9447f11dc47c1',
+                                'component_hash': '8644358a11a35a986b0ce4d325ba3d1aa9491b9518111acd4ea9447f11dc47c1',  # noqa
                                 'source': {
                                     'service_url': 'https://ohnoIdonthaveinternetconnection.com',
                                     'type': 'service',
@@ -234,8 +233,8 @@ class TestLockManager(object):
         with pytest.warns(UserHint) as record:
             assert not is_solve_required(project_requirements, solution)
             assert (
-                'Cannot establish a connection to the component registry. Skipping checks of dependency changes.'
-                in record.list[0].message.args[0]
+                'Cannot establish a connection to the component registry. '
+                'Skipping checks of dependency changes.' in record.list[0].message.args[0]
             )
 
     def test_change_manifest_file_idf_version(self, monkeypatch, capsys):
@@ -446,6 +445,6 @@ class TestLockManager(object):
         assert not is_solve_required(project_requirements, solution)
 
         with open(os.path.join(project_dir, 'cmp.c'), 'w') as f:
-            f.write(u'File Changed')
+            f.write('File Changed')
 
         assert not is_solve_required(project_requirements, solution)

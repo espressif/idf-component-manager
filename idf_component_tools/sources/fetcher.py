@@ -1,9 +1,9 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Small class that manages getting components to right path using system-wide cache"""
 
 import os
-from io import open
+from typing import TYPE_CHECKING
 
 from idf_component_tools.hash_tools.constants import HASH_FILENAME
 from idf_component_tools.hash_tools.errors import (
@@ -19,16 +19,11 @@ from ..build_system_tools import build_name
 from ..errors import ComponentModifiedError, InvalidComponentHashError
 from ..manifest.solved_component import SolvedComponent
 
-try:
-    from typing import TYPE_CHECKING
-
-    if TYPE_CHECKING:
-        from . import BaseSource
-except ImportError:
-    pass
+if TYPE_CHECKING:
+    from . import BaseSource
 
 
-class ComponentFetcher(object):
+class ComponentFetcher:
     def __init__(
         self,
         solved_component,
@@ -67,4 +62,4 @@ class ComponentFetcher(object):
 
             if not os.path.isfile(hash_file):
                 with open(hash_file, mode='w+', encoding='utf-8') as f:
-                    f.write(u'{}'.format(component_hash))
+                    f.write('{}'.format(component_hash))

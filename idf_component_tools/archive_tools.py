@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Set of tools to work with archives"""
 
@@ -6,14 +6,10 @@ import re
 import tarfile
 from pathlib import Path
 from shutil import get_archive_formats
+from typing import Text, Union
 
 from .errors import FatalError
 from .file_tools import prepare_empty_directory
-
-try:
-    from typing import Text, Union
-except ImportError:
-    pass
 
 
 class ArchiveError(FatalError):

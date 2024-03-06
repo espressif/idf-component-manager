@@ -1,18 +1,14 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import sys
 import warnings
+from typing import Any, Dict, List
 
 from idf_component_manager.utils import CLICK_SUPPORTS_SHOW_DEFAULT, print_error, showwarning
 from idf_component_tools.errors import FatalError
 
 from .core import ComponentManager
-
-try:
-    from typing import Any, Dict, List
-except ImportError:
-    pass
 
 SERVICE_PROFILE = [
     {

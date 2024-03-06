@@ -1,15 +1,10 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
 import logging
 import time
-
-try:
-    from typing import Dict, List, Optional, Set, Union
-except ImportError:
-    pass
+from typing import Dict, List, Optional, Set, Union
 
 from .constraint import Constraint
 from .failure import SolverFailure

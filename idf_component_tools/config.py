@@ -1,13 +1,12 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
 import warnings
-from io import open
+from typing import Any, Iterator
 
 import yaml
 from schema import And, Optional, Or, Regex, Schema, SchemaError
-from six import string_types
 
 from idf_component_tools.constants import COMPILED_FILE_RE, COMPILED_URL_RE
 from idf_component_tools.errors import FatalError, ProfileNotValid
@@ -16,18 +15,14 @@ from idf_component_tools.messages import UserDeprecationWarning
 from .build_system_tools import get_idf_version
 from .constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL
 
-try:
-    from typing import Any, Iterator, Tuple
-except ImportError:
-    pass
-
 DEFAULT_CONFIG_DIR = os.path.join('~', '.espressif')
 
 CONFIG_SCHEMA = Schema(
     {
         Optional('profiles'): {
-            Or(*string_types):
-            # Use Or to allow either a None value or a dictionary with specific keys and validation rules
+            str:
+            # Use Or to allow either a None value or
+            # a dictionary with specific keys and validation rules
             Or(
                 None,
                 {
@@ -37,8 +32,8 @@ CONFIG_SCHEMA = Schema(
                         Or(Regex(COMPILED_URL_RE), Regex(COMPILED_FILE_RE)),
                         [Or(Regex(COMPILED_URL_RE), Regex(COMPILED_FILE_RE))],
                     ),
-                    Optional('default_namespace'): And(Or(*string_types), len),
-                    Optional('api_token'): And(Or(*string_types), len),
+                    Optional('default_namespace'): And(str, len),
+                    Optional('api_token'): And(str, len),
                     # allow any other keys that may be introduced in future versions
                     Optional(str): object,
                 },
@@ -62,7 +57,7 @@ class ConfigError(FatalError):
     pass
 
 
-class Config(object):
+class Config:
     def __init__(self, config=None):  # type: (dict | None) -> None
         self._config = config or {}
 
@@ -96,7 +91,7 @@ class Config(object):
             raise ConfigError('Config format is not valid:\n{}'.format(str(e)))
 
 
-class ConfigManager(object):
+class ConfigManager:
     def __init__(self, path=None):
         self.config_path = path or os.path.join(config_dir(), 'idf_component_manager.yml')
 
@@ -105,14 +100,13 @@ class ConfigManager(object):
         if not os.path.isfile(self.config_path):
             return Config({})
 
-        with open(self.config_path, mode='r', encoding='utf-8') as f:
+        with open(self.config_path, encoding='utf-8') as f:
             try:
                 return Config(yaml.safe_load(f.read())).validate()
             except yaml.YAMLError:
                 raise ConfigError(
-                    'Cannot parse config file. Please check that\n\t{}\nis valid YAML file\n'.format(
-                        self.config_path
-                    )
+                    'Cannot parse config file. '
+                    'Please check that\n\t{}\nis valid YAML file\n'.format(self.config_path)
                 )
 
     def dump(self, config):  # type: (Config) -> None
@@ -191,7 +185,8 @@ def component_registry_url(
         elif isinstance(profile_storage_urls, str):
             if profile_storage_urls.find(';') != -1:
                 raise ProfileNotValid(
-                    '`storage_url` field may only be a string with one URL. For multiple URLs, use list syntax'
+                    '`storage_url` field may only be a string with one URL. '
+                    'For multiple URLs, use list syntax'
                 )
             storage_urls = [profile_storage_urls]
         else:

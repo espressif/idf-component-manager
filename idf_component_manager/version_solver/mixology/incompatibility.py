@@ -1,12 +1,8 @@
-# -*- coding: utf-8 -*-
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
-try:
-    from typing import Dict, Generator, Hashable, List, Optional
-except ImportError:
-    pass
+from typing import Dict, Generator, Hashable, List, Optional
 
 from .incompatibility_cause import (
     ConflictCause,
@@ -98,11 +94,9 @@ class Incompatibility:
         """
         if isinstance(self._cause, ConflictCause):
             cause = self._cause  # type: ConflictCause
-            for incompatibility in cause.conflict.external_incompatibilities:
-                yield incompatibility
+            yield from cause.conflict.external_incompatibilities
 
-            for incompatibility in cause.other.external_incompatibilities:
-                yield incompatibility
+            yield from cause.other.external_incompatibilities
         else:
             yield self
 

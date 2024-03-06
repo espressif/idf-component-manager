@@ -1,8 +1,9 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
 from pathlib import Path
+from typing import Dict
 
 from ..errors import SourceError
 from ..manifest import (
@@ -14,11 +15,6 @@ from ..manifest import (
 from ..messages import warn
 from .base import BaseSource
 from .web_service_keys import WEB_SERVICE_OPTIONAL_KEYS
-
-try:
-    from typing import Dict
-except ImportError:
-    pass
 
 
 class ManifestContextError(SourceError):
@@ -33,7 +29,7 @@ class LocalSource(BaseSource):
     NAME = 'local'
 
     def __init__(self, source_details, **kwargs):
-        super(LocalSource, self).__init__(source_details=source_details, **kwargs)
+        super().__init__(source_details=source_details, **kwargs)
 
         self.is_overrider = 'override_path' in self.source_details
         self._raw_path = Path(

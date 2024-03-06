@@ -1,23 +1,18 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
-from io import open
+
+from typing import Dict, List
 
 import yaml
-from schema import Or, Schema, SchemaError
-from six import string_types
+from schema import Schema, SchemaError
 
 from idf_component_tools.errors import ProcessingError
-
-try:
-    from typing import Dict, List
-except ImportError:
-    pass
 
 COMPONENT_LIST_SCHEMA = Schema(
     {
         'components': [
-            {'name': Or(*string_types), 'path': Or(*string_types)},
+            {'name': str, 'path': str},
         ]
     },
     ignore_extra_keys=True,
@@ -25,7 +20,7 @@ COMPONENT_LIST_SCHEMA = Schema(
 
 
 def parse_component_list(path):  # type: (str) -> List[Dict[str,str]]
-    with open(path, mode='r', encoding='utf-8') as f:
+    with open(path, encoding='utf-8') as f:
         try:
             components = COMPONENT_LIST_SCHEMA.validate(yaml.safe_load(f.read()))
             return components['components']

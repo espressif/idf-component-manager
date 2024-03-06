@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 import subprocess  # nosec
-from io import open
 
 import click
 

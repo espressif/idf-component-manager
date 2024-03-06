@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -26,36 +26,30 @@ def assets_path(tmp_path, fixtures_path):
 
 
 def test_filtered_path_default(assets_path):
-    assert filtered_paths(assets_path) == set(
-        [
-            Path(assets_path, '1.txt'),
-            Path(assets_path, 'ignore.dir'),
-            Path(assets_path, 'ignore.dir', 'file.txt'),
-            Path(assets_path, 'ignore.me'),
-        ]
-    )
+    assert filtered_paths(assets_path) == {
+        Path(assets_path, '1.txt'),
+        Path(assets_path, 'ignore.dir'),
+        Path(assets_path, 'ignore.dir', 'file.txt'),
+        Path(assets_path, 'ignore.me'),
+    }
 
 
 def test_filtered_path_no_default(assets_path):
-    assert filtered_paths(assets_path, exclude_default=False) == set(
-        [
-            Path(assets_path, '1.txt'),
-            Path(assets_path, 'ignore.dir'),
-            Path(assets_path, 'ignore.dir', 'file.txt'),
-            Path(assets_path, 'ignore.me'),
-            Path(assets_path, '.gitlab-ci.yml'),
-        ]
-    )
+    assert filtered_paths(assets_path, exclude_default=False) == {
+        Path(assets_path, '1.txt'),
+        Path(assets_path, 'ignore.dir'),
+        Path(assets_path, 'ignore.dir', 'file.txt'),
+        Path(assets_path, 'ignore.me'),
+        Path(assets_path, '.gitlab-ci.yml'),
+    }
 
 
 def test_filtered_path_exclude_file(assets_path):
-    assert filtered_paths(assets_path, exclude=['**/file.txt']) == set(
-        [
-            Path(assets_path, '1.txt'),
-            Path(assets_path, 'ignore.dir'),
-            Path(assets_path, 'ignore.me'),
-        ]
-    )
+    assert filtered_paths(assets_path, exclude=['**/file.txt']) == {
+        Path(assets_path, '1.txt'),
+        Path(assets_path, 'ignore.dir'),
+        Path(assets_path, 'ignore.me'),
+    }
 
 
 def test_filtered_path_keep_empty_dir(assets_path):
@@ -64,13 +58,11 @@ def test_filtered_path_keep_empty_dir(assets_path):
         exclude=[
             'ignore.dir/**/*',
         ],
-    ) == set(
-        [
-            Path(assets_path, '1.txt'),
-            Path(assets_path, 'ignore.me'),
-            Path(assets_path, 'ignore.dir'),
-        ]
-    )
+    ) == {
+        Path(assets_path, '1.txt'),
+        Path(assets_path, 'ignore.me'),
+        Path(assets_path, 'ignore.dir'),
+    }
 
 
 def test_filtered_path_exclude_empty_dir(assets_path):
@@ -80,12 +72,10 @@ def test_filtered_path_exclude_empty_dir(assets_path):
             'ignore.dir',
             'ignore.dir/*',
         ],
-    ) == set(
-        [
-            Path(assets_path, '1.txt'),
-            Path(assets_path, 'ignore.me'),
-        ]
-    )
+    ) == {
+        Path(assets_path, '1.txt'),
+        Path(assets_path, 'ignore.me'),
+    }
 
 
 def test_filtered_path_exclude_dir_with_file(assets_path):
@@ -101,14 +91,12 @@ def test_filtered_path_exclude_dir_with_file(assets_path):
         exclude=[
             'ignore.dir/*',
         ],
-    ) == set(
-        [
-            Path(assets_path, '1.txt'),
-            Path(assets_path, 'ignore.dir'),
-            Path(assets_path, 'ignore.dir', 'extra', 'one_more.txt'),
-            Path(assets_path, 'ignore.me'),
-        ]
-    )
+    ) == {
+        Path(assets_path, '1.txt'),
+        Path(assets_path, 'ignore.dir'),
+        Path(assets_path, 'ignore.dir', 'extra', 'one_more.txt'),
+        Path(assets_path, 'ignore.me'),
+    }
 
 
 def test_excluded_and_included_files(tmpdir_factory):
@@ -117,13 +105,13 @@ def test_excluded_and_included_files(tmpdir_factory):
 
     folder1 = folders_with_subdirectories.mkdir('folder1')
     f = folder1.mkdir('folder1_1').mkdir('folder1_1_1').join('test_file')
-    f.write(u'Test file')
+    f.write('Test file')
 
     f = folder1.mkdir('folder1_2').join('test_file')
-    f.write(u'Test file')
+    f.write('Test file')
 
     f = folders_with_subdirectories.mkdir('folder2').join('test_file')
-    f.write(u'Test file')
+    f.write('Test file')
 
     copy_filtered_directory(
         folders_with_subdirectories.strpath,

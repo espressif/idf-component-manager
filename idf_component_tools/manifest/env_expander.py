@@ -1,18 +1,13 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
-from io import open
 from string import Template
+from typing import Any, Callable
 
 import yaml
 
 from ..errors import ManifestError
-
-try:
-    from typing import Any, Callable
-except ImportError:
-    pass
 
 
 def subst_vars_in_str(s, env):  # type: (str, dict[str, Any]) -> str
@@ -52,7 +47,7 @@ class EnvFoundException(Exception):
 def _raise_on_env(s):  # type: (str) -> None
     try:
         Template(s).substitute({})
-    except (KeyError, ValueError) as e:
+    except (KeyError, ValueError):
         raise EnvFoundException
 
 

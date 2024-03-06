@@ -1,11 +1,9 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import json
 import logging
 import os
 import shutil
 import sys
-from io import open
 from pathlib import Path
 
 import pytest
@@ -191,9 +189,9 @@ def test_build_pure_cmake(project):
 )
 def test_set_component_version(project):
     with open(os.path.join(project, 'CMakeLists.txt'), 'a') as fw:
-        fw.write(u'\n')
-        fw.write(u'idf_component_get_property(version example__cmp COMPONENT_VERSION)\n')
-        fw.write(u'message("Component example__cmp version: ${version}")\n')
+        fw.write('\n')
+        fw.write('idf_component_get_property(version example__cmp COMPONENT_VERSION)\n')
+        fw.write('message("Component example__cmp version: ${version}")\n')
 
     res = project_action(project, 'reconfigure')
     assert 'example/cmp (3.3.7)' in res

@@ -3,7 +3,6 @@
 
 import json
 import os
-from io import open
 
 from pytest import mark, raises
 
@@ -89,7 +88,7 @@ def test_load_config(tmp_path):
     # save to file
     manager.dump(config)
 
-    with open(config_path, mode='r', encoding='utf-8') as file:
+    with open(config_path, encoding='utf-8') as file:
         assert file.readline().startswith('profiles:')
 
     # load from file

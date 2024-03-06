@@ -6,7 +6,7 @@ import os
 from idf_component_tools.hash_tools.calculate import hash_dir, hash_file, hash_object
 
 
-class TestHashTools(object):
+class TestHashTools:
     def test_hash_object(self):
         obj = {'b': 2, 'a': {'b': 2, 'a': [1, 2, 3]}}
         expected_sha = '3767afa0787de5a1047a49694ee326ff375109eedba0c7cca052846991ceed03'

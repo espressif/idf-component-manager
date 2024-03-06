@@ -38,7 +38,7 @@ def test_sync_dependency_with_matches(monkeypatch, tmp_path):
     component_path.mkdir()
 
     (component_path / MANIFEST_FILENAME).write_text(
-        u"""
+        """
     dependencies:
       example/cmp:
         matches:
@@ -65,7 +65,7 @@ def test_sync_dependency_with_rules(monkeypatch, tmp_path):
     component_path.mkdir()
 
     (component_path / MANIFEST_FILENAME).write_text(
-        u"""
+        """
     dependencies:
       example/cmp:
            version: "~1.0.0"

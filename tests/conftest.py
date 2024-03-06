@@ -1,8 +1,7 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
-from io import open
 from pathlib import Path
 
 import pytest
@@ -15,7 +14,7 @@ from idf_component_tools.hash_tools.constants import HASH_FILENAME
 def file_with_size():
     def file_builder(path, size):  # type: (str | Path, int) -> None
         with open(str(path), 'w') as f:
-            f.write(u'x' * size)
+            f.write('x' * size)
 
     return file_builder
 
@@ -106,12 +105,12 @@ def tmp_managed_components(tmp_path):
     example_cmp_path = managed_components_path / 'example__cmp'
     example_cmp_path.mkdir()
     example_cmp_hash = example_cmp_path / HASH_FILENAME
-    example_cmp_hash.write_text(u'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+    example_cmp_hash.write_text('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
 
     mag3110_path = managed_components_path / 'mag3110'
     mag3110_path.mkdir()
     mag3110_hash = mag3110_path / HASH_FILENAME
-    mag3110_hash.write_text(u'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+    mag3110_hash.write_text('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
 
     return str(managed_components_path)
 

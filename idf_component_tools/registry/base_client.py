@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 import platform
+from typing import Callable
 
 import requests
 from cachecontrol import CacheControlAdapter
@@ -20,11 +21,6 @@ from idf_component_tools.semver import SimpleSpec, Version
 from ..manifest import BUILD_METADATA_KEYS, ComponentWithVersions
 from .api_schemas import COMPONENT_SCHEMA
 from .token_auth import TokenAuth
-
-try:
-    from typing import Callable
-except ImportError:
-    pass
 
 DEFAULT_API_CACHE_EXPIRATION_MINUTES = 0
 MAX_RETRIES = 3
@@ -98,7 +94,7 @@ def user_agent():  # type: () -> str
     return user_agent
 
 
-class BaseClient(object):
+class BaseClient:
     def __init__(self, sources=None):
         self.sources = sources
 

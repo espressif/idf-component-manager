@@ -207,7 +207,7 @@ def test_manifest_create_add_dependency(mock_registry):
             == 1
         )
         for filepath in [main_manifest_path, foo_manifest_path]:
-            with open(filepath, mode='r') as file:
+            with open(filepath) as file:
                 assert file.readline().startswith('## IDF Component Manager')
 
         assert (
@@ -312,7 +312,7 @@ def test_registry_sync_component_flag(tmp_path):
     # and CliRunner doesn't download component, progress bar stop invoke function.
     manager.sync_registry('default', str(tmp_path / 'test'), 0, ['espressif/test*'], False)
 
-    with open(str(tmp_path / 'test' / 'components' / 'espressif' / 'test.json'), 'r') as f:
+    with open(str(tmp_path / 'test' / 'components' / 'espressif' / 'test.json')) as f:
         data = json.load(f)
     assert len(data['versions']) == 3
 
@@ -330,14 +330,14 @@ def test_registry_sync_recursive(tmp_path):
     manager = ComponentManager(path=str(component_path))
     manager.create_manifest()
     manager.add_dependency('espressif/test==1.0.1')
-    (component_path / 'main' / 'CMakeLists.txt').write_text(u'\n')
+    (component_path / 'main' / 'CMakeLists.txt').write_text('\n')
     manager.path = str(tmp_path)
 
     # Subprocess and CliRunner changed to function call, because vcrpy can't handle subprocess,
     # and CliRunner doesn't download component, progress bar stop invoke function.
     manager.sync_registry('default', str(tmp_path / 'test'), 0, [], True)
 
-    with open(str(tmp_path / 'test' / 'components' / 'espressif' / 'test.json'), 'r') as f:
+    with open(str(tmp_path / 'test' / 'components' / 'espressif' / 'test.json')) as f:
         data = json.load(f)
     assert len(data['versions']) == 1
 
@@ -353,14 +353,14 @@ def test_registry_sync_one_component(tmp_path):
     manager = ComponentManager(path=str(component_path))
     manager.create_manifest()
     manager.add_dependency('espressif/test==1.0.2')
-    (component_path / 'main' / 'CMakeLists.txt').write_text(u'\n')
+    (component_path / 'main' / 'CMakeLists.txt').write_text('\n')
     manager.path = str(component_path / 'main')
 
     # Subprocess and CliRunner changed to function call, because vcrpy can't handle subprocess,
     # and CliRunner doesn't download component, progress bar stop invoke function.
     manager.sync_registry('default', str(tmp_path / 'test'), 0, [], False)
 
-    with open(str(tmp_path / 'test' / 'components' / 'espressif' / 'test.json'), 'r') as f:
+    with open(str(tmp_path / 'test' / 'components' / 'espressif' / 'test.json')) as f:
         data = json.load(f)
     assert len(data['versions']) == 1
 

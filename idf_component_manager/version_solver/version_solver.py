@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+from typing import Callable
 
 from idf_component_tools.errors import DependencySolveError, FetchingError, SolverError
 from idf_component_tools.manifest import (
@@ -20,13 +21,8 @@ from .helper import PackageSource
 from .mixology.package import Package
 from .mixology.version_solver import VersionSolver as Solver
 
-try:
-    from typing import Callable
-except ImportError:
-    pass
 
-
-class VersionSolver(object):
+class VersionSolver:
     """
     The version solver that finds a set of package versions
     satisfies the root package's dependencies.

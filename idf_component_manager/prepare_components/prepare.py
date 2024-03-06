@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding=utf-8
 #
 # SPDX-FileCopyrightText: 2019-2023 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0

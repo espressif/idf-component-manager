@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import pytest
@@ -15,7 +15,7 @@ from idf_component_tools.hash_tools.validate_managed_component import (
 from idf_component_tools.hash_tools.validator import validate_dir
 
 
-class TestValidateManagedComponent(object):
+class TestValidateManagedComponent:
     def test_disabled(self, tmp_path, monkeypatch):
         monkeypatch.setenv('IDF_COMPONENT_OVERWRITE_MANAGED_COMPONENTS', '1')
         # expect it won't raise exception
@@ -32,12 +32,12 @@ class TestValidateManagedComponent(object):
             validate_managed_component_hash(str(tmp_path))
 
     def test_wrong_format(self, tmp_path):
-        (tmp_path / '.component_hash').write_text(u'wrong_format')
+        (tmp_path / '.component_hash').write_text('wrong_format')
         with pytest.raises(HashNotSHA256Error):
             validate_managed_component_hash(str(tmp_path))
 
     def test_not_equal(self, tmp_path):
-        (tmp_path / '.component_hash').write_text(u'a' * 64)
+        (tmp_path / '.component_hash').write_text('a' * 64)
         with pytest.raises(HashNotEqualError):
             validate_managed_component_hash(str(tmp_path))
 

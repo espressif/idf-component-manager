@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 from idf_component_tools.manifest import Manifest
 
@@ -11,9 +11,9 @@ class ComponentDetails(Manifest):
         license_url=None,  # type:str | None # URL for downloading license
         examples=None,  # type: list[dict[str, str]] | None # List of examples of the component
         *args,
-        **kwargs
+        **kwargs,
     ):
-        super(ComponentDetails, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.download_url = download_url
         self.documents = documents
         self.license_url = license_url
@@ -29,7 +29,7 @@ class ComponentDetailsWithStorageURL(ComponentDetails):
         self,
         storage_url=None,  # type: str | None
         *args,
-        **kwargs
+        **kwargs,
     ):
-        super(ComponentDetailsWithStorageURL, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.storage_url = storage_url
