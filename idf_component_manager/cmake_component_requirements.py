@@ -3,7 +3,9 @@
 
 import re
 from collections import OrderedDict, namedtuple
-from typing import Mapping
+from typing import Dict, List, Mapping, Optional
+from typing import OrderedDict as OrderedDictType
+from typing import Set, Union
 
 from idf_component_tools.errors import FatalError
 
@@ -15,7 +17,7 @@ REQ_RE = re.compile(
 )
 
 
-def name_without_namespace(name):  # type: (str) -> str
+def name_without_namespace(name: str) -> str:
     name_parts = name.rsplit('__', 1)
 
     try:
@@ -25,26 +27,26 @@ def name_without_namespace(name):  # type: (str) -> str
 
 
 class ComponentName:
-    def __init__(self, prefix, name):  # type: (str, str) -> None
+    def __init__(self, prefix: str, name: str) -> None:
         self.prefix = prefix
         self.name = name
 
-        self._name_without_namespace = None  # type: str | None
+        self._name_without_namespace: Optional[str] = None
 
-    def __eq__(self, another):  # type: (object) -> bool
+    def __eq__(self, another: object) -> bool:
         if not isinstance(another, ComponentName):
             return False
 
         return (self.prefix, self.name) == (another.prefix, another.name)
 
-    def __hash__(self):  # type: () -> int
+    def __hash__(self) -> int:
         return hash((self.prefix, self.name))
 
-    def __repr__(self):  # type: () -> str
+    def __repr__(self) -> str:
         return f'ComponentName({self.prefix}, {self.name})'
 
     @property
-    def name_without_namespace(self):  # type: ()  -> str
+    def name_without_namespace(self) -> str:
         if self._name_without_namespace is None:
             self._name_without_namespace = name_without_namespace(self.name)
 
@@ -55,11 +57,11 @@ class RequirementsProcessingError(FatalError):
     pass
 
 
-def parse_requirements_line(line):  # type: (str) -> ComponentProperty
+def parse_requirements_line(line: str) -> ComponentProperty:
     match = REQ_RE.match(line)
 
     if not match:
-        raise RequirementsProcessingError('Cannot parse CMake requirements line: %s' % line)
+        raise RequirementsProcessingError(f'Cannot parse CMake requirements line: {line}')
 
     return ComponentProperty(
         ComponentName(match.group('prefix'), match.group('name')),
@@ -72,7 +74,7 @@ class CMakeRequirementsManager:
     def __init__(self, path):
         self.path = path
 
-    def dump(self, requirements):  # type: (Mapping[ComponentName, dict[str, list | str]]) -> None
+    def dump(self, requirements: Mapping[ComponentName, Dict[str, Union[List, str]]]) -> None:
         with open(self.path, mode='w', encoding='utf-8') as f:
             for name, requirement in requirements.items():
                 for prop, value in requirement.items():
@@ -85,8 +87,10 @@ class CMakeRequirementsManager:
                         )
                     )
 
-    def load(self):  # type: () -> OrderedDict[ComponentName, dict[str, list[str] | str]]
-        requirements = OrderedDict()  # type: OrderedDict[ComponentName, dict[str, list[str] | str]]
+    def load(self) -> OrderedDictType[ComponentName, Dict[str, Union[List[str], str]]]:
+        requirements: OrderedDictType[
+            ComponentName, Dict[str, Union[List[str], str]]
+        ] = OrderedDict()
 
         with open(self.path, encoding='utf-8') as f:
             for line in f:
@@ -108,18 +112,18 @@ class CMakeRequirementsManager:
 
 
 def check_requirements_name_collisions(
-    requirements,
-):  # type: (dict[ComponentName, dict[str, list[str] | str]]) -> None
+    requirements: Dict[ComponentName, Dict[str, Union[List[str], str]]],
+) -> None:
     """
     DEPRECATE: This function is deprecated since interface_version 3,
         Remove it after ESP-IDF 5.1 EOL
     """
     # Pay attention only to components without namespaces
-    name_variants = {
+    name_variants: Dict[str, Set[str]] = {
         cmp.name: {cmp.name}
         for cmp in requirements.keys()
         if cmp.name == cmp.name_without_namespace
-    }  # type: dict[str, set[str]]
+    }
 
     for cmp in requirements.keys():
         if cmp.name_without_namespace not in name_variants:
@@ -142,7 +146,7 @@ def check_requirements_name_collisions(
         )
 
 
-def _choose_component(component, known_components):  # type: (str, list[str]) -> str
+def _choose_component(component: str, known_components: List[str]) -> str:
     if component in known_components:
         return component
 
@@ -160,9 +164,7 @@ def _choose_component(component, known_components):  # type: (str, list[str]) ->
     return component
 
 
-def _handle_component_reqs(
-    components, known_components
-):  # type: (list[str], list[str]) -> list[str]
+def _handle_component_reqs(components: List[str], known_components: List[str]) -> List[str]:
     updated_items = []
     for component in components:
         name_to_add = _choose_component(component, known_components)
@@ -173,8 +175,8 @@ def _handle_component_reqs(
 
 
 def handle_project_requirements(
-    requirements,
-):  # type: (OrderedDict[ComponentName, dict[str, list[str] | str]]) -> None
+    requirements: OrderedDictType[ComponentName, Dict[str, Union[List[str], str]]],
+) -> None:
     """
     Use local components with higher priority.
     For example if in some manifest has a dependency `namespace/component`,

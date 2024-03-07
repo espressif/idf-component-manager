@@ -3,6 +3,7 @@
 
 import os
 from pathlib import Path
+from typing import Union
 
 import pytest
 import requests_mock
@@ -12,7 +13,7 @@ from idf_component_tools.hash_tools.constants import HASH_FILENAME
 
 @pytest.fixture()
 def file_with_size():
-    def file_builder(path, size):  # type: (str | Path, int) -> None
+    def file_builder(path: Union[str, Path], size: int) -> None:
         with open(str(path), 'w') as f:
             f.write('x' * size)
 
@@ -186,7 +187,7 @@ def hash_component(fixtures_path):
         return os.path.join(
             fixtures_path,
             'hash_examples',
-            'component_%s' % id,
+            f'component_{id}',
         )
 
     return inner

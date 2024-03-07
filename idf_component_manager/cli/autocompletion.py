@@ -1,7 +1,8 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import subprocess  # nosec
+from typing import List, Optional, Union
 
 import click
 
@@ -13,7 +14,7 @@ CLI_NAME = 'compote'
 CLICK_VERSION = Version.coerce(click.__version__)
 
 
-def _get_shell_completion(shell):  # type: (str) -> str
+def _get_shell_completion(shell: str) -> str:
     if CLICK_VERSION.major == 7:
         return 'source_' + shell
     elif CLICK_VERSION.major > 7:
@@ -23,11 +24,11 @@ def _get_shell_completion(shell):  # type: (str) -> str
 
 
 def _append_text_line(
-    strings,  # type: str | list[str]
-    filepath,  # type: str
-    write_string=None,  # type: str | None
-    dry_run=False,  # type: bool
-):  # type: (...) -> None
+    strings: Union[str, List[str]],
+    filepath: str,
+    write_string: Optional[str] = None,
+    dry_run: bool = False,
+) -> None:
     if isinstance(strings, str):
         strings = [strings]
 
@@ -48,16 +49,16 @@ def _append_text_line(
             write_string = strings[-1]
 
         if dry_run:
-            print_info('"{}" would be appended to {}'.format(write_string, filepath))
+            print_info(f'"{write_string}" would be appended to {filepath}')
         else:
             with open(filepath, 'ab+') as fw:
-                fw.write('\n{}\n'.format(write_string).encode('utf8'))
+                fw.write(f'\n{write_string}\n'.encode())
 
 
 _COMPLETE_FILE_PATH = {
-    'bash': '~/.{}-complete.bash'.format(CLI_NAME),
-    'zsh': '~/.{}-complete.zsh'.format(CLI_NAME),
-    'fish': '~/.config/fish/completions/{}.fish'.format(CLI_NAME),
+    'bash': f'~/.{CLI_NAME}-complete.bash',
+    'zsh': f'~/.{CLI_NAME}-complete.zsh',
+    'fish': f'~/.config/fish/completions/{CLI_NAME}.fish',
 }
 
 _RC_FILE_PATH = {
@@ -67,8 +68,8 @@ _RC_FILE_PATH = {
 }
 
 _SOURCING_STR = {
-    'bash': '. {}'.format(_COMPLETE_FILE_PATH['bash']),
-    'zsh': '. {}'.format(_COMPLETE_FILE_PATH['zsh']),
+    'bash': f". {_COMPLETE_FILE_PATH['bash']}",
+    'zsh': f". {_COMPLETE_FILE_PATH['zsh']}",
     'fish': None,  # not needed
 }
 
@@ -176,7 +177,7 @@ def init_autocomplete():
                 os.makedirs(os.path.dirname(completion_filepath))
 
         if dry_run:
-            print_info('Completion file would be created at: {}'.format(completion_filepath))
+            print_info(f'Completion file would be created at: {completion_filepath}')
         else:
             with open(completion_filepath, 'w') as fw:
                 fw.write(autocomplete_script_str)

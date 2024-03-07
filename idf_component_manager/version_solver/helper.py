@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Set
 from typing import Union as _Union
 
 from idf_component_tools.manifest import HashedComponentVersion
@@ -16,7 +16,7 @@ from .mixology.range import Range
 from .mixology.union import Union
 
 
-def parse_constraint(spec):  # type: (str) -> _Union[Union, Range]
+def parse_constraint(spec: str) -> _Union[Union, Range]:
     try:
         clause = SimpleSpec(spec).clause
     except ValueError:  # if not semspec, expect an exact version
@@ -34,8 +34,8 @@ def parse_constraint(spec):  # type: (str) -> _Union[Union, Range]
 
 
 def parse_single_constraint(
-    _range,
-):  # type: (_Union[SemverRange, HashedComponentVersion]) -> _Union[Union, Range]
+    _range: _Union[SemverRange, HashedComponentVersion],
+) -> _Union[Union, Range]:
     if isinstance(_range, HashedComponentVersion):  # not semver
         return Range(_range, _range, True, True, _range.text)
 
@@ -54,7 +54,7 @@ def parse_single_constraint(
         return Range(version, version, True, True, str(_range))
 
 
-def parse_root_dep_conflict_constraints(failure):  # type: (SolverFailure) -> list[Constraint]
+def parse_root_dep_conflict_constraints(failure: SolverFailure) -> List[Constraint]:
     terms = failure._incompatibility.terms
     res = []
     if len(terms) == 1 and terms[0].package == Package.root():  # root dep
@@ -66,17 +66,17 @@ def parse_root_dep_conflict_constraints(failure):  # type: (SolverFailure) -> li
 
 
 class Dependency:
-    def __init__(self, package, spec):  # type: (Package, str) -> None
+    def __init__(self, package: Package, spec: str) -> None:
         self.package = package
         self.constraint = parse_constraint(spec)
         self.text = spec
 
 
 class PackageSource(BasePackageSource):
-    def __init__(self):  # type: () -> None
+    def __init__(self) -> None:
         self._root_version = HashedComponentVersion('0.0.0')
-        self._root_dependencies = []  # type: List[Dependency]
-        self._packages = {}  # type: Dict[Package, Dict[HashedComponentVersion, List[Dependency]]]
+        self._root_dependencies: List[Dependency] = []
+        self._packages: Dict[Package, Dict[HashedComponentVersion, List[Dependency]]] = {}
 
         super().__init__()
 
@@ -85,8 +85,11 @@ class PackageSource(BasePackageSource):
         return self._root_version
 
     def add(
-        self, package, version, deps=None
-    ):  # type:(Package, _Union[str, HashedComponentVersion],  Optional[Dict[Package, str]]) -> None
+        self,
+        package: Package,
+        version: _Union[str, HashedComponentVersion],
+        deps: Optional[Dict[Package, str]] = None,
+    ):
         if deps is None:
             deps = {}
 
@@ -108,7 +111,7 @@ class PackageSource(BasePackageSource):
 
         self._packages[package][version] = dependencies
 
-    def override_dependencies(self, overriders):  # type: (set[str]) -> None
+    def override_dependencies(self, overriders: Set[str]) -> None:
         for package in list(self._packages.keys()):
             if not package.source.is_overrider and package.name in overriders:
                 del self._packages[package]
@@ -121,15 +124,15 @@ class PackageSource(BasePackageSource):
                     if elem.package.source.is_overrider or elem.package.name not in overriders
                 ]
 
-    def root_dep(self, package, spec):  # type: (Package, str) -> None
+    def root_dep(self, package: Package, spec: str) -> None:
         if package.source:
             spec = package.source.normalize_spec(spec)
 
         self._root_dependencies.append(Dependency(package, spec))
 
     def _versions_for(
-        self, package, constraint=None
-    ):  # type: (Package, Any) -> List[HashedComponentVersion]
+        self, package: Package, constraint: Any = None
+    ) -> List[HashedComponentVersion]:
         if package not in self._packages:
             return []
 
@@ -140,13 +143,13 @@ class PackageSource(BasePackageSource):
 
         return sorted(versions, reverse=True)
 
-    def dependencies_for(self, package, version):  # type: (Package, Any) -> List[Any]
+    def dependencies_for(self, package: Package, version: Any) -> List[Any]:
         if package == self.root:
             return self._root_dependencies
 
         return self._packages[package][version]
 
-    def convert_dependency(self, dependency):  # type: (Dependency) -> Constraint
+    def convert_dependency(self, dependency: Dependency) -> Constraint:
         if isinstance(dependency.constraint, Range):
             constraint = Range(
                 dependency.constraint.min,

@@ -37,7 +37,7 @@ class LocalSource(BaseSource):
         )
 
     @property
-    def _path(self):  # type: () -> Path
+    def _path(self) -> Path:
         try:
             if self._manifest_manager:
                 path = (Path(self._manifest_manager.path).parent / self._raw_path).resolve()
@@ -75,7 +75,7 @@ class LocalSource(BaseSource):
         return path
 
     @property
-    def component_hash_required(self):  # type: () -> bool
+    def component_hash_required(self) -> bool:
         return False
 
     @classmethod
@@ -100,7 +100,7 @@ class LocalSource(BaseSource):
         return self.source_details.get('path')
 
     @property
-    def volatile(self):  # type: () -> bool
+    def volatile(self) -> bool:
         return True
 
     def download(self, component, download_path):
@@ -113,9 +113,7 @@ class LocalSource(BaseSource):
             and component_with_namespace != directory_name
         ):
             alternative_name = (
-                ' or "{}"'.format(component_with_namespace)
-                if len(namespace_and_component) == 2
-                else ''
+                f' or "{component_with_namespace}"' if len(namespace_and_component) == 2 else ''
             )
             warn(
                 'Component name "{component_name}" doesn\'t match the '
@@ -126,10 +124,7 @@ class LocalSource(BaseSource):
                 + 'ESP-IDF CMake build system uses directory names as names '
                 + 'of components, so different names may break '
                 + 'requirements resolution. To avoid the problem rename the component directory to '
-                + '"{component_without_namespace}"{alternative_name}'.format(
-                    component_without_namespace=component_without_namespace,
-                    alternative_name=alternative_name,
-                )
+                + f'"{component_without_namespace}"{alternative_name}'
             )
         return str(self._path)
 
@@ -162,7 +157,7 @@ class LocalSource(BaseSource):
             ],
         )
 
-    def serialize(self):  # type: () -> Dict
+    def serialize(self) -> Dict:
         return {
             'path': str(self._path),
             'type': self.name,

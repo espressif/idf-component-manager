@@ -1,9 +1,13 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
 import os
 import warnings
-from typing import Any, Iterator
+from typing import Any, Dict, Iterator, List
+from typing import Optional as OptionalType
+from typing import Tuple
 
 import yaml
 from schema import And, Optional, Or, Regex, Schema, SchemaError
@@ -50,7 +54,7 @@ def config_dir():
 
 
 def root_managed_components_dir():
-    return os.path.join(config_dir(), 'root_managed_components', 'idf{}'.format(get_idf_version()))
+    return os.path.join(config_dir(), 'root_managed_components', f'idf{get_idf_version()}')
 
 
 class ConfigError(FatalError):
@@ -58,44 +62,44 @@ class ConfigError(FatalError):
 
 
 class Config:
-    def __init__(self, config=None):  # type: (dict | None) -> None
+    def __init__(self, config: OptionalType[Dict] = None) -> None:
         self._config = config or {}
 
-    def __getitem__(self, key):  # type: (Any) -> Any
+    def __getitem__(self, key: Any) -> Any:
         return self._config[key]
 
-    def __setitem__(self, key, value):  # type: (Any, Any) -> None
+    def __setitem__(self, key: Any, value: Any) -> None:
         self._config[key] = value
 
-    def __delitem__(self, key):  # type: (Any) -> None
+    def __delitem__(self, key: Any) -> None:
         del self._config[key]
 
-    def __len__(self):  # type: () -> int
+    def __len__(self) -> int:
         return len(self._config)
 
-    def __iter__(self):  # type: () -> Iterator[Any]
+    def __iter__(self) -> Iterator[Any]:
         return iter(self._config.items())
 
-    def __contains__(self, item):  # type: (Any) -> bool
+    def __contains__(self, item: Any) -> bool:
         return item in self._config
 
     @property
-    def profiles(self):  # type: () -> dict
+    def profiles(self) -> Dict:
         return self._config.setdefault('profiles', {})
 
-    def validate(self):  # type: () -> Config
+    def validate(self) -> Config:
         try:
             self._config = CONFIG_SCHEMA.validate(self._config)
             return self
         except SchemaError as e:
-            raise ConfigError('Config format is not valid:\n{}'.format(str(e)))
+            raise ConfigError(f'Config format is not valid:\n{e}')
 
 
 class ConfigManager:
     def __init__(self, path=None):
         self.config_path = path or os.path.join(config_dir(), 'idf_component_manager.yml')
 
-    def load(self):  # type: () -> Config
+    def load(self) -> Config:
         """Loads config from disk"""
         if not os.path.isfile(self.config_path):
             return Config({})
@@ -109,22 +113,22 @@ class ConfigManager:
                     'Please check that\n\t{}\nis valid YAML file\n'.format(self.config_path)
                 )
 
-    def dump(self, config):  # type: (Config) -> None
+    def dump(self, config: Config) -> None:
         """Writes config to disk"""
         with open(self.config_path, mode='w', encoding='utf-8') as f:
             yaml.dump(data=dict(config.validate()), stream=f, encoding='utf-8', allow_unicode=True)
 
 
-def get_api_url(url):  # type: (str) -> str
+def get_api_url(url: str) -> str:
     url = url.rstrip('/')
 
     if url.endswith('/api'):
-        return '{}/'.format(url)
+        return f'{url}/'
 
-    return '{}/api/'.format(url)
+    return f'{url}/api/'
 
 
-def replace_default_value(storage_urls):  # type: (list[str]) -> list[str]
+def replace_default_value(storage_urls: List[str]) -> List[str]:
     storage_urls_copy = list(storage_urls)
     for i, storage_url in enumerate(storage_urls_copy):
         if storage_url == 'default':
@@ -134,8 +138,8 @@ def replace_default_value(storage_urls):  # type: (list[str]) -> list[str]
 
 
 def component_registry_url(
-    registry_profile=None,
-):  # type: (dict[str, str] | None) -> tuple[str | None, list[str] | None]
+    registry_profile: OptionalType[Dict[str, str]] = None,
+) -> Tuple[OptionalType[str], OptionalType[List[str]]]:
     """
     Returns registry API endpoint and static files URLs.
 
@@ -191,7 +195,7 @@ def component_registry_url(
             storage_urls = [profile_storage_urls]
         else:
             raise ProfileNotValid(
-                '`storage_url` field should be string or list, not {}'.format(storage_urls)
+                f'`storage_url` field should be string or list, not {storage_urls}'
             )
 
     registry_url = None

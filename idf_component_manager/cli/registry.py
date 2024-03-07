@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 import webbrowser
+from typing import List
 
 import click
 import requests
@@ -86,7 +87,7 @@ def init_registry():
             raise_on_missing_profile=False,
         )
 
-        auth_url = '{}/tokens/'.format(api_client.frontend_url)
+        auth_url = f'{api_client.frontend_url}/tokens/'
 
         auth_params = {
             'scope': 'user write:components',
@@ -120,9 +121,7 @@ def init_registry():
                 token_valid = True
             except APIClientError as e:
                 # Handle 401 and 403 explicitly
-                print_error(
-                    'Provided token does not seem to be working: {}\nPlease try again.'.format(e)
-                )
+                print_error(f'Provided token does not seem to be working: {e}\nPlease try again.')
                 continue
 
         # Update config with token and default namespace, registry URL if they are provided
@@ -177,8 +176,13 @@ def init_registry():
     )
     @click.argument('path', required=True)
     def sync(
-        manager, service_profile, interval, component, recursive, path
-    ):  # type: (ComponentManager, str, int, list[str], bool, str) -> None
+        manager: ComponentManager,
+        service_profile: str,
+        interval: int,
+        component: List[str],
+        recursive: bool,
+        path: str,
+    ) -> None:
         manager.sync_registry(
             service_profile,
             path,

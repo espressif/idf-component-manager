@@ -229,7 +229,7 @@ class TestManifestValidator:
         errors = validator.validate_normalize()
 
         assert len(errors) == 1
-        assert errors[0].startswith('Duplicate item in "{}":'.format(key))
+        assert errors[0].startswith(f'Duplicate item in "{key}":')
         assert value in errors[0]
 
     def test_known_targets_env(self, monkeypatch):

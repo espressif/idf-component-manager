@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 import platform
-from typing import Callable
+from typing import Callable, Dict, List, Optional
 
 import requests
 from cachecontrol import CacheControlAdapter
@@ -26,7 +26,7 @@ DEFAULT_API_CACHE_EXPIRATION_MINUTES = 0
 MAX_RETRIES = 3
 
 
-def env_cache_time():  # type: () -> int
+def env_cache_time() -> int:
     try:
         return getenv_int(
             'IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES',
@@ -41,11 +41,11 @@ def env_cache_time():  # type: () -> int
 
 
 def create_session(
-    cache=False,  # type: bool
-    cache_path=None,  # type: str | None
-    cache_time=None,  # type: int | None
-    token=None,  # type: str | None
-):  # type: (...) -> requests.Session
+    cache: bool = False,
+    cache_path: Optional[str] = None,
+    cache_time: Optional[int] = None,
+    token: Optional[str] = None,
+) -> requests.Session:
     if cache_path is None:
         cache_path = ComponentFileCache().path()
 
@@ -70,21 +70,19 @@ def create_session(
     return session
 
 
-def user_agent():  # type: () -> str
+def user_agent() -> str:
     """
     Returns user agent string.
     """
 
     environment_info = [
-        '{os}/{release} {arch}'.format(
-            os=platform.system(), release=platform.release(), arch=platform.machine()
-        ),
-        'python/{version}'.format(version=platform.python_version()),
+        f'{platform.system()}/{platform.release()} {platform.machine()}',
+        f'python/{platform.python_version()}',
     ]
 
     ci_name = detect_ci()
     if ci_name:
-        environment_info.append('ci/{}'.format(ci_name))
+        environment_info.append(f'ci/{ci_name}')
 
     user_agent = 'idf-component-manager/{version} ({env})'.format(
         version=__version__,
@@ -113,7 +111,7 @@ class BaseClient:
 
             dependencies.append(
                 tools.manifest.ComponentRequirement(
-                    name='{}/{}'.format(dependency['namespace'], dependency['name']),
+                    name=f"{dependency['namespace']}/{dependency['name']}",
                     version_spec=dependency['spec'],
                     sources=sources,
                     public=is_public,
@@ -125,8 +123,8 @@ class BaseClient:
         return tools.manifest.filter_optional_dependencies(dependencies)
 
     def versions(
-        self, request, component_name, spec='*'
-    ):  # type: (Callable, str, str) -> ComponentWithVersions
+        self, request: Callable, component_name: str, spec: str = '*'
+    ) -> ComponentWithVersions:
         """List of versions for given component with required spec"""
         component_name = component_name.lower()
         semantic_spec = SimpleSpec(spec or '*')
@@ -164,9 +162,7 @@ class BaseClient:
         )
 
 
-def filter_versions(
-    versions, spec, component_name
-):  # type: (list[dict], str | None, str) -> list[dict]
+def filter_versions(versions: List[Dict], spec: Optional[str], component_name: str) -> List[Dict]:
     if spec and spec != '*':
         requested_version = SimpleSpec(str(spec))
         filtered_versions = [v for v in versions if requested_version.match(Version(v['version']))]

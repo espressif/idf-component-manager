@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import re
-from typing import List
+from typing import Dict, List, Optional
 
 from schema import Schema, SchemaError
 
@@ -21,26 +21,26 @@ class ManifestValidator:
 
     def __init__(
         self,
-        parsed_manifest,  # type: dict
-        check_required_fields=False,  # type: bool
-        metadata=None,  # type: Metadata | None
-    ):  # type: (...) -> None
+        parsed_manifest: Dict,
+        check_required_fields: bool = False,
+        metadata: Optional[Metadata] = None,
+    ) -> None:
         self.manifest_tree = parsed_manifest
         self.metadata = metadata
-        self._errors = []  # type: List[str]
+        self._errors: List[str] = []
 
         self.check_required_fields = check_required_fields
 
     @property
     @lru_cache(1)
-    def schema(self):  # type: () -> Schema
+    def schema(self) -> Schema:
         return schema_builder(validate_rules=False)
 
     def add_error(self, message):
         if message not in self._errors:
             self._errors.append(message)
 
-    def validate_normalize_root_keys(self):  # type: () -> None
+    def validate_normalize_root_keys(self) -> None:
         if self.metadata is None:
             try:
                 self.metadata = Metadata.load(manifest_tree=self.manifest_tree)
@@ -61,20 +61,16 @@ class ManifestValidator:
                 _k, _type = Metadata.get_closest_manifest_key_and_type(key)
                 hint(MetadataKeyWarning(_k, _type))
                 if manifest_root_key in self.manifest_tree:
-                    hint(
-                        MetadataWarning(
-                            'Dropping key "{}" from manifest.'.format(manifest_root_key)
-                        )
-                    )
+                    hint(MetadataWarning(f'Dropping key "{manifest_root_key}" from manifest.'))
                     self.manifest_tree.pop(manifest_root_key)
 
-    def validate_normalize_dependencies(self):  # type: () -> None
+    def validate_normalize_dependencies(self) -> None:
         """Check dependencies section of the manifest"""
 
         # TODO: remove this import and avoid circular dependency somehow
         from idf_component_tools.sources import BaseSource
 
-        def _check_name(name):  # type: (str) -> None
+        def _check_name(name: str) -> None:
             if not self.SLUG_REGEX_COMPILED.match(name):
                 self.add_error(
                     'Component\'s name is not valid "%s", should '
@@ -83,7 +79,7 @@ class ManifestValidator:
 
             if '__' in name:
                 self.add_error(
-                    'Component\'s name "%s" should not contain two consecutive underscores.' % name
+                    f'Component\'s name "{name}" should not contain two consecutive underscores.'
                 )
 
         if (
@@ -115,9 +111,7 @@ class ManifestValidator:
 
                     for source in sources:
                         if not source.validate_version_spec(str(details.get('version', ''))):
-                            self.add_error(
-                                'Version specifications for "%s" are invalid.' % component
-                            )
+                            self.add_error(f'Version specifications for "{component}" are invalid.')
 
                         # check the version defined in optional requirements as well
                         optional_dependencies = details.get('rules', []) + details.get(
@@ -139,9 +133,7 @@ class ManifestValidator:
                         self.add_error('Don\'t use "public" and "require" fields at the same time.')
                 except SourceError as unknown_keys_error:
                     self.add_error(
-                        str(unknown_keys_error).replace(
-                            'dependency', 'dependency "{}"'.format(component)
-                        )
+                        str(unknown_keys_error).replace('dependency', f'dependency "{component}"')
                     )
             else:
                 self.add_error(
@@ -150,7 +142,7 @@ class ManifestValidator:
                 )
                 continue
 
-    def validate_normalize_required_keys(self):  # type: () -> None
+    def validate_normalize_required_keys(self) -> None:
         """Check for required keys in the manifest, if necessary"""
         if not self.check_required_fields:
             return
@@ -168,7 +160,7 @@ class ManifestValidator:
                 'manifest when uploading to the registry.'
             )
 
-    def validate_targets(self):  # type: () -> None
+    def validate_targets(self) -> None:
         targets = self.manifest_tree.get('targets', [])
 
         if isinstance(targets, str):
@@ -193,12 +185,12 @@ class ManifestValidator:
         if unknown_targets:
             self.add_error('Unknown targets: %s' % ', '.join(unknown_targets))
 
-    def validate_files(self):  # type: () -> None
+    def validate_files(self) -> None:
         """Check include/exclude patterns"""
         files = self.manifest_tree.get('files', {})
         for key in files:
             if key not in KNOWN_FILES_KEYS:
-                self.add_error('"files" section contains unknown key: %s' % key)
+                self.add_error(f'"files" section contains unknown key: {key}')
 
     def validate_normalize_schema(self):
         try:
@@ -214,12 +206,12 @@ class ManifestValidator:
                 v = [i.lower() for i in v if isinstance(i, str)]
                 duplicates = {i for i in v if v.count(i) > 1}
                 if duplicates:
-                    self.add_error('Duplicate item in "{}": {}'.format(k, duplicates))
+                    self.add_error(f'Duplicate item in "{k}": {duplicates}')
 
             if isinstance(v, dict):
                 self.validate_duplicates(v)
 
-    def validate_normalize(self):  # type: () -> list[str]
+    def validate_normalize(self) -> List[str]:
         self.validate_normalize_root_keys()
         self.validate_normalize_schema()
         self.validate_normalize_dependencies()
@@ -235,5 +227,5 @@ class ExpandedManifestValidator(ManifestValidator):
 
     @property
     @lru_cache(1)
-    def schema(self):  # type: () -> Schema
+    def schema(self) -> Schema:
         return schema_builder(validate_rules=True)

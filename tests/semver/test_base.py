@@ -58,6 +58,7 @@ class TopLevelTestCase(unittest.TestCase):
                 self.assertTrue(
                     base.match(spec, version), '{!r} should accept {!r}'.format(spec, version)
                 )
+                self.assertTrue(base.match(spec, version), f'{spec!r} should accept {version!r}')
 
     valid_strings = (
         '1.0.0-alpha',
@@ -87,6 +88,7 @@ class TopLevelTestCase(unittest.TestCase):
                 self.assertTrue(
                     base.validate(version), '{!r} should be a valid version'.format(version)
                 )
+                self.assertTrue(base.validate(version), f'{version!r} should be a valid version')
 
     invalid_strings = (
         '1',
@@ -105,7 +107,7 @@ class TopLevelTestCase(unittest.TestCase):
         for version in self.invalid_strings:
             with self.subTest(version=version):
                 self.assertFalse(
-                    base.validate(version), '{!r} should not be a valid version'.format(version)
+                    base.validate(version), f'{version!r} should not be a valid version'
                 )
 
 

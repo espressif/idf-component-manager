@@ -4,13 +4,13 @@
 import json
 from hashlib import sha256
 from pathlib import Path
-from typing import Any, Iterable, Text
+from typing import Any, Iterable, Optional, Union
 
 from idf_component_tools.file_tools import filtered_paths
 from idf_component_tools.hash_tools.constants import BLOCK_SIZE
 
 
-def hash_object(obj):  # type: (Any) -> str
+def hash_object(obj: Any) -> str:
     """Calculate sha256 of passed json-serialisable object"""
     sha = sha256()
     json_string = json.dumps(obj, sort_keys=True, separators=(',', ':'))
@@ -18,7 +18,7 @@ def hash_object(obj):  # type: (Any) -> str
     return sha.hexdigest()
 
 
-def hash_file(file_path):  # type: (Text | Path) -> str
+def hash_file(file_path: Union[str, Path]) -> str:
     """Calculate sha256 of file"""
     sha = sha256()
 
@@ -33,11 +33,11 @@ def hash_file(file_path):  # type: (Text | Path) -> str
 
 
 def hash_dir(
-    root,  # type: Text | Path
-    include=None,  # type: Iterable[Text] | None
-    exclude=None,  # type: Iterable[Text] | None
-    exclude_default=True,  # type: bool
-):  # type: (...) -> str
+    root: Union[str, Path],
+    include: Optional[Iterable[str]] = None,
+    exclude: Optional[Iterable[str]] = None,
+    exclude_default: bool = True,
+) -> str:
     """Calculate sha256 of sha256 of all files and file names."""
     sha = sha256()
 

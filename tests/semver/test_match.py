@@ -158,7 +158,7 @@ class MatchTestCase(unittest.TestCase):
     def test_invalid(self):
         for invalid in self.invalid_specs:
             with self.subTest(spec=invalid):
-                with self.assertRaises(ValueError, msg='Spec(%r) should be invalid' % invalid):
+                with self.assertRaises(ValueError, msg=f'Spec({invalid!r}) should be invalid'):
                     semver.SimpleSpec(invalid)
 
     def test_simple(self):
@@ -176,36 +176,30 @@ class MatchTestCase(unittest.TestCase):
                     self.assertNotEqual(spec, spec_text)
                     version = semver.Version(version_text)
                     self.assertIn(version, spec)
-                    self.assertTrue(
-                        spec.match(version), '{!r} does not match {!r}'.format(version, spec)
-                    )
+                    self.assertTrue(spec.match(version), f'{version!r} does not match {spec!r}')
                     self.assertTrue(semver.match(spec_text, version_text))
 
     def test_contains(self):
         spec = semver.SimpleSpec('<=0.1.1')
-        self.assertFalse('0.1.0' in spec, '0.1.0 should not be in %r' % spec)
+        self.assertFalse('0.1.0' in spec, f'0.1.0 should not be in {spec!r}')
 
         version = semver.Version('0.1.1+4.2')
-        self.assertTrue(version in spec, '{!r} should be in {!r}'.format(version, spec))
+        self.assertTrue(version in spec, f'{version!r} should be in {spec!r}')
 
         version = semver.Version('0.1.1-rc1+4.2')
-        self.assertTrue(version in spec, '{!r} should be in {!r}'.format(version, spec))
+        self.assertTrue(version in spec, f'{version!r} should be in {spec!r}')
 
     def test_prerelease_check(self):
         strict_spec = semver.SimpleSpec('>=0.1.1-')
         lax_spec = semver.SimpleSpec('>=0.1.1')
         version = semver.Version('0.1.1-rc1+4.2')
-        self.assertFalse(
-            version in lax_spec, '{!r} should not be in {!r}'.format(version, lax_spec)
-        )
-        self.assertFalse(
-            version in strict_spec, '{!r} should not be in {!r}'.format(version, strict_spec)
-        )
+        self.assertFalse(version in lax_spec, f'{version!r} should not be in {lax_spec!r}')
+        self.assertFalse(version in strict_spec, f'{version!r} should not be in {strict_spec!r}')
 
     def test_build_check(self):
         spec = semver.SimpleSpec('<=0.1.1-rc1')
         version = semver.Version('0.1.1-rc1+4.2')
-        self.assertTrue(version in spec, '{!r} should be in {!r}'.format(version, spec))
+        self.assertTrue(version in spec, f'{version!r} should be in {spec!r}')
 
 
 if __name__ == '__main__':  # pragma: no cover

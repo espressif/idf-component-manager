@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
 # SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
+from __future__ import annotations
 
 from typing import Dict, Generator, Hashable, List, Optional
 
@@ -18,7 +19,7 @@ from .term import Term
 
 
 class Incompatibility:
-    def __init__(self, terms, cause):  # type: (List[Term], IncompatibilityCause) -> None
+    def __init__(self, terms: List[Term], cause: IncompatibilityCause) -> None:
         # Remove the root package from generated incompatibilities, since it will
         # always be satisfied. This makes error reporting clearer, and may also
         # make solving more efficient.
@@ -44,7 +45,7 @@ class Incompatibility:
             terms = terms
         else:
             # Coalesce multiple terms about the same package if possible.
-            by_name = {}  # type: Dict[Hashable, Dict[Hashable, Term]]
+            by_name: Dict[Hashable, Dict[Hashable, Term]] = {}
             for term in terms:
                 if term.package not in by_name:
                     by_name[term.package] = {}
@@ -79,35 +80,35 @@ class Incompatibility:
         self._cause = cause
 
     @property
-    def terms(self):  # type: () -> List[Term]
+    def terms(self) -> List[Term]:
         return self._terms
 
     @property
-    def cause(self):  # type: () -> ConflictCause
+    def cause(self) -> ConflictCause:
         return self._cause
 
     @property
-    def external_incompatibilities(self):  # type: () -> Generator[Incompatibility]
+    def external_incompatibilities(self) -> Generator[Incompatibility]:
         """
         Returns all external incompatibilities in this incompatibility's
         derivation graph.
         """
         if isinstance(self._cause, ConflictCause):
-            cause = self._cause  # type: ConflictCause
+            cause: ConflictCause = self._cause
             yield from cause.conflict.external_incompatibilities
 
             yield from cause.other.external_incompatibilities
         else:
             yield self
 
-    def is_failure(self):  # type: () -> bool
+    def is_failure(self) -> bool:
         return len(self._terms) == 0 or (
             len(self._terms) == 1
             and self._terms[0].package == Package.root()
             and self._terms[0].is_positive()
         )
 
-    def handle_cause(self):  # type: () -> Optional[str]
+    def handle_cause(self) -> Optional[str]:
         if isinstance(self._cause, (DependencyCause, SelfDependentCause)):
             assert len(self._terms) == 2
 
@@ -135,13 +136,13 @@ class Incompatibility:
             assert len(self._terms) == 1
             assert self._terms[0].is_positive()
 
-            return "{} doesn't exist".format(self._terms[0].package)
+            return f"{self._terms[0].package} doesn't exist"
         elif isinstance(self._cause, RootCause):
             assert len(self._terms) == 1
             assert not self._terms[0].is_positive()
             assert self._terms[0].package == Package.root()
 
-            return '{} is {}'.format(self._terms[0].package, self._terms[0].constraint)
+            return f'{self._terms[0].package} is {self._terms[0].constraint}'
 
     def __str__(self):
         cause_string = self.handle_cause()
@@ -172,9 +173,9 @@ class Incompatibility:
                     package1 = term1.package if term1.constraint.is_any() else self._terse(term1)
                     package2 = term2.package if term2.constraint.is_any() else self._terse(term2)
 
-                    return '{} is incompatible with {}'.format(package1, package2)
+                    return f'{package1} is incompatible with {package2}'
                 else:
-                    return 'either {} or {}'.format(self._terse(term1), self._terse(term2))
+                    return f'either {self._terse(term1)} or {self._terse(term2)}'
 
         positive = []
         negative = []
@@ -200,8 +201,8 @@ class Incompatibility:
             return 'one of {} must be true'.format(' or '.join(negative))
 
     def and_to_string(
-        self, other, details, this_line, other_line
-    ):  # type: (Incompatibility, dict, int, int) -> str
+        self, other: Incompatibility, details: Dict, this_line: int, other_line: int
+    ) -> str:
         requires_both = self._try_requires_both(other, details, this_line, other_line)
         if requires_both is not None:
             return requires_both
@@ -218,7 +219,7 @@ class Incompatibility:
         if this_line is not None:
             buffer.append(' ' + this_line)
 
-        buffer.append(' and {}'.format(str(other)))
+        buffer.append(f' and {str(other)}')
 
         if other_line is not None:
             buffer.append(' ' + other_line)
@@ -226,8 +227,8 @@ class Incompatibility:
         return '\n'.join(buffer)
 
     def _try_requires_both(
-        self, other, details, this_line, other_line
-    ):  # type: (Incompatibility, dict, int, int) -> Optional[str]
+        self, other: Incompatibility, details: Dict, this_line: int, other_line: int
+    ) -> Optional[str]:
         if len(self._terms) == 1 or len(other.terms) == 1:
             return
 
@@ -260,20 +261,20 @@ class Incompatibility:
         else:
             buffer.append('requires')
 
-        buffer.append(' both {}'.format(this_negatives))
+        buffer.append(f' both {this_negatives}')
         if this_line is not None:
-            buffer.append(' ({})'.format(this_line))
+            buffer.append(f' ({this_line})')
 
-        buffer.append(' and {}'.format(other_negatives))
+        buffer.append(f' and {other_negatives}')
 
         if other_line is not None:
-            buffer.append(' ({})'.format(other_line))
+            buffer.append(f' ({other_line})')
 
         return ''.join(buffer)
 
     def _try_requires_through(
-        self, other, details, this_line, other_line
-    ):  # type: (Incompatibility, dict, int, int) -> Optional[str]
+        self, other: Incompatibility, details: Dict, this_line: int, other_line: int
+    ) -> Optional[str]:
         if len(self._terms) == 1 or len(other.terms) == 1:
             return
 
@@ -316,7 +317,7 @@ class Incompatibility:
         buffer = []
         if len(prior_positives) > 1:
             prior_string = ' or '.join([self._terse(term) for term in prior_positives])
-            buffer.append('if {} then '.format(prior_string))
+            buffer.append(f'if {prior_string} then ')
         else:
             if isinstance(prior.cause, DependencyCause):
                 verb = 'depends on'
@@ -327,7 +328,7 @@ class Incompatibility:
 
         buffer.append(prior_negative.inverse.to_string())
         if prior_line is not None:
-            buffer.append(' ({})'.format(prior_line))
+            buffer.append(f' ({prior_line})')
 
         buffer.append(' which ')
 
@@ -343,13 +344,13 @@ class Incompatibility:
         )
 
         if latter_line is not None:
-            buffer.append(' ({})'.format(latter_line))
+            buffer.append(f' ({latter_line})')
 
         return ''.join(buffer)
 
     def _try_requires_forbidden(
-        self, other, details, this_line, other_line
-    ):  # type: (Incompatibility, dict, int, int) -> Optional[str]
+        self, other: Incompatibility, details: Dict, this_line: int, other_line: int
+    ) -> Optional[str]:
         if len(self._terms) != 1 and len(other.terms) != 1:
             return None
 
@@ -376,7 +377,7 @@ class Incompatibility:
         buffer = []
         if len(positives) > 1:
             prior_string = ' or '.join([self._terse(term) for term in positives])
-            buffer.append('if {} then '.format(prior_string))
+            buffer.append(f'if {prior_string} then ')
         else:
             buffer.append(self._terse(positives[0], allow_every=True))
             if isinstance(prior.cause, DependencyCause):
@@ -386,7 +387,7 @@ class Incompatibility:
 
         buffer.append(latter.terms[0].to_string(allow_every=True) + ' ')
         if prior_line is not None:
-            buffer.append('({}) '.format(prior_line))
+            buffer.append(f'({prior_line}) ')
 
         if isinstance(latter.cause, NoVersionsCause):
             buffer.append("which doesn't match any versions")
@@ -396,14 +397,14 @@ class Incompatibility:
             buffer.append('which is forbidden')
 
         if latter_line is not None:
-            buffer.append(' ({})'.format(latter_line))
+            buffer.append(f' ({latter_line})')
 
         return ''.join(buffer)
 
-    def _terse(self, term, allow_every=False):  # type: (Term, bool) -> str
+    def _terse(self, term: Term, allow_every: bool = False) -> str:
         return term.to_string(allow_every=allow_every)
 
-    def _single_term_where(self, callable):  # type: (callable) -> Optional[Term]
+    def _single_term_where(self, callable: callable) -> Optional[Term]:
         found = None
         for term in self._terms:
             if not callable(term):
@@ -417,4 +418,4 @@ class Incompatibility:
         return found
 
     def __repr__(self):
-        return '<{} {}>'.format(self.__class__.__name__, str(self))
+        return f'<{self.__class__.__name__} {str(self)}>'

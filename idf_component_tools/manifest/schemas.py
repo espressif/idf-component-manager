@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import re
+from typing import Any, Callable, Dict, List, Union
 
 from schema import And, Optional, Or, Regex, Schema, Use
 
@@ -18,11 +19,6 @@ from .constants import (
 )
 from .if_parser import IfClause, OptionalDependency, parse_if_clause
 
-try:
-    import typing as t
-except ImportError:
-    pass
-
 KNOWN_FILES_KEYS = [
     'include',
     'exclude',
@@ -34,11 +30,11 @@ LINKS_URL_ERROR = 'Invalid URL in the "{}" field. Check that link is a correct H
 LINKS_GIT_ERROR = 'Invalid URL in the "{}" field. Check that link is a valid Git remote URL'
 
 
-def _nonempty_string(field):  # type: (str) -> And
-    return And(str, len, error='Non-empty string is required in the "{}" field'.format(field))
+def _nonempty_string(field: str) -> And:
+    return And(str, len, error=f'Non-empty string is required in the "{field}" field')
 
 
-def expanded_optional_dependency_schema_builder():  # type: () -> Schema
+def expanded_optional_dependency_schema_builder() -> Schema:
     return And(
         {
             'if': Use(parse_if_clause),
@@ -50,7 +46,7 @@ def expanded_optional_dependency_schema_builder():  # type: () -> Schema
     )
 
 
-def optional_dependency_schema_builder():  # type: () -> Schema
+def optional_dependency_schema_builder() -> Schema:
     return {
         'if': str,
         Optional('version'): Or(
@@ -59,7 +55,7 @@ def optional_dependency_schema_builder():  # type: () -> Schema
     }
 
 
-def dependency_schema_builder(rule_schema_builder):  # type: (t.Callable) -> Or
+def dependency_schema_builder(rule_schema_builder: Callable) -> Or:
     return Or(
         Or(None, str, error='Dependency version spec format is invalid'),
         {
@@ -99,7 +95,7 @@ def repository_info_schema_builder():
     )
 
 
-def schema_builder(validate_rules=False):  # type: (bool) -> Schema
+def schema_builder(validate_rules: bool = False) -> Schema:
     if validate_rules:
         rule_builder = expanded_optional_dependency_schema_builder
     else:
@@ -156,17 +152,17 @@ def schema_builder(validate_rules=False):  # type: (bool) -> Schema
     )
 
 
-def version_json_schema():  # type: () -> dict
+def version_json_schema() -> Dict:
     return {'type': 'string', 'pattern': SimpleSpec.regex_str()}
 
 
-def manifest_json_schema():  # type: () -> dict
-    def replace_regex_pattern_with_pattern_str(pat):  # type: (re.Pattern) -> t.Any
+def manifest_json_schema() -> Dict:
+    def replace_regex_pattern_with_pattern_str(pat: re.Pattern) -> Any:
         return pat.pattern
 
     def process_json_schema(
-        obj,  # type: dict[str, t.Any] | list | str | t.Any
-    ):  # type: (...) -> dict[str, t.Any] | list | str | t.Any
+        obj: Union[Dict[str, Any], List, str, Any]
+    ) -> Union[Dict[str, Any], List, str, Any]:
         if isinstance(obj, dict):
             # jsonschema 2.5.1 for python 3.4 does not support empty `required` field
             if not obj.get('required', []):
@@ -309,8 +305,8 @@ def serialize_list_of_list_of_strings(ll_str):
     return sorted(res)
 
 
-_build_metadata_keys = []  # type: list[str]
-_info_metadata_keys = []  # type: list[str]
+_build_metadata_keys: List[str] = []
+_info_metadata_keys: List[str] = []
 for _key in sorted(_flatten_json_schema_keys(JSON_SCHEMA)):
     if _key[0] in KNOWN_BUILD_METADATA_FIELDS:
         _build_metadata_keys.append(_key)

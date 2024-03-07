@@ -5,7 +5,7 @@ import os
 import shutil
 from pathlib import Path
 from shutil import copytree, rmtree
-from typing import Iterable
+from typing import Iterable, Optional, Set, Union
 
 from idf_component_tools.messages import warn
 
@@ -47,12 +47,11 @@ UNEXPECTED_FILES = {
 
 
 def filtered_paths(
-    path,  # type: str | Path
-    include=None,  # type: Iterable[str] | None
-    exclude=None,  # type: Iterable[str] | None
-    exclude_default=True,  # type: bool
-):
-    # type: (...) -> set[Path]
+    path: Union[str, Path],
+    include: Optional[Iterable[str]] = None,
+    exclude: Optional[Iterable[str]] = None,
+    exclude_default: bool = True,
+) -> Set[Path]:
     """Returns set of paths that should be included in component archive"""
 
     if include is None:
@@ -62,7 +61,7 @@ def filtered_paths(
         exclude = set()
 
     base_path = Path(path)
-    paths = set()  # type: set[Path]
+    paths: Set[Path] = set()
 
     def include_paths(pattern):
         paths.update(base_path.glob(pattern))
@@ -91,13 +90,13 @@ def filtered_paths(
     return paths
 
 
-def create_directory(directory):  # type: (str) -> None
+def create_directory(directory: str) -> None:
     """Create directory, if doesn't exist yet"""
     if not os.path.exists(directory):
         os.makedirs(directory)
 
 
-def prepare_empty_directory(directory):  # type: (str) -> None
+def prepare_empty_directory(directory: str) -> None:
     """Prepare directory empty"""
     dir_exist = os.path.exists(directory)
 
@@ -110,15 +109,15 @@ def prepare_empty_directory(directory):  # type: (str) -> None
         os.makedirs(directory)
 
 
-def copy_directory(source_directory, destination_directory):  # type: (str, str) -> None
+def copy_directory(source_directory: str, destination_directory: str) -> None:
     if os.path.exists(destination_directory):
         rmtree(destination_directory)
     copytree(source_directory, destination_directory)
 
 
 def copy_directories(
-    source_directory, destination_directory, paths
-):  # type: (str, str, Iterable[Path]) -> None
+    source_directory: str, destination_directory: str, paths: Iterable[Path]
+) -> None:
     for path in sorted(paths):
         path = str(path)  # type: ignore # Path backward compatibility
         rel_path = os.path.relpath(path, source_directory)
@@ -135,14 +134,18 @@ def copy_directories(
             os.makedirs(dest_path)
 
 
-def copy_filtered_directory(source_directory, destination_directory, include=None, exclude=None):
-    # type: (str, str, Iterable[str] | None, Iterable[str] | None) -> None
+def copy_filtered_directory(
+    source_directory: str,
+    destination_directory: str,
+    include: Optional[Iterable[str]] = None,
+    exclude: Optional[Iterable[str]] = None,
+) -> None:
     paths = filtered_paths(source_directory, include=include, exclude=exclude)
     prepare_empty_directory(destination_directory)
     copy_directories(source_directory, destination_directory, paths)
 
 
-def check_unexpected_component_files(path):  # type: (str | Path) -> None
+def check_unexpected_component_files(path: Union[str, Path]) -> None:
     '''Create a warning if a directory contains files not expected inside component'''
     for root, _dirs, files in os.walk(str(path)):
         unexpected_files = UNEXPECTED_FILES.intersection(files)
@@ -155,7 +158,7 @@ def check_unexpected_component_files(path):  # type: (str | Path) -> None
             )
 
 
-def directory_size(dir_path):  # type: (str) -> int
+def directory_size(dir_path: str) -> int:
     '''Return the total size of all files in the directory tree'''
     total_size = 0
     directory = Path(dir_path)
@@ -167,7 +170,7 @@ def directory_size(dir_path):  # type: (str) -> int
     return total_size
 
 
-def human_readable_size(size):  # type: (int) -> str
+def human_readable_size(size: int) -> str:
     '''Return a human readable string representation of a data size'''
     if size < 0:
         raise ValueError('size must be non-negative')

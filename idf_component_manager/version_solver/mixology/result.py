@@ -10,15 +10,15 @@ from idf_component_tools.manifest import HashedComponentVersion
 
 class SolverResult:
     def __init__(
-        self, decisions, attempted_solutions
-    ):  # type: (Dict[Package, HashedComponentVersion], int) -> None
+        self, decisions: Dict[Package, HashedComponentVersion], attempted_solutions: int
+    ) -> None:
         self._decisions = decisions
         self._attempted_solutions = attempted_solutions
 
     @property
-    def decisions(self):  # type: () -> Dict[Package, HashedComponentVersion]
+    def decisions(self) -> Dict[Package, HashedComponentVersion]:
         return self._decisions
 
     @property
-    def attempted_solutions(self):  # type: () -> int
+    def attempted_solutions(self) -> int:
         return self._attempted_solutions

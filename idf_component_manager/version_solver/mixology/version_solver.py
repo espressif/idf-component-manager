@@ -34,21 +34,21 @@ class VersionSolver:
 
     def __init__(
         self,
-        source,  # type: PackageSource
+        source: PackageSource,
     ):
         self._source = source
 
-        self._incompatibilities = {}  # type: Dict[Package, List[Incompatibility]]
+        self._incompatibilities: Dict[Package, List[Incompatibility]] = {}
         self._solution = PartialSolution()
 
     @property
-    def solution(self):  # type: () -> PartialSolution
+    def solution(self) -> PartialSolution:
         return self._solution
 
-    def is_solved(self):  # type: () -> bool
+    def is_solved(self) -> bool:
         return not self._solution.unsatisfied
 
-    def solve(self):  # type: () -> SolverResult
+    def solve(self) -> SolverResult:
         """
         Finds a set of dependencies that match the root package's constraints,
         or raises an error if no such set is available.
@@ -65,11 +65,11 @@ class VersionSolver:
                 break
 
         logger.info('Version solving took {:.3f} seconds.\n'.format(time.time() - start))
-        logger.info('Tried {} solutions.'.format(self._solution.attempted_solutions))
+        logger.info(f'Tried {self._solution.attempted_solutions} solutions.')
 
         return SolverResult(self._solution.decisions, self._solution.attempted_solutions)
 
-    def _run(self):  # type: () -> bool
+    def _run(self) -> bool:
         if self.is_solved():
             return False
 
@@ -81,12 +81,12 @@ class VersionSolver:
 
         return True
 
-    def _propagate(self, package):  # type: (Package) -> None
+    def _propagate(self, package: Package) -> None:
         """
         Performs unit propagation on incompatibilities transitively
         related to package to derive new assignments for _solution.
         """
-        changed = set()  # type: Set[Package]
+        changed: Set[Package] = set()
         changed.add(package)
 
         while changed:
@@ -118,8 +118,8 @@ class VersionSolver:
                     changed.add(result)
 
     def _propagate_incompatibility(
-        self, incompatibility
-    ):  # type: (Incompatibility) -> Union[Package, _conflict, None]
+        self, incompatibility: Incompatibility
+    ) -> Union[Package, object, None]:
         """
         If incompatibility is almost satisfied by _solution, adds the
         negation of the unsatisfied term to _solution.
@@ -159,7 +159,7 @@ class VersionSolver:
         if unsatisfied is None:
             return _conflict
 
-        logger.info('derived: {}'.format(unsatisfied.inverse))
+        logger.info(f'derived: {unsatisfied.inverse}')
 
         self._solution.derive(
             unsatisfied.constraint, not unsatisfied.is_positive(), incompatibility
@@ -167,7 +167,7 @@ class VersionSolver:
 
         return unsatisfied.package
 
-    def _resolve_conflict(self, incompatibility):  # type: (Incompatibility) -> Incompatibility
+    def _resolve_conflict(self, incompatibility: Incompatibility) -> Incompatibility:
         """
         Given an incompatibility that's satisfied by _solution,
         The `conflict resolution`_ constructs a new incompatibility that encapsulates the root
@@ -179,7 +179,7 @@ class VersionSolver:
         .. _conflict resolution:
         https://github.com/dart-lang/pub/tree/master/doc/solver.md#conflict-resolution
         """
-        logger.info('conflict: {}'.format(incompatibility))
+        logger.info(f'conflict: {incompatibility}')
 
         new_incompatibility = False
         while not incompatibility.is_failure():
@@ -295,12 +295,12 @@ class VersionSolver:
                     bang, most_recent_term, partially, most_recent_satisfier
                 )
             )
-            logger.info('{} which is caused by "{}"'.format(bang, most_recent_satisfier.cause))
-            logger.info('{} thus: {}'.format(bang, incompatibility))
+            logger.info(f'{bang} which is caused by "{most_recent_satisfier.cause}"')
+            logger.info(f'{bang} thus: {incompatibility}')
 
         raise SolverFailure(incompatibility)
 
-    def _next_term_to_try(self):  # type: () -> Optional[Term]
+    def _next_term_to_try(self) -> Optional[Term]:
         unsatisfied = self._solution.unsatisfied
         if not unsatisfied:
             return
@@ -317,7 +317,7 @@ class VersionSolver:
 
         return term
 
-    def _choose_package_version(self):  # type: () -> Optional[Package]
+    def _choose_package_version(self) -> Optional[Package]:
         """
         Tries to select a version of a required package.
 
@@ -356,12 +356,12 @@ class VersionSolver:
 
         if not conflict:
             self._solution.decide(term.package, version)
-            logger.info('selecting {} ({})'.format(term.package, str(version)))
+            logger.info(f'selecting {term.package} ({str(version)})')
 
         return term.package
 
-    def _add_incompatibility(self, incompatibility):  # type: (Incompatibility) -> None
-        logger.info('fact: {}'.format(incompatibility))
+    def _add_incompatibility(self, incompatibility: Incompatibility) -> None:
+        logger.info(f'fact: {incompatibility}')
 
         for term in incompatibility.terms:
             if term.package not in self._incompatibilities:

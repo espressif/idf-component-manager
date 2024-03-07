@@ -19,7 +19,7 @@ COMPONENT_LIST_SCHEMA = Schema(
 )
 
 
-def parse_component_list(path):  # type: (str) -> List[Dict[str,str]]
+def parse_component_list(path: str) -> List[Dict[str, str]]:
     with open(path, encoding='utf-8') as f:
         try:
             components = COMPONENT_LIST_SCHEMA.validate(yaml.safe_load(f.read()))

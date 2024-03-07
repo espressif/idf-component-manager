@@ -3,6 +3,7 @@
 
 import enum
 import re
+from typing import Optional, Union
 
 import click
 from packaging import version
@@ -12,30 +13,28 @@ from idf_component_tools.messages import UserHint, UserNotice
 CLICK_SUPPORTS_SHOW_DEFAULT = version.parse(click.__version__) >= version.parse('7.1.0')
 
 
-def print_prefixed(
-    prefix, color, message, stderr
-):  # type: (str, str, Exception | str, bool) -> None
-    styled_prefix = click.style('{}: '.format(prefix), fg=color)
+def print_prefixed(prefix: str, color: str, message: Union[Exception, str], stderr: bool) -> None:
+    styled_prefix = click.style(f'{prefix}: ', fg=color)
     click.echo(styled_prefix + str(message), err=stderr)
 
 
-def print_stderr_prefixed(prefix, color, message):  # type: (str, str, Exception | str) -> None
+def print_stderr_prefixed(prefix: str, color: str, message: Union[Exception, str]) -> None:
     print_prefixed(prefix, color, message, stderr=True)
 
 
-def print_error(message):  # type: (Exception | str) -> None
+def print_error(message: Union[Exception, str]) -> None:
     print_stderr_prefixed('ERROR', 'red', message)
 
 
-def print_warn(message):  # type: (Exception | str) -> None
+def print_warn(message: Union[Exception, str]) -> None:
     print_stderr_prefixed('WARNING', 'yellow', message)
 
 
-def print_hint(message):  # type: (Exception | str) -> None
+def print_hint(message: Union[Exception, str]) -> None:
     print_prefixed('HINT', 'yellow', message, stderr=False)
 
 
-def print_notice(message):  # type: (Exception | str) -> None
+def print_notice(message: Union[Exception, str]) -> None:
     print_prefixed('NOTICE', 'green', message, stderr=False)
 
 
@@ -49,14 +48,14 @@ def showwarning(message, category, filename, lineno, file=None, line=None):
 
 
 def print_info(
-    message,  # type: str
-    fg=None,  # type: str | None
-    bg=None,  # type: str | None
-    bold=None,  # type: str | None
-    underline=None,  # type: str | None
-    blink=None,  # type: str | None
-    **kwargs
-):  # type: (...) -> None
+    message: str,
+    fg: Optional[str] = None,
+    bg: Optional[str] = None,
+    bold: Optional[str] = None,
+    underline: Optional[str] = None,
+    blink: Optional[str] = None,
+    **kwargs,
+) -> None:
     click.secho(message, fg=fg, bg=bg, bold=bold, underline=underline, blink=blink, **kwargs)
 
 

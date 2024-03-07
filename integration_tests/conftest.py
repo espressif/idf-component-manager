@@ -1,9 +1,10 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
 import shutil
 from pathlib import Path
+from typing import Dict, List, Optional, Union
 
 import pytest
 import yaml
@@ -45,8 +46,8 @@ def project(request, tmpdir_factory):
 
 
 class Snapshot:
-    def __init__(self, paths):  # type: (list[str] | str) -> None
-        self.files = {}  # type: dict[str, bytes | None]
+    def __init__(self, paths: Union[List[str], str]) -> None:
+        self.files: Dict[str, Optional[bytes]] = {}
 
         if isinstance(paths, str):
             paths = [paths]
@@ -111,7 +112,7 @@ def pytest_configure(config):
     for name, description in {
         'snapshot': 'snapshot the specified files/folders and revert the content after test case'
     }.items():
-        config.addinivalue_line('markers', '{}: {}'.format(name, description))
+        config.addinivalue_line('markers', f'{name}: {description}')
 
 
 @pytest.fixture(scope='session')

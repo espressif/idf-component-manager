@@ -1,12 +1,14 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Classes to work with manifest file"""
+from __future__ import annotations
+
 import json
 import re
 from collections import namedtuple
 from collections.abc import Mapping
 from functools import total_ordering
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 import idf_component_tools as tools
 from idf_component_tools.build_system_tools import build_name, get_env_idf_target
@@ -50,26 +52,24 @@ class Manifest:
     def __init__(
         self,
         # Dependencies, list of component
-        dependencies=None,  # type: list[ComponentRequirement] | None
-        description=None,  # type: str | None # Human-readable description
-        maintainers=None,  # type: str | None # List of maintainers
-        manifest_hash=None,  # type: str | None # Check-sum of manifest content
-        name=None,  # type: str | None # Component name
-        targets=None,  # type: list[str] | None # List of supported chips
-        include_files=None,  # type: list[str] | None
-        exclude_files=None,  # type: list[str] | None
-        version=None,  # type: ComponentVersion | None # Version
-        tags=None,  # type: list[str] | None # List of tags
-        links=None,  # type: ComponentLinks | None # Links of the component
-        examples=None,  # type: list[dict[str, str]] | None # List of paths to the examples
-        license_name=None,  # type: str | None # License of the component
-        commit_sha=None,  # type: str | None
-        repository_path=None,  # type: str | None
+        dependencies: Optional[List[ComponentRequirement]] = None,
+        description: Optional[str] = None,  # Human-readable description
+        maintainers: Optional[str] = None,  # List of maintainers
+        manifest_hash: Optional[str] = None,  # Check-sum of manifest content
+        name: Optional[str] = None,  # Component name
+        targets: Optional[List[str]] = None,  # List of supported chips
+        include_files: Optional[List[str]] = None,
+        exclude_files: Optional[List[str]] = None,
+        version: Optional[ComponentVersion] = None,  # Version
+        tags: Optional[List[str]] = None,  # List of tags
+        links: Optional[ComponentLinks] = None,  # Links of the component
+        examples: Optional[List[Dict[str, str]]] = None,  # List of paths to the examples
+        license_name: Optional[str] = None,  # License of the component
+        commit_sha: Optional[str] = None,
+        repository_path: Optional[str] = None,
         # manifest manager who generate this manifest
-        manifest_manager=None,  # type: ManifestManager | None
-    ):
-        # type: (...) -> None
-
+        manifest_manager: Optional[ManifestManager] = None,
+    ) -> None:
         self.name = name or ''
         self.version = version
         self.maintainers = maintainers
@@ -107,10 +107,10 @@ class Manifest:
     @classmethod
     def fromdict(
         cls,
-        manifest_tree,  # type: dict
-        name,  # type: str
-        manifest_manager=None,  # type: ManifestManager | None
-    ):  # type: (...) -> Manifest
+        manifest_tree: Dict,
+        name: str,
+        manifest_manager: Optional[ManifestManager] = None,
+    ) -> Manifest:
         """Coverts manifest dict to manifest object"""
         manifest = cls(
             name=name,
@@ -165,17 +165,17 @@ class Manifest:
         return manifest
 
     @property
-    def raw_dependencies(self):  # type: () -> list[ComponentRequirement]
+    def raw_dependencies(self) -> List[ComponentRequirement]:
         """Return all dependencies, ignoring rules/matches"""
         return self._dependencies
 
     @property
-    def dependencies(self):  # type: () -> list[ComponentRequirement]
+    def dependencies(self) -> List[ComponentRequirement]:
         """Return dependencies that meet rules/matches"""
         return filter_optional_dependencies(self._dependencies)
 
     @property
-    def manifest_hash(self):  # type: () -> str
+    def manifest_hash(self) -> str:
         if self._manifest_hash:
             return self._manifest_hash
 
@@ -184,7 +184,7 @@ class Manifest:
         return self._manifest_hash
 
     @property
-    def path(self):  # type: () -> str
+    def path(self) -> str:
         return self._manifest_manager.path if self._manifest_manager else ''
 
 
@@ -202,13 +202,13 @@ class OptionalRequirement:
 
     def __init__(
         self,
-        matches=None,  # type: list[OptionalDependency] | None
-        rules=None,  # type: list[OptionalDependency] | None
-    ):  # type: (...) -> None
+        matches: Optional[List[OptionalDependency]] = None,
+        rules: Optional[List[OptionalDependency]] = None,
+    ) -> None:
         self.matches = matches or []
         self.rules = rules or []
 
-    def version_spec_if_meet_conditions(self, default_version_spec):  # type: (str) -> str | None
+    def version_spec_if_meet_conditions(self, default_version_spec: str) -> Optional[str]:
         """
         Return version spec If
         - The first IfClause that is true among all the specified `matches`
@@ -244,14 +244,14 @@ class OptionalRequirement:
         return res
 
     @classmethod
-    def fromdict(cls, d):  # type: (dict) -> OptionalRequirement
+    def fromdict(cls, d: (Dict)) -> OptionalRequirement:
         def _to_optional_dependency(d):
             if isinstance(d, OptionalDependency):
                 return d
             elif isinstance(d, dict):
                 return OptionalDependency.fromdict(d)
 
-            raise ValueError('Invalid optional dependency: {}, type {}'.format(d, type(d)))
+            raise ValueError(f'Invalid optional dependency: {d}, type {type(d)}')
 
         return cls(
             matches=[_to_optional_dependency(match) for match in d.get('matches', [])],
@@ -272,18 +272,17 @@ class ComponentRequirement:
 
     def __init__(
         self,
-        name,  # type: str
-        sources,  # type: list[BaseSource]
-        version_spec='*',  # type: str
-        public=None,  # type: bool | None
-        optional_requirement=None,  # type: OptionalRequirement | None
-        require=None,  # type: str | bool | None
-    ):
-        # type: (...) -> None
+        name: str,
+        sources: List[BaseSource],
+        version_spec: str = '*',
+        public: Optional[bool] = None,
+        optional_requirement: Optional[OptionalRequirement] = None,
+        require: Union[str, bool, None] = None,
+    ) -> None:
         self._version_spec = version_spec
         self.sources = sources
         self._name = name
-        self.public = None  # type: bool | None
+        self.public: Optional[bool] = None
         if require == 'public' or public:
             self.public = True
         elif public is False or require == 'private':
@@ -343,7 +342,7 @@ class ComponentRequirement:
         return self._version_spec
 
     @property
-    def meet_optional_dependencies(self):  # type: () -> bool
+    def meet_optional_dependencies(self) -> bool:
         if not self.optional_requirement:
             return True
 
@@ -353,24 +352,24 @@ class ComponentRequirement:
         ):
             return True
 
-        notice('Skipping optional dependency: {}'.format(self.name))
+        notice(f'Skipping optional dependency: {self.name}')
         return False
 
-    def __repr__(self):  # type: () -> str
+    def __repr__(self) -> str:
         return 'ComponentRequirement("{}", {}, version_spec="{}", public={})'.format(
             self.name, self.source, self.version_spec, self.public
         )
 
-    def __str__(self):  # type: () -> str
-        return '{}({})'.format(self.name, self.version_spec)
+    def __str__(self) -> str:
+        return f'{self.name}({self.version_spec})'
 
 
 @total_ordering
 @serializable(like='str')
 class ComponentVersion:
     def __init__(
-        self, version_string, dependencies=None
-    ):  # type: (str, list[ComponentRequirement] | None) -> None
+        self, version_string: str, dependencies: Optional[List[ComponentRequirement]] = None
+    ) -> None:
         """
         version_string - can be `*`, git commit hash (hex, 160 bit) or valid semantic version string
         """
@@ -412,13 +411,13 @@ class ComponentVersion:
         return self._semver > other._semver
 
     def __repr__(self):
-        return 'ComponentVersion("{}")'.format(self._version_string)
+        return f'ComponentVersion("{self._version_string}")'
 
     def __str__(self):
         return self._version_string
 
     @property
-    def semver(self):  # type: () -> Version
+    def semver(self) -> Version:
         if self.is_semver and self._semver:
             return self._semver
         else:
@@ -426,7 +425,7 @@ class ComponentVersion:
 
 
 class HashedComponentVersion(ComponentVersion):
-    def __init__(self, *args, **kwargs):  # type: (Any, Any) -> None
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         component_hash = kwargs.pop('component_hash', None)
         dependencies = kwargs.pop('dependencies', []) or []
         targets = kwargs.pop('targets', [])
@@ -447,7 +446,7 @@ class HashedComponentVersion(ComponentVersion):
 
 
 class ComponentWithVersions:
-    def __init__(self, name, versions):  # type: (str, list[HashedComponentVersion]) -> None
+    def __init__(self, name: str, versions: List[HashedComponentVersion]) -> None:
         self.versions = versions
         self.name = name
 
@@ -455,23 +454,23 @@ class ComponentWithVersions:
 class ProjectRequirements:
     '''Representation of all manifests required by project'''
 
-    def __init__(self, manifests):  # type: (list[Manifest]) -> None
+    def __init__(self, manifests: List[Manifest]) -> None:
         self.manifests = manifests
-        self._manifest_hash = None  # type: str | None
-        self._target = None  # type: str | None
+        self._manifest_hash: Optional[str] = None
+        self._target: Optional[str] = None
 
     @property
-    def target(self):  # type: () -> str
+    def target(self) -> str:
         if not self._target:
             self._target = get_env_idf_target()
         return self._target
 
     @property
-    def has_dependencies(self):  # type: () ->  bool
+    def has_dependencies(self) -> bool:
         return any(manifest.dependencies for manifest in self.manifests)
 
     @property
-    def manifest_hash(self):  # type: () -> str
+    def manifest_hash(self) -> str:
         '''Lazily calculate requirements hash'''
         if self._manifest_hash:
             return self._manifest_hash
@@ -482,8 +481,8 @@ class ProjectRequirements:
 
 
 def filter_optional_dependencies(
-    dependencies,
-):  # type: (list[ComponentRequirement]) -> list[ComponentRequirement]
+    dependencies: List[ComponentRequirement],
+) -> List[ComponentRequirement]:
     return sorted(
         [dep for dep in dependencies if dep.meet_optional_dependencies],
         key=lambda d: d.name,

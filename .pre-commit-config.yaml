@@ -81,7 +81,3 @@ repos:
         stages: [commit-msg]
         args:
           - --types=change,chore,ci,docs,feat,fix,refactor,remove,revert,test,feat!
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.1
-    hooks:
-    -   id: pyupgrade

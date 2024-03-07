@@ -3,18 +3,18 @@
 
 import os
 from string import Template
-from typing import Any, Callable
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import yaml
 
 from ..errors import ManifestError
 
 
-def subst_vars_in_str(s, env):  # type: (str, dict[str, Any]) -> str
+def subst_vars_in_str(s: str, env: Dict[str, Any]) -> str:
     try:
         return Template(s).substitute(env)
     except KeyError as e:
-        raise ManifestError('Environment variable "{}" is not set'.format(e.args[0]))
+        raise ManifestError(f'Environment variable "{e.args[0]}" is not set')
     except ValueError:
         raise ManifestError(
             'Invalid format of environment variable in the value: "{}".\n'
@@ -23,10 +23,9 @@ def subst_vars_in_str(s, env):  # type: (str, dict[str, Any]) -> str
 
 
 def expand_env_vars(
-    obj,  # type: dict[str, Any] | list | str | Any
-    env=None,  # type: dict | None
-):
-    # type: (...) -> dict[str, Any] | list | str | Any
+    obj: Union[Dict[str, Any], List, str, Any],
+    env: Optional[Dict] = None,
+) -> Union[Dict[str, Any], List, str, Any]:
     '''
     Expand variables in the results of YAML/JSON file parsing
     '''
@@ -44,14 +43,14 @@ class EnvFoundException(Exception):
     pass
 
 
-def _raise_on_env(s):  # type: (str) -> None
+def _raise_on_env(s: str) -> None:
     try:
         Template(s).substitute({})
     except (KeyError, ValueError):
         raise EnvFoundException
 
 
-def contains_env_variables(obj):  # type: (dict[str, Any] | list | str | Any) -> bool
+def contains_env_variables(obj: Union[Dict[str, Any], List, str, Any]) -> bool:
     try:
         process_nested_strings(obj, _raise_on_env)
         return False
@@ -60,10 +59,9 @@ def contains_env_variables(obj):  # type: (dict[str, Any] | list | str | Any) ->
 
 
 def process_nested_strings(
-    obj,  # type: dict[str, Any] | list | str | Any
-    func,  # type: Callable[[str], Any]
-):
-    # type: (...) -> dict[str, Any] | list | str | Any
+    obj: Union[Dict[str, Any], List, str, Any],
+    func: Callable[[str], Any],
+) -> Union[Dict[str, Any], List, str, Any]:
     '''
     Recursively process strings in the results of YAML/JSON file parsing
     '''
@@ -72,7 +70,7 @@ def process_nested_strings(
         return {k: process_nested_strings(v, func) for k, v in obj.items()}
     elif isinstance(obj, str):
         return func(obj)
-    elif isinstance(obj, (list, tuple)):
+    elif isinstance(obj, (List, tuple)):
         # yaml dict won't have other iterable data types
         return [process_nested_strings(i, func) for i in obj]
 
@@ -80,7 +78,7 @@ def process_nested_strings(
     return obj
 
 
-def dump_escaped_yaml(d, path):  # type: (dict[str, Any], str) -> None
+def dump_escaped_yaml(d: Dict[str, Any], path: str) -> None:
     def _escape_dollar_sign(s):
         return s.replace('$', '$$')
 

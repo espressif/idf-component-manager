@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: MIT License
 # SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
+from __future__ import annotations
+
 from typing import Any, Optional
 
 from .constraint import Constraint
@@ -17,8 +19,13 @@ class Assignment(Term):
     """
 
     def __init__(
-        self, constraint, is_positive, decision_level, index, cause=None
-    ):  # type: (Constraint, bool, int, int, Optional[Incompatibility]) -> None
+        self,
+        constraint: Constraint,
+        is_positive: bool,
+        decision_level: int,
+        index: int,
+        cause: Optional[Incompatibility] = None,
+    ) -> None:
         super().__init__(constraint, is_positive)
 
         self._decision_level = decision_level
@@ -26,21 +33,21 @@ class Assignment(Term):
         self._cause = cause
 
     @property
-    def decision_level(self):  # type: () -> int
+    def decision_level(self) -> int:
         return self._decision_level
 
     @property
-    def index(self):  # type: () -> int
+    def index(self) -> int:
         return self._index
 
     @property
-    def cause(self):  # type: () -> Incompatibility
+    def cause(self) -> Incompatibility:
         return self._cause
 
     @classmethod
     def decision(
-        cls, package, version, decision_level, index
-    ):  # type: (Package, Any, int, int) -> Assignment
+        cls, package: Package, version: Any, decision_level: int, index: int
+    ) -> Assignment:
         return cls(
             Constraint(package, Range(version, version, True, True)),
             True,
@@ -50,9 +57,14 @@ class Assignment(Term):
 
     @classmethod
     def derivation(
-        cls, constraint, is_positive, cause, decision_level, index
-    ):  # type: (Constraint, bool, Incompatibility, int, int) -> Assignment
+        cls,
+        constraint: Constraint,
+        is_positive: bool,
+        cause: Incompatibility,
+        decision_level: int,
+        index: int,
+    ) -> Assignment:
         return cls(constraint, is_positive, decision_level, index, cause)
 
-    def is_decision(self):  # type: () -> bool
+    def is_decision(self) -> bool:
         return self._cause is None

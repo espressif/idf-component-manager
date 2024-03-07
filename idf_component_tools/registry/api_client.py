@@ -6,7 +6,7 @@ import re
 from collections import namedtuple
 from functools import wraps
 from ssl import SSLEOFError
-from typing import Any, Callable
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 from schema import Schema
@@ -27,7 +27,7 @@ from .request_processor import base_request
 TaskStatus = namedtuple('TaskStatus', ['message', 'status', 'progress', 'warnings'])
 
 
-def auth_required(f):  # type: (Callable) -> Callable
+def auth_required(f: Callable) -> Callable:
     @wraps(f)
     def wrapper(self, *args, **kwargs):
         if not self.auth_token:
@@ -38,15 +38,14 @@ def auth_required(f):  # type: (Callable) -> Callable
 
 
 class APIClient(BaseClient):
-    def __init__(self, base_url=None, auth_token=None):
-        # type: (str | None, str | None) -> None
+    def __init__(self, base_url: Optional[str] = None, auth_token: Optional[str] = None) -> None:
         super().__init__()
         self.auth_token = auth_token
         self.base_url = base_url
         self._frontend_url = None
 
-    def _request(cache=False):  # type: (BaseClient | bool) -> Callable
-        def decorator(f):  # type: (Callable[..., Any]) -> Callable
+    def _request(cache: Union[BaseClient, bool] = False) -> Callable:
+        def decorator(f: Callable[..., Any]) -> Callable:
             @wraps(f)  # type: ignore
             def wrapper(self, *args, **kwargs):
                 url = self.base_url
@@ -65,12 +64,12 @@ class APIClient(BaseClient):
                 session = create_session(cache=cache, token=self.auth_token)
 
                 def request(
-                    method,  # type: str
-                    path,  # type: list[str]
-                    data=None,  # type: dict | None
-                    json=None,  # type: dict | None
-                    headers=None,  # type: dict | None
-                    schema=None,  # type: Schema | None
+                    method: str,
+                    path: List[str],
+                    data: Optional[Dict] = None,
+                    json: Optional[Dict] = None,
+                    headers: Optional[Dict] = None,
+                    schema: Optional[Schema] = None,
                 ):
                     return base_request(
                         url,
@@ -97,12 +96,12 @@ class APIClient(BaseClient):
         return self._frontend_url
 
     @_request(cache=True)
-    def api_information(self, request):  # type: (Callable) -> dict
+    def api_information(self, request: Callable) -> Dict:
         return request('get', [], schema=API_INFORMATION_SCHEMA)
 
     @auth_required
     @_request(cache=False)
-    def token_information(self, request):  # type: (Callable) -> dict
+    def token_information(self, request: Callable) -> Dict:
         return request('get', ['tokens', 'current'], schema=API_TOKEN_SCHEMA)
 
     def _upload_version_to_endpoint(self, request, file_path, endpoint, callback=None):
@@ -131,8 +130,8 @@ class APIClient(BaseClient):
 
     @_request(cache=False)
     def versions(
-        self, request, component_name, spec='*'
-    ):  # type: (Callable, str, str) -> ComponentWithVersions
+        self, request: Callable, component_name: str, spec: str = '*'
+    ) -> ComponentWithVersions:
         """List of versions for given component with required spec"""
         return super().versions(request=request, component_name=component_name, spec=spec)
 
@@ -153,21 +152,21 @@ class APIClient(BaseClient):
     @_request(cache=False)
     def delete_version(
         self,
-        request,  # type: Callable
-        component_name,  # type: str
-        component_version,  # type: str
-    ):  # type: (...) -> None
+        request: Callable,
+        component_name: str,
+        component_version: str,
+    ) -> None:
         request('delete', ['components', component_name.lower(), component_version])
 
     @auth_required
     @_request(cache=False)
     def yank_version(
         self,
-        request,  # type: Callable
-        component_name,  # type: str
-        component_version,  # type: str
-        yank_message,  # type: str
-    ):  # type: (...) -> None
+        request: Callable,
+        component_name: str,
+        component_version: str,
+        yank_message: str,
+    ) -> None:
         request(
             'post',
             ['components', component_name.lower(), component_version, 'yank'],
@@ -175,7 +174,7 @@ class APIClient(BaseClient):
         )
 
     @_request(cache=False)
-    def task_status(self, request, job_id):  # type: (Callable, str) -> TaskStatus
+    def task_status(self, request: Callable, job_id: str) -> TaskStatus:
         body = request('get', ['tasks', job_id], schema=TASK_STATUS_SCHEMA)
         return TaskStatus(
             body['message'], body['status'], body['progress'], body.get('warnings', [])

@@ -21,7 +21,7 @@ def init_cache():
         Clear the cache of components and API client cache.
         """
         FileCache().clear()
-        print_info('Successfully cleared cache at\n\t{}'.format(FileCache().path()))
+        print_info(f'Successfully cleared cache at\n\t{FileCache().path()}')
 
     @cache.command()
     def path():

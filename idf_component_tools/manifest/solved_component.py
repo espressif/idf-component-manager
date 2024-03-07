@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Results of the solver"""
 
-from typing import Iterable
+from typing import Iterable, List, Optional
 
 from idf_component_tools.serialization import serializable
 
@@ -23,14 +23,13 @@ class SolvedComponent:
 
     def __init__(
         self,
-        name,  # type: str
-        version,  # type: ComponentVersion
-        source,  # type: BaseSource
-        component_hash=None,  # type: str | None
-        dependencies=None,  # type: Iterable[ComponentRequirement] | None
-        targets=None,  # type: list[str] | None
-    ):
-        # type: (...) -> None
+        name: str,
+        version: ComponentVersion,
+        source: BaseSource,
+        component_hash: Optional[str] = None,
+        dependencies: Optional[Iterable[ComponentRequirement]] = None,
+        targets: Optional[List[str]] = None,
+    ) -> None:
         self.name = name
         self.version = version
         self.source = source
@@ -39,17 +38,13 @@ class SolvedComponent:
         self.targets = targets or []
 
     def __repr__(self):
-        return 'SolvedComponent <{}({}) {}>'.format(self.name, self.version, self.component_hash)
+        return f'SolvedComponent <{self.name}({self.version}) {self.component_hash}>'
 
     def __str__(self):
         if self.source.name == 'service' and self.source._storage_url != IDF_COMPONENT_STORAGE_URL:
-            return '{name} ({version}) from {storage_url}'.format(
-                name=self.name,
-                version=self.version,
-                storage_url=self.source._storage_url,
-            )
+            return f'{self.name} ({self.version}) from {self.source._storage_url}'
         else:
-            return '{name} ({version})'.format(name=self.name, version=self.version)
+            return f'{self.name} ({self.version})'
 
     @classmethod
     def fromdict(cls, details):

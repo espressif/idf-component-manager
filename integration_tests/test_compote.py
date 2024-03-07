@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import sys
@@ -31,15 +31,15 @@ def test_autocomplete(shell, monkeypatch):
     if shell in ['fish']:
         monkeypatch.setenv('TERM', 'screen-256color')  # var TERM is required in fish
 
-    with open(os.path.join(os.path.dirname(__file__), '..', '{}.txt'.format(shell)), 'wb') as fw:
+    with open(os.path.join(os.path.dirname(__file__), '..', f'{shell}.txt'), 'wb') as fw:
         # install autocomplete
-        child = pexpect.spawn('{} -i'.format(shell))
+        child = pexpect.spawn(f'{shell} -i')
         child.logfile = fw
         child.expect([r'\$ ', '# ', '> '], timeout=5)
-        child.sendline('compote autocomplete --shell {} --install'.format(shell))
+        child.sendline(f'compote autocomplete --shell {shell} --install')
         # test autocomplete
         child.expect([r'\$ ', '# ', '> '], timeout=5)
-        child.sendline('exec {}'.format(shell))  # reload
+        child.sendline(f'exec {shell}')  # reload
         child.expect([r'\$ ', '# ', '> '], timeout=5)
         child.send('compote \t\t')
         child.flush()

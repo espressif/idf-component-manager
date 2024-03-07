@@ -1,8 +1,10 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+from __future__ import annotations
 
 import re
 from ast import literal_eval
+from typing import Dict, List, Optional, Union
 
 from pyparsing import Keyword, Word, alphanums, infixNotation, opAssoc
 from schema import SchemaError
@@ -24,18 +26,18 @@ class OptionalDependency:
         'version',
     ]
 
-    def __init__(self, clause, version=None):  # type: (str | IfClause, str | None) -> None
+    def __init__(self, clause: Union[str, IfClause], version: Optional[str] = None) -> None:
         if isinstance(clause, IfClause):
             self.if_clause = clause
         else:
             self.if_clause = IfClause.from_string(clause)
         self.version = version
 
-    def __repr__(self):  # type: () -> str
+    def __repr__(self) -> str:
         return '{} ({})'.format(self.if_clause, self.version or '*')
 
     @classmethod
-    def fromdict(cls, d):  # type: (dict) -> OptionalDependency
+    def fromdict(cls, d: Dict) -> OptionalDependency:
         return cls(d.get('if'), d.get('version'))  # type: ignore
 
 
@@ -47,7 +49,7 @@ class IfClause:
     ]
 
     @staticmethod
-    def eval_str(s):  # type: (str) -> str
+    def eval_str(s: str) -> str:
         _s = s.strip()
         if not (_s[0] == _s[-1] == '"'):
             _s = '"{}"'.format(_s.replace('"', r'\"'))
@@ -55,10 +57,10 @@ class IfClause:
         try:
             return literal_eval(_s)
         except (ValueError, SyntaxError):
-            raise SchemaError(None, 'Invalid string "{}" in "if" clause'.format(s))
+            raise SchemaError(None, f'Invalid string "{s}" in "if" clause')
 
     @staticmethod
-    def eval_list(s):  # type: (str) -> list[str]
+    def eval_list(s: str) -> List[str]:
         _s = s.strip()
 
         if _s[0] == '[' and _s[-1] == ']':
@@ -67,7 +69,7 @@ class IfClause:
         try:
             return [IfClause.eval_str(part) for part in _s.split(',')]
         except (ValueError, SyntaxError):
-            raise SchemaError(None, 'Invalid list "{}" in "if" clause'.format(s))
+            raise SchemaError(None, f'Invalid list "{s}" in "if" clause')
 
     @staticmethod
     def regex_str():
@@ -83,34 +85,34 @@ class IfClause:
         # remove the first ^ and the last $ and make it as a group
         if_target = '(' + if_target[1:-1] + ')'
 
-        return '^{}|{}$'.format(if_idf_version, if_target)
+        return f'^{if_idf_version}|{if_target}$'
 
     @classmethod
-    def from_string(cls, s):  # type: (str) -> IfClause
+    def from_string(cls, s: str) -> IfClause:
         return parse_if_clause(s)
 
     @property
-    def clause(self):  # type: () -> str
+    def clause(self) -> str:
         raise NotImplementedError
 
     @property
-    def bool_value(self):  # type: () -> bool
+    def bool_value(self) -> bool:
         raise NotImplementedError
 
 
 class IfIdfVersionClause(IfClause):
-    def __init__(self, spec):  # type: (str) -> None
+    def __init__(self, spec: str) -> None:
         self.spec = spec
 
-    def __repr__(self):  # type: () -> str
-        return '{} ({})'.format(self.clause, self.bool_value)
+    def __repr__(self) -> str:
+        return f'{self.clause} ({self.bool_value})'
 
     @property
-    def clause(self):  # type: () -> str
-        return 'idf_version {}'.format(self.spec)
+    def clause(self) -> str:
+        return f'idf_version {self.spec}'
 
     @property
-    def bool_value(self):  # type: () -> bool
+    def bool_value(self) -> bool:
         try:
             idf_version = get_idf_version()
         except FetchingError:
@@ -135,11 +137,11 @@ class IfTargetClause(IfClause):
         self.target_str = target_str
 
     def __repr__(self):
-        return '{} ({})'.format(self.clause, self.bool_value)
+        return f'{self.clause} ({self.bool_value})'
 
     @property
-    def clause(self):  # type: () -> str
-        return 'target {} {}'.format(self.operator, self.target_str)
+    def clause(self) -> str:
+        return f'target {self.operator} {self.target_str}'
 
     @property
     def bool_value(self):
@@ -163,41 +165,39 @@ class IfTargetClause(IfClause):
 
 class BoolAnd(IfClause):
     def __init__(self, t):
-        self.left = t[0][0]  # type: IfClause
-        self.right = t[0][2]  # type: IfClause
+        self.left: IfClause = t[0][0]
+        self.right: IfClause = t[0][2]
 
     @property
-    def clause(self):  # type: () -> str
-        return '{} and {}'.format(self.left.clause, self.right.clause)
+    def clause(self) -> str:
+        return f'{self.left.clause} and {self.right.clause}'
 
     @property
-    def bool_value(self):  # type: () -> bool
+    def bool_value(self) -> bool:
         return self.left.bool_value and self.right.bool_value
 
 
 class BoolOr(IfClause):
     def __init__(self, t):
-        self.left = t[0][0]  # type: IfClause
-        self.right = t[0][2]  # type: IfClause
+        self.left: IfClause = t[0][0]
+        self.right: IfClause = t[0][2]
 
     @property
-    def clause(self):  # type: () -> str
-        return '{} or {}'.format(self.left.clause, self.right.clause)
+    def clause(self) -> str:
+        return f'{self.left.clause} or {self.right.clause}'
 
     @property
-    def bool_value(self):  # type: () -> bool
+    def bool_value(self) -> bool:
         return self.left.bool_value or self.right.bool_value
 
 
-def _parse_if_idf_version_clause(mat):  # type: (re.Match) -> IfClause
+def _parse_if_idf_version_clause(mat: re.Match) -> IfClause:
     comparison = mat.group('comparison')
     spec = mat.group('spec')
     spec = ','.join([part.strip() for part in spec.split(',')])
 
     try:
-        simple_spec = SimpleSpec(
-            '{}{}'.format(IfClause.eval_str(comparison), IfClause.eval_str(spec))
-        )
+        simple_spec = SimpleSpec(f'{IfClause.eval_str(comparison)}{IfClause.eval_str(spec)}')
     except ValueError:
         raise SchemaError(
             None,
@@ -210,7 +210,7 @@ def _parse_if_idf_version_clause(mat):  # type: (re.Match) -> IfClause
     return IfIdfVersionClause(str(simple_spec))
 
 
-def _parser_if_target_clause(mat):  # type: (re.Match) -> IfClause
+def _parser_if_target_clause(mat: re.Match) -> IfClause:
     operator = mat.group('comparison')
     target_str = mat.group('targets').strip()
 
@@ -228,7 +228,7 @@ def _parser_if_target_clause(mat):  # type: (re.Match) -> IfClause
     return IfTargetClause(operator, target_str)
 
 
-def _parse_if_clause(s):  # type: (str) -> IfClause
+def _parse_if_clause(s: str) -> IfClause:
     s = s.strip()
     res = IF_IDF_VERSION_REGEX_COMPILED.match(s)
     if res:
@@ -263,5 +263,5 @@ BOOL_EXPR = infixNotation(
 )
 
 
-def parse_if_clause(s):  # type: (str) -> IfClause
+def parse_if_clause(s: str) -> IfClause:
     return BOOL_EXPR.parseString(s, parseAll=True)[0]

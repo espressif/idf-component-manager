@@ -132,7 +132,7 @@ class TestAPIClient:
         assert information['components_base_url'] == 'http://localhost:9000/test-public'
 
     def test_file_adapter(self, fixtures_path):
-        storage_url = '{}{}'.format('file://', fixtures_path)
+        storage_url = f'file://{fixtures_path}'
         client = StorageClient(storage_url=storage_url)
 
         assert client.component(component_name='example/cmp').download_url == os.path.join(
@@ -233,7 +233,7 @@ class TestAPIClient:
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_version_multiple_storages.yaml')
     def test_version_multiple_storages(self, fixtures_path):
-        storage_file_path = 'file://{}/'.format(fixtures_path)
+        storage_file_path = f'file://{fixtures_path}/'
         storage_urls = [storage_file_path, 'https://components-file.espressif.com']
         client = MultiStorageClient(storage_urls=storage_urls)
         result = client.versions(component_name='example/cmp')

@@ -10,7 +10,7 @@ class FatalError(RuntimeError):
 
     exit_code = 2
 
-    def __init__(self, *args, **kwargs):  # type: (Any, Any) -> None
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args)
         exit_code = kwargs.pop('exit_code', None)
         if exit_code:

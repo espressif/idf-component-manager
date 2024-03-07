@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
-from typing import Callable
+from typing import Callable, Dict, List, Optional, Set, Tuple
 
 from idf_component_tools.errors import DependencySolveError, FetchingError, SolverError
 from idf_component_tools.manifest import (
@@ -28,8 +28,12 @@ class VersionSolver:
     satisfies the root package's dependencies.
     """
 
-    def __init__(self, requirements, old_solution=None, component_solved_callback=None):
-        # type:(ProjectRequirements, SolvedManifest | None, Callable[[], None] | None) -> None
+    def __init__(
+        self,
+        requirements: ProjectRequirements,
+        old_solution: Optional[SolvedManifest] = None,
+        component_solved_callback: Optional[Callable[[], None]] = None,
+    ) -> None:
         self.requirements = requirements
         self.old_solution = old_solution
         self.component_solved_callback = component_solved_callback
@@ -37,11 +41,11 @@ class VersionSolver:
         self._source = PackageSource()
         self._solver = Solver(self._source)
         self._target = None
-        self._overriders = set()  # type: set[str]
-        self._local_root_requirements = dict()  # type: dict[str, ComponentRequirement]
-        self._solved_requirements = set()  # type: set[ComponentRequirement]
+        self._overriders: Set[str] = set()
+        self._local_root_requirements: Dict[str, ComponentRequirement] = dict()
+        self._solved_requirements: Set[ComponentRequirement] = set()
 
-    def solve(self):  # type: () -> SolvedManifest
+    def solve(self) -> SolvedManifest:
         # scan all root local requirements
         # root local requirements defined in the file system manifest files
         # would have higher priorities
@@ -105,8 +109,8 @@ class VersionSolver:
         )
 
     def get_versions_from_sources(
-        self, requirement
-    ):  # type: (ComponentRequirement) -> tuple[ComponentWithVersions | None, BaseSource | None]
+        self, requirement: ComponentRequirement
+    ) -> Tuple[Optional[ComponentWithVersions], Optional[BaseSource]]:
         latest_source = None
         cmp_with_versions = None
         for source in requirement.sources:
@@ -125,7 +129,7 @@ class VersionSolver:
                 pass
         return cmp_with_versions, latest_source
 
-    def solve_manifest(self, manifest):  # type: (Manifest) -> None
+    def solve_manifest(self, manifest: Manifest) -> None:
         for dep in self._dependencies_with_local_precedence(
             manifest.dependencies, manifest_path=manifest.path
         ):
@@ -151,15 +155,15 @@ class VersionSolver:
                 )
 
     def solve_component(
-        self, requirement, manifest_path=None
-    ):  # type: (ComponentRequirement, str | None) -> None
+        self, requirement: ComponentRequirement, manifest_path: Optional[str] = None
+    ) -> None:
         if requirement in self._solved_requirements:
             return
 
         cmp_with_versions, source = self.get_versions_from_sources(requirement)
 
         if not cmp_with_versions or not cmp_with_versions.versions or not source:
-            print_warn('Component "{}" not found'.format(requirement.name))
+            print_warn(f'Component "{requirement.name}" not found')
             return
 
         for version in cmp_with_versions.versions:
@@ -187,11 +191,11 @@ class VersionSolver:
 
     def _dependencies_with_local_precedence(
         self,
-        dependencies,  # type: list[ComponentRequirement]
-        component_name=None,  # type: str | None
-        manifest_path=None,  # type: str | None
-    ):  # type: (...) -> list[ComponentRequirement]
-        deps = []  # type: list[ComponentRequirement]
+        dependencies: List[ComponentRequirement],
+        component_name: Optional[str] = None,
+        manifest_path: Optional[str] = None,
+    ) -> List[ComponentRequirement]:
+        deps: List[ComponentRequirement] = []
         for dep in dependencies:
             # replace version dependencies to local one if exists
             # use build_name in both recording and replacing
@@ -227,11 +231,11 @@ class VersionSolver:
 
     def _component_dependencies_with_local_precedence(
         self,
-        dependencies,  # type: list[ComponentRequirement]
-        component_name=None,  # type: str | None
-        manifest_path=None,  # type: str | None
-    ):  # type: (...) -> dict[Package, str]
-        deps = {}  # type: dict[Package, str]
+        dependencies: List[ComponentRequirement],
+        component_name: Optional[str] = None,
+        manifest_path: Optional[str] = None,
+    ) -> Dict[Package, str]:
+        deps: Dict[Package, str] = {}
         for dep in self._dependencies_with_local_precedence(
             dependencies,
             component_name,

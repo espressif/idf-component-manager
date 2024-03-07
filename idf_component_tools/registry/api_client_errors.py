@@ -2,20 +2,24 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import http.client as http_client
-from typing import Any
+from typing import Any, List, Optional
 
 
 class APIClientError(Exception):
-    def __init__(self, message='API Request Error', endpoint=None, status_code=None):
-        # type: (Any, str | None, int | None) -> None
+    def __init__(
+        self,
+        message: Any = 'API Request Error',
+        endpoint: Optional[str] = None,
+        status_code: Optional[int] = None,
+    ) -> None:
         super().__init__(message)
         self.endpoint = endpoint
         self.status_code = status_code
 
-    def request_info(self):  # type: () -> list[str]
+    def request_info(self) -> List[str]:
         messages = []
         if self.endpoint is not None:
-            messages.append('URL: {}'.format(self.endpoint))
+            messages.append(f'URL: {self.endpoint}')
 
         if self.status_code is not None:
             messages.append(

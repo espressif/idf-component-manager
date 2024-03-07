@@ -1,9 +1,11 @@
 # SPDX-FileCopyrightText: 2016 Python-SemanticVersion project
 # SPDX-License-Identifier: BSD 2-Clause License
 # SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
+from __future__ import annotations
 
 import functools
 import re
+from typing import List
 
 
 def _has_leading_zero(value):
@@ -11,7 +13,7 @@ def _has_leading_zero(value):
 
 
 class MaxIdentifier:
-    __slots__ = []  # type: list[str]
+    __slots__: List[str] = []
 
     def __repr__(self):
         return 'MaxIdentifier()'
@@ -28,7 +30,7 @@ class NumericIdentifier:
         self.value = int(value)
 
     def __repr__(self):
-        return 'NumericIdentifier(%r)' % self.value
+        return f'NumericIdentifier({self.value!r})'
 
     def __eq__(self, other):
         if isinstance(other, NumericIdentifier):
@@ -54,7 +56,7 @@ class AlphaIdentifier:
         self.value = value.encode('ascii')
 
     def __repr__(self):
-        return 'AlphaIdentifier(%r)' % self.value
+        return f'AlphaIdentifier({self.value!r})'
 
     def __eq__(self, other):
         if isinstance(other, AlphaIdentifier):
@@ -166,7 +168,7 @@ class Version:
                 patch=0,
             )
         else:
-            raise ValueError('Invalid truncation level `%s`.' % level)
+            raise ValueError(f'Invalid truncation level `{level}`.')
 
     @classmethod
     def coerce(cls, version_string):
@@ -194,7 +196,7 @@ class Version:
 
         match = base_re.match(version_string)
         if not match:
-            raise ValueError('Version string lacks a numerical component: %r' % version_string)
+            raise ValueError(f'Version string lacks a numerical component: {version_string!r}')
 
         version = version_string[: match.end()]
         if '~' in version:
@@ -244,9 +246,9 @@ class Version:
         build = build.replace('+', '.')
 
         if prerelease:
-            version = '{}-{}'.format(version, prerelease)
+            version = f'{version}-{prerelease}'
         if build:
-            version = '{}+{}'.format(version, build)
+            version = f'{version}+{build}'
 
         return cls(version, revision=revision)
 
@@ -259,22 +261,22 @@ class Version:
             version_string (str), the version string to parse
         """
         if not version_string:
-            raise ValueError('Invalid empty version string: %r' % version_string)
+            raise ValueError(f'Invalid empty version string: {version_string!r}')
 
         version_re = cls.version_re
 
         match = version_re.match(version_string)
         if not match:
-            raise ValueError('Invalid version string: %r' % version_string)
+            raise ValueError(f'Invalid version string: {version_string!r}')
 
         major, minor, patch, revision, prerelease, build = match.groups()
 
         if _has_leading_zero(major):
-            raise ValueError('Invalid leading zero in major: %r' % version_string)
+            raise ValueError(f'Invalid leading zero in major: {version_string!r}')
         if _has_leading_zero(minor):
-            raise ValueError('Invalid leading zero in minor: %r' % version_string)
+            raise ValueError(f'Invalid leading zero in minor: {version_string!r}')
         if _has_leading_zero(patch):
-            raise ValueError('Invalid leading zero in patch: %r' % version_string)
+            raise ValueError(f'Invalid leading zero in patch: {version_string!r}')
 
         major = int(major)
         minor = cls._coerce(minor)
@@ -308,7 +310,7 @@ class Version:
                 )
 
             if item[0] == '0' and item.isdigit() and item != '0' and not allow_leading_zeroes:
-                raise ValueError('Invalid leading zero in identifier %r' % item)
+                raise ValueError(f'Invalid leading zero in identifier {item!r}')
 
     @classmethod
     def _validate_kwargs(cls, major, minor, patch, revision, prerelease, build):
@@ -512,10 +514,10 @@ class BaseSpec:
         return self.expression
 
     def __repr__(self):
-        return '<{}: {!r}>'.format(self.__class__.__name__, self.expression)
+        return f'<{self.__class__.__name__}: {self.expression!r}>'
 
     @classmethod
-    def _contains_prerelease(cls, clause):  # type: (Clause) -> bool
+    def _contains_prerelease(cls, clause: Clause) -> bool:
         if hasattr(clause, 'clauses'):
             return any(cls._contains_prerelease(c) for c in clause.clauses)
         elif isinstance(clause, Range):
@@ -524,12 +526,12 @@ class BaseSpec:
             return False
 
     @property
-    def contains_prerelease(self):  # type: () -> bool
+    def contains_prerelease(self) -> bool:
         return self._contains_prerelease(self.clause)
 
 
 class Clause:
-    __slots__ = []  # type: list[str]
+    __slots__: List[str] = []
 
     def match(self, version):
         raise NotImplementedError()
@@ -691,7 +693,7 @@ class AllOf(Clause):
 
 
 class Matcher(Clause):
-    __slots__ = []  # type: list[str]
+    __slots__: List[str] = []
 
     def __and__(self, other):
         if isinstance(other, AllOf):
@@ -711,7 +713,7 @@ class Matcher(Clause):
 
 
 class Never(Matcher):
-    __slots__ = []  # type: list[str]
+    __slots__: List[str] = []
 
     def match(self, version):
         return False
@@ -733,7 +735,7 @@ class Never(Matcher):
 
 
 class Always(Matcher):
-    __slots__ = []  # type: list[str]
+    __slots__: List[str] = []
 
     def match(self, version):
         return True
@@ -781,11 +783,9 @@ class Range(Matcher):
     ):
         super().__init__()
         if target.build and operator not in (self.OP_EQ, self.OP_NEQ):
-            raise ValueError(
-                'Invalid range {}{}: build numbers have no ordering.'.format(operator, target)
-            )
+            raise ValueError(f'Invalid range {operator}{target}: build numbers have no ordering.')
         self.operator = operator
-        self.target = target  # type: Version
+        self.target: Version = target
         self.prerelease_policy = prerelease_policy
         self.build_policy = self.BUILD_STRICT if target.build else build_policy
 
@@ -850,23 +850,19 @@ class Range(Matcher):
         )
 
     def __str__(self):
-        return '{}{}'.format(self.operator, self.target)
+        return f'{self.operator}{self.target}'
 
     def __repr__(self):
         policy_part = (
             ''
             if self.prerelease_policy == self.PRERELEASE_NATURAL
-            else ', prerelease_policy=%r' % self.prerelease_policy
+            else f', prerelease_policy={self.prerelease_policy!r}'
         ) + (
             ''
             if self.build_policy == self.BUILD_IMPLICIT
-            else ', build_policy=%r' % self.build_policy
+            else f', build_policy={self.build_policy!r}'
         )
-        return 'Range({!r}, {!r}{})'.format(
-            self.operator,
-            self.target,
-            policy_part,
-        )
+        return f'Range({self.operator!r}, {self.target!r}{policy_part})'
 
 
 class SimpleSpec(BaseSpec):
@@ -884,7 +880,7 @@ class SimpleSpec(BaseSpec):
         # remove the first ^ and the last $ and make it as a group
         naive_spec_group = '(' + naive_spec_string[1:-1] + ')'
         # ^group(,group)*$ means it could be a comma separated lists
-        return '^{}(,{})*$'.format(naive_spec_group, naive_spec_group)
+        return f'^{naive_spec_group}(,{naive_spec_group})*$'
 
     class Parser:
         NUMBER = r'\*|0|[1-9][0-9]*'
@@ -908,7 +904,7 @@ class SimpleSpec(BaseSpec):
             clause = Always()
             for block in blocks:
                 if not cls.NAIVE_SPEC.match(block):
-                    raise ValueError('Invalid simple block %r' % block)
+                    raise ValueError(f'Invalid simple block {block!r}')
                 clause &= cls.parse_block(block)
 
             return clause
@@ -933,7 +929,7 @@ class SimpleSpec(BaseSpec):
         @classmethod
         def parse_block(cls, expr):
             if not cls.NAIVE_SPEC.match(expr):
-                raise ValueError('Invalid simple spec component: %r' % expr)
+                raise ValueError(f'Invalid simple spec component: {expr!r}')
             prefix, major_t, minor_t, patch_t, revision, prerel, build = cls.NAIVE_SPEC.match(
                 expr
             ).groups()
@@ -945,15 +941,15 @@ class SimpleSpec(BaseSpec):
             revision = None if revision in cls.EMPTY_VALUES else int(revision)
 
             if (major is None or minor is None or patch is None) and (revision or prerel or build):
-                raise ValueError('Invalid simple spec: %r' % expr)
+                raise ValueError(f'Invalid simple spec: {expr!r}')
 
             if build is not None and prefix not in (cls.PREFIX_EQ, cls.PREFIX_NEQ):
-                raise ValueError('Invalid simple spec: %r' % expr)
+                raise ValueError(f'Invalid simple spec: {expr!r}')
 
             if major is None:  # '*'
                 target = Version(major=0, minor=0, patch=0)
                 if prefix not in (cls.PREFIX_EQ, cls.PREFIX_GTE):
-                    raise ValueError('Invalid simple spec: %r' % expr)
+                    raise ValueError(f'Invalid simple spec: {expr!r}')
             elif minor is None:
                 target = Version(major=major, minor=0, patch=0)
             elif patch is None:

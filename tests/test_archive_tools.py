@@ -24,7 +24,7 @@ def archive_path(fixtures_path):
         return os.path.join(
             fixtures_path,
             'archives',
-            'cmp_1.0.0.%s' % ext,
+            f'cmp_1.0.0.{ext}',
         )
 
     return inner

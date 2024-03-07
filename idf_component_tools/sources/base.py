@@ -1,9 +1,11 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
+from __future__ import annotations
+
 import os
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, Dict, List, Union
 
 from schema import Optional
 
@@ -32,10 +34,10 @@ class BaseSource:
 
     def __init__(
         self,
-        source_details=None,  # type: dict | None
-        system_cache_path=None,  # type: str | None
-        manifest_manager=None,  # type: ManifestManager | None
-    ):  # type: (...) -> None
+        source_details: Optional[Dict] = None,
+        system_cache_path: Optional[str] = None,
+        manifest_manager: Optional[ManifestManager] = None,
+    ) -> None:
         self._source_details = source_details or {}
         self._hash_key = None
 
@@ -54,11 +56,11 @@ class BaseSource:
     def _hash_values(self):
         return self.name, self.hash_key
 
-    def cache_path(self):  # type: () -> str
-        path = os.path.join(self.system_cache_path, '{}_{}'.format(self.NAME, self.hash_key[:8]))
+    def cache_path(self) -> str:
+        path = os.path.join(self.system_cache_path, f'{self.NAME}_{self.hash_key[:8]}')
         return path
 
-    def __eq__(self, other):  # type: (object) -> bool
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, BaseSource):
             return NotImplemented
 
@@ -67,15 +69,15 @@ class BaseSource:
     def __hash__(self):
         return hash(self._hash_values())
 
-    def __repr__(self):  # type: () -> str
-        return '{}({})'.format(type(self).__name__, self.hash_key)
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({self.hash_key})'
 
     @staticmethod
     def fromdict(
-        name,  # type: str
-        details,  # type: dict
-        manifest_manager=None,  # type: ManifestManager | None
-    ):  # type: (...) -> list[BaseSource]
+        name: str,
+        details: Dict,
+        manifest_manager: Optional[ManifestManager] = None,
+    ) -> List[BaseSource]:
         """Build component source by dict"""
         for source_class in tools.sources.KNOWN_SOURCES:
             # MARKER
@@ -86,12 +88,12 @@ class BaseSource:
             else:
                 continue
 
-        raise SourceError('Unknown source for component: %s' % name)
+        raise SourceError(f'Unknown source for component: {name}')
 
     @staticmethod
     def create_sources_if_valid(
-        name, details, manifest_manager=None
-    ):  # type: (str, dict, ManifestManager | None) -> list[BaseSource] | None
+        name: str, details: Dict, manifest_manager: Optional[ManifestManager] = None
+    ) -> Union[List[BaseSource], None]:
         return None
 
     @classmethod
@@ -103,7 +105,7 @@ class BaseSource:
         return {}
 
     @classmethod
-    def known_keys(cls):  # type: () -> list[str]
+    def known_keys(cls) -> List[str]:
         """List of known details key"""
         return (
             ['version', 'public', 'matches', 'rules', 'require']
@@ -112,9 +114,9 @@ class BaseSource:
         )
 
     @classmethod
-    def schema(cls):  # type: () -> dict
+    def schema(cls) -> Dict:
         """Schema for lock file"""
-        source_schema = {'type': cls.NAME}  # type: dict[str, str | Callable]
+        source_schema: Dict[str, Union[str, Callable]] = {'type': cls.NAME}
 
         for key, type_field in cls.required_keys().items():
             source_schema[key] = VALUE_TYPES[type_field]
@@ -143,17 +145,17 @@ class BaseSource:
         return 'Base'
 
     @property
-    def component_hash_required(self):  # type: () -> bool
+    def component_hash_required(self) -> bool:
         """Returns True if component's hash have to present and be validated"""
         return False
 
     @property
-    def downloadable(self):  # type: () -> bool
+    def downloadable(self) -> bool:
         """Returns True if components have to be fetched"""
         return False
 
     @property
-    def meta(self):  # type: () -> bool
+    def meta(self) -> bool:
         """
         Returns True for meta components.
         Meta components are not included in the build directly
@@ -161,17 +163,17 @@ class BaseSource:
         return False
 
     @property
-    def volatile(self):  # type: () -> bool
+    def volatile(self) -> bool:
         """
         Returns True for volatile components.
         Volatile components may change their content, even if their version stays the same.
         """
         return False
 
-    def normalized_name(self, name):  # type: (str) -> str
+    def normalized_name(self, name: str) -> str:
         return name
 
-    def up_to_date(self, component, path):  # type: (SolvedComponent, str) -> bool
+    def up_to_date(self, component: SolvedComponent, path: str) -> bool:
         if self.component_hash_required and not component.component_hash:
             raise FetchingError('Cannot install component with unknown hash')
 
@@ -184,7 +186,7 @@ class BaseSource:
 
         return True
 
-    def validate_version_spec(self, spec):  # type: (str) -> bool
+    def validate_version_spec(self, spec: str) -> bool:
         if not spec or spec == '*':
             return True
 
@@ -193,29 +195,28 @@ class BaseSource:
         except ValueError:
             return False
 
-    def normalize_spec(self, spec):  # type: (str) -> str
+    def normalize_spec(self, spec: str) -> str:
         return spec or '*'
 
     @abstractmethod
     def versions(
         self,
-        name,  # type: str
-        details=None,  # type: dict | None
-        spec='*',  # type: str
-        target=None,  # type: str | None
-    ):
-        # type: (...) -> ComponentWithVersions
+        name: str,
+        details: Optional[Dict] = None,
+        spec: str = '*',
+        target: Optional[str] = None,
+    ) -> ComponentWithVersions:
         """List of versions for given spec"""
 
     @abstractmethod
-    def download(self, component, download_path):  # type: (SolvedComponent, str) -> str | None
+    def download(self, component: SolvedComponent, download_path: str) -> Optional[str]:
         """
         Fetch required component version from the source
         Returns list of absolute paths to directories with component on local filesystem
         """
 
     @abstractmethod
-    def serialize(self):  # type: () -> dict
+    def serialize(self) -> Dict:
         """
         Return fields to describe source to be saved in lock file
         """
