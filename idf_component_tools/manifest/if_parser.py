@@ -243,7 +243,7 @@ def _parse_if_clause(s: str) -> IfClause:
         'Invalid if clause format "{clause}". '
         'You can specify rules based on current ESP-IDF version or target like: '
         '"idf_version >=3.3,<5.0" or "target in [esp32, esp32c3]"\nDocumentation: '
-        'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/manifest_file.html#rules'.format(  # noqa
+        'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/manifest_file.html#rules'.format(
             clause=s
         ),
     )

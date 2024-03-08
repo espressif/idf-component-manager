@@ -120,6 +120,7 @@ extend-select = [
     "I",  # isort
     "ERA",  # eradicate
     "ICN",  # flake8-import-conventions
+    "RUF100",  # unused noqa
 ]
 
 [tool.ruff.format]

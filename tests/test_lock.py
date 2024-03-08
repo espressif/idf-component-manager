@@ -208,7 +208,7 @@ class TestLockManager:
                     'dependencies',
                     {
                         'example/cmp': {
-                            'component_hash': '8644358a11a35a986b0ce4d325ba3d1aa9491b9518111acd4ea9447f11dc47c1',  # noqa
+                            'component_hash': '8644358a11a35a986b0ce4d325ba3d1aa9491b9518111acd4ea9447f11dc47c1',
                             'source': {
                                 'service_url': 'https://ohnoIdonthaveinternetconnection.com',
                                 'type': 'service',

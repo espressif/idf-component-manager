@@ -219,7 +219,7 @@ class Version:
         if match.end() == len(version_string):
             return Version(version, revision=revision)
 
-        rest = version_string[match.end() :]  # noqa
+        rest = version_string[match.end() :]
 
         # Cleanup the 'rest'
         rest = re.sub(r'[^a-zA-Z0-9+.-]', '-', rest)
