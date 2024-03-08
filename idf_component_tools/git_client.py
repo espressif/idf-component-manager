@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 import re
-import subprocess  # nosec
+import subprocess  # noqa: S404
 import time
 from datetime import datetime
 from functools import wraps
@@ -177,19 +177,17 @@ class GitClient:
         self.run(['--work-tree', checkout_path, '--git-dir', bare_path, 'clean', '--force'])
         # Submodules
         if with_submodules:
-            self.run(
-                [
-                    '--work-tree=.',
-                    '-C',
-                    checkout_path,
-                    '--git-dir',
-                    bare_path,
-                    'submodule',
-                    'update',
-                    '--init',
-                    '--recursive',
-                ]
-            )
+            self.run([
+                '--work-tree=.',
+                '-C',
+                checkout_path,
+                '--git-dir',
+                bare_path,
+                'submodule',
+                'update',
+                '--init',
+                '--recursive',
+            ])
 
         return commit_id
 
@@ -241,8 +239,8 @@ class GitClient:
         if env:
             env_copy.update(env)
 
-        p = subprocess.Popen(  # nosec
-            [self.git_command] + list(args),
+        p = subprocess.Popen(
+            [self.git_command] + list(args),  # noqa: S603
             cwd=cwd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -277,8 +275,9 @@ class GitClient:
 
     def version(self) -> Version:
         try:
-            git_version_str = subprocess.check_output(  # nosec
-                [self.git_command, '--version'], stderr=subprocess.STDOUT
+            git_version_str = subprocess.check_output(
+                [self.git_command, '--version'],  # noqa: S603
+                stderr=subprocess.STDOUT,
             ).decode('utf-8')
         except OSError:
             raise GitError('"git" command was not found')

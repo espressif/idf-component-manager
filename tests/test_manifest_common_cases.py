@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import pytest
 
@@ -103,9 +103,9 @@ def test_invalid_manifest(manifest, errors):
 
 
 def test_validator_commit_sha_and_repo(valid_manifest):
-    valid_manifest[
-        'commit_sha'
-    ] = '252f10c83610ebca1a059c0bae8255eba2f95be4d1d7bcfa89d7248a82d9f111'
+    valid_manifest['commit_sha'] = (
+        '252f10c83610ebca1a059c0bae8255eba2f95be4d1d7bcfa89d7248a82d9f111'
+    )
     del valid_manifest['repository']
 
     errors = ManifestValidator(valid_manifest, check_required_fields=True).validate_normalize()

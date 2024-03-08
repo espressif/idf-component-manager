@@ -87,7 +87,7 @@ def detect_unused_components(
 
         warning += (
             '\nContent of the managed components directory is managed automatically '
-            'and it\'s not recommended to place any files there manually. '
+            "and it's not recommended to place any files there manually. "
             'To suppress this warning set the environment variable: '
             'IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS=1'
         )
@@ -96,7 +96,7 @@ def detect_unused_components(
 
 def is_solve_required(project_requirements: ProjectRequirements, solution: SolvedManifest) -> bool:
     if not solution.manifest_hash:
-        print_info('Dependencies lock doesn\'t exist, solving dependencies.')
+        print_info("Dependencies lock doesn't exist, solving dependencies.")
         return True
 
     if project_requirements.manifest_hash != solution.manifest_hash:
@@ -164,8 +164,8 @@ def is_solve_required(project_requirements: ProjectRequirements, solution: Solve
                         'the one recorded in your dependencies.lock file. '
                         'This could be due to a potential spoofing of the download server, '
                         'or your lock file may have become corrupted. '
-                        'Please review the lock file and verify the download server\'s '
-                        'authenticity to ensure the component\'s security and integrity.'.format(
+                        "Please review the lock file and verify the download server's "
+                        "authenticity to ensure the component's security and integrity.".format(
                             component
                         )
                     )

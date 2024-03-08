@@ -330,9 +330,14 @@ class Version:
             cls._validate_identifiers(build, allow_leading_zeroes=True)
 
     def __iter__(self):
-        return iter(
-            (self.major, self.minor, self.patch, self.revision, self.prerelease, self.build)
-        )
+        return iter((
+            self.major,
+            self.minor,
+            self.patch,
+            self.revision,
+            self.prerelease,
+            self.build,
+        ))
 
     def __str__(self):
         version = '%d' % self.major
@@ -356,9 +361,14 @@ class Version:
         )
 
     def __hash__(self):
-        return hash(
-            (self.major, self.minor, self.patch, self.revision, self.prerelease, self.build)
-        )
+        return hash((
+            self.major,
+            self.minor,
+            self.patch,
+            self.revision,
+            self.prerelease,
+            self.build,
+        ))
 
     @property
     def precedence_key(self):
@@ -892,9 +902,7 @@ class SimpleSpec(BaseSpec):
             (?:-(?P<prerel>[a-z0-9A-Z.-]*))?
             (?:\+(?P<build>[a-z0-9A-Z.-]*))?
             $
-            """.format(
-                nb=NUMBER
-            ),
+            """.format(nb=NUMBER),
             re.VERBOSE,
         )
 

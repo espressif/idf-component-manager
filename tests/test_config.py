@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import json
@@ -20,32 +20,28 @@ def test_config_validation():
     Config({}).validate()
 
     # Assert non-empty object
-    assert Config(
-        {
-            'profiles': {
-                'default': {
-                    'registry_url': 'default',
-                },
-                'in_office': {
-                    'registry_url': 'http://api.localserver.local:5000/',
-                    'api_token': 'asdf',
-                    'default_namespace': 'asdf',
-                },
-            }
+    assert Config({
+        'profiles': {
+            'default': {
+                'registry_url': 'default',
+            },
+            'in_office': {
+                'registry_url': 'http://api.localserver.local:5000/',
+                'api_token': 'asdf',
+                'default_namespace': 'asdf',
+            },
         }
-    ).validate()
+    }).validate()
 
     with raises(ConfigError):
         Config('asdf').validate()
 
     with raises(ConfigError):
-        Config(
-            {
-                'profiles': {
-                    'in_office': {'registry_url': 'pptp://api.localserver.local:5000/'},
-                }
+        Config({
+            'profiles': {
+                'in_office': {'registry_url': 'pptp://api.localserver.local:5000/'},
             }
-        ).validate()
+        }).validate()
 
 
 def test_config_manager_validation(fixtures_path):
@@ -64,22 +60,20 @@ def test_config_empty_profile_validation():
 
 def test_load_config(tmp_path):
     config_path = str(tmp_path / 'idf_component_manager.yml')
-    config = Config(
-        {
-            'profiles': {
-                'default': {
-                    'registry_url': 'default',
-                },
-                'in_office': {
-                    'registry_url': 'http://api.localserver.local:5000/',
-                    'api_token': 'asdf',
-                    'default_namespace': 'asdf',
-                },
+    config = Config({
+        'profiles': {
+            'default': {
+                'registry_url': 'default',
             },
-            # It's ok to have unknown keys in the config
-            'settings': {'abc': 1},
-        }
-    )
+            'in_office': {
+                'registry_url': 'http://api.localserver.local:5000/',
+                'api_token': 'asdf',
+                'default_namespace': 'asdf',
+            },
+        },
+        # It's ok to have unknown keys in the config
+        'settings': {'abc': 1},
+    })
 
     # Use json representation to compare equality of nested dictionaries
     config_json = json.dumps(dict(config), sort_keys=True, indent=2)
@@ -100,18 +94,16 @@ def test_load_config(tmp_path):
 
 def test_config_dump(tmp_path):
     config_path = str(tmp_path / 'idf_component_manager.yml')
-    config = Config(
-        {
-            'profiles': {
-                'default': {
-                    'registry_url': 'default',
-                },
-            }
+    config = Config({
+        'profiles': {
+            'default': {
+                'registry_url': 'default',
+            },
         }
+    })
+    config.profiles.setdefault('in_office', {})['registry_url'] = (
+        'http://api.localserver.local:5000/'
     )
-    config.profiles.setdefault('in_office', {})[
-        'registry_url'
-    ] = 'http://api.localserver.local:5000/'
 
     ConfigManager(path=config_path).dump(config)
 

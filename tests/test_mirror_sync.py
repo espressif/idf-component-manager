@@ -50,7 +50,7 @@ def test_sync_dependency_with_matches(monkeypatch, tmp_path):
     )
 
     manifest = ManifestManager(str(component_path), '', process_opt_deps=True).load()
-    metadata, warnings = prepare_metadata(None, manifest.dependencies, metadata={})
+    metadata, _ = prepare_metadata(None, manifest.dependencies, metadata={})
 
     assert '3.3.3' in metadata['example/cmp']
     assert '^3.3.8' in metadata['example/cmp']
@@ -76,7 +76,7 @@ def test_sync_dependency_with_rules(monkeypatch, tmp_path):
     )
 
     manifest = ManifestManager(str(component_path), '', process_opt_deps=True).load()
-    metadata, warnings = prepare_metadata(None, manifest._dependencies, tmp_path / 'test')
+    metadata, _ = prepare_metadata(None, manifest._dependencies, tmp_path / 'test')
 
     assert '~1.0.0' in metadata['example/cmp']
 
@@ -125,11 +125,11 @@ def test_download_metadata_add_metadata(tmp_path):
     req = ComponentRequirement(
         'espressif/test', version_spec='==1.0.0', sources=[WebServiceSource({})]
     )
-    metadata, warnings = get_component_metadata(client, req, '==1.0.0', {}, [])
+    metadata, _ = get_component_metadata(client, req, '==1.0.0', {}, [])
     assert len(metadata) == 1
     assert sum([len(data.versions) for data in metadata.values()]) == 1
 
-    metadata, warnings = get_component_metadata(client, req, '==1.0.1', metadata, [])
+    metadata, _ = get_component_metadata(client, req, '==1.0.1', metadata, [])
     assert len(metadata) == 1
     assert sum([len(data.versions) for data in metadata.values()]) == 2
 

@@ -150,8 +150,9 @@ class VersionSolver:
                 )
             except SolverError as e:
                 raise SolverError(
-                    'Solver failed processing manifest file "{path}".'
-                    '\n{original_error}'.format(path=manifest.path, original_error=str(e))
+                    'Solver failed processing manifest file "{path}".' '\n{original_error}'.format(
+                        path=manifest.path, original_error=str(e)
+                    )
                 )
 
     def solve_component(
@@ -209,9 +210,7 @@ class VersionSolver:
                 deps.append(dep)
                 continue
 
-            component_path = self._local_root_requirements[
-                matching_dep_name
-            ].source._path  # type: ignore
+            component_path = self._local_root_requirements[matching_dep_name].source._path  # type: ignore
 
             print_info(
                 'Using component placed at {path} '

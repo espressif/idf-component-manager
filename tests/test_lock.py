@@ -104,13 +104,11 @@ class TestLockManager:
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
         solution = SolvedManifest.fromdict(
-            dict(
-                [
-                    ('version', '1.0.0'),
-                    ('dependencies', dependencies),
-                    ('manifest_hash', MANIFEST_HASH),
-                ]
-            )
+            dict([
+                ('version', '1.0.0'),
+                ('dependencies', dependencies),
+                ('manifest_hash', MANIFEST_HASH),
+            ])
         )
 
         parser.dump(solution)
@@ -152,21 +150,19 @@ class TestLockManager:
         monkeypatch.setenv('IDF_VERSION', '5.1.0')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
-        solution = SolvedManifest.fromdict(
-            {
-                'version': '1.0.0',
-                'manifest_hash': MANIFEST_HASH,
-                'dependencies': {
-                    'idf': {
-                        'component_hash': None,
-                        'source': {
-                            'type': 'idf',
-                        },
-                        'version': get_idf_version(),
-                    }
-                },
-            }
-        )
+        solution = SolvedManifest.fromdict({
+            'version': '1.0.0',
+            'manifest_hash': MANIFEST_HASH,
+            'dependencies': {
+                'idf': {
+                    'component_hash': None,
+                    'source': {
+                        'type': 'idf',
+                    },
+                    'version': get_idf_version(),
+                }
+            },
+        })
 
         parser.dump(solution)
         loaded_solution = parser.load()
@@ -206,28 +202,26 @@ class TestLockManager:
         manifest = Manifest.fromdict({'dependencies': {'idf': '4.4.0'}}, name='test_manifest')
         project_requirements = ProjectRequirements([manifest])
         solution = SolvedManifest.fromdict(
-            dict(
-                [
-                    ('version', '1.0.0'),
-                    (
-                        'dependencies',
-                        {
-                            'example/cmp': {
-                                'component_hash': '8644358a11a35a986b0ce4d325ba3d1aa9491b9518111acd4ea9447f11dc47c1',  # noqa
-                                'source': {
-                                    'service_url': 'https://ohnoIdonthaveinternetconnection.com',
-                                    'type': 'service',
-                                },
-                                'version': '3.3.7',
+            dict([
+                ('version', '1.0.0'),
+                (
+                    'dependencies',
+                    {
+                        'example/cmp': {
+                            'component_hash': '8644358a11a35a986b0ce4d325ba3d1aa9491b9518111acd4ea9447f11dc47c1',  # noqa
+                            'source': {
+                                'service_url': 'https://ohnoIdonthaveinternetconnection.com',
+                                'type': 'service',
                             },
+                            'version': '3.3.7',
                         },
-                    ),
-                    (
-                        'manifest_hash',
-                        'cfedb62005f55b7e817bb733bb4d5df5047267a0229a162d4904ca9869af1522',
-                    ),
-                ]
-            )
+                    },
+                ),
+                (
+                    'manifest_hash',
+                    'cfedb62005f55b7e817bb733bb4d5df5047267a0229a162d4904ca9869af1522',
+                ),
+            ])
         )
 
         with pytest.warns(UserHint) as record:
@@ -242,25 +236,23 @@ class TestLockManager:
         manifest = Manifest.fromdict({'dependencies': {'idf': '4.4.0'}}, name='test_manifest')
         project_requirements = ProjectRequirements([manifest])
         solution = SolvedManifest.fromdict(
-            dict(
-                [
-                    ('version', '1.0.0'),
-                    (
-                        'dependencies',
-                        {
-                            'idf': {
-                                'component_hash': None,
-                                'source': {'type': 'idf'},
-                                'version': '4.2.0',
-                            }
-                        },
-                    ),
-                    (
-                        'manifest_hash',
-                        '501e298399139355647b9d36da3bc3234eb14eb8b128e84e0548035e01c5b98f',
-                    ),
-                ]
-            )
+            dict([
+                ('version', '1.0.0'),
+                (
+                    'dependencies',
+                    {
+                        'idf': {
+                            'component_hash': None,
+                            'source': {'type': 'idf'},
+                            'version': '4.2.0',
+                        }
+                    },
+                ),
+                (
+                    'manifest_hash',
+                    '501e298399139355647b9d36da3bc3234eb14eb8b128e84e0548035e01c5b98f',
+                ),
+            ])
         )
 
         monkeypatch.setenv('IDF_VERSION', '4.4.0')
@@ -294,25 +286,23 @@ class TestLockManager:
             }
         }
         solution = SolvedManifest.fromdict(
-            dict(
-                [
-                    ('version', '1.0.0'),
-                    (
-                        'dependencies',
-                        {
-                            'foo': {
-                                'component_hash': None,
-                                'source': {'type': 'local', 'path': release_component_path},
-                                'version': '1.0.0',
-                            }
-                        },
-                    ),
-                    (
-                        'manifest_hash',
-                        'af4c5d3bd0d0f2bb7985b1a1e78c0cf16d2d4115c0adffb3e084cc3d5f63bf09',
-                    ),
-                ]
-            )
+            dict([
+                ('version', '1.0.0'),
+                (
+                    'dependencies',
+                    {
+                        'foo': {
+                            'component_hash': None,
+                            'source': {'type': 'local', 'path': release_component_path},
+                            'version': '1.0.0',
+                        }
+                    },
+                ),
+                (
+                    'manifest_hash',
+                    'af4c5d3bd0d0f2bb7985b1a1e78c0cf16d2d4115c0adffb3e084cc3d5f63bf09',
+                ),
+            ])
         )
 
         monkeypatch.setenv('IDF_VERSION', '5.0.0')
@@ -335,15 +325,13 @@ class TestLockManager:
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         manifest = Manifest.fromdict({'targets': ['esp32']}, name='test_manifest')
         solution = SolvedManifest.fromdict(
-            dict(
-                [
-                    ('version', '1.0.0'),
-                    (
-                        'manifest_hash',
-                        '1d0802987b5b8267a89f85398234e02f46a358ff13d321e2bc1eda3049a33ee6',
-                    ),
-                ]
-            )
+            dict([
+                ('version', '1.0.0'),
+                (
+                    'manifest_hash',
+                    '1d0802987b5b8267a89f85398234e02f46a358ff13d321e2bc1eda3049a33ee6',
+                ),
+            ])
         )
         project_requirements = ProjectRequirements([manifest])
         assert not is_solve_required(project_requirements, solution)  # change it back
@@ -361,15 +349,13 @@ class TestLockManager:
     def test_empty_manifest_file(self, monkeypatch):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         solution = SolvedManifest.fromdict(
-            dict(
-                [
-                    ('version', '1.0.0'),
-                    (
-                        'manifest_hash',
-                        '16d1de584caf3b1e92c92078bbabb5972509c96e44b169ec877d45e4d7716b67',
-                    ),
-                ]
-            )
+            dict([
+                ('version', '1.0.0'),
+                (
+                    'manifest_hash',
+                    '16d1de584caf3b1e92c92078bbabb5972509c96e44b169ec877d45e4d7716b67',
+                ),
+            ])
         )
 
         manifest = Manifest.fromdict({'targets': ['esp32']}, name='test_manifest')
@@ -388,7 +374,7 @@ class TestLockManager:
         assert is_solve_required(project_requirements, solution)
         captured = capsys.readouterr()
 
-        assert "Dependencies lock doesn\'t exist, solving dependencies" in captured.out
+        assert "Dependencies lock doesn't exist, solving dependencies" in captured.out
 
     def test_update_local_dependency_change_version(self, release_component_path, tmp_path, capsys):
         project_dir = str(tmp_path / 'cmp')

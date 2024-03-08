@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-'''Test Core commands'''
+"""Test Core commands"""
+
 import os
 import shutil
 import tempfile
@@ -294,7 +295,7 @@ def test_pack_component_with_rules_if(
             'Some paths in the `examples` block in the manifest are listed multiple times: '
             './custom_example_path',
         ),
-        ([{'path': './unknown_path'}], 'Example directory doesn\'t exist:*'),
+        ([{'path': './unknown_path'}], "Example directory doesn't exist:*"),
     ],
 )
 def test_pack_component_with_examples_errors(tmp_path, example_component_path, examples, message):
@@ -381,6 +382,6 @@ def test_yank_component_version(mock_registry, tmp_path):
 def test_yank_component_version_not_exists(mock_registry, tmp_path):
     manager = ComponentManager(path=str(tmp_path))
     with raises(
-        FatalError, match='Version 1.2.0 of the component \"test/cmp\" is not on the registry'
+        FatalError, match='Version 1.2.0 of the component "test/cmp" is not on the registry'
     ):
         manager.yank_version('cmp', '1.2.0', 'critical test', namespace='test')

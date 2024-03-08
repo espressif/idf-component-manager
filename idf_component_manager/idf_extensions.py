@@ -58,7 +58,7 @@ VERSION_PARAMETER = [
         'names': ['--version'],
         'help': 'Set version, if not defined in the manifest. '
         'Use "git" to get version from git tag. '
-        "The command won\'t try uploading, if running not from a git tag.",
+        "The command won't try uploading, if running not from a git tag.",
         'required': False,
     }
 ]
@@ -146,7 +146,7 @@ def action_extensions(base_actions, project_path):
                 'help': (
                     'New CLI command: "compote component upload". '
                     'Upload component to the component registry. '
-                    'If the component doesn\'t exist in the registry '
+                    "If the component doesn't exist in the registry "
                     'it will be created automatically.'
                 ),
                 'options': SERVICE_OPTIONS

@@ -5,9 +5,8 @@ from __future__ import annotations
 
 import os
 import warnings
-from typing import Any, Dict, Iterator, List
+from typing import Any, Dict, Iterator, List, Tuple
 from typing import Optional as OptionalType
-from typing import Tuple
 
 import yaml
 from schema import And, Optional, Or, Regex, Schema, SchemaError
@@ -21,32 +20,30 @@ from .constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL
 
 DEFAULT_CONFIG_DIR = os.path.join('~', '.espressif')
 
-CONFIG_SCHEMA = Schema(
-    {
-        Optional('profiles'): {
-            str:
-            # Use Or to allow either a None value or
-            # a dictionary with specific keys and validation rules
-            Or(
-                None,
-                {
-                    Optional('registry_url'): Or('default', Regex(COMPILED_URL_RE)),
-                    Optional('storage_url'): Or(
-                        'default',
-                        Or(Regex(COMPILED_URL_RE), Regex(COMPILED_FILE_RE)),
-                        [Or(Regex(COMPILED_URL_RE), Regex(COMPILED_FILE_RE))],
-                    ),
-                    Optional('default_namespace'): And(str, len),
-                    Optional('api_token'): And(str, len),
-                    # allow any other keys that may be introduced in future versions
-                    Optional(str): object,
-                },
-            ),
-        },
-        # allow any other keys that may be introduced in future versions
-        Optional(str): object,
-    }
-)
+CONFIG_SCHEMA = Schema({
+    Optional('profiles'): {
+        str:
+        # Use Or to allow either a None value or
+        # a dictionary with specific keys and validation rules
+        Or(
+            None,
+            {
+                Optional('registry_url'): Or('default', Regex(COMPILED_URL_RE)),
+                Optional('storage_url'): Or(
+                    'default',
+                    Or(Regex(COMPILED_URL_RE), Regex(COMPILED_FILE_RE)),
+                    [Or(Regex(COMPILED_URL_RE), Regex(COMPILED_FILE_RE))],
+                ),
+                Optional('default_namespace'): And(str, len),
+                Optional('api_token'): And(str, len),
+                # allow any other keys that may be introduced in future versions
+                Optional(str): object,
+            },
+        ),
+    },
+    # allow any other keys that may be introduced in future versions
+    Optional(str): object,
+})
 
 
 def config_dir():

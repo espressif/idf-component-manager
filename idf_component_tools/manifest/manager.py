@@ -114,14 +114,12 @@ class ManifestManager:
     def manifest_tree(self):
         if not self._manifest_tree:
             self._manifest_tree = self.parse_manifest_file()
-            self._overwrite_manifest_fields(
-                {
-                    'version': ['version'],
-                    'repository': ['repository'],
-                    'commit_sha': ['repository_info', 'commit_sha'],
-                    'repository_path': ['repository_info', 'path'],
-                }
-            )
+            self._overwrite_manifest_fields({
+                'version': ['version'],
+                'repository': ['repository'],
+                'commit_sha': ['repository_info', 'commit_sha'],
+                'repository_path': ['repository_info', 'path'],
+            })
 
         return self._manifest_tree
 

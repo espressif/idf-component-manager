@@ -30,8 +30,8 @@ class InternalError(RuntimeError):
 
 
 class NothingToDoError(FatalError):
-    '''Generic Runtime error for states when operation is prematurely
-    aborted due to nothing to do'''
+    """Generic Runtime error for states when operation is prematurely
+    aborted due to nothing to do"""
 
     exit_code = 144  # NOP
 

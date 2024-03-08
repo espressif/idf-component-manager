@@ -1,9 +1,9 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import re
 import shutil
-import subprocess  # nosec
+import subprocess  # noqa: S404
 from io import open
 from os import environ, getenv
 from pathlib import Path
@@ -17,17 +17,15 @@ BUILD_DOCKER_RE = re.compile(r'^(.*,)*build_docker(,.*)*$')
 
 
 def _modified_files(branch: str) -> str:
-    return subprocess.check_output(  # nosec
-        [
-            'git',
-            'diff-tree',
-            '-r',
-            '--name-only',
-            '--no-commit-id',
-            f'origin/{branch}',
-            environ['CI_COMMIT_SHA'],
-        ]
-    ).decode('utf-8')
+    return subprocess.check_output([
+        'git',
+        'diff-tree',
+        '-r',
+        '--name-only',
+        '--no-commit-id',
+        f'origin/{branch}',
+        environ['CI_COMMIT_SHA'],
+    ]).decode('utf-8')
 
 
 def should_run_build_docker_files() -> bool:
@@ -39,7 +37,8 @@ def should_run_build_docker_files() -> bool:
         return True
 
     # Check for changed files
-    if target_branch := getenv('CI_MERGE_REQUEST_TARGET_BRANCH_NAME'):
+    target_branch = getenv('CI_MERGE_REQUEST_TARGET_BRANCH_NAME')
+    if target_branch:
         changed_files = _modified_files(target_branch)
         if 'Dockerfile' in changed_files:
             return True
@@ -73,7 +72,8 @@ def should_run_integration_tests() -> bool:
         return True
 
     # Check for changed files
-    if target_branch := getenv('CI_MERGE_REQUEST_TARGET_BRANCH_NAME'):
+    target_branch = getenv('CI_MERGE_REQUEST_TARGET_BRANCH_NAME')
+    if target_branch:
         if 'integration_tests' in _modified_files(target_branch):
             return True
 

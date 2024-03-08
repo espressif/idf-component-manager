@@ -165,7 +165,7 @@ class TestAPIClient:
     def test_no_registry_url_use_static(self, monkeypatch):
         monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'http://localhost:9000/test-public')
 
-        registry_url, storage_urls = component_registry_url()
+        _, storage_urls = component_registry_url()
         client = MultiStorageClient(storage_urls=storage_urls)
         client.component(component_name='espressif/cmp')  # no errors
 

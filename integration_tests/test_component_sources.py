@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import json
 import os
@@ -98,8 +98,10 @@ class TestComponentSources:
         # since the dependency introduced order is not fixed
         assert (
             'Requirement example__cmp and requirement hfudev__cmp '
-            'are both added as "project_managed_components"' in res
+            'are both added as "project_managed_components"'
+            in res
             or 'Requirement hfudev__cmp and requirement example__cmp '
-            'are both added as "project_managed_components"' in res
+            'are both added as "project_managed_components"'
+            in res
         )
         assert 'Configuring incomplete, errors occurred!' in res

@@ -80,7 +80,7 @@ def test_idf_check_target_fail_manifest(project):
 def test_idf_check_target_fail_dependency(project):
     res = set_target(project, 'esp32')
     assert (
-        'Because project depends on example/cmp (0.0.1) which doesn\'t match any versions, '
+        "Because project depends on example/cmp (0.0.1) which doesn't match any versions, "
         'version solving failed.' in res
     )
 

@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-"""Set of tools and constants to work with files and directories """
+"""Set of tools and constants to work with files and directories"""
+
 import os
 import shutil
 from pathlib import Path
@@ -146,7 +147,7 @@ def copy_filtered_directory(
 
 
 def check_unexpected_component_files(path: Union[str, Path]) -> None:
-    '''Create a warning if a directory contains files not expected inside component'''
+    """Create a warning if a directory contains files not expected inside component"""
     for root, _dirs, files in os.walk(str(path)):
         unexpected_files = UNEXPECTED_FILES.intersection(files)
         if unexpected_files:
@@ -159,7 +160,7 @@ def check_unexpected_component_files(path: Union[str, Path]) -> None:
 
 
 def directory_size(dir_path: str) -> int:
-    '''Return the total size of all files in the directory tree'''
+    """Return the total size of all files in the directory tree"""
     total_size = 0
     directory = Path(dir_path)
     for file in directory.glob('**/*'):
@@ -171,7 +172,7 @@ def directory_size(dir_path: str) -> int:
 
 
 def human_readable_size(size: int) -> str:
-    '''Return a human readable string representation of a data size'''
+    """Return a human readable string representation of a data size"""
     if size < 0:
         raise ValueError('size must be non-negative')
 

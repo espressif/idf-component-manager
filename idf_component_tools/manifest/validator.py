@@ -2,11 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import re
+from functools import lru_cache
 from typing import Dict, List, Optional
 
 from schema import Schema, SchemaError
-
-from idf_component_tools.utils import lru_cache
 
 from ..errors import MetadataError, MetadataKeyError, SourceError
 from ..messages import MetadataKeyWarning, MetadataWarning, hint

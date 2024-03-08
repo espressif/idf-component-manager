@@ -32,7 +32,7 @@ def validate_managed_component_by_manifest(
 
 
 def validate_managed_component_hash(root: str) -> None:
-    '''Validate managed components directory, raise exception if validation fails'''
+    """Validate managed components directory, raise exception if validation fails"""
     if getenv_bool('IDF_COMPONENT_OVERWRITE_MANAGED_COMPONENTS'):
         return
 

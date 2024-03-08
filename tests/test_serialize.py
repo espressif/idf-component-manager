@@ -185,15 +185,13 @@ def test_serialize_dictionary():
         def __init__(self, dict_field):
             self.dict_field = dict_field
 
-    serializable_object = TestSerializableClass(
-        {
-            'field1': True,
-            'field2': None,
-            'field3': 'Hello',
-            'field4': 12,
-            'field5': 0.56,
-        }
-    )
+    serializable_object = TestSerializableClass({
+        'field1': True,
+        'field2': None,
+        'field3': 'Hello',
+        'field4': 12,
+        'field5': 0.56,
+    })
     serialize = serializable_object.serialize()
 
     assert 'dict_field' in serialize

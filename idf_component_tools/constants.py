@@ -39,6 +39,4 @@ UPDATE_SUGGESTION = """
 SUGGESTION: This component may be using a newer version of the component manager.
 You can try to update the component manager by running:
     {} -m pip install --upgrade idf-component-manager
-""".format(
-    sys.executable
-)
+""".format(sys.executable)

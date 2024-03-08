@@ -3,9 +3,8 @@
 
 import re
 from collections import OrderedDict, namedtuple
-from typing import Dict, List, Mapping, Optional
+from typing import Dict, List, Mapping, Optional, Set, Union
 from typing import OrderedDict as OrderedDictType
-from typing import Set, Union
 
 from idf_component_tools.errors import FatalError
 
@@ -88,9 +87,9 @@ class CMakeRequirementsManager:
                     )
 
     def load(self) -> OrderedDictType[ComponentName, Dict[str, Union[List[str], str]]]:
-        requirements: OrderedDictType[
-            ComponentName, Dict[str, Union[List[str], str]]
-        ] = OrderedDict()
+        requirements: OrderedDictType[ComponentName, Dict[str, Union[List[str], str]]] = (
+            OrderedDict()
+        )
 
         with open(self.path, encoding='utf-8') as f:
             for line in f:
@@ -190,5 +189,6 @@ def handle_project_requirements(
                 continue
 
             requirements[component][prop] = _handle_component_reqs(
-                requirement[prop], known_components  # type: ignore # these props are always lists
+                requirement[prop],  # type: ignore # these props are always lists
+                known_components,  # type: ignore # these props are always lists
             )

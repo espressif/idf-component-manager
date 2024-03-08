@@ -26,9 +26,9 @@ def expand_env_vars(
     obj: Union[Dict[str, Any], List, str, Any],
     env: Optional[Dict] = None,
 ) -> Union[Dict[str, Any], List, str, Any]:
-    '''
+    """
     Expand variables in the results of YAML/JSON file parsing
-    '''
+    """
     if env is None:
         env = dict(os.environ)
 
@@ -62,9 +62,9 @@ def process_nested_strings(
     obj: Union[Dict[str, Any], List, str, Any],
     func: Callable[[str], Any],
 ) -> Union[Dict[str, Any], List, str, Any]:
-    '''
+    """
     Recursively process strings in the results of YAML/JSON file parsing
-    '''
+    """
 
     if isinstance(obj, dict):
         return {k: process_nested_strings(v, func) for k, v in obj.items()}

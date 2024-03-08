@@ -71,7 +71,7 @@ def unpack_tar(file, destination_directory):
         raise ArchiveError(f'{file} is not a valid tar archive')
 
     try:
-        tar.extractall(destination_directory)
+        tar.extractall(destination_directory)  # noqa: S202
     finally:
         tar.close()
 

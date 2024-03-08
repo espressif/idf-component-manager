@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Tools for hashing and hash validation for whole packages"""
+
 import json
 from hashlib import sha256
 from pathlib import Path

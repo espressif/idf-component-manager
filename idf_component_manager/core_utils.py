@@ -63,7 +63,7 @@ def raise_component_modified_error(managed_components_dir: str, components: List
         'I.E. for "{component_example}" run:\n'
         'mv {managed_component_dir} {component_dir}\n'
         'Or, if you want to discard the changes remove the "{hash_filename}" file '
-        'from the component\'s directory.\n'
+        "from the component's directory.\n"
         'I.E. for "{component_example}" run:\n'
         'rm {hash_path}'
     ).format(

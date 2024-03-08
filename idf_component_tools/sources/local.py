@@ -68,7 +68,7 @@ class LocalSource(BaseSource):
 
         if self.is_overrider and path / 'CMakeLists.txt' not in path.iterdir():
             raise SourcePathError(
-                'The override_path you\'re using is pointing'
+                "The override_path you're using is pointing"
                 ' to directory "%s" that is not a component.' % str(path)
             )
 

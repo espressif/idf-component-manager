@@ -182,13 +182,11 @@ class WebServiceSource(BaseSource):
         return sources
 
     def component_cache_path(self, component: SolvedComponent) -> str:
-        component_dir_name = '_'.join(
-            [
-                self.normalized_name(component.name).replace('/', '__'),
-                str(component.version),
-                str(component.component_hash)[:8],
-            ]
-        )
+        component_dir_name = '_'.join([
+            self.normalized_name(component.name).replace('/', '__'),
+            str(component.version),
+            str(component.component_hash)[:8],
+        ])
         path = os.path.join(self.cache_path(), component_dir_name)
         return path
 
@@ -252,8 +250,9 @@ class WebServiceSource(BaseSource):
                 )
 
             raise FetchingError(
-                'Cannot find versions of "{}" satisfying "{}" '
-                'for the current target {}.'.format(name, spec, current_target)
+                'Cannot find versions of "{}" satisfying "{}" ' 'for the current target {}.'.format(
+                    name, spec, current_target
+                )
             )
 
         return cmp_with_versions

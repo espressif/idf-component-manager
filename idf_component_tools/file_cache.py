@@ -57,7 +57,7 @@ class FileCache:
         return self._path
 
     def clear(self) -> None:
-        '''Clear cache directory'''
+        """Clear cache directory"""
         shutil.rmtree(self.path())
 
     def size(self) -> int:
@@ -86,7 +86,7 @@ class SystemCachePath:
             _winreg.HKEY_CURRENT_USER,
             r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders',
         )
-        dir, type = _winreg.QueryValueEx(key, shell_folder_name)
+        dir, _ = _winreg.QueryValueEx(key, shell_folder_name)
         return dir
 
     def _get_win_folder_with_pywin32(self):

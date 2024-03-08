@@ -11,10 +11,10 @@ import tempfile
 import time
 from collections import OrderedDict
 from datetime import datetime, timedelta
+from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple, Union
 from typing import OrderedDict as OrderedDictType
-from typing import Tuple, Union
 
 import requests
 from requests_toolbelt import MultipartEncoderMonitor
@@ -61,7 +61,6 @@ from idf_component_tools.registry.api_client_errors import (
 )
 from idf_component_tools.semver import SimpleSpec, Version
 from idf_component_tools.sources import WebServiceSource
-from idf_component_tools.utils import lru_cache
 
 from .cmake_component_requirements import (
     CMakeRequirementsManager,
@@ -273,9 +272,9 @@ class ComponentManager:
                 exit_code=2,
             )
 
-        response = requests.get(example_url['url'], stream=True)
+        response = requests.get(example_url['url'], stream=True)  # noqa: S113
         with tarfile.open(fileobj=response.raw, mode='r|gz') as tar:
-            tar.extractall(project_path)
+            tar.extractall(project_path)  # noqa: S202
         print_info(
             'Example "{}" successfully downloaded to {}'.format(
                 example_name, os.path.abspath(project_path)
@@ -349,7 +348,7 @@ class ComponentManager:
             file_lines.append('\ndependencies:\n')
             index = len(file_lines) + 1
 
-        file_lines.insert(index, f'  {name}: "{spec}\"\n')
+        file_lines.insert(index, f'  {name}: "{spec}"\n')
 
         # Check result for correctness
         with tempfile.NamedTemporaryFile(delete=False) as temp_manifest_file:
@@ -696,16 +695,14 @@ class ComponentManager:
         root_manifest_filepath = os.path.join(root_managed_components_dir(), MANIFEST_FILENAME)
         if os.path.isfile(root_manifest_filepath):
             root_managed_components = download_project_dependencies(
-                ProjectRequirements(
-                    [
-                        ManifestManager(
-                            self.root_managed_components_dir,
-                            'root',
-                            expand_environment=True,
-                            process_opt_deps=True,
-                        ).load()
-                    ]
-                ),
+                ProjectRequirements([
+                    ManifestManager(
+                        self.root_managed_components_dir,
+                        'root',
+                        expand_environment=True,
+                        process_opt_deps=True,
+                    ).load()
+                ]),
                 self.root_managed_components_lock_path,
                 self.root_managed_components_dir,
                 is_idf_root_dependencies=True,
@@ -811,7 +808,7 @@ class ComponentManager:
         component_requires_file: Union[Path, str],
         component_list_file: Union[Path, str],
     ):
-        '''Set build dependencies for components with manifests'''
+        """Set build dependencies for components with manifests"""
         requirements_manager = CMakeRequirementsManager(component_requires_file)
         requirements = requirements_manager.load()
 

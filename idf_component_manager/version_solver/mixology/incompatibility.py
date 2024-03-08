@@ -243,13 +243,13 @@ class Incompatibility:
         if this_positive.package != other_positive.package:
             return
 
-        this_negatives = ' or '.join(
-            [term.inverse.to_string() for term in self._terms if not term.is_positive()]
-        )
+        this_negatives = ' or '.join([
+            term.inverse.to_string() for term in self._terms if not term.is_positive()
+        ])
 
-        other_negatives = ' or '.join(
-            [term.inverse.to_string() for term in other.terms if not term.is_positive()]
-        )
+        other_negatives = ' or '.join([
+            term.inverse.to_string() for term in other.terms if not term.is_positive()
+        ])
 
         buffer = [self._terse(this_positive, allow_every=True) + ' ']
         is_dependency = isinstance(self.cause, DependencyCause) and isinstance(
@@ -338,9 +338,9 @@ class Incompatibility:
             buffer.append('requires ')
 
         buffer.append(
-            ' or '.join(
-                [term.inverse.to_string() for term in latter.terms if not term.is_positive()]
-            )
+            ' or '.join([
+                term.inverse.to_string() for term in latter.terms if not term.is_positive()
+            ])
         )
 
         if latter_line is not None:

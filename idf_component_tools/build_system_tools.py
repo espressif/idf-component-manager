@@ -1,9 +1,10 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-'''Tools for interaction with IDF build system'''
+"""Tools for interaction with IDF build system"""
+
 import os
 import re
-import subprocess  # nosec
+import subprocess  # noqa: S404
 import sys
 from pathlib import Path
 
@@ -40,11 +41,12 @@ def get_idf_version():
 
     idf_py_path = os.path.join(get_idf_path(), 'tools', 'idf.py')
     try:
-        idf_version = subprocess.check_output([sys.executable, idf_py_path, '--version'])  # nosec
+        idf_version = subprocess.check_output([sys.executable, idf_py_path, '--version'])  # noqa: S603
     except subprocess.CalledProcessError:
         raise FetchingError(
-            'Could not get IDF version from calling "idf.py --version".\n'
-            'idf.py path: {}'.format(idf_py_path)
+            'Could not get IDF version from calling "idf.py --version".\n' 'idf.py path: {}'.format(
+                idf_py_path
+            )
         )
     else:
         try:
@@ -60,8 +62,9 @@ def get_idf_version():
         return str(Version.coerce(res[0]))
     else:
         raise FetchingError(
-            'Could not parse IDF version from calling "idf.py --version".\n'
-            'Output: {}'.format(idf_version)
+            'Could not parse IDF version from calling "idf.py --version".\n' 'Output: {}'.format(
+                idf_version
+            )
         )
 
 
@@ -73,7 +76,7 @@ def get_idf_path() -> str:
 
 
 def is_component(path: Path) -> bool:
-    '''
+    """
     This function is used in the manifest processing to determine,
     if the given path is a component or not.
     If the directory on the path:
@@ -84,7 +87,7 @@ def is_component(path: Path) -> bool:
         - Contains CMakeLists.txt and this file contains CMAKE_PROJECT_LINE,
         it is considered as a project, otherwise it is considered as a component.
     Note that this function may be adequate only for the manifest processing.
-    '''
+    """
 
     cmakelists_path = path / 'CMakeLists.txt'
 

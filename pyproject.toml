@@ -1,4 +1,5 @@
-
+[project]
+requires-python = ">=3.7,<4.0"
 
 [tool.poetry]
 name = "idf-component-manager"
@@ -66,11 +67,6 @@ wheel = "*"
 [tool.poetry.scripts]
 compote = { callable = "idf_component_manager.cli:safe_cli" }
 
-[tool.black]
-target-version = ['py37']
-line-length = 100
-skip-string-normalization = true
-
 [tool.isort]
 include_trailing_comma = true
 use_parentheses = true
@@ -80,138 +76,12 @@ indent = '    '
 multi_line_output = 3
 force_grid_wrap = 0
 
-[tool.flake8]
-select = [
-    'F401',
-    'F402',
-    'F403',
-    'F404',
-    'F405',
-    'F406',
-    'F407',
-    'F601',
-    'F602',
-    'F621',
-    'F622',
-    'F631',
-    'F701',
-    'F702',
-    'F703',
-    'F704',
-    'F705',
-    'F706',
-    'F707',
-    'F721',
-    'F722',
-    'F811',
-    'F812',
-    'F821',
-    'F822',
-    'F823',
-    'F831',
-    'F841',
-    'F901',
-    'E101',
-    'E111',
-    'E112',
-    'E113',
-    'E114',
-    'E115',
-    'E116',
-    'E121',
-    'E122',
-    'E123',
-    'E124',
-    'E125',
-    'E126',
-    'E127',
-    'E128',
-    'E129',
-    'E131',
-    'E133',
-    'E201',
-    'E202',
-    'E203',
-    'E211',
-    'E221',
-    'E222',
-    'E223',
-    'E224',
-    'E225',
-    'E226',
-    'E227',
-    'E228',
-    'E231',
-    'E241',
-    'E242',
-    'E251',
-    'E261',
-    'E262',
-    'E265',
-    'E266',
-    'E271',
-    'E272',
-    'E273',
-    'E274',
-    'E275',
-    'E301',
-    'E302',
-    'E303',
-    'E304',
-    'E305',
-    'E306',
-    'E401',
-    'E402',
-    'E501',
-    'E502',
-    'E701',
-    'E702',
-    'E703',
-    'E704',
-    'E711',
-    'E712',
-    'E713',
-    'E714',
-    'E721',
-    'E722',
-    'E731',
-    'E741',
-    'E742',
-    'E743',
-    'E901',
-    'E902',
-    'W191',
-    'W291',
-    'W292',
-    'W293',
-    'W391',
-    'W503',
-    'W504',
-    'W505',
-    'W601',
-    'W602',
-    'W603',
-    'W604',
-    'W605',
-    'W606',
-    'E999',
-    'C901',
-]
-ignore = ['E221', 'E231', 'E241', 'W503', 'W504']
-max-line-length = 100
-show-source = true
-statistics = true
-exclude = '.git,.tox,node_modules/*'
-inline-quotes = 'double'
-multiline-quotes = 'double'
-docstring-quotes = 'double'
-
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.7"
 
 [[tool.mypy.overrides]]
 module = "idf_component_manager.version_solver.mixology.*"
@@ -239,3 +109,45 @@ version_provider = "poetry"
 version_files = ["idf_component_tools/__version__.py:__version__"]
 update_changelog_on_bump = true
 bump_message = "change: bump version from v$current_version to v$new_version"
+
+[tool.ruff]
+line-length = 100
+target-version = "py37"
+
+[tool.ruff.lint]
+extend-select = [
+    "S", # flake8-bandit
+    "I",  # isort
+    "ERA",  # eradicate
+]
+
+[tool.ruff.format]
+quote-style = "single"
+docstring-code-format = true
+
+[tool.ruff.lint.per-file-ignores]
+"setup.py" = [
+    "S",
+]
+
+"ci/*" = [
+    "S",
+]
+
+"integration_tests/*" = [
+    "S",
+    "E712",  # comparison to False/True
+]
+
+"tests/*" = [
+    "S",
+    "E712",  # comparison to False/True
+]
+
+"idf_component_tools/semver/base.py" = [
+    "S101",  # use of assert
+]
+
+"idf_component_manager/version_solver/mixology/*" = [
+    "S101",  # use of assert
+]

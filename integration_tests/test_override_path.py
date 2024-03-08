@@ -26,7 +26,7 @@ from .integration_test_helpers import fixtures_path, project_action
 )
 def test_reconfigure_with_invalid_override_path(project):
     res = project_action(project, 'reconfigure')
-    assert 'The override_path you\'re using is pointing to directory' in res
+    assert "The override_path you're using is pointing to directory" in res
     assert ' that is not a component.' in res
     assert 'cmake failed with exit code 1' in res
 

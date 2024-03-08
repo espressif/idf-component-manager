@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import os
 
 from idf_component_tools.registry.request_processor import verify_ssl
 

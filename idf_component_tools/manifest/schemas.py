@@ -87,12 +87,10 @@ def dependency_schema_builder(rule_schema_builder: Callable) -> Or:
 
 
 def repository_info_schema_builder():
-    return Schema(
-        {
-            Optional('commit_sha'): Regex(COMMIT_ID_RE, error='Invalid git commit SHA format'),
-            Optional('path'): _nonempty_string('repository_path'),
-        }
-    )
+    return Schema({
+        Optional('commit_sha'): Regex(COMMIT_ID_RE, error='Invalid git commit SHA format'),
+        Optional('path'): _nonempty_string('repository_path'),
+    })
 
 
 def schema_builder(validate_rules: bool = False) -> Schema:
@@ -161,7 +159,7 @@ def manifest_json_schema() -> Dict:
         return pat.pattern
 
     def process_json_schema(
-        obj: Union[Dict[str, Any], List, str, Any]
+        obj: Union[Dict[str, Any], List, str, Any],
     ) -> Union[Dict[str, Any], List, str, Any]:
         if isinstance(obj, dict):
             # jsonschema 2.5.1 for python 3.4 does not support empty `required` field
@@ -318,9 +316,7 @@ for _key in sorted(_flatten_json_schema_keys(JSON_SCHEMA)):
 BUILD_METADATA_KEYS = serialize_list_of_list_of_strings(_build_metadata_keys)
 INFO_METADATA_KEYS = serialize_list_of_list_of_strings(_info_metadata_keys)
 
-METADATA_SCHEMA = Schema(
-    {
-        Optional('build_keys'): BUILD_METADATA_KEYS,
-        Optional('info_keys'): INFO_METADATA_KEYS,
-    }
-)
+METADATA_SCHEMA = Schema({
+    Optional('build_keys'): BUILD_METADATA_KEYS,
+    Optional('info_keys'): INFO_METADATA_KEYS,
+})

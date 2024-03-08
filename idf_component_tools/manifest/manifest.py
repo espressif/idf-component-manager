@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Classes to work with manifest file"""
+
 from __future__ import annotations
 
 import json
@@ -452,7 +453,7 @@ class ComponentWithVersions:
 
 
 class ProjectRequirements:
-    '''Representation of all manifests required by project'''
+    """Representation of all manifests required by project"""
 
     def __init__(self, manifests: List[Manifest]) -> None:
         self.manifests = manifests
@@ -471,7 +472,7 @@ class ProjectRequirements:
 
     @property
     def manifest_hash(self) -> str:
-        '''Lazily calculate requirements hash'''
+        """Lazily calculate requirements hash"""
         if self._manifest_hash:
             return self._manifest_hash
 
