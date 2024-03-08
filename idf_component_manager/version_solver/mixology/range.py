@@ -4,10 +4,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, NoReturn, Optional
-from typing import Union as _Union
+import typing as t
 
-if TYPE_CHECKING:
+if t.TYPE_CHECKING:
     from .union import Union
 
 
@@ -24,11 +23,11 @@ class Range:
 
     def __init__(
         self,
-        min: Any = None,
-        max: Any = None,
+        min: t.Any = None,
+        max: t.Any = None,
         include_min: bool = False,
         include_max: bool = False,
-        string: Optional[str] = None,
+        string: t.Optional[str] = None,
     ) -> None:
         self._min = min
         self._max = max
@@ -54,7 +53,7 @@ class Range:
         return self._include_max
 
     @property
-    def inverse(self) -> _Union[Range, Union]:
+    def inverse(self) -> t.Union[Range, Union]:
         if self.is_any():
             return EmptyRange()
 
@@ -97,7 +96,7 @@ class Range:
 
         return not other.is_strictly_lower(self) and not other.is_strictly_higher(self)
 
-    def intersect(self, other: _Union[Range, Union]) -> _Union[Range, Union]:
+    def intersect(self, other: t.Union[Range, Union]) -> t.Union[Range, Union]:
         from .union import Union  # fool the interpreter
 
         if other.is_empty():
@@ -146,7 +145,7 @@ class Range:
         # If we got here, there is an actual range.
         return Range(intersect_min, intersect_max, intersect_include_min, intersect_include_max)
 
-    def union(self, other: Range) -> _Union[Range, Union]:
+    def union(self, other: Range) -> t.Union[Range, Union]:
         from .union import Union  # fool the interpreter
 
         if isinstance(other, Union):
@@ -186,7 +185,7 @@ class Range:
             or (self.min == other.max and (self.include_min or other.include_max))
         )
 
-    def difference(self, other: _Union[Range, Union]) -> _Union[Range, Union]:
+    def difference(self, other: t.Union[Range, Union]) -> t.Union[Range, Union]:
         from .union import Union  # fool the interpreter
 
         if other.is_empty():
@@ -403,19 +402,19 @@ class Range:
 
 class EmptyRange(Range):
     @property
-    def min(self) -> NoReturn:
+    def min(self) -> t.NoReturn:
         raise NotImplementedError()
 
     @property
-    def max(self) -> NoReturn:
+    def max(self) -> t.NoReturn:
         raise NotImplementedError()
 
     @property
-    def include_min(self) -> NoReturn:
+    def include_min(self) -> t.NoReturn:
         raise NotImplementedError()
 
     @property
-    def include_max(self) -> NoReturn:
+    def include_max(self) -> t.NoReturn:
         raise NotImplementedError()
 
     def is_empty(self) -> bool:
@@ -440,7 +439,7 @@ class EmptyRange(Range):
         return False
 
     @property
-    def inverse(self) -> _Union[Range, Union]:
+    def inverse(self) -> t.Union[Range, Union]:
         return Range()
 
     def __str__(self) -> str:

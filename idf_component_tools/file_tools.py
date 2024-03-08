@@ -4,9 +4,9 @@
 
 import os
 import shutil
+import typing as t
 from pathlib import Path
 from shutil import copytree, rmtree
-from typing import Iterable, Optional, Set, Union
 
 from idf_component_tools.messages import warn
 
@@ -48,11 +48,11 @@ UNEXPECTED_FILES = {
 
 
 def filtered_paths(
-    path: Union[str, Path],
-    include: Optional[Iterable[str]] = None,
-    exclude: Optional[Iterable[str]] = None,
+    path: t.Union[str, Path],
+    include: t.Optional[t.Iterable[str]] = None,
+    exclude: t.Optional[t.Iterable[str]] = None,
     exclude_default: bool = True,
-) -> Set[Path]:
+) -> t.Set[Path]:
     """Returns set of paths that should be included in component archive"""
 
     if include is None:
@@ -62,7 +62,7 @@ def filtered_paths(
         exclude = set()
 
     base_path = Path(path)
-    paths: Set[Path] = set()
+    paths: t.Set[Path] = set()
 
     def include_paths(pattern):
         paths.update(base_path.glob(pattern))
@@ -117,7 +117,7 @@ def copy_directory(source_directory: str, destination_directory: str) -> None:
 
 
 def copy_directories(
-    source_directory: str, destination_directory: str, paths: Iterable[Path]
+    source_directory: str, destination_directory: str, paths: t.Iterable[Path]
 ) -> None:
     for path in sorted(paths):
         path = str(path)  # type: ignore # Path backward compatibility
@@ -138,15 +138,15 @@ def copy_directories(
 def copy_filtered_directory(
     source_directory: str,
     destination_directory: str,
-    include: Optional[Iterable[str]] = None,
-    exclude: Optional[Iterable[str]] = None,
+    include: t.Optional[t.Iterable[str]] = None,
+    exclude: t.Optional[t.Iterable[str]] = None,
 ) -> None:
     paths = filtered_paths(source_directory, include=include, exclude=exclude)
     prepare_empty_directory(destination_directory)
     copy_directories(source_directory, destination_directory, paths)
 
 
-def check_unexpected_component_files(path: Union[str, Path]) -> None:
+def check_unexpected_component_files(path: t.Union[str, Path]) -> None:
     """Create a warning if a directory contains files not expected inside component"""
     for root, _dirs, files in os.walk(str(path)):
         unexpected_files = UNEXPECTED_FILES.intersection(files)

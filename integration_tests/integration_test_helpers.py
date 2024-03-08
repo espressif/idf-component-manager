@@ -4,7 +4,7 @@
 import logging
 import os
 import subprocess
-from typing import Dict, List, Tuple, Union
+import typing as t
 
 import yaml
 from jinja2 import Environment, Template
@@ -13,7 +13,7 @@ from idf_component_manager.core import ComponentManager
 
 
 def generate_from_template(
-    file_path: str, template: Template, **kwargs: Union[str, List[str]]
+    file_path: str, template: Template, **kwargs: t.Union[str, t.List[str]]
 ) -> None:
     """
     Generates file according to the template with given arguments
@@ -34,7 +34,7 @@ def get_component_path(project_path: str, component_name: str) -> str:
 
 
 def create_manifest(
-    project_path: str, component_dict: Dict, libraries: list, component_name: str
+    project_path: str, component_dict: t.Dict, libraries: list, component_name: str
 ) -> None:
     """
     If the component contains some dependencies
@@ -61,7 +61,7 @@ def create_manifest(
 def create_component(
     project_path: str,
     component_name: str,
-    component_dict: Dict,
+    component_dict: t.Dict,
     env: Environment,
     function_name: str = 'app_main',
 ) -> None:
@@ -104,7 +104,7 @@ def create_component(
     )
 
 
-def get_dependencies(component_dict: Dict) -> Tuple:
+def get_dependencies(component_dict: t.Dict) -> t.Tuple:
     """
     Returns tuple of two lists - dependencies for including in the source file
     and dependencies for adding to manifest

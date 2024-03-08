@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Results of the solver"""
 
-from typing import Iterable, List, Optional
+import typing as t
 
 from idf_component_tools.serialization import serializable
 
@@ -26,9 +26,9 @@ class SolvedComponent:
         name: str,
         version: ComponentVersion,
         source: BaseSource,
-        component_hash: Optional[str] = None,
-        dependencies: Optional[Iterable[ComponentRequirement]] = None,
-        targets: Optional[List[str]] = None,
+        component_hash: t.Optional[str] = None,
+        dependencies: t.Optional[t.Iterable[ComponentRequirement]] = None,
+        targets: t.Optional[t.List[str]] = None,
     ) -> None:
         self.name = name
         self.version = version

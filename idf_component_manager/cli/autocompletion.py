@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 import subprocess  # noqa: S404
-from typing import List, Optional, Union
+import typing as t
 
 import click
 
@@ -24,9 +24,9 @@ def _get_shell_completion(shell: str) -> str:
 
 
 def _append_text_line(
-    strings: Union[str, List[str]],
+    strings: t.Union[str, t.List[str]],
     filepath: str,
-    write_string: Optional[str] = None,
+    write_string: t.Optional[str] = None,
     dry_run: bool = False,
 ) -> None:
     if isinstance(strings, str):

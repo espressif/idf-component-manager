@@ -2,9 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import re
+import typing as t
 from collections import OrderedDict, namedtuple
-from typing import Dict, List, Mapping, Optional, Set, Union
-from typing import OrderedDict as OrderedDictType
 
 from idf_component_tools.errors import FatalError
 
@@ -30,7 +29,7 @@ class ComponentName:
         self.prefix = prefix
         self.name = name
 
-        self._name_without_namespace: Optional[str] = None
+        self._name_without_namespace: t.Optional[str] = None
 
     def __eq__(self, another: object) -> bool:
         if not isinstance(another, ComponentName):
@@ -73,7 +72,9 @@ class CMakeRequirementsManager:
     def __init__(self, path):
         self.path = path
 
-    def dump(self, requirements: Mapping[ComponentName, Dict[str, Union[List, str]]]) -> None:
+    def dump(
+        self, requirements: t.Mapping[ComponentName, t.Dict[str, t.Union[t.List, str]]]
+    ) -> None:
         with open(self.path, mode='w', encoding='utf-8') as f:
             for name, requirement in requirements.items():
                 for prop, value in requirement.items():
@@ -86,8 +87,8 @@ class CMakeRequirementsManager:
                         )
                     )
 
-    def load(self) -> OrderedDictType[ComponentName, Dict[str, Union[List[str], str]]]:
-        requirements: OrderedDictType[ComponentName, Dict[str, Union[List[str], str]]] = (
+    def load(self) -> t.OrderedDict[ComponentName, t.Dict[str, t.Union[t.List[str], str]]]:
+        requirements: t.OrderedDict[ComponentName, t.Dict[str, t.Union[t.List[str], str]]] = (
             OrderedDict()
         )
 
@@ -111,14 +112,14 @@ class CMakeRequirementsManager:
 
 
 def check_requirements_name_collisions(
-    requirements: Dict[ComponentName, Dict[str, Union[List[str], str]]],
+    requirements: t.Dict[ComponentName, t.Dict[str, t.Union[t.List[str], str]]],
 ) -> None:
     """
     DEPRECATE: This function is deprecated since interface_version 3,
         Remove it after ESP-IDF 5.1 EOL
     """
     # Pay attention only to components without namespaces
-    name_variants: Dict[str, Set[str]] = {
+    name_variants: t.Dict[str, t.Set[str]] = {
         cmp.name: {cmp.name}
         for cmp in requirements.keys()
         if cmp.name == cmp.name_without_namespace
@@ -145,7 +146,7 @@ def check_requirements_name_collisions(
         )
 
 
-def _choose_component(component: str, known_components: List[str]) -> str:
+def _choose_component(component: str, known_components: t.List[str]) -> str:
     if component in known_components:
         return component
 
@@ -163,7 +164,7 @@ def _choose_component(component: str, known_components: List[str]) -> str:
     return component
 
 
-def _handle_component_reqs(components: List[str], known_components: List[str]) -> List[str]:
+def _handle_component_reqs(components: t.List[str], known_components: t.List[str]) -> t.List[str]:
     updated_items = []
     for component in components:
         name_to_add = _choose_component(component, known_components)
@@ -174,7 +175,7 @@ def _handle_component_reqs(components: List[str], known_components: List[str]) -
 
 
 def handle_project_requirements(
-    requirements: OrderedDictType[ComponentName, Dict[str, Union[List[str], str]]],
+    requirements: t.OrderedDict[ComponentName, t.Dict[str, t.Union[t.List[str], str]]],
 ) -> None:
     """
     Use local components with higher priority.

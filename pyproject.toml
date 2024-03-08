@@ -119,11 +119,18 @@ extend-select = [
     "S", # flake8-bandit
     "I",  # isort
     "ERA",  # eradicate
+    "ICN",  # flake8-import-conventions
 ]
 
 [tool.ruff.format]
 quote-style = "single"
 docstring-code-format = true
+
+[tool.ruff.lint.flake8-import-conventions]
+banned-from = ["typing"]
+
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+"typing" = "t"
 
 [tool.ruff.lint.per-file-ignores]
 "setup.py" = [

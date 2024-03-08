@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import sys
+import typing as t
 import warnings
-from typing import Any, Dict
 
 import click
 
@@ -22,7 +22,7 @@ from .manifest import init_manifest
 from .project import init_project
 from .registry import init_registry
 
-DEFAULT_SETTINGS: Dict[str, Any] = {
+DEFAULT_SETTINGS: t.Dict[str, t.Any] = {
     'help_option_names': ['-h', '--help'],
 }
 

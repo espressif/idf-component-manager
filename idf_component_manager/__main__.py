@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 #
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
 import os
 import sys
+import typing as t
 import warnings
-from typing import List, Optional
 
 from idf_component_manager.utils import print_error, showwarning
 from idf_component_tools.errors import FatalError
@@ -32,7 +32,7 @@ def check_required_args(args, required_field=None):
             raise ValueError('--{} is required'.format(_f.replace('_', '-')))
 
 
-def main(command_args: Optional[List[str]] = None) -> None:
+def main(command_args: t.Optional[t.List[str]] = None) -> None:
     parser = argparse.ArgumentParser(description=f'IDF component manager v{version}')
     parser.add_argument('command', choices=KNOWN_ACTIONS, help='Command to execute')
     parser.add_argument(

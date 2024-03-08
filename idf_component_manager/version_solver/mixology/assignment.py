@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
+import typing as t
 
 from .constraint import Constraint
 from .incompatibility import Incompatibility
@@ -24,7 +24,7 @@ class Assignment(Term):
         is_positive: bool,
         decision_level: int,
         index: int,
-        cause: Optional[Incompatibility] = None,
+        cause: t.Optional[Incompatibility] = None,
     ) -> None:
         super().__init__(constraint, is_positive)
 
@@ -46,7 +46,7 @@ class Assignment(Term):
 
     @classmethod
     def decision(
-        cls, package: Package, version: Any, decision_level: int, index: int
+        cls, package: Package, version: t.Any, decision_level: int, index: int
     ) -> Assignment:
         return cls(
             Constraint(package, Range(version, version, True, True)),

@@ -5,7 +5,7 @@ This module contains utility functions for working with environment variables.
 """
 
 import os
-from typing import Optional, Union
+import typing as t
 
 KNOWN_CI_ENVIRONMENTS = {
     'GITHUB_ACTIONS': 'github-actions',
@@ -40,7 +40,7 @@ def getenv_bool(name: str, default: bool = False) -> bool:
     return os.getenv(name, str(default)).lower() in {'1', 't', 'true', 'y', 'yes'}
 
 
-def getenv_bool_or_string(name: str, default: Union[bool, str] = False) -> Union[bool, str]:
+def getenv_bool_or_string(name: str, default: t.Union[bool, str] = False) -> t.Union[bool, str]:
     """Returns
     - True if environment variable is set to 1, t, y, yes, true,
     - False if environment variable is set to 0, f, n, no, false
@@ -56,7 +56,7 @@ def getenv_bool_or_string(name: str, default: Union[bool, str] = False) -> Union
         return value
 
 
-def detect_ci() -> Optional[str]:
+def detect_ci() -> t.Optional[str]:
     """Returns the name of CI environment if running in a CI environment"""
 
     for env_var, name in KNOWN_CI_ENVIRONMENTS.items():

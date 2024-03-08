@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+import typing as t
 from pathlib import Path
-from typing import Dict
 
 from ..errors import SourceError
 from ..manifest import (
@@ -157,7 +157,7 @@ class LocalSource(BaseSource):
             ],
         )
 
-    def serialize(self) -> Dict:
+    def serialize(self) -> t.Dict:
         return {
             'path': str(self._path),
             'type': self.name,

@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-from typing import Dict, List, Optional
+import typing as t
 
 from idf_component_tools.manifest import Manifest
 
@@ -8,10 +8,12 @@ from idf_component_tools.manifest import Manifest
 class ComponentDetails(Manifest):
     def __init__(
         self,
-        download_url: Optional[str] = None,  # Direct url for tarball download
-        documents: Optional[List[Dict[str, str]]] = None,  # List of documents of the component
-        license_url: Optional[str] = None,  # URL for downloading license
-        examples: Optional[List[Dict[str, str]]] = None,  # List of examples of the component
+        download_url: t.Optional[str] = None,  # Direct url for tarball download
+        documents: t.Optional[
+            t.List[t.Dict[str, str]]
+        ] = None,  # List of documents of the component
+        license_url: t.Optional[str] = None,  # URL for downloading license
+        examples: t.Optional[t.List[t.Dict[str, str]]] = None,  # List of examples of the component
         *args,
         **kwargs,
     ):
@@ -23,13 +25,13 @@ class ComponentDetails(Manifest):
         if not examples:
             examples = []
 
-        self.examples: List = examples
+        self.examples: t.List = examples
 
 
 class ComponentDetailsWithStorageURL(ComponentDetails):
     def __init__(
         self,
-        storage_url: Optional[str] = None,
+        storage_url: t.Optional[str] = None,
         *args,
         **kwargs,
     ):

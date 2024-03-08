@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-from typing import Any
+import typing as t
 
 
 class FatalError(RuntimeError):
@@ -10,7 +10,7 @@ class FatalError(RuntimeError):
 
     exit_code = 2
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
         super().__init__(*args)
         exit_code = kwargs.pop('exit_code', None)
         if exit_code:

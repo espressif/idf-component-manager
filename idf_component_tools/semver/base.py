@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import functools
 import re
-from typing import List
+import typing as t
 
 
 def _has_leading_zero(value):
@@ -13,7 +13,7 @@ def _has_leading_zero(value):
 
 
 class MaxIdentifier:
-    __slots__: List[str] = []
+    __slots__: t.List[str] = []
 
     def __repr__(self):
         return 'MaxIdentifier()'
@@ -541,7 +541,7 @@ class BaseSpec:
 
 
 class Clause:
-    __slots__: List[str] = []
+    __slots__: t.List[str] = []
 
     def match(self, version):
         raise NotImplementedError()
@@ -703,7 +703,7 @@ class AllOf(Clause):
 
 
 class Matcher(Clause):
-    __slots__: List[str] = []
+    __slots__: t.List[str] = []
 
     def __and__(self, other):
         if isinstance(other, AllOf):
@@ -723,7 +723,7 @@ class Matcher(Clause):
 
 
 class Never(Matcher):
-    __slots__: List[str] = []
+    __slots__: t.List[str] = []
 
     def match(self, version):
         return False
@@ -745,7 +745,7 @@ class Never(Matcher):
 
 
 class Always(Matcher):
-    __slots__: List[str] = []
+    __slots__: t.List[str] = []
 
     def match(self, version):
         return True

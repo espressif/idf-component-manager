@@ -6,9 +6,9 @@ import os
 import re
 import subprocess  # noqa: S404
 import time
+import typing as t
 from datetime import datetime
 from functools import wraps
-from typing import Any, Callable, List, Optional, Union
 
 from .errors import GitError
 from .messages import warn
@@ -23,7 +23,7 @@ class GitCommandError(Exception):
     not in the user code.
     """
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: t.Any, **kwargs: t.Any) -> None:
         self.exit_code = kwargs.get('exit_code')
         super().__init__(*args)
 
@@ -46,7 +46,7 @@ class GitClient:
     """Set of tools for working with git repos"""
 
     def __init__(
-        self, git_command: str = 'git', min_supported: Union[str, Version] = '2.0.0'
+        self, git_command: str = 'git', min_supported: t.Union[str, Version] = '2.0.0'
     ) -> None:
         self.git_command = git_command or 'git'
         self.git_min_supported = (
@@ -56,7 +56,7 @@ class GitClient:
         self._git_checked = False
         self._repo_updated = False
 
-    def _git_cmd(func: Union[GitClient, Callable[..., Any]]) -> Callable:
+    def _git_cmd(func: t.Union[GitClient, t.Callable[..., t.Any]]) -> t.Callable:
         @wraps(func)  # type: ignore
         def wrapper(self, *args, **kwargs):
             if not self._git_checked:
@@ -90,7 +90,7 @@ class GitClient:
         if not os.path.isfile(fetch_file) or current_time - os.stat(fetch_file).st_mtime > 60:
             self.run(['fetch', 'origin'], cwd=bare_path)
 
-    def _bare_repo(func: Union[GitClient, Callable[..., Any]]) -> Callable:
+    def _bare_repo(func: t.Union[GitClient, t.Callable[..., t.Any]]) -> t.Callable:
         @wraps(func)  # type: ignore
         def wrapper(self, *args, **kwargs):
             if not self._repo_updated:
@@ -127,9 +127,9 @@ class GitClient:
         repo: str,
         bare_path: str,
         checkout_path: str,
-        ref: Optional[str] = None,
+        ref: t.Optional[str] = None,
         with_submodules: bool = True,
-        selected_paths: Optional[List[str]] = None,
+        selected_paths: t.Optional[t.List[str]] = None,
     ) -> str:
         """
         Checkout required branch to desired path. Create a bare repo, if necessary
@@ -146,7 +146,7 @@ class GitClient:
             Branch name, commit id or '*'
         with_submodules: bool
              If True, submodules will be downloaded
-        selected_paths: List[str]
+        selected_paths: t.List[str]
             List of folders and files that need to download
         Returns
         -------
@@ -219,7 +219,7 @@ class GitClient:
         Executes a Git command with the given arguments.
 
         Args:
-            args (List[str]): The list of command-line arguments for the Git command.
+            args (t.List[str]): The list of command-line arguments for the Git command.
             cwd (str | None):
                 The current working directory for the Git command.
                 If None, the current working directory is used.
@@ -293,7 +293,7 @@ class GitClient:
             raise GitError('Cannot recognize git version')
 
     @_git_cmd
-    def get_tag_version(self, cwd: Optional[str] = None) -> Version:
+    def get_tag_version(self, cwd: t.Optional[str] = None) -> Version:
         """
         Return a valid component version of the current commit if it is tagged,
         otherwise a `GitError` is raised.

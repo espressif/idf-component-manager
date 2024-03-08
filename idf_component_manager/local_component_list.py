@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-from typing import Dict, List
+import typing as t
 
 import yaml
 from schema import Schema, SchemaError
@@ -19,7 +19,7 @@ COMPONENT_LIST_SCHEMA = Schema(
 )
 
 
-def parse_component_list(path: str) -> List[Dict[str, str]]:
+def parse_component_list(path: str) -> t.List[t.Dict[str, str]]:
     with open(path, encoding='utf-8') as f:
         try:
             components = COMPONENT_LIST_SCHEMA.validate(yaml.safe_load(f.read()))

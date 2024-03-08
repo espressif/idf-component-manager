@@ -4,7 +4,7 @@
 
 import logging
 import time
-from typing import Dict, List, Optional, Set, Union
+import typing as t
 
 from .constraint import Constraint
 from .failure import SolverFailure
@@ -38,7 +38,7 @@ class VersionSolver:
     ):
         self._source = source
 
-        self._incompatibilities: Dict[Package, List[Incompatibility]] = {}
+        self._incompatibilities: t.Dict[Package, t.List[Incompatibility]] = {}
         self._solution = PartialSolution()
 
     @property
@@ -86,7 +86,7 @@ class VersionSolver:
         Performs unit propagation on incompatibilities transitively
         related to package to derive new assignments for _solution.
         """
-        changed: Set[Package] = set()
+        changed: t.Set[Package] = set()
         changed.add(package)
 
         while changed:
@@ -119,7 +119,7 @@ class VersionSolver:
 
     def _propagate_incompatibility(
         self, incompatibility: Incompatibility
-    ) -> Union[Package, object, None]:
+    ) -> t.Union[Package, object, None]:
         """
         If incompatibility is almost satisfied by _solution, adds the
         negation of the unsatisfied term to _solution.
@@ -300,7 +300,7 @@ class VersionSolver:
 
         raise SolverFailure(incompatibility)
 
-    def _next_term_to_try(self) -> Optional[Term]:
+    def _next_term_to_try(self) -> t.Optional[Term]:
         unsatisfied = self._solution.unsatisfied
         if not unsatisfied:
             return
@@ -317,7 +317,7 @@ class VersionSolver:
 
         return term
 
-    def _choose_package_version(self) -> Optional[Package]:
+    def _choose_package_version(self) -> t.Optional[Package]:
         """
         Tries to select a version of a required package.
 

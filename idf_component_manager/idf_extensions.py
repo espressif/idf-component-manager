@@ -2,15 +2,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import sys
+import typing as t
 import warnings
-from typing import Any, Dict, List
 
 from idf_component_manager.utils import CLICK_SUPPORTS_SHOW_DEFAULT, print_error, showwarning
 from idf_component_tools.errors import FatalError
 
 from .core import ComponentManager
 
-SERVICE_PROFILE: List[Dict[str, Any]] = [
+SERVICE_PROFILE: t.List[t.Dict[str, t.Any]] = [
     {
         'names': ['--service-profile'],
         'help': 'Profile for the component registry to use. '
@@ -19,7 +19,7 @@ SERVICE_PROFILE: List[Dict[str, Any]] = [
     },
 ]
 
-NAMESPACE: List[Dict[str, Any]] = [
+NAMESPACE: t.List[t.Dict[str, t.Any]] = [
     {
         'names': ['--namespace'],
         'help': 'Namespace for the component. Can be set in the config file.',
@@ -27,7 +27,7 @@ NAMESPACE: List[Dict[str, Any]] = [
     },
 ]
 
-NAME: List[Dict[str, Any]] = [
+NAME: t.List[t.Dict[str, t.Any]] = [
     {
         'names': ['--name'],
         'help': 'Component name.',
@@ -37,7 +37,7 @@ NAME: List[Dict[str, Any]] = [
 
 SERVICE_OPTIONS = SERVICE_PROFILE + NAMESPACE + NAME
 
-LOCAL_MANIFEST_OPTIONS: List[Dict[str, Any]] = [
+LOCAL_MANIFEST_OPTIONS: t.List[t.Dict[str, t.Any]] = [
     {
         'names': ['--component'],
         'default': 'main',

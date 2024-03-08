@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import re
+import typing as t
 from functools import lru_cache
-from typing import Dict, List, Optional
 
 from schema import Schema, SchemaError
 
@@ -20,13 +20,13 @@ class ManifestValidator:
 
     def __init__(
         self,
-        parsed_manifest: Dict,
+        parsed_manifest: t.Dict,
         check_required_fields: bool = False,
-        metadata: Optional[Metadata] = None,
+        metadata: t.Optional[Metadata] = None,
     ) -> None:
         self.manifest_tree = parsed_manifest
         self.metadata = metadata
-        self._errors: List[str] = []
+        self._errors: t.List[str] = []
 
         self.check_required_fields = check_required_fields
 
@@ -210,7 +210,7 @@ class ManifestValidator:
             if isinstance(v, dict):
                 self.validate_duplicates(v)
 
-    def validate_normalize(self) -> List[str]:
+    def validate_normalize(self) -> t.List[str]:
         self.validate_normalize_root_keys()
         self.validate_normalize_schema()
         self.validate_normalize_dependencies()

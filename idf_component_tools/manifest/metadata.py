@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Any, Dict, List, Tuple, Union
+import typing as t
 
 from ..errors import MetadataError
 from .constants import KNOWN_BUILD_METADATA_FIELDS, KNOWN_INFO_METADATA_FIELDS
@@ -55,13 +55,15 @@ class Metadata:
         self.info_metadata_keys = info_metadata_keys or []
 
     @classmethod
-    def load(cls, manifest_tree: Dict) -> 'Metadata':
+    def load(cls, manifest_tree: t.Dict) -> 'Metadata':
         build_metadata_keys, info_metadata_keys = cls._parse_metadata_from_manifest(manifest_tree)
 
         return cls(build_metadata_keys, info_metadata_keys)
 
     @classmethod
-    def _parse_metadata_from_manifest(cls, manifest_tree: Any) -> Tuple[List[str], List[str]]:
+    def _parse_metadata_from_manifest(
+        cls, manifest_tree: t.Any
+    ) -> t.Tuple[t.List[str], t.List[str]]:
         metadata_keys = _flatten_manifest_file_keys(manifest_tree)
         build_metadata_keys = []
         info_metadata_keys = []
@@ -81,8 +83,8 @@ class Metadata:
 
     @staticmethod
     def get_closest_manifest_key_and_type(
-        metadata_key: Union[str, List[str]],
-    ) -> Tuple[str, str]:
+        metadata_key: t.Union[str, t.List[str]],
+    ) -> t.Tuple[str, str]:
         """
         One metadata key should look like "dependencies-*-rules-type:array-if-type:string",
         or ['dependencies', '*', 'rules', 'type:array', 'if', 'type:string'] if it's a list

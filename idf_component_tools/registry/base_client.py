@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 import platform
-from typing import Callable, Dict, List, Optional
+import typing as t
 
 import requests
 from cachecontrol import CacheControlAdapter
@@ -42,9 +42,9 @@ def env_cache_time() -> int:
 
 def create_session(
     cache: bool = False,
-    cache_path: Optional[str] = None,
-    cache_time: Optional[int] = None,
-    token: Optional[str] = None,
+    cache_path: t.Optional[str] = None,
+    cache_time: t.Optional[int] = None,
+    token: t.Optional[str] = None,
 ) -> requests.Session:
     if cache_path is None:
         cache_path = ComponentFileCache().path()
@@ -123,7 +123,7 @@ class BaseClient:
         return tools.manifest.filter_optional_dependencies(dependencies)
 
     def versions(
-        self, request: Callable, component_name: str, spec: str = '*'
+        self, request: t.Callable, component_name: str, spec: str = '*'
     ) -> ComponentWithVersions:
         """List of versions for given component with required spec"""
         component_name = component_name.lower()
@@ -162,7 +162,9 @@ class BaseClient:
         )
 
 
-def filter_versions(versions: List[Dict], spec: Optional[str], component_name: str) -> List[Dict]:
+def filter_versions(
+    versions: t.List[t.Dict], spec: t.Optional[str], component_name: str
+) -> t.List[t.Dict]:
     if spec and spec != '*':
         requested_version = SimpleSpec(str(spec))
         filtered_versions = [v for v in versions if requested_version.match(Version(v['version']))]

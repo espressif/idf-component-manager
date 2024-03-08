@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
+import typing as t
 import webbrowser
-from typing import List
 
 import click
 import requests
@@ -179,7 +179,7 @@ def init_registry():
         manager: ComponentManager,
         service_profile: str,
         interval: int,
-        component: List[str],
+        component: t.List[str],
         recursive: bool,
         path: str,
     ) -> None:

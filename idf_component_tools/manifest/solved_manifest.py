@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+import typing as t
 
 from .solved_component import SolvedComponent
 
@@ -10,9 +10,9 @@ from .solved_component import SolvedComponent
 class SolvedManifest:
     def __init__(
         self,
-        solved_components: Optional[List[SolvedComponent]],
+        solved_components: t.Optional[t.List[SolvedComponent]],
         manifest_hash: str,
-        target: Optional[str] = None,
+        target: t.Optional[str] = None,
     ) -> None:
         if solved_components is None:
             solved_components = []
@@ -22,7 +22,7 @@ class SolvedManifest:
         self.manifest_hash = manifest_hash
 
     @classmethod
-    def fromdict(cls, lock: Dict) -> SolvedManifest:
+    def fromdict(cls, lock: t.Dict) -> SolvedManifest:
         solved_components = []
         for name, component in lock.get('dependencies', {}).items():
             component['name'] = name
@@ -52,5 +52,5 @@ class SolvedManifest:
         return solution
 
     @property
-    def solved_components(self) -> Dict[str, SolvedComponent]:
+    def solved_components(self) -> t.Dict[str, SolvedComponent]:
         return {cmp.name: cmp for cmp in self.dependencies}

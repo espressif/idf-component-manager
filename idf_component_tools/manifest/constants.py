@@ -1,9 +1,9 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
 import sys
-from typing import List
+import typing as t
 
 MANIFEST_FILENAME = 'idf_component.yml'
 SLUG_BODY_REGEX = r'[a-zA-Z\d]+(?:(?:[_-](?![_-]+))|(?:[a-zA-Z\d]))*[a-zA-Z\d]+'
@@ -41,7 +41,7 @@ DEFAULT_KNOWN_TARGETS = [
 ]
 
 
-def known_targets() -> List[str]:
+def known_targets() -> t.List[str]:
     try:
         targets = os.environ['IDF_COMPONENT_MANAGER_KNOWN_TARGETS'].split(',')
         if any(targets):

@@ -9,12 +9,11 @@ import shutil
 import tarfile
 import tempfile
 import time
+import typing as t
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
-from typing import OrderedDict as OrderedDictType
 
 import requests
 from requests_toolbelt import MultipartEncoderMonitor
@@ -138,8 +137,8 @@ class ComponentManager:
     def __init__(
         self,
         path: str,
-        lock_path: Optional[str] = None,
-        manifest_path: Optional[str] = None,
+        lock_path: t.Optional[str] = None,
+        manifest_path: t.Optional[str] = None,
         interface_version: int = 0,
     ) -> None:
         # Working directory
@@ -177,7 +176,7 @@ class ComponentManager:
 
         self.interface_version = interface_version
 
-    def _get_manifest_dir(self, component: str = 'main', path: Optional[str] = None) -> str:
+    def _get_manifest_dir(self, component: str = 'main', path: t.Optional[str] = None) -> str:
         if component != 'main' and path is not None:
             raise FatalError(
                 'Cannot determine manifest directory. Please specify either component or path.'
@@ -220,8 +219,8 @@ class ComponentManager:
         return os.path.join(self.root_managed_components_dir, 'dependencies.lock')  # type: ignore
 
     def _get_manifest(
-        self, component: str = 'main', path: Optional[str] = None
-    ) -> Tuple[str, bool]:
+        self, component: str = 'main', path: t.Optional[str] = None
+    ) -> t.Tuple[str, bool]:
         manifest_dir = self._get_manifest_dir(component=component, path=path)
         manifest_filepath = os.path.join(manifest_dir, MANIFEST_FILENAME)
         # Create manifest file if it doesn't exist in work directory
@@ -229,14 +228,14 @@ class ComponentManager:
         return manifest_filepath, manifest_created
 
     @general_error_handler
-    def create_manifest(self, component: str = 'main', path: Optional[str] = None) -> None:
+    def create_manifest(self, component: str = 'main', path: t.Optional[str] = None) -> None:
         manifest_filepath, created = self._get_manifest(component=component, path=path)
         if not created:
             print_info(f'"{manifest_filepath}" already exists, skipping...')
 
     @general_error_handler
     def create_project_from_example(
-        self, example: str, path: Optional[str] = None, service_profile: Optional[str] = None
+        self, example: str, path: t.Optional[str] = None, service_profile: t.Optional[str] = None
     ) -> None:
         client, namespace = get_storage_client(None, service_profile)
         component_name, version_spec, example_name = parse_example(example, namespace)
@@ -286,8 +285,8 @@ class ComponentManager:
         self,
         dependency: str,
         component: str = 'main',
-        path: Optional[str] = None,
-        service_profile: Optional[str] = None,
+        path: t.Optional[str] = None,
+        service_profile: t.Optional[str] = None,
     ) -> None:
         manifest_filepath, _ = self._get_manifest(component=component, path=path)
         client, _ = get_storage_client(None, service_profile)
@@ -376,11 +375,11 @@ class ComponentManager:
         self,
         name: str,
         version: str,
-        dest_dir: Optional[str] = None,
-        repository: Optional[str] = None,
-        commit_sha: Optional[str] = None,
-        repository_path: Optional[str] = None,
-    ) -> Tuple[str, Manifest]:
+        dest_dir: t.Optional[str] = None,
+        repository: t.Optional[str] = None,
+        commit_sha: t.Optional[str] = None,
+        repository_path: t.Optional[str] = None,
+    ) -> t.Tuple[str, Manifest]:
         dest_path = os.path.join(self.path, dest_dir) if dest_dir else self.dist_path
 
         if version == 'git':
@@ -432,8 +431,8 @@ class ComponentManager:
         self,
         name: str,
         version: str,
-        service_profile: Optional[str] = None,
-        namespace: Optional[str] = None,
+        service_profile: t.Optional[str] = None,
+        namespace: t.Optional[str] = None,
     ) -> None:
         client, namespace = get_api_client(namespace, service_profile)
         if not version:
@@ -459,8 +458,8 @@ class ComponentManager:
         name: str,
         version: str,
         message: str,
-        service_profile: Optional[str] = None,
-        namespace: Optional[str] = None,
+        service_profile: t.Optional[str] = None,
+        namespace: t.Optional[str] = None,
     ):
         client, namespace = get_api_client(namespace, service_profile)
         component_name = '/'.join([namespace, name])
@@ -515,18 +514,18 @@ class ComponentManager:
     def upload_component(
         self,
         name: str,
-        version: Optional[str] = None,
-        service_profile: Optional[str] = None,
-        namespace: Optional[str] = None,
-        archive: Optional[str] = None,
+        version: t.Optional[str] = None,
+        service_profile: t.Optional[str] = None,
+        namespace: t.Optional[str] = None,
+        archive: t.Optional[str] = None,
         skip_pre_release: bool = False,
         check_only: bool = False,
         allow_existing: bool = False,
         dry_run: bool = False,
-        dest_dir: Optional[str] = None,
-        repository: Optional[str] = None,
-        commit_sha: Optional[str] = None,
-        repository_path: Optional[str] = None,
+        dest_dir: t.Optional[str] = None,
+        repository: t.Optional[str] = None,
+        commit_sha: t.Optional[str] = None,
+        repository_path: t.Optional[str] = None,
     ) -> None:
         """
         Uploads a component version to the registry.
@@ -672,7 +671,7 @@ class ComponentManager:
             )
 
     @general_error_handler
-    def upload_component_status(self, job_id: str, service_profile: Optional[str] = None) -> None:
+    def upload_component_status(self, job_id: str, service_profile: t.Optional[str] = None) -> None:
         client, _ = get_api_client(None, service_profile)
         status = client.task_status(job_id=job_id)
         if status.status == 'failure':
@@ -805,8 +804,8 @@ class ComponentManager:
     @general_error_handler
     def inject_requirements(
         self,
-        component_requires_file: Union[Path, str],
-        component_list_file: Union[Path, str],
+        component_requires_file: t.Union[Path, str],
+        component_list_file: t.Union[Path, str],
     ):
         """Set build dependencies for components with manifests"""
         requirements_manager = CMakeRequirementsManager(component_requires_file)
@@ -890,8 +889,8 @@ class ComponentManager:
 
     @staticmethod
     def _override_requirements_by_component_sources(
-        requirements: OrderedDictType[ComponentName, Dict[str, Union[List[str], str]]],
-    ) -> OrderedDictType[ComponentName, Dict[str, Union[List[str], str]]]:
+        requirements: t.OrderedDict[ComponentName, t.Dict[str, t.Union[t.List[str], str]]],
+    ) -> t.OrderedDict[ComponentName, t.Dict[str, t.Union[t.List[str], str]]]:
         """
         group the requirements, the overriding sequence here is: (the latter, the higher priority)
         - idf_components (IDF_PATH/components)
@@ -977,9 +976,9 @@ class ComponentManager:
     def sync_registry(
         self,
         service_profile: str,
-        save_path: Union[str, Path],
+        save_path: t.Union[str, Path],
         interval: int = 0,
-        components: Optional[List[str]] = None,
+        components: t.Optional[t.List[str]] = None,
         recursive: bool = True,
     ) -> None:
         client, namespace = get_storage_client(None, service_profile)

@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+import typing as t
 from collections import OrderedDict
-from typing import OrderedDict as OrderedDictType
 
 from schema import And, Optional, Or, Schema, SchemaError, Use
 from yaml import Node, SafeDumper, YAMLError, safe_load
@@ -41,7 +41,7 @@ LOCK_SCHEMA = Schema({
 })
 
 
-def _ordered_dict_representer(dumper: SafeDumper, data: OrderedDictType) -> Node:
+def _ordered_dict_representer(dumper: SafeDumper, data: t.OrderedDict) -> Node:
     return dumper.represent_data(dict(data))
 
 
