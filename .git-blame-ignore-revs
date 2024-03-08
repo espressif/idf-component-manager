@@ -2,3 +2,5 @@
 492c33dc4f7d42f8939850211fa75523f7fdc47a
 # ruff and ruff-format
 0ebe0c6e07dd7d616b4d4f07f554e8ea68d47911
+# "from typing import ..." to "import typing as t"
+a5e85486930ea416406ed1b3b24e7b22aeaeb2cc
