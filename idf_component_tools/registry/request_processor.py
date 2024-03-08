@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
-from typing import Dict, List, Optional, Tuple, Union
+import typing as t
 
 import requests
 from requests import Response
@@ -29,7 +29,7 @@ def join_url(*args) -> str:
     return '/'.join(parts)
 
 
-def get_timeout() -> Union[float, Tuple[float, float]]:
+def get_timeout() -> t.Union[float, t.Tuple[float, float]]:
     try:
         return float(os.environ['IDF_COMPONENT_SERVICE_TIMEOUT'])
     except ValueError:
@@ -40,7 +40,7 @@ def get_timeout() -> Union[float, Tuple[float, float]]:
         return DEFAULT_TIMEOUT
 
 
-def verify_ssl() -> Union[bool, str]:
+def verify_ssl() -> t.Union[bool, str]:
     """Returns either True, False or a path to a CA bundle file"""
 
     return getenv_bool_or_string('IDF_COMPONENT_VERIFY_SSL', True)
@@ -50,10 +50,10 @@ def make_request(
     method: str,
     session: requests.Session,
     endpoint: str,
-    data: Optional[Dict],
-    json: Optional[Dict],
-    headers: Optional[Dict],
-    timeout: Union[float, Tuple[float, float]],
+    data: t.Optional[t.Dict],
+    json: t.Optional[t.Dict],
+    headers: t.Optional[t.Dict],
+    timeout: t.Union[float, t.Tuple[float, float]],
 ) -> Response:
     try:
         response = session.request(
@@ -78,7 +78,7 @@ def handle_response_errors(
     response: requests.Response,
     endpoint: str,
     use_storage: bool,
-) -> Dict:
+) -> t.Dict:
     if response.status_code == 204:  # NO CONTENT
         return {}
     elif 400 <= response.status_code < 500:
@@ -137,10 +137,10 @@ def handle_4xx_error(response: requests.Response) -> None:
 
 
 def validate_response(
-    response_json: Dict,
-    schema: Optional[Schema],
+    response_json: t.Dict,
+    schema: t.Optional[Schema],
     endpoint: str,
-) -> Dict:
+) -> t.Dict:
     try:
         if schema is not None:
             schema.validate(response_json)
@@ -159,13 +159,13 @@ def base_request(
     url: str,
     session: requests.Session,
     method: str,
-    path: List[str],
-    data: Optional[Dict] = None,
-    json: Optional[Dict] = None,
-    headers: Optional[Dict] = None,
+    path: t.List[str],
+    data: t.Optional[t.Dict] = None,
+    json: t.Optional[t.Dict] = None,
+    headers: t.Optional[t.Dict] = None,
     schema: Schema = None,
     use_storage: bool = False,
-) -> Dict:
+) -> t.Dict:
     endpoint = join_url(url, *path)
     timeout = get_timeout()
     response = make_request(method, session, endpoint, data, json, headers, timeout)

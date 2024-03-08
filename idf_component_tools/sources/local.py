@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+import typing as t
 from pathlib import Path
-from typing import Dict
 
 from ..errors import SourceError
 from ..manifest import (
@@ -68,7 +68,7 @@ class LocalSource(BaseSource):
 
         if self.is_overrider and path / 'CMakeLists.txt' not in path.iterdir():
             raise SourcePathError(
-                'The override_path you\'re using is pointing'
+                "The override_path you're using is pointing"
                 ' to directory "%s" that is not a component.' % str(path)
             )
 
@@ -157,7 +157,7 @@ class LocalSource(BaseSource):
             ],
         )
 
-    def serialize(self) -> Dict:
+    def serialize(self) -> t.Dict:
         return {
             'path': str(self._path),
             'type': self.name,

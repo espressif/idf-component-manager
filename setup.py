@@ -54,7 +54,7 @@ with io.open('README.md', mode='r', encoding='utf-8') as readme:
 with io.open(
     os.path.join(path, 'idf_component_tools', '__version__.py'), mode='r', encoding='utf-8'
 ) as f:
-    exec(f.read(), info)  # nosec
+    exec(f.read(), info)
 
 setuptools.setup(
     name=NAME,

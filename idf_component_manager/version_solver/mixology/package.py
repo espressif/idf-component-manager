@@ -3,7 +3,7 @@
 # SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 from __future__ import annotations
 
-from typing import Optional
+import typing as t
 
 from idf_component_tools.sources import BaseSource
 
@@ -15,7 +15,7 @@ class Package:
 
     ROOT_PACKAGE_NAME = '_root_'
 
-    def __init__(self, name: str, source: Optional[BaseSource] = None) -> None:
+    def __init__(self, name: str, source: t.Optional[BaseSource] = None) -> None:
         self._name = name
         self._source = source
 

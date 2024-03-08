@@ -2,8 +2,7 @@
 # SPDX-License-Identifier: MIT License
 # SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
-from typing import Any, List
-from typing import Union as _Union
+import typing as t
 
 from idf_component_tools.manifest import HashedComponentVersion
 
@@ -72,8 +71,8 @@ class PackageSource:
         raise NotImplementedError()
 
     def versions_for(
-        self, package: Package, constraint: Any = None
-    ) -> List[HashedComponentVersion]:
+        self, package: Package, constraint: t.Any = None
+    ) -> t.List[HashedComponentVersion]:
         """
         Search for the specifications that match the given constraint.
         """
@@ -83,21 +82,21 @@ class PackageSource:
         return self._versions_for(package, constraint)
 
     def _versions_for(
-        self, package: Package, constraint: Any = None
-    ) -> List[HashedComponentVersion]:
+        self, package: Package, constraint: t.Any = None
+    ) -> t.List[HashedComponentVersion]:
         raise NotImplementedError()
 
-    def dependencies_for(self, package: Package, version: Any) -> List[Any]:
+    def dependencies_for(self, package: Package, version: t.Any) -> t.List[t.Any]:
         raise NotImplementedError()
 
-    def convert_dependency(self, dependency: Any) -> _Union[Constraint, Range, Union]:
+    def convert_dependency(self, dependency: t.Any) -> t.Union[Constraint, Range, Union]:
         """
         Converts a user-defined dependency (returned by dependencies_for())
         into a format Mixology understands.
         """
         raise NotImplementedError()
 
-    def incompatibilities_for(self, package: Package, version: Any) -> List[Incompatibility]:
+    def incompatibilities_for(self, package: Package, version: t.Any) -> t.List[Incompatibility]:
         """
         Returns the incompatibilities of a given package and version
         """

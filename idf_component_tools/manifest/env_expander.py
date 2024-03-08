@@ -2,15 +2,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+import typing as t
 from string import Template
-from typing import Any, Callable, Dict, List, Optional, Union
 
 import yaml
 
 from ..errors import ManifestError
 
 
-def subst_vars_in_str(s: str, env: Dict[str, Any]) -> str:
+def subst_vars_in_str(s: str, env: t.Dict[str, t.Any]) -> str:
     try:
         return Template(s).substitute(env)
     except KeyError as e:
@@ -23,12 +23,12 @@ def subst_vars_in_str(s: str, env: Dict[str, Any]) -> str:
 
 
 def expand_env_vars(
-    obj: Union[Dict[str, Any], List, str, Any],
-    env: Optional[Dict] = None,
-) -> Union[Dict[str, Any], List, str, Any]:
-    '''
+    obj: t.Union[t.Dict[str, t.Any], t.List, str, t.Any],
+    env: t.Optional[t.Dict] = None,
+) -> t.Union[t.Dict[str, t.Any], t.List, str, t.Any]:
+    """
     Expand variables in the results of YAML/JSON file parsing
-    '''
+    """
     if env is None:
         env = dict(os.environ)
 
@@ -50,7 +50,7 @@ def _raise_on_env(s: str) -> None:
         raise EnvFoundException
 
 
-def contains_env_variables(obj: Union[Dict[str, Any], List, str, Any]) -> bool:
+def contains_env_variables(obj: t.Union[t.Dict[str, t.Any], t.List, str, t.Any]) -> bool:
     try:
         process_nested_strings(obj, _raise_on_env)
         return False
@@ -59,18 +59,18 @@ def contains_env_variables(obj: Union[Dict[str, Any], List, str, Any]) -> bool:
 
 
 def process_nested_strings(
-    obj: Union[Dict[str, Any], List, str, Any],
-    func: Callable[[str], Any],
-) -> Union[Dict[str, Any], List, str, Any]:
-    '''
+    obj: t.Union[t.Dict[str, t.Any], t.List, str, t.Any],
+    func: t.Callable[[str], t.Any],
+) -> t.Union[t.Dict[str, t.Any], t.List, str, t.Any]:
+    """
     Recursively process strings in the results of YAML/JSON file parsing
-    '''
+    """
 
     if isinstance(obj, dict):
         return {k: process_nested_strings(v, func) for k, v in obj.items()}
     elif isinstance(obj, str):
         return func(obj)
-    elif isinstance(obj, (List, tuple)):
+    elif isinstance(obj, (list, tuple)):
         # yaml dict won't have other iterable data types
         return [process_nested_strings(i, func) for i in obj]
 
@@ -78,7 +78,7 @@ def process_nested_strings(
     return obj
 
 
-def dump_escaped_yaml(d: Dict[str, Any], path: str) -> None:
+def dump_escaped_yaml(d: t.Dict[str, t.Any], path: str) -> None:
     def _escape_dollar_sign(s):
         return s.replace('$', '$$')
 

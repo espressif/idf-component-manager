@@ -3,7 +3,7 @@
 
 import copy
 import os
-from typing import Any, Dict, List, Optional
+import typing as t
 
 import yaml
 
@@ -15,7 +15,7 @@ from .manifest import Manifest
 from .metadata import Metadata
 from .validator import ExpandedManifestValidator, ManifestValidator
 
-EMPTY_MANIFEST: Dict[str, Any] = dict()
+EMPTY_MANIFEST: t.Dict[str, t.Any] = dict()
 
 
 class ManifestManager:
@@ -32,12 +32,12 @@ class ManifestManager:
         path: str,  # Path of manifest file
         name: str,
         check_required_fields: bool = False,
-        version: Optional[str] = None,
+        version: t.Optional[str] = None,
         expand_environment: bool = False,
         process_opt_deps: bool = False,
-        repository: Optional[str] = None,
-        commit_sha: Optional[str] = None,
-        repository_path: Optional[str] = None,
+        repository: t.Optional[str] = None,
+        commit_sha: t.Optional[str] = None,
+        repository_path: t.Optional[str] = None,
     ) -> None:
         # Path of manifest file
         self._path = path
@@ -47,11 +47,11 @@ class ManifestManager:
         self.repository = repository
         self.commit_sha = commit_sha
         self.repository_path = repository_path
-        self._manifest_tree: Optional[Dict[str, Any]] = None
-        self._normalized_manifest_tree: Optional[Dict[str, Any]] = None
+        self._manifest_tree: t.Optional[t.Dict[str, t.Any]] = None
+        self._normalized_manifest_tree: t.Optional[t.Dict[str, t.Any]] = None
         self._manifest = None
         self._is_valid = None
-        self._validation_errors: List[str] = []
+        self._validation_errors: t.List[str] = []
         self.check_required_fields = check_required_fields
         self.expand_environment = expand_environment
         self.process_opt_deps = process_opt_deps
@@ -96,7 +96,7 @@ class ManifestManager:
 
         return self._path
 
-    def _overwrite_manifest_fields(self, manifest_fields_path: Dict) -> None:
+    def _overwrite_manifest_fields(self, manifest_fields_path: t.Dict) -> None:
         if self._manifest_tree is None:
             return
 
@@ -105,7 +105,7 @@ class ManifestManager:
             value = getattr(self, property_name)
 
             if value is not None:
-                subtree: Dict[str, Any] = self._manifest_tree
+                subtree: t.Dict[str, t.Any] = self._manifest_tree
                 for field in field_path[:-1]:
                     subtree = subtree.setdefault(field, {})
                 subtree[field_name] = value
@@ -114,14 +114,12 @@ class ManifestManager:
     def manifest_tree(self):
         if not self._manifest_tree:
             self._manifest_tree = self.parse_manifest_file()
-            self._overwrite_manifest_fields(
-                {
-                    'version': ['version'],
-                    'repository': ['repository'],
-                    'commit_sha': ['repository_info', 'commit_sha'],
-                    'repository_path': ['repository_info', 'path'],
-                }
-            )
+            self._overwrite_manifest_fields({
+                'version': ['version'],
+                'repository': ['repository'],
+                'commit_sha': ['repository_info', 'commit_sha'],
+                'repository_path': ['repository_info', 'path'],
+            })
 
         return self._manifest_tree
 
@@ -135,7 +133,7 @@ class ManifestManager:
     def exists(self):
         return os.path.isfile(self.path)
 
-    def parse_manifest_file(self) -> Dict:
+    def parse_manifest_file(self) -> t.Dict:
         if not self.exists():
             return EMPTY_MANIFEST
 
@@ -189,7 +187,7 @@ class ManifestManager:
             self.normalized_manifest_tree, name=self.name, manifest_manager=self
         )
 
-    def dump(self, path: Optional[str] = None) -> None:
+    def dump(self, path: t.Optional[str] = None) -> None:
         if path is None:
             path = self.path
 

@@ -1,16 +1,16 @@
 # SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+import typing as t
 from pathlib import Path
-from typing import Iterable, Optional, Union
 
 from .calculate import hash_dir
 
 
 def validate_dir(
-    root: Union[str, Path],
+    root: t.Union[str, Path],
     dir_hash: str,
-    include: Optional[Iterable[str]] = None,
-    exclude: Optional[Iterable[str]] = None,
+    include: t.Optional[t.Iterable[str]] = None,
+    exclude: t.Optional[t.Iterable[str]] = None,
     exclude_default: bool = True,
 ) -> bool:
     """Check if directory hash is the same as provided"""

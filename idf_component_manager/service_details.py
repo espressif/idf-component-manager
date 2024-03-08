@@ -1,11 +1,13 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
-''' Helper function to init API client'''
+"""Helper function to init API client"""
+
 import os
+import typing as t
 import warnings
 from collections import namedtuple
-from typing import Dict, List, Optional, Tuple
+from functools import lru_cache
 
 from idf_component_manager.utils import print_info
 from idf_component_tools.config import ConfigManager, component_registry_url
@@ -14,7 +16,6 @@ from idf_component_tools.errors import FatalError
 from idf_component_tools.messages import UserDeprecationWarning
 from idf_component_tools.registry.api_client import APIClient
 from idf_component_tools.registry.multi_storage_client import MultiStorageClient
-from idf_component_tools.utils import lru_cache
 
 ServiceDetails = namedtuple(
     'ServiceDetails', ['registry_url', 'storage_urls', 'token', 'namespace']
@@ -33,14 +34,14 @@ class NoSuchProfile(FatalError):
     pass
 
 
-def get_namespace(profile: Dict[str, str], namespace: Optional[str] = None) -> str:
+def get_namespace(profile: t.Dict[str, str], namespace: t.Optional[str] = None) -> str:
     if namespace:
         return namespace
 
     return profile.get('default_namespace', DEFAULT_NAMESPACE)
 
 
-def get_token(profile: Dict[str, str], token_required: bool = True) -> Optional[str]:
+def get_token(profile: t.Dict[str, str], token_required: bool = True) -> t.Optional[str]:
     token = os.getenv('IDF_COMPONENT_API_TOKEN') or profile.get('api_token')
 
     if not token and token_required:
@@ -51,8 +52,8 @@ def get_token(profile: Dict[str, str], token_required: bool = True) -> Optional[
 
 def get_profile(
     profile_name: str = '',
-    config_path: Optional[str] = None,
-) -> Optional[Dict[str, str]]:
+    config_path: t.Optional[str] = None,
+) -> t.Optional[t.Dict[str, str]]:
     profile_name_env_deprecated = os.getenv('IDF_COMPONENT_SERVICE_PROFILE')
 
     if profile_name_env_deprecated:
@@ -82,8 +83,8 @@ def get_profile(
 
 
 def get_component_registry_url_with_profile(
-    config_path: Optional[str] = None,
-) -> Tuple[Optional[str], Optional[List[str]]]:
+    config_path: t.Optional[str] = None,
+) -> t.Tuple[t.Optional[str], t.Optional[t.List[str]]]:
     profile = get_profile(config_path=config_path)
     return component_registry_url(profile)
 
@@ -98,7 +99,7 @@ def get_storage_urls(
 
 
 def get_registry_storage_urls(
-    registry_profile: Optional[Dict[str, str]] = None,
+    registry_profile: t.Optional[t.Dict[str, str]] = None,
     storage_required: bool = False,
 ):
     registry_url, storage_urls = component_registry_url(registry_profile)
@@ -110,9 +111,9 @@ def get_registry_storage_urls(
 
 
 def _load_service_profile_details(
-    namespace: Optional[str] = None,
-    service_profile: Optional[str] = None,
-    config_path: Optional[str] = None,
+    namespace: t.Optional[str] = None,
+    service_profile: t.Optional[str] = None,
+    config_path: t.Optional[str] = None,
     token_required: bool = True,
     raise_on_missing_profile: bool = True,
     storage_required: bool = False,
@@ -125,7 +126,7 @@ def _load_service_profile_details(
 
 
 def validate_profile(
-    profile: Optional[Dict[str, str]], profile_name: str, raise_on_missing: bool = True
+    profile: t.Optional[t.Dict[str, str]], profile_name: str, raise_on_missing: bool = True
 ) -> None:
     if profile:
         print_info(
@@ -142,8 +143,8 @@ def validate_profile(
 
 
 def service_details_for_profile(
-    profile: Optional[Dict[str, str]],
-    namespace: Optional[str] = None,
+    profile: t.Optional[t.Dict[str, str]],
+    namespace: t.Optional[str] = None,
     token_required: bool = True,
     storage_required: bool = False,
 ) -> ServiceDetails:
@@ -166,12 +167,12 @@ def service_details_for_profile(
 
 
 def get_api_client(
-    namespace: Optional[str] = None,
-    service_profile: Optional[str] = None,
-    config_path: Optional[str] = None,
+    namespace: t.Optional[str] = None,
+    service_profile: t.Optional[str] = None,
+    config_path: t.Optional[str] = None,
     token_required: bool = True,
     raise_on_missing_profile=True,
-) -> Tuple[APIClient, str]:
+) -> t.Tuple[APIClient, str]:
     service_details = _load_service_profile_details(
         namespace, service_profile, config_path, token_required, raise_on_missing_profile
     )
@@ -182,11 +183,11 @@ def get_api_client(
 
 
 def get_storage_client(
-    namespace: Optional[str] = None,
-    service_profile: Optional[str] = None,
-    config_path: Optional[str] = None,
+    namespace: t.Optional[str] = None,
+    service_profile: t.Optional[str] = None,
+    config_path: t.Optional[str] = None,
     raise_on_missing_profile=True,
-) -> Tuple[MultiStorageClient, str]:
+) -> t.Tuple[MultiStorageClient, str]:
     service_details = _load_service_profile_details(
         namespace,
         service_profile,

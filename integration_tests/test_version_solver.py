@@ -270,25 +270,23 @@ def test_version_solver_with_caret_and_prerelease(project):
 @pytest.mark.parametrize(
     'project',
     [
-        (
-            {
-                'components': {
-                    'main': {
-                        'dependencies': {
-                            'test/circular_dependency_b': {
-                                'version': '*',
-                            },
-                            'test/circular_dependency_a': {
-                                'path': '../test__circular_dependency_a',
-                            },
-                        }
-                    },
-                    'test__circular_dependency_a': {
-                        'version': '1.0.0',
-                    },
-                }
+        ({
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'test/circular_dependency_b': {
+                            'version': '*',
+                        },
+                        'test/circular_dependency_a': {
+                            'path': '../test__circular_dependency_a',
+                        },
+                    }
+                },
+                'test__circular_dependency_a': {
+                    'version': '1.0.0',
+                },
             }
-        ),
+        }),
     ],
     indirect=True,
 )
@@ -321,19 +319,17 @@ def test_version_solver_on_local_components_higher_priority(project):
 @pytest.mark.parametrize(
     'project',
     [
-        (
-            {
-                'components': {
-                    'main': {
-                        'dependencies': {
-                            'example/cmp': {
-                                'version': '*',
-                            }
+        ({
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'example/cmp': {
+                            'version': '*',
                         }
                     }
                 }
             }
-        ),
+        }),
     ],
     indirect=True,
 )

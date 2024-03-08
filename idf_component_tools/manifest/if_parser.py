@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import re
+import typing as t
 from ast import literal_eval
-from typing import Dict, List, Optional, Union
 
 from pyparsing import Keyword, Word, alphanums, infixNotation, opAssoc
 from schema import SchemaError
@@ -26,7 +26,7 @@ class OptionalDependency:
         'version',
     ]
 
-    def __init__(self, clause: Union[str, IfClause], version: Optional[str] = None) -> None:
+    def __init__(self, clause: t.Union[str, IfClause], version: t.Optional[str] = None) -> None:
         if isinstance(clause, IfClause):
             self.if_clause = clause
         else:
@@ -37,7 +37,7 @@ class OptionalDependency:
         return '{} ({})'.format(self.if_clause, self.version or '*')
 
     @classmethod
-    def fromdict(cls, d: Dict) -> OptionalDependency:
+    def fromdict(cls, d: t.Dict) -> OptionalDependency:
         return cls(d.get('if'), d.get('version'))  # type: ignore
 
 
@@ -60,7 +60,7 @@ class IfClause:
             raise SchemaError(None, f'Invalid string "{s}" in "if" clause')
 
     @staticmethod
-    def eval_list(s: str) -> List[str]:
+    def eval_list(s: str) -> t.List[str]:
         _s = s.strip()
 
         if _s[0] == '[' and _s[-1] == ']':

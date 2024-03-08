@@ -35,7 +35,7 @@ try:
 except ImportError:
     from urlparse import urlparse  # type: ignore
 
-from typing import Dict, List, Optional
+import typing as t
 
 from ..manifest import ManifestManager
 from ..manifest.solved_component import SolvedComponent
@@ -146,8 +146,8 @@ class WebServiceSource(BaseSource):
 
     @staticmethod
     def create_sources_if_valid(
-        name: str, details: Dict, manifest_manager: Optional[ManifestManager] = None
-    ) -> List[BaseSource]:
+        name: str, details: t.Dict, manifest_manager: t.Optional[ManifestManager] = None
+    ) -> t.List[BaseSource]:
         # This should be run last
         if not details:
             details_copy = {}
@@ -173,7 +173,7 @@ class WebServiceSource(BaseSource):
         if not storage_urls:
             return [WebServiceSource(details_copy, manifest_manager=manifest_manager)]
 
-        sources: List[BaseSource] = []
+        sources: t.List[BaseSource] = []
         if storage_urls:
             for storage_url in storage_urls:
                 details_copy['storage_url'] = storage_url
@@ -182,13 +182,11 @@ class WebServiceSource(BaseSource):
         return sources
 
     def component_cache_path(self, component: SolvedComponent) -> str:
-        component_dir_name = '_'.join(
-            [
-                self.normalized_name(component.name).replace('/', '__'),
-                str(component.version),
-                str(component.component_hash)[:8],
-            ]
-        )
+        component_dir_name = '_'.join([
+            self.normalized_name(component.name).replace('/', '__'),
+            str(component.version),
+            str(component.component_hash)[:8],
+        ])
         path = os.path.join(self.cache_path(), component_dir_name)
         return path
 
@@ -252,8 +250,9 @@ class WebServiceSource(BaseSource):
                 )
 
             raise FetchingError(
-                'Cannot find versions of "{}" satisfying "{}" '
-                'for the current target {}.'.format(name, spec, current_target)
+                'Cannot find versions of "{}" satisfying "{}" ' 'for the current target {}.'.format(
+                    name, spec, current_target
+                )
             )
 
         return cmp_with_versions
@@ -319,7 +318,7 @@ class WebServiceSource(BaseSource):
     def service_url(self):
         return self.base_url
 
-    def serialize(self) -> Dict:
+    def serialize(self) -> t.Dict:
         source = {'type': self.name}
 
         service_url = self.base_url

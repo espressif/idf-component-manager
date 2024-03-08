@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
-import subprocess  # nosec
-from typing import List, Optional, Union
+import subprocess  # noqa: S404
+import typing as t
 
 import click
 
@@ -24,9 +24,9 @@ def _get_shell_completion(shell: str) -> str:
 
 
 def _append_text_line(
-    strings: Union[str, List[str]],
+    strings: t.Union[str, t.List[str]],
     filepath: str,
-    write_string: Optional[str] = None,
+    write_string: t.Optional[str] = None,
     dry_run: bool = False,
 ) -> None:
     if isinstance(strings, str):
@@ -157,14 +157,12 @@ def init_autocomplete():
 
         # the return code could be 1 even succeeded
         # use || true to swallow the return code
-        autocomplete_script_str = subprocess.check_output(  # nosec
+        autocomplete_script_str = subprocess.check_output(
             '_{}_COMPLETE={} {} || true'.format(
                 CLI_NAME.upper(), _get_shell_completion(shell), CLI_NAME
             ),
-            shell=True,
-        ).decode(
-            'utf8'
-        )  # nosec
+            shell=True,  # noqa: S602
+        ).decode('utf8')
 
         if not install:  # print the autocomplete script only
             print(autocomplete_script_str)

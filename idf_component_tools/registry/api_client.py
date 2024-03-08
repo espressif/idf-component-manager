@@ -1,12 +1,13 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Classes to work with Espressif Component Web Service"""
+
 import os
 import re
+import typing as t
 from collections import namedtuple
 from functools import wraps
 from ssl import SSLEOFError
-from typing import Any, Callable, Dict, List, Optional, Union
 
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 from schema import Schema
@@ -27,7 +28,7 @@ from .request_processor import base_request
 TaskStatus = namedtuple('TaskStatus', ['message', 'status', 'progress', 'warnings'])
 
 
-def auth_required(f: Callable) -> Callable:
+def auth_required(f: t.Callable) -> t.Callable:
     @wraps(f)
     def wrapper(self, *args, **kwargs):
         if not self.auth_token:
@@ -38,14 +39,16 @@ def auth_required(f: Callable) -> Callable:
 
 
 class APIClient(BaseClient):
-    def __init__(self, base_url: Optional[str] = None, auth_token: Optional[str] = None) -> None:
+    def __init__(
+        self, base_url: t.Optional[str] = None, auth_token: t.Optional[str] = None
+    ) -> None:
         super().__init__()
         self.auth_token = auth_token
         self.base_url = base_url
         self._frontend_url = None
 
-    def _request(cache: Union[BaseClient, bool] = False) -> Callable:
-        def decorator(f: Callable[..., Any]) -> Callable:
+    def _request(cache: t.Union[BaseClient, bool] = False) -> t.Callable:
+        def decorator(f: t.Callable[..., t.Any]) -> t.Callable:
             @wraps(f)  # type: ignore
             def wrapper(self, *args, **kwargs):
                 url = self.base_url
@@ -65,11 +68,11 @@ class APIClient(BaseClient):
 
                 def request(
                     method: str,
-                    path: List[str],
-                    data: Optional[Dict] = None,
-                    json: Optional[Dict] = None,
-                    headers: Optional[Dict] = None,
-                    schema: Optional[Schema] = None,
+                    path: t.List[str],
+                    data: t.Optional[t.Dict] = None,
+                    json: t.Optional[t.Dict] = None,
+                    headers: t.Optional[t.Dict] = None,
+                    schema: t.Optional[Schema] = None,
                 ):
                     return base_request(
                         url,
@@ -96,12 +99,12 @@ class APIClient(BaseClient):
         return self._frontend_url
 
     @_request(cache=True)
-    def api_information(self, request: Callable) -> Dict:
+    def api_information(self, request: t.Callable) -> t.Dict:
         return request('get', [], schema=API_INFORMATION_SCHEMA)
 
     @auth_required
     @_request(cache=False)
-    def token_information(self, request: Callable) -> Dict:
+    def token_information(self, request: t.Callable) -> t.Dict:
         return request('get', ['tokens', 'current'], schema=API_TOKEN_SCHEMA)
 
     def _upload_version_to_endpoint(self, request, file_path, endpoint, callback=None):
@@ -130,7 +133,7 @@ class APIClient(BaseClient):
 
     @_request(cache=False)
     def versions(
-        self, request: Callable, component_name: str, spec: str = '*'
+        self, request: t.Callable, component_name: str, spec: str = '*'
     ) -> ComponentWithVersions:
         """List of versions for given component with required spec"""
         return super().versions(request=request, component_name=component_name, spec=spec)
@@ -152,7 +155,7 @@ class APIClient(BaseClient):
     @_request(cache=False)
     def delete_version(
         self,
-        request: Callable,
+        request: t.Callable,
         component_name: str,
         component_version: str,
     ) -> None:
@@ -162,7 +165,7 @@ class APIClient(BaseClient):
     @_request(cache=False)
     def yank_version(
         self,
-        request: Callable,
+        request: t.Callable,
         component_name: str,
         component_version: str,
         yank_message: str,
@@ -174,7 +177,7 @@ class APIClient(BaseClient):
         )
 
     @_request(cache=False)
-    def task_status(self, request: Callable, job_id: str) -> TaskStatus:
+    def task_status(self, request: t.Callable, job_id: str) -> TaskStatus:
         body = request('get', ['tasks', job_id], schema=TASK_STATUS_SCHEMA)
         return TaskStatus(
             body['message'], body['status'], body['progress'], body.get('warnings', [])

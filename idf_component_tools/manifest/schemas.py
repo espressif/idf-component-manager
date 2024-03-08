@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import re
-from typing import Any, Callable, Dict, List, Union
+import typing as t
 
 from schema import And, Optional, Or, Regex, Schema, Use
 
@@ -55,7 +55,7 @@ def optional_dependency_schema_builder() -> Schema:
     }
 
 
-def dependency_schema_builder(rule_schema_builder: Callable) -> Or:
+def dependency_schema_builder(rule_schema_builder: t.Callable) -> Or:
     return Or(
         Or(None, str, error='Dependency version spec format is invalid'),
         {
@@ -87,12 +87,10 @@ def dependency_schema_builder(rule_schema_builder: Callable) -> Or:
 
 
 def repository_info_schema_builder():
-    return Schema(
-        {
-            Optional('commit_sha'): Regex(COMMIT_ID_RE, error='Invalid git commit SHA format'),
-            Optional('path'): _nonempty_string('repository_path'),
-        }
-    )
+    return Schema({
+        Optional('commit_sha'): Regex(COMMIT_ID_RE, error='Invalid git commit SHA format'),
+        Optional('path'): _nonempty_string('repository_path'),
+    })
 
 
 def schema_builder(validate_rules: bool = False) -> Schema:
@@ -152,17 +150,17 @@ def schema_builder(validate_rules: bool = False) -> Schema:
     )
 
 
-def version_json_schema() -> Dict:
+def version_json_schema() -> t.Dict:
     return {'type': 'string', 'pattern': SimpleSpec.regex_str()}
 
 
-def manifest_json_schema() -> Dict:
-    def replace_regex_pattern_with_pattern_str(pat: re.Pattern) -> Any:
+def manifest_json_schema() -> t.Dict:
+    def replace_regex_pattern_with_pattern_str(pat: re.Pattern) -> t.Any:
         return pat.pattern
 
     def process_json_schema(
-        obj: Union[Dict[str, Any], List, str, Any]
-    ) -> Union[Dict[str, Any], List, str, Any]:
+        obj: t.Union[t.Dict[str, t.Any], t.List, str, t.Any],
+    ) -> t.Union[t.Dict[str, t.Any], t.List, str, t.Any]:
         if isinstance(obj, dict):
             # jsonschema 2.5.1 for python 3.4 does not support empty `required` field
             if not obj.get('required', []):
@@ -305,8 +303,8 @@ def serialize_list_of_list_of_strings(ll_str):
     return sorted(res)
 
 
-_build_metadata_keys: List[str] = []
-_info_metadata_keys: List[str] = []
+_build_metadata_keys: t.List[str] = []
+_info_metadata_keys: t.List[str] = []
 for _key in sorted(_flatten_json_schema_keys(JSON_SCHEMA)):
     if _key[0] in KNOWN_BUILD_METADATA_FIELDS:
         _build_metadata_keys.append(_key)
@@ -318,9 +316,7 @@ for _key in sorted(_flatten_json_schema_keys(JSON_SCHEMA)):
 BUILD_METADATA_KEYS = serialize_list_of_list_of_strings(_build_metadata_keys)
 INFO_METADATA_KEYS = serialize_list_of_list_of_strings(_info_metadata_keys)
 
-METADATA_SCHEMA = Schema(
-    {
-        Optional('build_keys'): BUILD_METADATA_KEYS,
-        Optional('info_keys'): INFO_METADATA_KEYS,
-    }
-)
+METADATA_SCHEMA = Schema({
+    Optional('build_keys'): BUILD_METADATA_KEYS,
+    Optional('info_keys'): INFO_METADATA_KEYS,
+})

@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+import typing as t
 import warnings
-from typing import Union
 
 
 class UserHint(Warning):
@@ -26,19 +26,19 @@ class UserDeprecationWarning(UserWarning):
 
 
 def warn(
-    message: Union[Exception, str],
+    message: t.Union[Exception, str],
 ) -> None:
     warnings.warn(str(message))
 
 
-def hint(message: Union[Warning, Exception, str]) -> None:
+def hint(message: t.Union[Warning, Exception, str]) -> None:
     if isinstance(message, Warning):
         warnings.warn(message)
     else:
         warnings.warn(str(message), UserHint)
 
 
-def notice(message: Union[Warning, Exception, str]) -> None:
+def notice(message: t.Union[Warning, Exception, str]) -> None:
     if isinstance(message, Warning):
         warnings.warn(message)
     else:

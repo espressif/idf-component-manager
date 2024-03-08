@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
-from typing import Dict
+import typing as t
 
 from .. import semver
 from ..build_system_tools import get_idf_path, get_idf_version
@@ -44,5 +44,5 @@ class IDFSource(BaseSource):
         get_idf_path()
         return None
 
-    def serialize(self) -> Dict:
+    def serialize(self) -> t.Dict:
         return {'type': self.name}

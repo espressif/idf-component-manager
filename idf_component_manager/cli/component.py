@@ -60,9 +60,7 @@ def init_component():
         + DEST_DIR_OPTION
         + COMMIT_SHA_REPO_OPTION
     )
-    def pack(
-        manager, namespace, name, version, dest_dir, repository, commit_sha, repository_path
-    ):  # noqa: namespace is not used
+    def pack(manager, namespace, name, version, dest_dir, repository, commit_sha, repository_path):  # noqa: namespace is not used
         """
         Create component archive and store it in the dist directory.
         """

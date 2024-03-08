@@ -148,15 +148,13 @@ def test_login_updated_arguments(monkeypatch, tmp_path, mock_token_information):
 
 def test_logout_from_registry(monkeypatch, tmp_path):
     monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
-    config = Config(
-        {
-            'profiles': {
-                'default': {
-                    'api_token': 'asdf',
-                },
-            }
+    config = Config({
+        'profiles': {
+            'default': {
+                'api_token': 'asdf',
+            },
         }
-    )
+    })
     ConfigManager().dump(config)
 
     runner = CliRunner()

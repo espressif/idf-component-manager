@@ -4,10 +4,8 @@
 from __future__ import annotations
 
 import os
+import typing as t
 import warnings
-from typing import Any, Dict, Iterator, List
-from typing import Optional as OptionalType
-from typing import Tuple
 
 import yaml
 from schema import And, Optional, Or, Regex, Schema, SchemaError
@@ -21,32 +19,30 @@ from .constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL
 
 DEFAULT_CONFIG_DIR = os.path.join('~', '.espressif')
 
-CONFIG_SCHEMA = Schema(
-    {
-        Optional('profiles'): {
-            str:
-            # Use Or to allow either a None value or
-            # a dictionary with specific keys and validation rules
-            Or(
-                None,
-                {
-                    Optional('registry_url'): Or('default', Regex(COMPILED_URL_RE)),
-                    Optional('storage_url'): Or(
-                        'default',
-                        Or(Regex(COMPILED_URL_RE), Regex(COMPILED_FILE_RE)),
-                        [Or(Regex(COMPILED_URL_RE), Regex(COMPILED_FILE_RE))],
-                    ),
-                    Optional('default_namespace'): And(str, len),
-                    Optional('api_token'): And(str, len),
-                    # allow any other keys that may be introduced in future versions
-                    Optional(str): object,
-                },
-            ),
-        },
-        # allow any other keys that may be introduced in future versions
-        Optional(str): object,
-    }
-)
+CONFIG_SCHEMA = Schema({
+    Optional('profiles'): {
+        str:
+        # Use Or to allow either a None value or
+        # a dictionary with specific keys and validation rules
+        Or(
+            None,
+            {
+                Optional('registry_url'): Or('default', Regex(COMPILED_URL_RE)),
+                Optional('storage_url'): Or(
+                    'default',
+                    Or(Regex(COMPILED_URL_RE), Regex(COMPILED_FILE_RE)),
+                    [Or(Regex(COMPILED_URL_RE), Regex(COMPILED_FILE_RE))],
+                ),
+                Optional('default_namespace'): And(str, len),
+                Optional('api_token'): And(str, len),
+                # allow any other keys that may be introduced in future versions
+                Optional(str): object,
+            },
+        ),
+    },
+    # allow any other keys that may be introduced in future versions
+    Optional(str): object,
+})
 
 
 def config_dir():
@@ -62,29 +58,29 @@ class ConfigError(FatalError):
 
 
 class Config:
-    def __init__(self, config: OptionalType[Dict] = None) -> None:
+    def __init__(self, config: t.Optional[t.Dict] = None) -> None:
         self._config = config or {}
 
-    def __getitem__(self, key: Any) -> Any:
+    def __getitem__(self, key: t.Any) -> t.Any:
         return self._config[key]
 
-    def __setitem__(self, key: Any, value: Any) -> None:
+    def __setitem__(self, key: t.Any, value: t.Any) -> None:
         self._config[key] = value
 
-    def __delitem__(self, key: Any) -> None:
+    def __delitem__(self, key: t.Any) -> None:
         del self._config[key]
 
     def __len__(self) -> int:
         return len(self._config)
 
-    def __iter__(self) -> Iterator[Any]:
+    def __iter__(self) -> t.Iterator[t.Any]:
         return iter(self._config.items())
 
-    def __contains__(self, item: Any) -> bool:
+    def __contains__(self, item: t.Any) -> bool:
         return item in self._config
 
     @property
-    def profiles(self) -> Dict:
+    def profiles(self) -> t.Dict:
         return self._config.setdefault('profiles', {})
 
     def validate(self) -> Config:
@@ -128,7 +124,7 @@ def get_api_url(url: str) -> str:
     return f'{url}/api/'
 
 
-def replace_default_value(storage_urls: List[str]) -> List[str]:
+def replace_default_value(storage_urls: t.List[str]) -> t.List[str]:
     storage_urls_copy = list(storage_urls)
     for i, storage_url in enumerate(storage_urls_copy):
         if storage_url == 'default':
@@ -138,8 +134,8 @@ def replace_default_value(storage_urls: List[str]) -> List[str]:
 
 
 def component_registry_url(
-    registry_profile: OptionalType[Dict[str, str]] = None,
-) -> Tuple[OptionalType[str], OptionalType[List[str]]]:
+    registry_profile: t.Optional[t.Dict[str, str]] = None,
+) -> t.Tuple[t.Optional[str], t.Optional[t.List[str]]]:
     """
     Returns registry API endpoint and static files URLs.
 

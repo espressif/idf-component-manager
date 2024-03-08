@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-'''Class decorators to help with serialization'''
+"""Class decorators to help with serialization"""
 
 from collections import OrderedDict
 from numbers import Number
@@ -18,7 +18,7 @@ def _by_key(item):
 
 
 def serialize(value, serialize_default=True):
-    '''Serialize value'''
+    """Serialize value"""
     if isinstance(value, BASIC_TYPES):
         return value
 

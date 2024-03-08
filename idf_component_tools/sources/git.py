@@ -5,8 +5,8 @@ import os
 import re
 import shutil
 import tempfile
+import typing as t
 from hashlib import sha256
-from typing import Dict, List, Optional, Union
 from urllib.parse import urlparse  # type: ignore
 
 from idf_component_tools.hash_tools.calculate import hash_dir
@@ -41,9 +41,9 @@ class GitSource(BaseSource):
 
     def _checkout_git_source(
         self,
-        version: Union[str, ComponentVersion, None],
+        version: t.Union[str, ComponentVersion, None],
         path: str,
-        selected_paths: Optional[List[str]] = None,
+        selected_paths: t.Optional[t.List[str]] = None,
     ) -> str:
         if version is not None:
             version = None if version == '*' else str(version)
@@ -58,8 +58,8 @@ class GitSource(BaseSource):
 
     @staticmethod
     def create_sources_if_valid(
-        name: str, details: Dict, manifest_manager: Optional[ManifestManager] = None
-    ) -> Optional[List[BaseSource]]:
+        name: str, details: t.Dict, manifest_manager: t.Optional[ManifestManager] = None
+    ) -> t.Optional[t.List[BaseSource]]:
         if details.get('git', None):
             return [GitSource(details, manifest_manager=manifest_manager)]
         return None
@@ -99,7 +99,7 @@ class GitSource(BaseSource):
         path = os.path.join(self.system_cache_path, f'b_{self.NAME}_{self.hash_key[:8]}')
         return path
 
-    def download(self, component: SolvedComponent, download_path: str) -> Optional[str]:
+    def download(self, component: SolvedComponent, download_path: str) -> t.Optional[str]:
         # Check for required components
         if not component.component_hash:
             raise FetchingError('Component hash is required for components from git repositories')
@@ -200,7 +200,7 @@ class GitSource(BaseSource):
             ],
         )
 
-    def serialize(self) -> Dict:
+    def serialize(self) -> t.Dict:
         source = {
             'git': self.git_repo,
             'type': self.name,

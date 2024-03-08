@@ -3,7 +3,7 @@
 
 import enum
 import re
-from typing import Optional, Union
+import typing as t
 
 import click
 from packaging import version
@@ -13,28 +13,28 @@ from idf_component_tools.messages import UserHint, UserNotice
 CLICK_SUPPORTS_SHOW_DEFAULT = version.parse(click.__version__) >= version.parse('7.1.0')
 
 
-def print_prefixed(prefix: str, color: str, message: Union[Exception, str], stderr: bool) -> None:
+def print_prefixed(prefix: str, color: str, message: t.Union[Exception, str], stderr: bool) -> None:
     styled_prefix = click.style(f'{prefix}: ', fg=color)
     click.echo(styled_prefix + str(message), err=stderr)
 
 
-def print_stderr_prefixed(prefix: str, color: str, message: Union[Exception, str]) -> None:
+def print_stderr_prefixed(prefix: str, color: str, message: t.Union[Exception, str]) -> None:
     print_prefixed(prefix, color, message, stderr=True)
 
 
-def print_error(message: Union[Exception, str]) -> None:
+def print_error(message: t.Union[Exception, str]) -> None:
     print_stderr_prefixed('ERROR', 'red', message)
 
 
-def print_warn(message: Union[Exception, str]) -> None:
+def print_warn(message: t.Union[Exception, str]) -> None:
     print_stderr_prefixed('WARNING', 'yellow', message)
 
 
-def print_hint(message: Union[Exception, str]) -> None:
+def print_hint(message: t.Union[Exception, str]) -> None:
     print_prefixed('HINT', 'yellow', message, stderr=False)
 
 
-def print_notice(message: Union[Exception, str]) -> None:
+def print_notice(message: t.Union[Exception, str]) -> None:
     print_prefixed('NOTICE', 'green', message, stderr=False)
 
 
@@ -49,11 +49,11 @@ def showwarning(message, category, filename, lineno, file=None, line=None):
 
 def print_info(
     message: str,
-    fg: Optional[str] = None,
-    bg: Optional[str] = None,
-    bold: Optional[str] = None,
-    underline: Optional[str] = None,
-    blink: Optional[str] = None,
+    fg: t.Optional[str] = None,
+    bg: t.Optional[str] = None,
+    bold: t.Optional[str] = None,
+    underline: t.Optional[str] = None,
+    blink: t.Optional[str] = None,
     **kwargs,
 ) -> None:
     click.secho(message, fg=fg, bg=bg, bold=bold, underline=underline, blink=blink, **kwargs)

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import vcr
 
@@ -27,19 +27,17 @@ def test_pack_component(mocker):
 
 def test_create_project_from_example(mocker):
     mocker.patch('idf_component_manager.core.ComponentManager.create_project_from_example')
-    main(
-        [
-            'create-project-from-example',
-            '--name',
-            'cmp',
-            '--namespace',
-            'test',
-            '--version',
-            '1.0.0',
-            '--example',
-            'ex',
-        ]
-    )
+    main([
+        'create-project-from-example',
+        '--name',
+        'cmp',
+        '--namespace',
+        'test',
+        '--version',
+        '1.0.0',
+        '--example',
+        'ex',
+    ])
     ComponentManager.create_project_from_example.assert_called_once_with(
         example='test/cmp=1.0.0:ex'
     )
@@ -47,17 +45,15 @@ def test_create_project_from_example(mocker):
 
 def test_delete_version(mocker):
     mocker.patch('idf_component_manager.core.ComponentManager.delete_version')
-    main(
-        [
-            'delete-version',
-            '--name',
-            'cmp',
-            '--version',
-            '1.0.0',
-            '--namespace',
-            'test',
-        ]
-    )
+    main([
+        'delete-version',
+        '--name',
+        'cmp',
+        '--version',
+        '1.0.0',
+        '--namespace',
+        'test',
+    ])
     ComponentManager.delete_version.assert_called_once_with(
         name='cmp', version='1.0.0', service_profile='default', namespace='test'
     )

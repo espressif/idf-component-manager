@@ -1,8 +1,7 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Any, Dict, List, Optional, Set
-from typing import Union as _Union
+import typing as t
 
 from idf_component_tools.manifest import HashedComponentVersion
 from idf_component_tools.semver import Range as SemverRange
@@ -16,7 +15,7 @@ from .mixology.range import Range
 from .mixology.union import Union
 
 
-def parse_constraint(spec: str) -> _Union[Union, Range]:
+def parse_constraint(spec: str) -> t.Union[Union, Range]:
     try:
         clause = SimpleSpec(spec).clause
     except ValueError:  # if not semspec, expect an exact version
@@ -34,8 +33,8 @@ def parse_constraint(spec: str) -> _Union[Union, Range]:
 
 
 def parse_single_constraint(
-    _range: _Union[SemverRange, HashedComponentVersion],
-) -> _Union[Union, Range]:
+    _range: t.Union[SemverRange, HashedComponentVersion],
+) -> t.Union[Union, Range]:
     if isinstance(_range, HashedComponentVersion):  # not semver
         return Range(_range, _range, True, True, _range.text)
 
@@ -54,7 +53,7 @@ def parse_single_constraint(
         return Range(version, version, True, True, str(_range))
 
 
-def parse_root_dep_conflict_constraints(failure: SolverFailure) -> List[Constraint]:
+def parse_root_dep_conflict_constraints(failure: SolverFailure) -> t.List[Constraint]:
     terms = failure._incompatibility.terms
     res = []
     if len(terms) == 1 and terms[0].package == Package.root():  # root dep
@@ -75,8 +74,8 @@ class Dependency:
 class PackageSource(BasePackageSource):
     def __init__(self) -> None:
         self._root_version = HashedComponentVersion('0.0.0')
-        self._root_dependencies: List[Dependency] = []
-        self._packages: Dict[Package, Dict[HashedComponentVersion, List[Dependency]]] = {}
+        self._root_dependencies: t.List[Dependency] = []
+        self._packages: t.Dict[Package, t.Dict[HashedComponentVersion, t.List[Dependency]]] = {}
 
         super().__init__()
 
@@ -87,8 +86,8 @@ class PackageSource(BasePackageSource):
     def add(
         self,
         package: Package,
-        version: _Union[str, HashedComponentVersion],
-        deps: Optional[Dict[Package, str]] = None,
+        version: t.Union[str, HashedComponentVersion],
+        deps: t.Optional[t.Dict[Package, str]] = None,
     ):
         if deps is None:
             deps = {}
@@ -111,7 +110,7 @@ class PackageSource(BasePackageSource):
 
         self._packages[package][version] = dependencies
 
-    def override_dependencies(self, overriders: Set[str]) -> None:
+    def override_dependencies(self, overriders: t.Set[str]) -> None:
         for package in list(self._packages.keys()):
             if not package.source.is_overrider and package.name in overriders:
                 del self._packages[package]
@@ -131,8 +130,8 @@ class PackageSource(BasePackageSource):
         self._root_dependencies.append(Dependency(package, spec))
 
     def _versions_for(
-        self, package: Package, constraint: Any = None
-    ) -> List[HashedComponentVersion]:
+        self, package: Package, constraint: t.Any = None
+    ) -> t.List[HashedComponentVersion]:
         if package not in self._packages:
             return []
 
@@ -143,7 +142,7 @@ class PackageSource(BasePackageSource):
 
         return sorted(versions, reverse=True)
 
-    def dependencies_for(self, package: Package, version: Any) -> List[Any]:
+    def dependencies_for(self, package: Package, version: t.Any) -> t.List[t.Any]:
         if package == self.root:
             return self._root_dependencies
 

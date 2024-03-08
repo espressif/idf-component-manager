@@ -56,15 +56,13 @@ VERSION_UPLOAD_SCHEMA = Schema(
     error='Unexpected response during archive processing',
 )
 
-TASK_STATUS_SCHEMA = Schema(
-    {
-        'id': STRING,
-        'status': STRING,
-        Optional('message'): OPTIONAL_STRING,
-        Optional('progress'): Or(Use(float), None),
-        Optional(STRING): object,
-    }
-)
+TASK_STATUS_SCHEMA = Schema({
+    'id': STRING,
+    'status': STRING,
+    Optional('message'): OPTIONAL_STRING,
+    Optional('progress'): Or(Use(float), None),
+    Optional(STRING): object,
+})
 
 API_INFORMATION_SCHEMA = Schema(
     {'components_base_url': STRING, 'info': STRING, 'status': STRING, 'version': STRING},

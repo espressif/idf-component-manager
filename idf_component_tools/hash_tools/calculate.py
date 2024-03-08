@@ -1,16 +1,17 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Tools for hashing and hash validation for whole packages"""
+
 import json
+import typing as t
 from hashlib import sha256
 from pathlib import Path
-from typing import Any, Iterable, Optional, Union
 
 from idf_component_tools.file_tools import filtered_paths
 from idf_component_tools.hash_tools.constants import BLOCK_SIZE
 
 
-def hash_object(obj: Any) -> str:
+def hash_object(obj: t.Any) -> str:
     """Calculate sha256 of passed json-serialisable object"""
     sha = sha256()
     json_string = json.dumps(obj, sort_keys=True, separators=(',', ':'))
@@ -18,7 +19,7 @@ def hash_object(obj: Any) -> str:
     return sha.hexdigest()
 
 
-def hash_file(file_path: Union[str, Path]) -> str:
+def hash_file(file_path: t.Union[str, Path]) -> str:
     """Calculate sha256 of file"""
     sha = sha256()
 
@@ -33,9 +34,9 @@ def hash_file(file_path: Union[str, Path]) -> str:
 
 
 def hash_dir(
-    root: Union[str, Path],
-    include: Optional[Iterable[str]] = None,
-    exclude: Optional[Iterable[str]] = None,
+    root: t.Union[str, Path],
+    include: t.Optional[t.Iterable[str]] = None,
+    exclude: t.Optional[t.Iterable[str]] = None,
     exclude_default: bool = True,
 ) -> str:
     """Calculate sha256 of sha256 of all files and file names."""

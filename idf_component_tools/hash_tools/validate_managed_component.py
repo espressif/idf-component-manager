@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 import re
+import typing as t
 from pathlib import Path
-from typing import Union
 
 from idf_component_tools.environment import getenv_bool
 from idf_component_tools.hash_tools.validator import validate_dir
@@ -14,7 +14,7 @@ from .errors import HashDoesNotExistError, HashNotEqualError, HashNotSHA256Error
 
 
 def validate_managed_component_by_manifest(
-    root: Union[str, Path],
+    root: t.Union[str, Path],
     component_hash: str,
 ) -> bool:
     """Validate component in managed directory"""
@@ -32,7 +32,7 @@ def validate_managed_component_by_manifest(
 
 
 def validate_managed_component_hash(root: str) -> None:
-    '''Validate managed components directory, raise exception if validation fails'''
+    """Validate managed components directory, raise exception if validation fails"""
     if getenv_bool('IDF_COMPONENT_OVERWRITE_MANAGED_COMPONENTS'):
         return
 

@@ -2,13 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+import typing as t
 from collections import OrderedDict
-from typing import OrderedDict as OrderedDictType
 
 from schema import And, Optional, Or, Schema, SchemaError, Use
-from yaml import Node, SafeDumper, YAMLError
+from yaml import Node, SafeDumper, YAMLError, safe_load
 from yaml import dump as dump_yaml
-from yaml import safe_load
 
 import idf_component_tools as tools
 
@@ -28,23 +27,21 @@ EMPTY_LOCK = {
 
 HASH_SCHEMA = Or(And(str, lambda h: len(h) == 64), None)
 
-LOCK_SCHEMA = Schema(
-    {
-        Optional('dependencies'): {
-            Optional(str): {
-                'source': Or(*[source.schema() for source in tools.sources.KNOWN_SOURCES]),
-                'version': str,
-                Optional('component_hash'): HASH_SCHEMA,
-            }
-        },
-        'manifest_hash': HASH_SCHEMA,
-        'version': And(str, len),
-        Optional('target'): And(Use(str.lower), lambda s: s in known_targets()),
-    }
-)
+LOCK_SCHEMA = Schema({
+    Optional('dependencies'): {
+        Optional(str): {
+            'source': Or(*[source.schema() for source in tools.sources.KNOWN_SOURCES]),
+            'version': str,
+            Optional('component_hash'): HASH_SCHEMA,
+        }
+    },
+    'manifest_hash': HASH_SCHEMA,
+    'version': And(str, len),
+    Optional('target'): And(Use(str.lower), lambda s: s in known_targets()),
+})
 
 
-def _ordered_dict_representer(dumper: SafeDumper, data: OrderedDictType) -> Node:
+def _ordered_dict_representer(dumper: SafeDumper, data: t.OrderedDict) -> Node:
     return dumper.represent_data(dict(data))
 
 

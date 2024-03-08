@@ -45,7 +45,7 @@ from .integration_test_helpers import (
 )
 def test_git_folder_does_not_exists(project):
     res = build_project(project)
-    assert 'pathspec \'folder-not-exist\' did not match any file(s) known to git' in res
+    assert "pathspec 'folder-not-exist' did not match any file(s) known to git" in res
 
 
 @pytest.mark.parametrize(
@@ -225,7 +225,7 @@ def test_set_component_version(project):
 )
 def test_root_dep_failed(project):
     res = project_action(project, 'reconfigure')
-    assert 'ERROR: Because project depends on idf (^6.1) which doesn\'t match any' in res
+    assert "ERROR: Because project depends on idf (^6.1) which doesn't match any" in res
     assert 'versions, version solving failed.' in res
     assert 'Please check manifest file of the following component(s): main,' in res
     assert 'component_foo' in res

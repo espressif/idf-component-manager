@@ -3,7 +3,7 @@
 # SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 from __future__ import annotations
 
-from typing import Dict, Generator, Hashable, List, Optional
+import typing as t
 
 from .incompatibility_cause import (
     ConflictCause,
@@ -19,7 +19,7 @@ from .term import Term
 
 
 class Incompatibility:
-    def __init__(self, terms: List[Term], cause: IncompatibilityCause) -> None:
+    def __init__(self, terms: t.List[Term], cause: IncompatibilityCause) -> None:
         # Remove the root package from generated incompatibilities, since it will
         # always be satisfied. This makes error reporting clearer, and may also
         # make solving more efficient.
@@ -45,7 +45,7 @@ class Incompatibility:
             terms = terms
         else:
             # Coalesce multiple terms about the same package if possible.
-            by_name: Dict[Hashable, Dict[Hashable, Term]] = {}
+            by_name: t.Dict[t.Hashable, t.Dict[t.Hashable, Term]] = {}
             for term in terms:
                 if term.package not in by_name:
                     by_name[term.package] = {}
@@ -80,7 +80,7 @@ class Incompatibility:
         self._cause = cause
 
     @property
-    def terms(self) -> List[Term]:
+    def terms(self) -> t.List[Term]:
         return self._terms
 
     @property
@@ -88,7 +88,7 @@ class Incompatibility:
         return self._cause
 
     @property
-    def external_incompatibilities(self) -> Generator[Incompatibility]:
+    def external_incompatibilities(self) -> t.Generator[Incompatibility]:
         """
         Returns all external incompatibilities in this incompatibility's
         derivation graph.
@@ -108,7 +108,7 @@ class Incompatibility:
             and self._terms[0].is_positive()
         )
 
-    def handle_cause(self) -> Optional[str]:
+    def handle_cause(self) -> t.Optional[str]:
         if isinstance(self._cause, (DependencyCause, SelfDependentCause)):
             assert len(self._terms) == 2
 
@@ -201,7 +201,7 @@ class Incompatibility:
             return 'one of {} must be true'.format(' or '.join(negative))
 
     def and_to_string(
-        self, other: Incompatibility, details: Dict, this_line: int, other_line: int
+        self, other: Incompatibility, details: t.Dict, this_line: int, other_line: int
     ) -> str:
         requires_both = self._try_requires_both(other, details, this_line, other_line)
         if requires_both is not None:
@@ -227,8 +227,8 @@ class Incompatibility:
         return '\n'.join(buffer)
 
     def _try_requires_both(
-        self, other: Incompatibility, details: Dict, this_line: int, other_line: int
-    ) -> Optional[str]:
+        self, other: Incompatibility, details: t.Dict, this_line: int, other_line: int
+    ) -> t.Optional[str]:
         if len(self._terms) == 1 or len(other.terms) == 1:
             return
 
@@ -243,13 +243,13 @@ class Incompatibility:
         if this_positive.package != other_positive.package:
             return
 
-        this_negatives = ' or '.join(
-            [term.inverse.to_string() for term in self._terms if not term.is_positive()]
-        )
+        this_negatives = ' or '.join([
+            term.inverse.to_string() for term in self._terms if not term.is_positive()
+        ])
 
-        other_negatives = ' or '.join(
-            [term.inverse.to_string() for term in other.terms if not term.is_positive()]
-        )
+        other_negatives = ' or '.join([
+            term.inverse.to_string() for term in other.terms if not term.is_positive()
+        ])
 
         buffer = [self._terse(this_positive, allow_every=True) + ' ']
         is_dependency = isinstance(self.cause, DependencyCause) and isinstance(
@@ -273,8 +273,8 @@ class Incompatibility:
         return ''.join(buffer)
 
     def _try_requires_through(
-        self, other: Incompatibility, details: Dict, this_line: int, other_line: int
-    ) -> Optional[str]:
+        self, other: Incompatibility, details: t.Dict, this_line: int, other_line: int
+    ) -> t.Optional[str]:
         if len(self._terms) == 1 or len(other.terms) == 1:
             return
 
@@ -338,9 +338,9 @@ class Incompatibility:
             buffer.append('requires ')
 
         buffer.append(
-            ' or '.join(
-                [term.inverse.to_string() for term in latter.terms if not term.is_positive()]
-            )
+            ' or '.join([
+                term.inverse.to_string() for term in latter.terms if not term.is_positive()
+            ])
         )
 
         if latter_line is not None:
@@ -349,8 +349,8 @@ class Incompatibility:
         return ''.join(buffer)
 
     def _try_requires_forbidden(
-        self, other: Incompatibility, details: Dict, this_line: int, other_line: int
-    ) -> Optional[str]:
+        self, other: Incompatibility, details: t.Dict, this_line: int, other_line: int
+    ) -> t.Optional[str]:
         if len(self._terms) != 1 and len(other.terms) != 1:
             return None
 
@@ -404,7 +404,7 @@ class Incompatibility:
     def _terse(self, term: Term, allow_every: bool = False) -> str:
         return term.to_string(allow_every=allow_every)
 
-    def _single_term_where(self, callable: callable) -> Optional[Term]:
+    def _single_term_where(self, callable: callable) -> t.Optional[Term]:
         found = None
         for term in self._terms:
             if not callable(term):

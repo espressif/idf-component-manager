@@ -3,7 +3,7 @@
 # SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 from __future__ import annotations
 
-from typing import Optional
+import typing as t
 
 from .constraint import Constraint
 from .package import Package
@@ -113,7 +113,7 @@ class Term:
                 # not foo ^1.5.0 is a superset of not foo ^1.0.0
                 return SetRelation.OVERLAPPING
 
-    def intersect(self, other: Term) -> Optional[Term]:
+    def intersect(self, other: Term) -> t.Optional[Term]:
         """
         Returns a Term that represents the packages
         allowed by both this term and another
@@ -161,7 +161,7 @@ class Term:
 
         return self._empty
 
-    def _non_empty_term(self, constraint: Constraint, is_positive: bool) -> Optional[Term]:
+    def _non_empty_term(self, constraint: Constraint, is_positive: bool) -> t.Optional[Term]:
         if constraint.is_empty():
             return
 

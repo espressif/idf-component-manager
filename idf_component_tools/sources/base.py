@@ -4,8 +4,8 @@
 from __future__ import annotations
 
 import os
+import typing as t
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Callable, Dict, List, Union
 
 from schema import Optional
 
@@ -18,7 +18,7 @@ from ..errors import FetchingError, SourceError
 from ..file_cache import FileCache
 from ..semver import SimpleSpec
 
-if TYPE_CHECKING:
+if t.TYPE_CHECKING:
     from ..manifest import ComponentWithVersions, ManifestManager
     from ..manifest.solved_component import SolvedComponent
 
@@ -34,9 +34,9 @@ class BaseSource:
 
     def __init__(
         self,
-        source_details: Optional[Dict] = None,
-        system_cache_path: Optional[str] = None,
-        manifest_manager: Optional[ManifestManager] = None,
+        source_details: t.Optional[t.Dict] = None,
+        system_cache_path: t.Optional[str] = None,
+        manifest_manager: t.Optional[ManifestManager] = None,
     ) -> None:
         self._source_details = source_details or {}
         self._hash_key = None
@@ -75,9 +75,9 @@ class BaseSource:
     @staticmethod
     def fromdict(
         name: str,
-        details: Dict,
-        manifest_manager: Optional[ManifestManager] = None,
-    ) -> List[BaseSource]:
+        details: t.Dict,
+        manifest_manager: t.Optional[ManifestManager] = None,
+    ) -> t.List[BaseSource]:
         """Build component source by dict"""
         for source_class in tools.sources.KNOWN_SOURCES:
             # MARKER
@@ -92,8 +92,8 @@ class BaseSource:
 
     @staticmethod
     def create_sources_if_valid(
-        name: str, details: Dict, manifest_manager: Optional[ManifestManager] = None
-    ) -> Union[List[BaseSource], None]:
+        name: str, details: t.Dict, manifest_manager: t.Optional[ManifestManager] = None
+    ) -> t.Union[t.List[BaseSource], None]:
         return None
 
     @classmethod
@@ -105,7 +105,7 @@ class BaseSource:
         return {}
 
     @classmethod
-    def known_keys(cls) -> List[str]:
+    def known_keys(cls) -> t.List[str]:
         """List of known details key"""
         return (
             ['version', 'public', 'matches', 'rules', 'require']
@@ -114,9 +114,9 @@ class BaseSource:
         )
 
     @classmethod
-    def schema(cls) -> Dict:
+    def schema(cls) -> t.Dict:
         """Schema for lock file"""
-        source_schema: Dict[str, Union[str, Callable]] = {'type': cls.NAME}
+        source_schema: t.Dict[str, t.Union[str, t.Callable]] = {'type': cls.NAME}
 
         for key, type_field in cls.required_keys().items():
             source_schema[key] = VALUE_TYPES[type_field]
@@ -202,21 +202,21 @@ class BaseSource:
     def versions(
         self,
         name: str,
-        details: Optional[Dict] = None,
+        details: t.Optional[t.Dict] = None,
         spec: str = '*',
-        target: Optional[str] = None,
+        target: t.Optional[str] = None,
     ) -> ComponentWithVersions:
         """List of versions for given spec"""
 
     @abstractmethod
-    def download(self, component: SolvedComponent, download_path: str) -> Optional[str]:
+    def download(self, component: SolvedComponent, download_path: str) -> t.Optional[str]:
         """
         Fetch required component version from the source
         Returns list of absolute paths to directories with component on local filesystem
         """
 
     @abstractmethod
-    def serialize(self) -> Dict:
+    def serialize(self) -> t.Dict:
         """
         Return fields to describe source to be saved in lock file
         """

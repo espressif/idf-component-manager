@@ -1,8 +1,9 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Classes to work with Espressif Component Web Service"""
+
+import typing as t
 from collections import namedtuple
-from typing import Optional
 
 from .api_client_errors import ComponentNotFound, VersionNotFound
 from .component_details import ComponentDetailsWithStorageURL
@@ -42,7 +43,7 @@ class MultiStorageClient:
         raise ComponentNotFound(f'Component "{component_name}" not found')
 
     def component(
-        self, component_name: str, version: Optional[str] = None
+        self, component_name: str, version: t.Optional[str] = None
     ) -> ComponentDetailsWithStorageURL:
         error_message = ''
         for storage_url in self.storage_urls:

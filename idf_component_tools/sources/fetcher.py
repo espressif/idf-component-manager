@@ -3,7 +3,7 @@
 """Small class that manages getting components to right path using system-wide cache"""
 
 import os
-from typing import Optional
+import typing as t
 
 from idf_component_tools.hash_tools.constants import HASH_FILENAME
 from idf_component_tools.hash_tools.errors import (
@@ -26,14 +26,14 @@ class ComponentFetcher:
         self,
         solved_component: SolvedComponent,
         components_path: str,
-        source: Optional[BaseSource] = None,
+        source: t.Optional[BaseSource] = None,
     ) -> None:
         self.source = source if source else solved_component.source
         self.component = solved_component
         self.components_path = components_path
         self.managed_path = os.path.join(self.components_path, build_name(self.component.name))
 
-    def download(self) -> Optional[str]:
+    def download(self) -> t.Optional[str]:
         """If necessary, it downloads component and returns local path to component directory"""
         try:
             validate_managed_component_hash(self.managed_path)
@@ -54,7 +54,7 @@ class ComponentFetcher:
 
         return self.source.download(self.component, self.managed_path)
 
-    def create_hash(self, path: str, component_hash: Optional[str]) -> None:
+    def create_hash(self, path: str, component_hash: t.Optional[str]) -> None:
         if self.component.source.downloadable:
             hash_file = os.path.join(path, HASH_FILENAME)
 

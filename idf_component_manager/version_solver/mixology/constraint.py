@@ -3,7 +3,7 @@
 # SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 from __future__ import annotations
 
-from typing import Union as _Union
+import typing as t
 
 from .package import Package
 from .range import Range
@@ -16,7 +16,7 @@ class Constraint:
     A term constraint.
     """
 
-    def __init__(self, package: Package, constraint: _Union[Range, Union]) -> None:
+    def __init__(self, package: Package, constraint: t.Union[Range, Union]) -> None:
         self._package = package
         self._constraint = constraint
 
@@ -25,7 +25,7 @@ class Constraint:
         return self._package
 
     @property
-    def constraint(self) -> _Union[Range, Union]:
+    def constraint(self) -> t.Union[Range, Union]:
         return self._constraint
 
     @property

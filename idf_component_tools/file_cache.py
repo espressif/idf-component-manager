@@ -12,7 +12,7 @@ import errno
 import os
 import shutil
 import sys
-from typing import Optional
+import typing as t
 
 from idf_component_tools.errors import FatalError
 from idf_component_tools.file_tools import directory_size
@@ -37,8 +37,8 @@ def system_cache_path() -> str:
 class FileCache:
     """Common functions to work with components cache"""
 
-    def __init__(self, path: Optional[str] = None) -> None:
-        self._path: Optional[str] = path
+    def __init__(self, path: t.Optional[str] = None) -> None:
+        self._path: t.Optional[str] = path
 
     def path(self) -> str:
         """Path of cache directory. Make directory if it doesn't exist"""
@@ -57,7 +57,7 @@ class FileCache:
         return self._path
 
     def clear(self) -> None:
-        '''Clear cache directory'''
+        """Clear cache directory"""
         shutil.rmtree(self.path())
 
     def size(self) -> int:
@@ -86,7 +86,7 @@ class SystemCachePath:
             _winreg.HKEY_CURRENT_USER,
             r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders',
         )
-        dir, type = _winreg.QueryValueEx(key, shell_folder_name)
+        dir, _ = _winreg.QueryValueEx(key, shell_folder_name)
         return dir
 
     def _get_win_folder_with_pywin32(self):

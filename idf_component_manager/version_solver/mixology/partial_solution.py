@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: MIT License
 # SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
+import typing as t
 from collections import OrderedDict
-from typing import Dict, List
 
 from idf_component_tools.manifest import HashedComponentVersion
 
@@ -27,16 +27,16 @@ class PartialSolution:
     def __init__(self) -> None:
         # The assignments that have been made so far, in the order they were
         # assigned.
-        self._assignments: List[Assignment] = []
+        self._assignments: t.List[Assignment] = []
 
         # The decisions made for each package.
-        self._decisions: Dict[Package, HashedComponentVersion] = OrderedDict()
+        self._decisions: t.Dict[Package, HashedComponentVersion] = OrderedDict()
 
         # The intersection of all positive Assignments for each package, minus any
         # negative Assignments that refer to that package.
         #
         # This is derived from self._assignments.
-        self._positive: Dict[Package, Term] = OrderedDict()
+        self._positive: t.Dict[Package, Term] = OrderedDict()
 
         # The union of all negative Assignments for each package.
         #
@@ -44,7 +44,7 @@ class PartialSolution:
         # map.
         #
         # This is derived from self._assignments.
-        self._negative: Dict[Package, Dict[Package, Term]] = OrderedDict()
+        self._negative: t.Dict[Package, t.Dict[Package, Term]] = OrderedDict()
 
         # The number of distinct solutions that have been attempted so far.
         self._attempted_solutions = 1
@@ -53,7 +53,7 @@ class PartialSolution:
         self._backtracking = False
 
     @property
-    def decisions(self) -> Dict[Package, HashedComponentVersion]:
+    def decisions(self) -> t.Dict[Package, HashedComponentVersion]:
         return self._decisions
 
     @property
@@ -65,7 +65,7 @@ class PartialSolution:
         return self._attempted_solutions
 
     @property
-    def unsatisfied(self) -> List[Term]:
+    def unsatisfied(self) -> t.List[Term]:
         return [term for term in self._positive.values() if term.package not in self._decisions]
 
     def decide(self, package: Package, version: HashedComponentVersion) -> None:

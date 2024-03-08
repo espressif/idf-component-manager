@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import json
@@ -39,18 +39,16 @@ def config_path(tmp_path):
     config_path = os.path.join(str(tmp_path), 'idf_component_manager.yml')
     with open(config_path, 'w+') as f:
         f.write(
-            json.dumps(
-                {
-                    'profiles': {
-                        'test': {
-                            'registry_url': 'https://example.com/',
-                            'default_namespace': 'test',
-                            'api_token': 'token',
-                        },
-                        'emptyprofile': None,
-                    }
+            json.dumps({
+                'profiles': {
+                    'test': {
+                        'registry_url': 'https://example.com/',
+                        'default_namespace': 'test',
+                        'api_token': 'token',
+                    },
+                    'emptyprofile': None,
                 }
-            )
+            })
         )
     return config_path
 
@@ -92,7 +90,7 @@ def test_empty_env_registry_profile(monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_REGISTRY_PROFILE', '')
     with raises(
         NoSuchProfile,
-        match="Profile \"not_exists\" not found in the idf_component_manager.yml config file",
+        match='Profile "not_exists" not found in the idf_component_manager.yml config file',
     ):
         get_api_client(service_profile='not_exists')
 

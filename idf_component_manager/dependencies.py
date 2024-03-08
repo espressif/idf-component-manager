@@ -3,9 +3,9 @@
 
 import os
 import shutil
+import typing as t
 from functools import total_ordering
 from pathlib import Path
-from typing import List, Set
 
 from idf_component_manager.core_utils import raise_component_modified_error
 from idf_component_manager.utils import print_info, print_warn
@@ -48,8 +48,8 @@ def check_manifests_targets(project_requirements: ProjectRequirements) -> None:
 
 
 def get_unused_components(
-    unused_files_with_components: Set[str], managed_components_path: str
-) -> Set[str]:
+    unused_files_with_components: t.Set[str], managed_components_path: str
+) -> t.Set[str]:
     unused_components = set()
 
     for component in unused_files_with_components:
@@ -63,7 +63,7 @@ def get_unused_components(
 
 
 def detect_unused_components(
-    requirement_dependencies: List[SolvedComponent], managed_components_path: str
+    requirement_dependencies: t.List[SolvedComponent], managed_components_path: str
 ) -> None:
     downloaded_components = os.listdir(managed_components_path)
     unused_files_with_components = set(downloaded_components) - {
@@ -87,7 +87,7 @@ def detect_unused_components(
 
         warning += (
             '\nContent of the managed components directory is managed automatically '
-            'and it\'s not recommended to place any files there manually. '
+            "and it's not recommended to place any files there manually. "
             'To suppress this warning set the environment variable: '
             'IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS=1'
         )
@@ -96,7 +96,7 @@ def detect_unused_components(
 
 def is_solve_required(project_requirements: ProjectRequirements, solution: SolvedManifest) -> bool:
     if not solution.manifest_hash:
-        print_info('Dependencies lock doesn\'t exist, solving dependencies.')
+        print_info("Dependencies lock doesn't exist, solving dependencies.")
         return True
 
     if project_requirements.manifest_hash != solution.manifest_hash:
@@ -164,8 +164,8 @@ def is_solve_required(project_requirements: ProjectRequirements, solution: Solve
                         'the one recorded in your dependencies.lock file. '
                         'This could be due to a potential spoofing of the download server, '
                         'or your lock file may have become corrupted. '
-                        'Please review the lock file and verify the download server\'s '
-                        'authenticity to ensure the component\'s security and integrity.'.format(
+                        "Please review the lock file and verify the download server's "
+                        "authenticity to ensure the component's security and integrity.".format(
                             component
                         )
                     )
@@ -183,7 +183,7 @@ def print_dot():
 
 @total_ordering
 class DownloadedComponent:
-    def __init__(self, downloaded_path: str, targets: List[str], version: str) -> None:
+    def __init__(self, downloaded_path: str, targets: t.List[str], version: str) -> None:
         self.downloaded_path = downloaded_path
         self.targets = targets
         self.version = version
@@ -256,7 +256,7 @@ def download_project_dependencies(
     lock_path: str,
     managed_components_path: str,
     is_idf_root_dependencies: bool = False,
-) -> Set[DownloadedComponent]:
+) -> t.Set[DownloadedComponent]:
     """Solves dependencies and download components"""
     lock_manager = LockManager(lock_path)
     solution = lock_manager.load()

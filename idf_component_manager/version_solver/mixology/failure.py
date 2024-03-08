@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT License
 # SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
-from typing import Dict, List, Tuple
+import typing as t
 
 from .incompatibility import Incompatibility
 from .incompatibility_cause import ConflictCause
@@ -23,9 +23,9 @@ class SolverFailure(Exception):
 class _Writer:
     def __init__(self, root: Incompatibility) -> None:
         self._root = root
-        self._derivations: Dict[Incompatibility, int] = {}
-        self._lines: List[Tuple[str, int]] = []
-        self._line_numbers: Dict[Incompatibility, int] = {}
+        self._derivations: t.Dict[Incompatibility, int] = {}
+        self._lines: t.List[t.Tuple[str, int]] = []
+        self._line_numbers: t.Dict[Incompatibility, int] = {}
 
         self._count_derivations(self._root)
 
@@ -84,7 +84,7 @@ class _Writer:
     def _visit(
         self,
         incompatibility: Incompatibility,
-        details_for_incompatibility: Dict,
+        details_for_incompatibility: t.Dict,
         conclusion: bool = False,
     ) -> None:
         numbered = conclusion or self._derivations[incompatibility] > 1

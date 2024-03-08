@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import functools
 import re
-from typing import List
+import typing as t
 
 
 def _has_leading_zero(value):
@@ -13,7 +13,7 @@ def _has_leading_zero(value):
 
 
 class MaxIdentifier:
-    __slots__: List[str] = []
+    __slots__: t.List[str] = []
 
     def __repr__(self):
         return 'MaxIdentifier()'
@@ -330,9 +330,14 @@ class Version:
             cls._validate_identifiers(build, allow_leading_zeroes=True)
 
     def __iter__(self):
-        return iter(
-            (self.major, self.minor, self.patch, self.revision, self.prerelease, self.build)
-        )
+        return iter((
+            self.major,
+            self.minor,
+            self.patch,
+            self.revision,
+            self.prerelease,
+            self.build,
+        ))
 
     def __str__(self):
         version = '%d' % self.major
@@ -356,9 +361,14 @@ class Version:
         )
 
     def __hash__(self):
-        return hash(
-            (self.major, self.minor, self.patch, self.revision, self.prerelease, self.build)
-        )
+        return hash((
+            self.major,
+            self.minor,
+            self.patch,
+            self.revision,
+            self.prerelease,
+            self.build,
+        ))
 
     @property
     def precedence_key(self):
@@ -531,7 +541,7 @@ class BaseSpec:
 
 
 class Clause:
-    __slots__: List[str] = []
+    __slots__: t.List[str] = []
 
     def match(self, version):
         raise NotImplementedError()
@@ -693,7 +703,7 @@ class AllOf(Clause):
 
 
 class Matcher(Clause):
-    __slots__: List[str] = []
+    __slots__: t.List[str] = []
 
     def __and__(self, other):
         if isinstance(other, AllOf):
@@ -713,7 +723,7 @@ class Matcher(Clause):
 
 
 class Never(Matcher):
-    __slots__: List[str] = []
+    __slots__: t.List[str] = []
 
     def match(self, version):
         return False
@@ -735,7 +745,7 @@ class Never(Matcher):
 
 
 class Always(Matcher):
-    __slots__: List[str] = []
+    __slots__: t.List[str] = []
 
     def match(self, version):
         return True
@@ -892,9 +902,7 @@ class SimpleSpec(BaseSpec):
             (?:-(?P<prerel>[a-z0-9A-Z.-]*))?
             (?:\+(?P<build>[a-z0-9A-Z.-]*))?
             $
-            """.format(
-                nb=NUMBER
-            ),
+            """.format(nb=NUMBER),
             re.VERBOSE,
         )
 

@@ -3,8 +3,8 @@
 
 import os
 import shutil
+import typing as t
 from pathlib import Path
-from typing import Dict, List, Optional, Union
 
 import pytest
 import yaml
@@ -46,8 +46,8 @@ def project(request, tmpdir_factory):
 
 
 class Snapshot:
-    def __init__(self, paths: Union[List[str], str]) -> None:
-        self.files: Dict[str, Optional[bytes]] = {}
+    def __init__(self, paths: t.Union[t.List[str], str]) -> None:
+        self.files: t.Dict[str, t.Optional[bytes]] = {}
 
         if isinstance(paths, str):
             paths = [paths]
