@@ -4,3 +4,7 @@
 0ebe0c6e07dd7d616b4d4f07f554e8ea68d47911
 # "from typing import ..." to "import typing as t"
 a5e85486930ea416406ed1b3b24e7b22aeaeb2cc
+# Replace format() with f-strings
+28085d90ec7fb7d77c139ff560909fd2060f503d
+# Change comment types to regular types
+90f071b1e6842a5c27feeedbeec8728bfc99f1a3
