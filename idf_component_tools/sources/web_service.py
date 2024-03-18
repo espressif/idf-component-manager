@@ -6,45 +6,36 @@ import os
 import re
 import shutil
 import tempfile
-from hashlib import sha256
-
-import requests
-
-from idf_component_manager.service_details import (
-    get_component_registry_url_with_profile,
-    get_storage_urls,
-)
-from idf_component_tools.hash_tools.validate_managed_component import (
-    validate_managed_component_by_manifest,
-)
-from idf_component_tools.registry.storage_client import StorageClient
-from idf_component_tools.semver import SimpleSpec
-
-from ..archive_tools import ArchiveError, get_format_from_path, unpack_archive
-from ..constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL, UPDATE_SUGGESTION
-from ..errors import FetchingError
-from ..file_tools import copy_directory
-from ..messages import hint
-from ..registry.base_client import create_session
-from . import utils
-from .base import BaseSource
-from .web_service_keys import WEB_SERVICE_OPTIONAL_KEYS, WEB_SERVICE_REQUIRED_KEYS
-
-try:
-    from urllib.parse import urlparse  # type: ignore
-except ImportError:
-    from urlparse import urlparse  # type: ignore
-
 import typing as t
 
-from ..manifest import ManifestManager
-from ..manifest.solved_component import SolvedComponent
+import requests
+from pydantic import field_validator
+
+from idf_component_tools.archive_tools import ArchiveError, get_format_from_path, unpack_archive
+from idf_component_tools.constants import (
+    DEFAULT_NAMESPACE,
+    IDF_COMPONENT_REGISTRY_URL,
+    UPDATE_SUGGESTION,
+)
+from idf_component_tools.errors import FetchingError
+from idf_component_tools.file_tools import copy_directory
+from idf_component_tools.hash_tools.calculate import hash_url
+from idf_component_tools.messages import hint
+from idf_component_tools.semver import SimpleSpec
+
+from .base import BaseSource
+
+if t.TYPE_CHECKING:
+    from idf_component_tools.manifest import SolvedComponent
+
+from idf_component_tools.utils import Literal
 
 CANONICAL_IDF_COMPONENT_REGISTRY_API_URL = 'https://api.components.espressif.com/'
-IDF_COMPONENT_REGISTRY_API_URL = f'{IDF_COMPONENT_REGISTRY_URL}api/'
 
 
 def download_archive(url: str, download_dir: str, save_original_filename: bool = False) -> str:
+    from idf_component_tools.registry.base_client import create_session  # avoid circular import
+
     session = create_session(cache=False)
 
     try:
@@ -91,97 +82,39 @@ def download_archive(url: str, download_dir: str, save_original_filename: bool =
 
 
 class WebServiceSource(BaseSource):
-    NAME = 'service'
+    service_url: str = None  # type: ignore
+    type: Literal['service'] = 'service'  # type: ignore
+    pre_release: bool = None  # type: ignore
 
-    def __init__(self, source_details=None, **kwargs):
-        super().__init__(source_details=source_details, **kwargs)
+    @field_validator('service_url')
+    @classmethod
+    def validate_service_url(cls, v):
+        # Use canonical API url for lock file
+        if not v or v == IDF_COMPONENT_REGISTRY_URL:
+            return CANONICAL_IDF_COMPONENT_REGISTRY_API_URL
 
-        # Use URL from source details with the high priority
-        self.base_url = self.source_details.get('service_url')
-        self.__storage_url = self.source_details.get('storage_url')
+        return v
 
-        # Use the default URL, even if the lock file was made with the canonical one
-        if self.base_url == CANONICAL_IDF_COMPONENT_REGISTRY_API_URL:
-            self.base_url = IDF_COMPONENT_REGISTRY_API_URL
-
-        if self.base_url == IDF_COMPONENT_REGISTRY_API_URL and not self.__storage_url:
-            self.__storage_url = IDF_COMPONENT_STORAGE_URL
-
-        self.__api_client = self.source_details.get('api_client')
-
-        if not self.base_url and not self.__storage_url:
+    def model_post_init(self, __context: t.Any) -> None:
+        if not self.base_url:
             FetchingError('Cannot fetch a dependency with when registry is not defined')
 
-        self.pre_release = self.source_details.get('pre_release')
-
-    @classmethod
-    def required_keys(cls):
-        return WEB_SERVICE_REQUIRED_KEYS
-
-    @classmethod
-    def optional_keys(cls):
-        return WEB_SERVICE_OPTIONAL_KEYS
+    @property
+    def base_url(self) -> str:
+        # Use the default URL, even if the lock file was made with the canonical one
+        return (
+            IDF_COMPONENT_REGISTRY_URL
+            if self.service_url == CANONICAL_IDF_COMPONENT_REGISTRY_API_URL
+            else self.service_url
+        ) or IDF_COMPONENT_REGISTRY_URL
 
     @property
     def hash_key(self):
         if self._hash_key is None:
-            url = urlparse(self.base_url or self._storage_url)
-            netloc = url.netloc
-            path = '/'.join(filter(None, url.path.split('/')))
-            normalized_path = '/'.join([netloc, path])
-            self._hash_key = sha256(normalized_path.encode('utf-8')).hexdigest()
+            self._hash_key = hash_url(self.base_url)
         return self._hash_key
 
-    @property
-    def _storage_url(self):
-        if self.base_url and not self.__storage_url:
-            self.__storage_url = get_storage_urls(self.base_url)[0]
-        return self.__storage_url
-
-    @property
-    def _api_client(self):
-        if self.__api_client is None:
-            self.__api_client = StorageClient(storage_url=self._storage_url, sources=[self])
-        return self.__api_client
-
-    @staticmethod
-    def create_sources_if_valid(
-        name: str, details: t.Dict, manifest_manager: t.Optional[ManifestManager] = None
-    ) -> t.List[BaseSource]:
-        # This should be run last
-        if not details:
-            details_copy = {}
-        else:
-            details_copy = details.copy()
-        base_url = details_copy.get('service_url')
-
-        # Use the default URL, even if the lock file was made with the canonical one
-        if base_url == CANONICAL_IDF_COMPONENT_REGISTRY_API_URL:
-            base_url = IDF_COMPONENT_REGISTRY_API_URL
-
-        # Get storage_urls from details > from profile/env > from API
-        storage_urls = details_copy.get('storage_url')
-
-        if isinstance(storage_urls, str):
-            storage_urls = [storage_urls]
-
-        if not base_url and not storage_urls:
-            base_url, storage_urls = get_component_registry_url_with_profile()
-            details_copy['service_url'] = base_url
-
-        # WebServiceSource will get storage_url from API when needed
-        if not storage_urls:
-            return [WebServiceSource(details_copy, manifest_manager=manifest_manager)]
-
-        sources: t.List[BaseSource] = []
-        if storage_urls:
-            for storage_url in storage_urls:
-                details_copy['storage_url'] = storage_url
-                sources.append(WebServiceSource(details_copy, manifest_manager=manifest_manager))
-
-        return sources
-
-    def component_cache_path(self, component: SolvedComponent) -> str:
+    def component_cache_path(self, component: 'SolvedComponent') -> str:
         component_dir_name = '_'.join([
             self.normalized_name(component.name).replace('/', '__'),
             str(component.version),
@@ -190,8 +123,17 @@ class WebServiceSource(BaseSource):
         path = os.path.join(self.cache_path(), component_dir_name)
         return path
 
-    def versions(self, name, details=None, spec='*', target=None):
-        cmp_with_versions = self._api_client.versions(component_name=name, spec=spec)
+    def versions(self, name, spec='*', target=None):
+        from idf_component_tools.registry.service_details import (
+            get_storage_client,  # avoid circular import
+        )
+
+        client = get_storage_client(self.base_url)
+        if self.base_url != client.registry_url:
+            client.registry_url = self.base_url
+
+        cmp_with_versions = client.versions(component_name=self.normalized_name(name), spec=spec)
+
         versions = []
         other_targets_versions = []
         pre_release_versions = []
@@ -249,12 +191,6 @@ class WebServiceSource(BaseSource):
                     )
                 )
 
-            raise FetchingError(
-                'Cannot find versions of "{}" satisfying "{}" ' 'for the current target {}.'.format(
-                    name, spec, current_target
-                )
-            )
-
         return cmp_with_versions
 
     @property
@@ -266,12 +202,22 @@ class WebServiceSource(BaseSource):
         return True
 
     def normalized_name(self, name):
-        return utils.normalized_name(name)
+        if '/' not in name:
+            name = '/'.join([DEFAULT_NAMESPACE, name])
 
-    def download(self, component: SolvedComponent, download_path: str) -> str:
+        return name
+
+    def download(self, component: 'SolvedComponent', download_path: str) -> str:
+        from idf_component_tools.hash_tools.validate_managed_component import (
+            validate_managed_component_by_manifest,  # avoid circular import
+        )
+        from idf_component_tools.registry.storage_client import (
+            StorageClient,  # avoid circular import
+        )
+
         # Check for required components
         if not component.component_hash:
-            raise FetchingError('Component hash is required for componets from web service')
+            raise FetchingError('Component hash is required for components from web service')
 
         if not component.version:
             raise FetchingError(f'Version should be provided for {component.name}')
@@ -286,24 +232,16 @@ class WebServiceSource(BaseSource):
             copy_directory(self.component_cache_path(component), download_path)
             return download_path
 
-        url = self._api_client.component(
-            component_name=component.name, version=component.version
-        ).download_url
-
-        if not url:
-            raise FetchingError(
-                'Unexpected response: URL wasn\'t found for version %s of "%s"',
-                component.version,
-                component.name,
-            )
-
         tempdir = tempfile.mkdtemp()
-
         try:
+            url = StorageClient(component.download_url).component(
+                component.name, component.version
+            )['download_url']
+
             file_path = download_archive(url, tempdir)
             unpack_archive(file_path, self.component_cache_path(component))
             copy_directory(self.component_cache_path(component), download_path)
-        except FetchingError as e:
+        except (KeyError, FetchingError) as e:
             raise FetchingError(
                 'Cannot download component {}@{}. {}'.format(
                     component.name, component.version, str(e)
@@ -313,27 +251,3 @@ class WebServiceSource(BaseSource):
             shutil.rmtree(tempdir)
 
         return download_path
-
-    @property
-    def service_url(self):
-        return self.base_url
-
-    def serialize(self) -> t.Dict:
-        source = {'type': self.name}
-
-        service_url = self.base_url
-
-        # Use canonical API url for lock file
-        if service_url == IDF_COMPONENT_REGISTRY_API_URL:
-            service_url = CANONICAL_IDF_COMPONENT_REGISTRY_API_URL
-
-        if service_url is not None:
-            source['service_url'] = service_url
-
-        if self.__storage_url != IDF_COMPONENT_STORAGE_URL and self.__storage_url is not None:
-            source['storage_url'] = self._storage_url
-
-        if self.pre_release is not None:
-            source['pre_release'] = self.pre_release
-
-        return source

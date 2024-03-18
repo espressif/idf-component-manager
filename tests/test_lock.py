@@ -5,37 +5,23 @@ import filecmp
 import os
 import shutil
 import textwrap
+from io import open
 from pathlib import Path
 
 import pytest
 import requests
 import requests_mock
+import yaml
 
 from idf_component_manager.dependencies import is_solve_required
 from idf_component_tools.build_system_tools import get_idf_version
 from idf_component_tools.errors import LockError
-from idf_component_tools.lock import EMPTY_LOCK, LockManager
-from idf_component_tools.manifest import (
-    ComponentVersion,
-    Manifest,
-    ManifestManager,
-    ProjectRequirements,
-)
-from idf_component_tools.manifest.solved_component import SolvedComponent
-from idf_component_tools.manifest.solved_manifest import SolvedManifest
+from idf_component_tools.lock import EMPTY_LOCK, LockFile, LockManager
+from idf_component_tools.manager import ManifestManager
+from idf_component_tools.manifest import Manifest, SolvedComponent, SolvedManifest
 from idf_component_tools.messages import UserHint
 from idf_component_tools.sources import IDFSource, LocalSource, WebServiceSource
-
-dependencies = {
-    'idf': {'version': '4.4.4', 'source': {'type': 'idf'}},
-    'espressif/test_cmp': {
-        'version': '1.2.7',
-        'component_hash': 'f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b',
-        'source': {'service_url': 'https://repo.example.com', 'type': 'service'},
-    },
-}
-
-MANIFEST_HASH = 'a1a5f092fd8e895c42e8bb1984c5b32b86c49e796369605ca175edb079407f77'
+from idf_component_tools.utils import ComponentVersion, ProjectRequirements
 
 
 @pytest.fixture
@@ -45,6 +31,22 @@ def valid_lock_path(fixtures_path):
         'locks',
         'dependencies.lock',
     )
+
+
+@pytest.fixture
+def valid_solution_dependency_dict(fixtures_path):
+    with open(os.path.join(fixtures_path, 'locks', 'dependencies.lock')) as f:
+        d = yaml.safe_load(f)
+
+    return d['dependencies']
+
+
+@pytest.fixture
+def valid_solution_hash(fixtures_path):
+    with open(os.path.join(fixtures_path, 'locks', 'dependencies.lock')) as f:
+        d = yaml.safe_load(f)
+
+    return d['manifest_hash']
 
 
 @pytest.fixture
@@ -64,7 +66,7 @@ def connection_error_request():
         yield m
 
 
-class TestLockManager:
+class TestLockManager(object):
     def test_load_valid_lock(self, valid_lock_path):
         parser = LockManager(valid_lock_path)
 
@@ -84,30 +86,37 @@ class TestLockManager:
             SolvedComponent(
                 name='idf',
                 version=ComponentVersion('4.4.4'),
-                source=IDFSource({}),
+                source=IDFSource(),
             ),
             SolvedComponent(
                 name='espressif/test_cmp',
                 version=ComponentVersion('1.2.7'),
-                source=WebServiceSource({'service_url': 'https://repo.example.com'}),
+                source=WebServiceSource(service_url='https://repo.example.com'),
                 component_hash='f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b',
             ),
         ]
 
-        solution = SolvedManifest(components, manifest_hash=manifest.manifest_hash)
+        solution = SolvedManifest(dependencies=components, manifest_hash=manifest.manifest_hash)
         lock.dump(solution)
 
         assert filecmp.cmp(lock_path, valid_lock_path, shallow=False)
 
-    def test_lock_dump_with_dictionary(self, tmp_path, monkeypatch, valid_lock_path):
+    def test_lock_dump_with_dictionary(
+        self,
+        tmp_path,
+        monkeypatch,
+        valid_lock_path,
+        valid_solution_dependency_dict,
+        valid_solution_hash,
+    ):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
-        solution = SolvedManifest.fromdict(
+        solution = LockFile.fromdict(
             dict([
-                ('version', '1.0.0'),
-                ('dependencies', dependencies),
-                ('manifest_hash', MANIFEST_HASH),
+                ('version', '2.0.0'),
+                ('dependencies', valid_solution_dependency_dict),
+                ('manifest_hash', valid_solution_hash),
             ])
         )
 
@@ -115,13 +124,22 @@ class TestLockManager:
 
         assert filecmp.cmp(lock_path, valid_lock_path, shallow=False)
 
-    def test_lock_dump(self, tmp_path, monkeypatch, valid_lock_path):
+    def test_lock_dump(
+        self,
+        tmp_path,
+        monkeypatch,
+        valid_lock_path,
+        valid_solution_dependency_dict,
+        valid_solution_hash,
+    ):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
+
         parser = LockManager(lock_path)
         solution = parser.load()
-        solution.manifest_hash = MANIFEST_HASH
-        for name, details in dependencies.items():
+        solution.manifest_hash = valid_solution_hash
+
+        for name, details in valid_solution_dependency_dict.items():
             details['name'] = name
             solution.dependencies.append(SolvedComponent.fromdict(details))
 
@@ -145,17 +163,17 @@ class TestLockManager:
 
         assert e.type == LockError
 
-    def test_minimal_lock(self, tmp_path, monkeypatch):
+    def test_minimal_lock(
+        self, tmp_path, monkeypatch, valid_solution_dependency_dict, valid_solution_hash
+    ):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         monkeypatch.setenv('IDF_VERSION', '5.1.0')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
         solution = SolvedManifest.fromdict({
-            'version': '1.0.0',
-            'manifest_hash': MANIFEST_HASH,
+            'manifest_hash': valid_solution_hash,
             'dependencies': {
                 'idf': {
-                    'component_hash': None,
                     'source': {
                         'type': 'idf',
                     },
@@ -174,13 +192,12 @@ class TestLockManager:
                 """
             dependencies:
               idf:
-                component_hash: null
                 source:
                   type: idf
                 version: 5.1.0
             manifest_hash: {}
             target: esp32
-            version: 1.0.0
+            version: 2.0.0
         """
             )
             .format(solution.manifest_hash)
@@ -198,32 +215,34 @@ class TestLockManager:
 
         assert solution.manifest_hash is None
 
-    def test_no_internet_connection(self, capsys, connection_error_request):
-        manifest = Manifest.fromdict({'dependencies': {'idf': '4.4.0'}}, name='test_manifest')
+    def test_no_internet_connection(self, monkeypatch, connection_error_request):
+        manifest = Manifest.fromdict({
+            'dependencies': {
+                'idf': '4.4.0',
+                'example/cmp': '*',
+            }
+        })
         project_requirements = ProjectRequirements([manifest])
-        solution = SolvedManifest.fromdict(
-            dict([
-                ('version', '1.0.0'),
-                (
-                    'dependencies',
-                    {
-                        'example/cmp': {
-                            'component_hash': '8644358a11a35a986b0ce4d325ba3d1aa9491b9518111acd4ea9447f11dc47c1',
-                            'source': {
-                                'service_url': 'https://ohnoIdonthaveinternetconnection.com',
-                                'type': 'service',
-                            },
-                            'version': '3.3.7',
-                        },
+        solution = SolvedManifest.fromdict({
+            'direct_dependencies': ['example/cmp', 'idf'],
+            'dependencies': {
+                'example/cmp': {
+                    'component_hash': '8644358a11a35a986b0ce4d325ba3d1aa9491b9518111acd4ea9447f11dc47c1',
+                    'source': {
+                        'service_url': 'https://ohnoIdonthaveinternetconnection.com',
+                        'type': 'service',
                     },
-                ),
-                (
-                    'manifest_hash',
-                    'cfedb62005f55b7e817bb733bb4d5df5047267a0229a162d4904ca9869af1522',
-                ),
-            ])
-        )
-
+                    'version': '3.3.7',
+                },
+                'idf': {
+                    'source': {
+                        'type': 'idf',
+                    },
+                    'version': '4.4.0',
+                },
+            },
+            'manifest_hash': project_requirements.manifest_hash,
+        })
         with pytest.warns(UserHint) as record:
             assert not is_solve_required(project_requirements, solution)
             assert (
@@ -232,45 +251,42 @@ class TestLockManager:
             )
 
     def test_change_manifest_file_idf_version(self, monkeypatch, capsys):
+        monkeypatch.setenv('IDF_VERSION', '4.2.0')
         monkeypatch.setenv('IDF_TARGET', 'esp32')
-        manifest = Manifest.fromdict({'dependencies': {'idf': '4.4.0'}}, name='test_manifest')
+        manifest = Manifest.fromdict({'dependencies': {'idf': '4.2.0'}})
         project_requirements = ProjectRequirements([manifest])
-        solution = SolvedManifest.fromdict(
-            dict([
-                ('version', '1.0.0'),
-                (
-                    'dependencies',
-                    {
-                        'idf': {
-                            'component_hash': None,
-                            'source': {'type': 'idf'},
-                            'version': '4.2.0',
-                        }
-                    },
-                ),
-                (
-                    'manifest_hash',
-                    '501e298399139355647b9d36da3bc3234eb14eb8b128e84e0548035e01c5b98f',
-                ),
-            ])
-        )
+        correct_manifest_hash = project_requirements.manifest_hash
 
+        solution = SolvedManifest.fromdict({
+            'direct_dependencies': ['idf'],
+            'dependencies': {
+                'idf': {
+                    'source': {'type': 'idf'},
+                    'version': '4.2.0',
+                }
+            },
+            'manifest_hash': correct_manifest_hash,
+        })
+
+        # Different idf version
         monkeypatch.setenv('IDF_VERSION', '4.4.0')
-        assert is_solve_required(project_requirements, solution)  # Different idf version
-        captured = capsys.readouterr()
+        assert is_solve_required(project_requirements, solution)
+        capsys.readouterr()
 
-        solution.manifest_hash = 'bff084ca418bd07bbb3f7b0a6713f45e802be72a006a5f30ac70ac755639683c'
-        assert is_solve_required(project_requirements, solution)  # Wrong manifest hash
+        # Wrong manifest hash
+        monkeypatch.setenv('IDF_VERSION', '4.2.0')
+        solution.manifest_hash = 'f' * 64
+        assert is_solve_required(project_requirements, solution)
         captured = capsys.readouterr()
         assert 'Manifest files have changed, solving dependencies' in captured.out
 
         monkeypatch.setenv('IDF_VERSION', '4.2.0')
-        solution.manifest_hash = 'cfedb62005f55b7e817bb733bb4d5df5047267a0229a162d4904ca9869af1522'
-        assert not is_solve_required(project_requirements, solution)
+        solution.manifest_hash = correct_manifest_hash
         captured = capsys.readouterr()
+        assert not is_solve_required(project_requirements, solution)
         assert 'solving dependencies.' not in captured.out
 
-    def test_change_manifest_file_dependencies_rules(
+    def test_change_manifest_file_idf_version_required_in_dependencies_rules(
         self, monkeypatch, capsys, release_component_path
     ):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
@@ -285,91 +301,72 @@ class TestLockManager:
                 }
             }
         }
-        solution = SolvedManifest.fromdict(
-            dict([
-                ('version', '1.0.0'),
-                (
-                    'dependencies',
-                    {
-                        'foo': {
-                            'component_hash': None,
-                            'source': {'type': 'local', 'path': release_component_path},
-                            'version': '1.0.0',
-                        }
-                    },
-                ),
-                (
-                    'manifest_hash',
-                    'af4c5d3bd0d0f2bb7985b1a1e78c0cf16d2d4115c0adffb3e084cc3d5f63bf09',
-                ),
-            ])
-        )
+        manifest = Manifest.fromdict(manifest_dict)
+        project_requirements = ProjectRequirements([manifest])
+        solution = SolvedManifest.fromdict({
+            'direct_dependencies': ['espressif/foo'],
+            'dependencies': {
+                'espressif/foo': {
+                    'source': {'type': 'local', 'path': release_component_path},
+                    'version': '1.0.0',
+                }
+            },
+            'manifest_hash': project_requirements.manifest_hash,
+        })
 
         monkeypatch.setenv('IDF_VERSION', '5.0.0')
-        manifest_dict['dependencies']['foo']['rules'] = [{'if': 'idf_version > 4'}]
-        manifest = Manifest.fromdict(manifest_dict, name='test_manifest')
+        manifest = Manifest.fromdict(manifest_dict)
         project_requirements = ProjectRequirements([manifest])
         assert not is_solve_required(project_requirements, solution)
         captured = capsys.readouterr()
         assert 'solving dependencies.' not in captured.out
 
         monkeypatch.setenv('IDF_VERSION', '3.0.0')
-        manifest_dict['dependencies']['foo']['rules'] = [{'if': 'idf_version > 4'}]
-        manifest = Manifest.fromdict(manifest_dict, name='test_manifest')
+        manifest = Manifest.fromdict(manifest_dict)
         project_requirements = ProjectRequirements([manifest])
         assert is_solve_required(project_requirements, solution)
         captured = capsys.readouterr()
-        assert 'solving dependencies.' in captured.out
+        assert 'Direct dependencies have changed, solving dependencies' in captured.out
 
     def test_change_manifest_file_targets(self, monkeypatch):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
-        manifest = Manifest.fromdict({'targets': ['esp32']}, name='test_manifest')
-        solution = SolvedManifest.fromdict(
-            dict([
-                ('version', '1.0.0'),
-                (
-                    'manifest_hash',
-                    '1d0802987b5b8267a89f85398234e02f46a358ff13d321e2bc1eda3049a33ee6',
-                ),
-            ])
-        )
+        manifest = Manifest.fromdict({'targets': ['esp32']})
         project_requirements = ProjectRequirements([manifest])
-        assert not is_solve_required(project_requirements, solution)  # change it back
+        solution = SolvedManifest.fromdict({
+            'manifest_hash': project_requirements.manifest_hash,
+        })
+        assert not is_solve_required(project_requirements, solution)
 
-        manifest = Manifest.fromdict({'targets': ['esp32']}, name='test_manifest')
+        manifest = Manifest.fromdict({'targets': ['esp32']})
         manifest.targets = ['esp32s2', 'esp32s3']
         project_requirements = ProjectRequirements([manifest])
         assert is_solve_required(project_requirements, solution)  # Different idf target
 
-        manifest = Manifest.fromdict({'targets': ['esp32']}, name='test_manifest')
+        manifest = Manifest.fromdict({'targets': ['esp32']})
         manifest.targets = ['esp32']
         project_requirements = ProjectRequirements([manifest])
         assert not is_solve_required(project_requirements, solution)  # change it back
 
     def test_empty_manifest_file(self, monkeypatch):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
-        solution = SolvedManifest.fromdict(
-            dict([
-                ('version', '1.0.0'),
-                (
-                    'manifest_hash',
-                    '16d1de584caf3b1e92c92078bbabb5972509c96e44b169ec877d45e4d7716b67',
-                ),
-            ])
-        )
+        manifest = Manifest.fromdict({})
+        project_requirements = ProjectRequirements([manifest])
+        solution = SolvedManifest.fromdict({
+            'manifest_hash': project_requirements.manifest_hash,
+        })
 
-        manifest = Manifest.fromdict({'targets': ['esp32']}, name='test_manifest')
+        manifest = Manifest.fromdict({'targets': ['esp32']})
         project_requirements = ProjectRequirements([manifest])
         assert is_solve_required(project_requirements, solution)  # Different idf target
 
-        manifest = Manifest.fromdict({}, name='test_manifest')
+        manifest = Manifest.fromdict({})
         project_requirements = ProjectRequirements([manifest])
         assert not is_solve_required(project_requirements, solution)  # change it back
 
     def test_empty_lock(self, monkeypatch, capsys):
         solution = SolvedManifest.fromdict(EMPTY_LOCK)
 
-        manifest = Manifest.fromdict({}, name='test_manifest')
+        manifest = Manifest.fromdict({})
         project_requirements = ProjectRequirements([manifest])
         assert is_solve_required(project_requirements, solution)
         captured = capsys.readouterr()
@@ -380,25 +377,25 @@ class TestLockManager:
         project_dir = str(tmp_path / 'cmp')
         shutil.copytree(release_component_path, project_dir)
 
-        manifest_dict = {'dependencies': {'cmp': {'path': project_dir}}}
-        manifest = Manifest.fromdict(manifest_dict, name='test_manifest')
+        manifest = Manifest.fromdict({'dependencies': {'cmp': {'path': project_dir}}})
         project_requirements = ProjectRequirements([manifest])
 
-        components = [
-            SolvedComponent(
-                name='cmp',
-                version=ComponentVersion('1.0.0'),
-                source=LocalSource({'path': project_dir}),
-                component_hash=None,
-            ),
-        ]
-
-        solution = SolvedManifest(components, manifest_hash=project_requirements.manifest_hash)
+        solution = SolvedManifest(
+            direct_dependencies=['cmp'],
+            dependencies=[
+                SolvedComponent(
+                    name='cmp',
+                    version=ComponentVersion('1.0.0'),
+                    source=LocalSource(path=project_dir),
+                ),
+            ],
+            manifest_hash=project_requirements.manifest_hash,
+        )
 
         assert not is_solve_required(project_requirements, solution)
 
-        manifest_manager = ManifestManager(project_dir, 'cmp', check_required_fields=True)
-        manifest_manager.manifest_tree['version'] = '1.0.1'
+        manifest_manager = ManifestManager(project_dir, 'cmp')
+        manifest_manager.manifest.version = '1.0.1'
         manifest_manager.dump(str(project_dir))
 
         assert is_solve_required(project_requirements, solution)
@@ -407,26 +404,30 @@ class TestLockManager:
         assert 'version has changed from 1.0.0 to 1.0.1, solving dependencies' in captured.out
 
     def test_update_local_dependency_change_file_not_trigger(
-        self, release_component_path, tmp_path, capsys
+        self, release_component_path, tmp_path
     ):
         """Check that change in local dependency file doesn't trigger solve"""
         project_dir = str(tmp_path / 'cmp')
         shutil.copytree(release_component_path, project_dir)
 
         manifest_dict = {'dependencies': {'cmp': {'path': project_dir}}}
-        manifest = Manifest.fromdict(manifest_dict, name='test_manifest')
+        manifest = Manifest.fromdict(manifest_dict)
         project_requirements = ProjectRequirements([manifest])
 
         components = [
             SolvedComponent(
                 name='cmp',
                 version=ComponentVersion('1.0.0'),
-                source=LocalSource({'path': project_dir}),
+                source=LocalSource(path=project_dir),
                 component_hash=None,
             ),
         ]
 
-        solution = SolvedManifest(components, manifest_hash=project_requirements.manifest_hash)
+        solution = SolvedManifest(
+            direct_dependencies=['cmp'],
+            dependencies=components,
+            manifest_hash=project_requirements.manifest_hash,
+        )
 
         assert not is_solve_required(project_requirements, solution)
 

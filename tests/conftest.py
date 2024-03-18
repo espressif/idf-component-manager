@@ -22,7 +22,7 @@ def file_with_size():
 
 @pytest.fixture()
 def valid_manifest_hash():
-    return '7169f4c78d49021379e0df0e288440ab2df1cf694119b56d5c5bac22ef7833ab'
+    return 'b4c7479005e3bed9df2e93fbbf1e90313791727a9310581f7fb0c1f479450191'
 
 
 @pytest.fixture(autouse=True)

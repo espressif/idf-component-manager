@@ -31,6 +31,7 @@ classifiers = [
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
     'Programming Language :: Python :: Implementation :: CPython',
 ]
 include = [
@@ -48,9 +49,12 @@ pyyaml = "*"
 requests = "*"
 requests-file = "*"
 requests-toolbelt = "*"
-schema = "*"
 tqdm = '*'
 urllib3 = "<2"
+pydantic = "^2.5"  # python 3.8 starts from 2.6
+typing-extensions = "^4.7"  # python 3.8 starts from 4.8
+jsonref = "^1.1.0"
+pydantic-core = "^2.14"  # python 3.8 starts from 2.15
 
 [tool.poetry.group.docs.dependencies]
 sphinx_collapse = "*"
@@ -99,6 +103,10 @@ force_grid_wrap = 0
 [tool.mypy]
 python_version = "3.7"
 
+plugins = [
+  "pydantic.mypy"
+]
+
 [[tool.mypy.overrides]]
 module = "idf_component_manager.version_solver.mixology.*"
 ignore_errors = true
@@ -137,6 +145,9 @@ extend-select = [
     "ERA",  # eradicate
     "ICN",  # flake8-import-conventions
     "RUF100",  # unused noqa
+]
+typing-modules = [
+    "idf_component_tools.utils",
 ]
 
 [tool.ruff.format]

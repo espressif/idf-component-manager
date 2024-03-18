@@ -5,7 +5,7 @@
 import typing as t
 
 from idf_component_manager.version_solver.mixology.package import Package
-from idf_component_tools.manifest import HashedComponentVersion
+from idf_component_tools.utils import HashedComponentVersion
 
 
 class SolverResult:

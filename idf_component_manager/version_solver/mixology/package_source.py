@@ -4,7 +4,7 @@
 
 import typing as t
 
-from idf_component_tools.manifest import HashedComponentVersion
+from idf_component_tools.utils import HashedComponentVersion
 
 from .constraint import Constraint
 from .incompatibility import Incompatibility

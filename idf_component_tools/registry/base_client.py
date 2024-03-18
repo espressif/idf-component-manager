@@ -9,18 +9,22 @@ from cachecontrol import CacheControlAdapter
 from cachecontrol.caches import FileCache
 from cachecontrol.heuristics import ExpiresAfter
 from requests.adapters import HTTPAdapter
+from requests.auth import AuthBase
 from requests_file import FileAdapter
 
-import idf_component_tools as tools
 from idf_component_tools.__version__ import __version__
+from idf_component_tools.constants import DEFAULT_NAMESPACE, IDF_COMPONENT_REGISTRY_URL
 from idf_component_tools.environment import detect_ci, getenv_int
 from idf_component_tools.file_cache import FileCache as ComponentFileCache
+from idf_component_tools.manifest import BUILD_METADATA_KEYS, ComponentRequirement
 from idf_component_tools.messages import warn
 from idf_component_tools.semver import SimpleSpec, Version
+from idf_component_tools.utils import (
+    ComponentWithVersions,
+    HashedComponentVersion,
+)
 
-from ..manifest import BUILD_METADATA_KEYS, ComponentWithVersions
-from .api_schemas import COMPONENT_SCHEMA
-from .token_auth import TokenAuth
+from .api_models import ComponentResponse
 
 DEFAULT_API_CACHE_EXPIRATION_MINUTES = 0
 MAX_RETRIES = 3
@@ -93,42 +97,44 @@ def user_agent() -> str:
 
 
 class BaseClient:
-    def __init__(self, sources=None):
-        self.sources = sources
+    def __init__(self, default_namespace: t.Optional[str]) -> None:
+        self.default_namespace = default_namespace or DEFAULT_NAMESPACE
 
-    def version_dependencies(self, version):
-        dependencies = []
+    def version_dependencies(self, version: t.Dict[str, t.Any]) -> t.List[ComponentRequirement]:
+        deps: t.List[ComponentRequirement] = []
         for dependency in version.get('dependencies', []):
-            # Support only idf and service sources
-            if dependency['source'] == 'idf':
-                sources = [tools.sources.IDFSource({})]
+            # make it compatible with the old format
+            dependency['name'] = f'{dependency.pop("namespace")}/{dependency.pop("name")}'
+
+            is_public = dependency.pop('is_public', False)
+            require = dependency.pop('require', True)
+            dependency['require'] = 'public' if is_public else ('private' if require else 'no')
+
+            dependency['version'] = dependency.pop('spec')
+
+            source_str = dependency.pop('source')
+            if source_str == 'idf':
+                dependency['name'] = 'idf'
+            elif source_str == 'service':
+                dependency['service_url'] = IDF_COMPONENT_REGISTRY_URL
             else:
-                sources = self.sources or [tools.sources.WebServiceSource({})]
+                raise ValueError('Unknown source type, Internal error')
 
-            is_public = dependency.get('is_public', False)
-            require = dependency.get('require', True)
-            require_string = 'public' if is_public else ('private' if require else 'no')
-
-            dependencies.append(
-                tools.manifest.ComponentRequirement(
-                    name=f"{dependency['namespace']}/{dependency['name']}",
-                    version_spec=dependency['spec'],
-                    sources=sources,
-                    public=is_public,
-                    require=require_string,
-                    optional_requirement=tools.manifest.OptionalRequirement.fromdict(dependency),
-                )
-            )
-
-        return tools.manifest.filter_optional_dependencies(dependencies)
+            dep = ComponentRequirement.fromdict(dependency)
+            deps.append(dep)
+        return [dep for dep in deps if dep.meet_optional_dependencies]
 
     def versions(
-        self, request: t.Callable, component_name: str, spec: str = '*'
+        self,
+        request: t.Callable,
+        component_name: str,
+        spec: str = '*',
+        **kwargs,
     ) -> ComponentWithVersions:
         """List of versions for given component with required spec"""
         component_name = component_name.lower()
         semantic_spec = SimpleSpec(spec or '*')
-        body = request('get', ['components', component_name.lower()], schema=COMPONENT_SCHEMA)
+        body = request('get', ['components', component_name.lower()], schema=ComponentResponse)
 
         versions = []
         filtered_versions = filter_versions(body['versions'], spec, component_name)
@@ -150,12 +156,13 @@ class BaseClient:
         return ComponentWithVersions(
             name=component_name,
             versions=[
-                tools.manifest.HashedComponentVersion(
+                HashedComponentVersion(
                     version_string=version['version'],
                     component_hash=version['component_hash'],
                     dependencies=self.version_dependencies(version),
                     targets=version['targets'],
                     all_build_keys_known=all_build_keys_known,
+                    **kwargs,
                 )
                 for version, all_build_keys_known in versions
             ],
@@ -196,3 +203,13 @@ def filter_versions(
         filtered_versions = [v for v in versions if not v.get('yanked_at')]
 
     return filtered_versions
+
+
+class TokenAuth(AuthBase):
+    def __init__(self, token: t.Optional[str]) -> None:
+        self.token = token
+
+    def __call__(self, request):
+        if self.token:
+            request.headers['Authorization'] = f'Bearer {self.token}'
+        return request

@@ -5,24 +5,25 @@
 import typing as t
 
 import yaml
-from schema import Schema, SchemaError
+from pydantic import ValidationError
 
 from idf_component_tools.errors import ProcessingError
+from idf_component_tools.utils import BaseModel, TypedDict
 
-COMPONENT_LIST_SCHEMA = Schema(
-    {
-        'components': [
-            {'name': str, 'path': str},
-        ]
-    },
-    ignore_extra_keys=True,
-)
+
+class LocalComponent(TypedDict):
+    name: str
+    path: str
+
+
+class LocalComponentList(BaseModel):
+    components: t.List[LocalComponent]
 
 
 def parse_component_list(path: str) -> t.List[t.Dict[str, str]]:
     with open(path, encoding='utf-8') as f:
         try:
-            components = COMPONENT_LIST_SCHEMA.validate(yaml.safe_load(f.read()))
-            return components['components']
-        except (yaml.YAMLError, SchemaError):
+            components = LocalComponentList.fromdict(yaml.safe_load(f.read()))
+            return [c for c in components.components]  # type: ignore
+        except (yaml.YAMLError, ValidationError):
             raise ProcessingError('Cannot parse components list file.')

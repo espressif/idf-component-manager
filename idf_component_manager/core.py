@@ -22,6 +22,7 @@ from idf_component_manager.utils import ComponentSource, print_info, print_warn
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name, is_component
 from idf_component_tools.config import root_managed_components_dir
+from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.environment import getenv_int
 from idf_component_tools.errors import (
     FatalError,
@@ -45,21 +46,23 @@ from idf_component_tools.hash_tools.errors import (
 from idf_component_tools.hash_tools.validate_managed_component import (
     validate_managed_component_hash,
 )
+from idf_component_tools.manager import (
+    ManifestManager,
+)
 from idf_component_tools.manifest import (
-    MANIFEST_FILENAME,
     WEB_DEPENDENCY_REGEX,
     Manifest,
-    ManifestManager,
-    ProjectRequirements,
 )
-from idf_component_tools.registry.api_client_errors import (
+from idf_component_tools.registry.client_errors import (
     APIClientError,
     ComponentNotFound,
     NetworkConnectionError,
     VersionNotFound,
 )
+from idf_component_tools.registry.service_details import get_api_client, get_storage_client
 from idf_component_tools.semver import SimpleSpec, Version
 from idf_component_tools.sources import WebServiceSource
+from idf_component_tools.utils import ProjectRequirements
 
 from .cmake_component_requirements import (
     CMakeRequirementsManager,
@@ -78,7 +81,6 @@ from .core_utils import (
 )
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
-from .service_details import get_api_client, get_storage_client
 from .sync import sync_components
 
 
@@ -146,13 +148,12 @@ class ComponentManager:
         self.path = path
 
         # Set path of the project's main component
-        self.main_component_path = os.path.join(path, 'main')
+        self.main_component_path = os.path.normpath(os.path.join(path, 'main'))
 
         # Set path of the manifest file for the project's main component
         self.main_manifest_path = manifest_path or (
             os.path.join(path, 'main', MANIFEST_FILENAME) if os.path.isdir(path) else path
         )
-        self.main_component_path = os.path.normpath(self.main_component_path)
 
         # Lock path
         if not lock_path:
@@ -237,8 +238,10 @@ class ComponentManager:
     def create_project_from_example(
         self, example: str, path: t.Optional[str] = None, service_profile: t.Optional[str] = None
     ) -> None:
-        client, namespace = get_storage_client(None, service_profile)
-        component_name, version_spec, example_name = parse_example(example, namespace)
+        client = get_storage_client(None, service_profile)
+        component_name, version_spec, example_name = parse_example(
+            example, client.default_namespace
+        )
         project_path = path or os.path.join(self.path, os.path.basename(example_name))
 
         if os.path.isfile(project_path):
@@ -262,7 +265,9 @@ class ComponentManager:
 
         try:
             example_url = [
-                example for example in component_details.examples if example_name == example['name']
+                example
+                for example in component_details['examples']
+                if example_name == example['name']
             ][-1]
         except IndexError:
             raise FatalError(
@@ -289,7 +294,6 @@ class ComponentManager:
         service_profile: t.Optional[str] = None,
     ) -> None:
         manifest_filepath, _ = self._get_manifest(component=component, path=path)
-        client, _ = get_storage_client(None, service_profile)
 
         if path is not None:
             component_path = os.path.abspath(path)
@@ -321,12 +325,17 @@ class ComponentManager:
         name = WebServiceSource().normalized_name(name)
 
         # Check if dependency exists in the registry
+        # make sure it exists in the registry's storage url
+        client = get_storage_client(service_profile=service_profile).registry_storage_client
+        if not client:
+            raise InternalError()
+
         client.component(component_name=name, version=spec)
 
         manifest_manager = ManifestManager(manifest_filepath, component)
         manifest = manifest_manager.load()
 
-        for dep in manifest.raw_dependencies:
+        for dep in manifest.raw_requirements:
             if dep.name == name:
                 raise FatalError(
                     'Dependency "{}" already exists for in manifest "{}"'.format(
@@ -374,7 +383,7 @@ class ComponentManager:
     def pack_component(
         self,
         name: str,
-        version: str,
+        version: t.Optional[str] = None,
         dest_dir: t.Optional[str] = None,
         repository: t.Optional[str] = None,
         commit_sha: t.Optional[str] = None,
@@ -400,28 +409,34 @@ class ComponentManager:
         manifest_manager = ManifestManager(
             self.path,
             name,
-            check_required_fields=True,
             version=version,
             repository=repository,
             commit_sha=commit_sha,
             repository_path=repository_path,
         )
         manifest = manifest_manager.load()
-        dest_temp_dir = Path(dest_path, dist_name(manifest))
-        include = set(manifest.files['include'])
-        exclude = set(manifest.files['exclude'])
-        copy_filtered_directory(self.path, str(dest_temp_dir), include=include, exclude=exclude)
+        dest_temp_dir = Path(dest_path, dist_name(name, manifest.version))
+        copy_filtered_directory(
+            self.path,
+            str(dest_temp_dir),
+            include=manifest.include_set,
+            exclude=manifest.exclude_set,
+        )
 
         if manifest.examples:
             copy_examples_folders(
-                manifest.examples, Path(self.path), dest_temp_dir, include=include, exclude=exclude
+                manifest.examples,
+                Path(self.path),
+                dest_temp_dir,
+                include=manifest.include_set,
+                exclude=manifest.exclude_set,
             )
 
         manifest_manager.dump(str(dest_temp_dir))
 
         check_unexpected_component_files(str(dest_temp_dir))
 
-        archive_filepath = os.path.join(dest_path, archive_filename(manifest))
+        archive_filepath = os.path.join(dest_path, archive_filename(name, manifest.version))
         print_info(f'Saving archive to "{archive_filepath}"')
         pack_archive(str(dest_temp_dir), archive_filepath)
         return archive_filepath, manifest
@@ -434,13 +449,14 @@ class ComponentManager:
         service_profile: t.Optional[str] = None,
         namespace: t.Optional[str] = None,
     ) -> None:
-        client, namespace = get_api_client(namespace, service_profile)
         if not version:
             raise FatalError('Argument "version" is required')
 
-        component_name = '/'.join([namespace, name])
+        api_client = get_api_client(namespace, service_profile)
+        component_name = '/'.join([api_client.default_namespace, name])
+
         # Checking if current version already uploaded
-        versions = client.versions(component_name=component_name).versions
+        versions = api_client.versions(component_name=component_name).versions
 
         if version not in versions:
             raise VersionNotFoundError(
@@ -449,7 +465,7 @@ class ComponentManager:
                 )
             )
 
-        client.delete_version(component_name=component_name, component_version=version)
+        api_client.delete_version(component_name=component_name, component_version=version)
         print_info(f'Deleted version {version} of the component {component_name}')
 
     @general_error_handler
@@ -461,10 +477,10 @@ class ComponentManager:
         service_profile: t.Optional[str] = None,
         namespace: t.Optional[str] = None,
     ):
-        client, namespace = get_api_client(namespace, service_profile)
-        component_name = '/'.join([namespace, name])
+        api_client = get_api_client(namespace, service_profile)
+        component_name = '/'.join([api_client.default_namespace, name])
 
-        versions = client.versions(component_name=component_name).versions
+        versions = api_client.versions(component_name=component_name).versions
 
         if version not in versions:
             raise VersionNotFoundError(
@@ -473,7 +489,7 @@ class ComponentManager:
                 )
             )
 
-        client.yank_version(
+        api_client.yank_version(
             component_name=component_name, component_version=version, yank_message=message
         )
         print_info(
@@ -530,10 +546,7 @@ class ComponentManager:
         """
         Uploads a component version to the registry.
         """
-        token_required = not (check_only or dry_run)
-        client, namespace = get_api_client(
-            namespace, service_profile, token_required=token_required
-        )
+        api_client = get_api_client(namespace, service_profile)
 
         if archive:
             if not os.path.isfile(archive):
@@ -547,7 +560,7 @@ class ComponentManager:
             tempdir = tempfile.mkdtemp()
             try:
                 unpack_archive(archive, tempdir)
-                manifest = ManifestManager(tempdir, name, check_required_fields=True).load()
+                manifest = ManifestManager(tempdir, name, upload_mode=True).load()
             finally:
                 shutil.rmtree(tempdir)
         else:
@@ -560,19 +573,13 @@ class ComponentManager:
                 repository_path=repository_path,
             )
 
-        if not manifest.version:
-            raise FatalError('"version" field is required when uploading the component')
-
-        if not manifest.version.is_semver:
-            raise FatalError('Only components with semantic versions are allowed on the service')
-
         if manifest.version.semver.prerelease and skip_pre_release:
             raise NothingToDoError(f'Skipping pre-release version {manifest.version}')
 
-        component_name = '/'.join([namespace, manifest.name])
+        component_name = '/'.join([api_client.default_namespace, name])
         # Checking if current version already uploaded
         try:
-            versions = client.versions(component_name=component_name, spec='*').versions
+            versions = api_client.versions(component_name=component_name, spec='*').versions
 
             if manifest.version in versions:
                 if allow_existing:
@@ -606,9 +613,9 @@ class ComponentManager:
                 memo['progress'] = monitor.bytes_read
 
             if dry_run:
-                job_id = client.validate_version(file_path=archive, callback=callback)
+                job_id = api_client.validate_version(file_path=archive, callback=callback)
             else:
-                job_id = client.upload_version(
+                job_id = api_client.upload_version(
                     component_name=component_name, file_path=archive, callback=callback
                 )
 
@@ -634,7 +641,7 @@ class ComponentManager:
                 while True:
                     if datetime.now() > timeout_at:
                         raise TimeoutError()
-                    status = client.task_status(job_id=job_id)
+                    status = api_client.task_status(job_id=job_id)
 
                     for warning in status.warnings:
                         if warning not in warnings:
@@ -672,8 +679,8 @@ class ComponentManager:
 
     @general_error_handler
     def upload_component_status(self, job_id: str, service_profile: t.Optional[str] = None) -> None:
-        client, _ = get_api_client(None, service_profile)
-        status = client.task_status(job_id=job_id)
+        api_client = get_api_client(None, service_profile)
+        status = api_client.task_status(job_id=job_id)
         if status.status == 'failure':
             raise FatalError(f"Uploaded version wasn't processed successfully.\n{status.message}")
         else:
@@ -698,8 +705,6 @@ class ComponentManager:
                     ManifestManager(
                         self.root_managed_components_dir,
                         'root',
-                        expand_environment=True,
-                        process_opt_deps=True,
                     ).load()
                 ]),
                 self.root_managed_components_lock_path,
@@ -740,8 +745,6 @@ class ComponentManager:
                     ManifestManager(
                         component['path'],
                         component['name'],
-                        expand_environment=True,
-                        process_opt_deps=True,
                     ).load()
                 )
 
@@ -827,22 +830,20 @@ class ComponentManager:
         for component in components_with_manifests:
             component = component.strip()
             name = os.path.basename(component)
-            manifest = ManifestManager(
-                component, name, expand_environment=True, process_opt_deps=True
-            ).load()
+            manifest = ManifestManager(component, name).load()
             name_key = ComponentName('idf', name)
 
-            for dependency in manifest.dependencies:
+            for dep in manifest.requirements:
                 # Meta dependencies, like 'idf' are not used directly
-                if dependency.meta:
+                if dep.meta:
                     continue
 
                 # No required dependencies shouldn't be added to the build system
-                if not dependency.require:
+                if not dep.is_required:
                     continue
 
-                dependency_name = build_name(dependency.name)
-                requirement_key = 'REQUIRES' if dependency.public else 'PRIV_REQUIRES'
+                dependency_name = build_name(dep.name)
+                requirement_key = 'REQUIRES' if dep.is_public else 'PRIV_REQUIRES'
 
                 def add_req(key: str) -> None:
                     if key not in requirements[name_key]:
@@ -918,7 +919,7 @@ class ComponentManager:
             elif props['__COMPONENT_SOURCE'] == ComponentSource.PROJECT_COMPONENTS:
                 project_components[comp_name] = props
             else:
-                raise InternalError
+                raise InternalError()
 
         # overriding the sequence
         new_requirements = project_components
@@ -983,11 +984,11 @@ class ComponentManager:
         components: t.Optional[t.List[str]] = None,
         recursive: bool = True,
     ) -> None:
-        client, namespace = get_storage_client(None, service_profile)
+        client = get_storage_client(None, service_profile)
         save_path = Path(save_path)
         if interval:
             while True:
-                sync_components(client, self.path, namespace, save_path, components, recursive)
+                sync_components(client, self.path, save_path, components, recursive)
                 time.sleep(interval)
         else:
-            sync_components(client, self.path, namespace, save_path, components, recursive)
+            sync_components(client, self.path, save_path, components, recursive)

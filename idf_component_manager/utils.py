@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import enum
-import re
 import typing as t
 
 import click
@@ -57,9 +56,6 @@ def print_info(
     **kwargs,
 ) -> None:
     click.secho(message, fg=fg, bg=bg, bold=bold, underline=underline, blink=blink, **kwargs)
-
-
-RE_PATTERN = type(re.compile(''))  # this is a workaround for `re.Pattern` for python<3.7
 
 
 # total_ordering will raise an error in python 2.7 with enum34

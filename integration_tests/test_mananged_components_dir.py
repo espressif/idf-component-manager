@@ -49,6 +49,15 @@ def test_changes_in_component(project):
         os.path.join(project, 'components', 'example__cmp'),
         os.path.join(project, 'components', 'cmp'),
     )
+
+    # change lock file path
+    with open(os.path.join(project, 'dependencies.lock'), 'w+') as fw:
+        file_str = fw.read()
+        fw.seek(0)
+        old_str = f'path: {os.path.join(project, "components", "example__cmp")}'
+        new_str = f'path: {os.path.join(project, "components", "cmp")}'
+        fw.write(file_str.replace(old_str, new_str))
+
     res = project_action(project, 'reconfigure')
 
     assert 'Build files have been written to' in res

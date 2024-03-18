@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 from idf_component_manager.version_solver.mixology.package import Package
 from idf_component_tools.sources import LocalSource, WebServiceSource
@@ -75,15 +75,13 @@ def test_circular_dependency(source, check_solver_result):
 
 
 def test_override_dependency(source, check_solver_result):
-    foo = Package('foo', source=WebServiceSource({'service_url': 'https://example.test/api'}))
-    bar = Package('bar', source=WebServiceSource({'service_url': 'https://example.test/api'}))
+    foo = Package('foo', source=WebServiceSource(service_url='https://example.test/api'))
+    bar = Package('bar', source=WebServiceSource(service_url='https://example.test/api'))
     # cmp_local was the WebServiceSource (name with namespace),
     # but override_path changed it to the LocalSource.
-    cmp_local = Package(
-        'example/cmp', source=LocalSource({'path': 'test', 'override_path': 'test'})
-    )
+    cmp_local = Package('example/cmp', source=LocalSource(path='test', override_path='test'))
     cmp_web = Package(
-        'example/cmp', source=WebServiceSource({'service_url': 'https://example.test/api'})
+        'example/cmp', source=WebServiceSource(service_url='https://example.test/api')
     )
 
     source.root_dep(foo, '1.0.0')

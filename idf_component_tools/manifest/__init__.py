@@ -1,47 +1,42 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 from .constants import (
     FULL_SLUG_REGEX,
-    MANIFEST_FILENAME,
     SLUG_REGEX,
     WEB_DEPENDENCY_REGEX,
     known_targets,
 )
-from .manager import ManifestManager
-from .manifest import (
+from .metadata import Metadata
+from .models import (
     ComponentRequirement,
-    ComponentVersion,
-    ComponentWithVersions,
-    HashedComponentVersion,
     Manifest,
     OptionalDependency,
     OptionalRequirement,
-    ProjectRequirements,
-    filter_optional_dependencies,
+    SolvedComponent,
+    SolvedManifest,
 )
-from .schemas import BUILD_METADATA_KEYS, INFO_METADATA_KEYS, JSON_SCHEMA
-from .validator import ExpandedManifestValidator, ManifestValidator
+from .schemas import (
+    BUILD_METADATA_KEYS,
+    INFO_METADATA_KEYS,
+    MANIFEST_JSON_SCHEMA,
+    METADATA_JSON_SCHEMA,
+)
 
 __all__ = [
     'BUILD_METADATA_KEYS',
     'ComponentRequirement',
-    'ComponentVersion',
-    'ComponentWithVersions',
-    'filter_optional_dependencies',
     'FULL_SLUG_REGEX',
-    'HashedComponentVersion',
     'INFO_METADATA_KEYS',
-    'JSON_SCHEMA',
     'known_targets',
-    'MANIFEST_FILENAME',
     'Manifest',
-    'ManifestManager',
-    'ManifestValidator',
-    'ExpandedManifestValidator',
+    'MANIFEST_JSON_SCHEMA',
     'OptionalDependency',
     'OptionalRequirement',
-    'ProjectRequirements',
     'SLUG_REGEX',
     'WEB_DEPENDENCY_REGEX',
+    'SolvedComponent',
+    'SolvedManifest',
+    'Metadata',
+    'METADATA_JSON_SCHEMA',
 ]

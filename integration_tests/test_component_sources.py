@@ -34,7 +34,7 @@ class TestComponentSources:
         ],
         indirect=True,
     )
-    def test_component_override_priority(self, project):
+    def test_component_override_priority_basic(self, project):
         res = project_action(project, 'reconfigure')
         assert 'Configuring done' in res
 

@@ -1,52 +1,36 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-from __future__ import annotations
 
-import re
+import os
 import typing as t
 from ast import literal_eval
 
-from pyparsing import Keyword, Word, alphanums, infixNotation, opAssoc
-from schema import SchemaError
+from pydantic import GetCoreSchemaHandler
+from pydantic_core import core_schema
+from pyparsing import (
+    Keyword,
+    Literal,
+    MatchFirst,
+    ParseResults,
+    Regex,
+    Word,
+    alphas,
+    infixNotation,
+    nums,
+    opAssoc,
+)
 
 from idf_component_tools.build_system_tools import get_env_idf_target, get_idf_version
-from idf_component_tools.errors import FetchingError, ProcessingError
-from idf_component_tools.manifest.constants import IF_IDF_VERSION_REGEX, IF_TARGET_REGEX
+from idf_component_tools.errors import RunningEnvironmentError
+from idf_component_tools.messages import warn
 from idf_component_tools.semver import SimpleSpec, Version
-from idf_component_tools.serialization import serializable
 
-IF_IDF_VERSION_REGEX_COMPILED = re.compile(IF_IDF_VERSION_REGEX)
-IF_TARGET_REGEX_COMPILED = re.compile(IF_TARGET_REGEX)
+from .env_expander import subst_vars_in_str
 
 
-@serializable
-class OptionalDependency:
-    _serialization_properties = [
-        'if_clause',
-        'version',
-    ]
-
-    def __init__(self, clause: t.Union[str, IfClause], version: t.Optional[str] = None) -> None:
-        if isinstance(clause, IfClause):
-            self.if_clause = clause
-        else:
-            self.if_clause = IfClause.from_string(clause)
-        self.version = version
-
-    def __repr__(self) -> str:
-        return '{} ({})'.format(self.if_clause, self.version or '*')
-
-    @classmethod
-    def fromdict(cls, d: t.Dict) -> OptionalDependency:
-        return cls(d.get('if'), d.get('version'))  # type: ignore
-
-
-@serializable
-class IfClause:
-    _serialization_properties = [
-        'clause',
-        'bool_value',
-    ]
+class Stmt:
+    def __repr__(self):
+        return self.stmt
 
     @staticmethod
     def eval_str(s: str) -> str:
@@ -57,7 +41,7 @@ class IfClause:
         try:
             return literal_eval(_s)
         except (ValueError, SyntaxError):
-            raise SchemaError(None, f'Invalid string "{s}" in "if" clause')
+            raise ValueError('Invalid string "{}" in "if" clause'.format(s))
 
     @staticmethod
     def eval_list(s: str) -> t.List[str]:
@@ -67,195 +51,223 @@ class IfClause:
             _s = _s[1:-1]
 
         try:
-            return [IfClause.eval_str(part) for part in _s.split(',')]
+            return [Stmt.eval_str(part) for part in _s.split(',')]
         except (ValueError, SyntaxError):
-            raise SchemaError(None, f'Invalid list "{s}" in "if" clause')
+            raise ValueError('Invalid list "{}" in "if" clause'.format(s))
 
-    @staticmethod
-    def regex_str():
-        if_idf_version = IF_IDF_VERSION_REGEX
-        # remove the name group
-        if_idf_version = re.sub(r'\(\?P<\w+>', '(?:', if_idf_version)
-        # remove the first ^ and the last $ and make it as a group
-        if_idf_version = '(' + if_idf_version[1:-1] + ')'
+    def get_value(self) -> t.Any:
+        raise NotImplementedError('Please implement this function in sub classes')
 
-        if_target = IF_TARGET_REGEX
-        # remove the name group
-        if_target = re.sub(r'\(\?P<\w+>', '(?:', if_target)
-        # remove the first ^ and the last $ and make it as a group
-        if_target = '(' + if_target[1:-1] + ')'
 
-        return f'^{if_idf_version}|{if_target}$'
+class LeftValue(Stmt):
+    def __init__(self, stmt: str) -> None:
+        self.stmt = stmt
+
+    def get_value(self) -> str:
+        if self.stmt == 'idf_version':
+            try:
+                return get_idf_version()
+            except RunningEnvironmentError:
+                warn('Running in an environment without IDF. Using "0.0.0" as the IDF version')
+                return '0.0.0'
+
+        if self.stmt == 'target':
+            try:
+                return get_env_idf_target()
+            except RunningEnvironmentError:
+                warn('Running in an environment without IDF. Using "unknown" as IDF target')
+                return 'unknown'
+
+        return subst_vars_in_str(self.stmt, dict(os.environ))
+
+
+class String(Stmt):
+    def __init__(self, stmt: str) -> None:
+        self.stmt = stmt
+
+    def get_value(self) -> str:
+        return self.eval_str(self.stmt)
+
+
+class List(Stmt):
+    def __init__(self, stmt: str) -> None:
+        self.stmt = stmt
+
+    def get_value(self) -> t.List[str]:
+        return self.eval_list(self.stmt)
+
+
+class IfClause(Stmt):
+    # WARNING: sequence of operators is important
+    # For example, `not in` should be checked before `in` because `in` is a substring of `not in`
+
+    # used with both version specs and list of strings
+    REUSED_OP_LIST = [
+        '!=',
+        '==',
+    ]
+
+    # only used with version specs
+    VERSION_OP_LIST = [
+        '<=',
+        '<',
+        '>=',
+        '>',
+        '~=',
+        '~',
+        '=',
+        '^',
+    ]
+
+    # only used with list of strings
+    LIST_OP_LIST = [
+        'not in',
+        'in',
+    ]
+
+    def __init__(self, left: LeftValue, op: str, right: t.Union[String, List]):
+        self.left: LeftValue = left
+        self.op: t.Optional[str] = op
+        self.right: t.Union[String, List] = right
+
+    @property
+    def stmt(self):
+        return '{} {} {}'.format(self.left, self.op, self.right)
+
+    def _get_value_as_version(self, _l: str, _r: t.Union[str, t.List[str]]) -> bool:
+        if isinstance(_r, list):
+            raise ValueError(
+                f'Operator {self.op} only supports string on the right side. Got "{_r}"'
+            )
+
+        def _clear_spaces(*s: str) -> str:
+            return ''.join(s).replace(' ', '')
+
+        spec_without_spaces = _clear_spaces(self.op or '', _r)
+        try:
+            spec = SimpleSpec(spec_without_spaces)
+        except ValueError:
+            raise ValueError(f'Invalid version spec "{spec_without_spaces}"')
+
+        try:
+            version = Version.coerce(_l)
+        except ValueError:
+            raise ValueError(f'Invalid version spec "{_l}"')
+
+        return spec.match(version)
+
+    def _get_value_as_string(self, _l: str, _r: t.Union[str, t.List[str]]) -> bool:
+        if isinstance(_r, list):
+            raise ValueError(
+                f'Operator {self.op} only supports string on the right side. Got "{_r}"'
+            )
+
+        if self.op == '==':
+            return _l == _r
+
+        if self.op == '!=':
+            return _l != _r
+
+        raise ValueError(f'Support operators: "==,!=". Got "{self.op}"')
+
+    def _get_value_as_list(self, _l: str, _r: t.Union[str, t.List[str]]) -> bool:
+        if isinstance(_r, str):
+            raise ValueError(
+                f'Operator {self.op} only supports list of strings on the right side. Got "{_r}"'
+            )
+
+        if self.op == 'in':
+            return _l in _r
+
+        if self.op == 'not in':
+            return _l not in _r
+
+        raise ValueError(f'Support operators: "in,not in". Got "{self.op}"')
+
+    def get_value(self) -> bool:
+        _l = self.left.get_value()
+        _r = self.right.get_value()
+
+        if self.op in self.LIST_OP_LIST:
+            return self._get_value_as_list(_l, _r)
+        elif self.op in self.VERSION_OP_LIST:
+            return self._get_value_as_version(_l, _r)
+        elif self.op in self.REUSED_OP_LIST and isinstance(_r, str):
+            # if the right value could be a version spec, compare it as a version spec
+            # otherwise, compare it as a string
+            try:
+                SimpleSpec(self.op + _r)
+            except ValueError:
+                return self._get_value_as_string(_l, _r)
+            else:
+                return self._get_value_as_version(_l, _r)
+        elif self.op in self.REUSED_OP_LIST and isinstance(_r, list):
+            raise ValueError(
+                f'Operator {self.op} only supports string on the right side. Got "{_r}"'
+            )
+
+        raise ValueError(
+            f'Support operators: "{",".join(self.LIST_OP_LIST + self.VERSION_OP_LIST + self.REUSED_OP_LIST)}". Got "{self.op}"'
+        )
 
     @classmethod
-    def from_string(cls, s: str) -> IfClause:
-        return parse_if_clause(s)
+    def __get_pydantic_core_schema__(
+        cls, source_type: t.Any, handler: GetCoreSchemaHandler
+    ) -> core_schema.CoreSchema:
+        return core_schema.str_schema(min_length=1)
+
+
+class BoolAnd(Stmt):
+    def __init__(self, x: ParseResults):
+        self.left: IfClause = x[0][0]
+        self.right: IfClause = x[0][2]
 
     @property
-    def clause(self) -> str:
-        raise NotImplementedError
+    def stmt(self) -> str:
+        return '{} and {}'.format(self.left, self.right)
+
+    def get_value(self) -> bool:
+        return self.left.get_value() and self.right.get_value()
+
+
+class BoolOr(Stmt):
+    def __init__(self, x: ParseResults):
+        self.left: IfClause = x[0][0]
+        self.right: IfClause = x[0][2]
 
     @property
-    def bool_value(self) -> bool:
-        raise NotImplementedError
+    def stmt(self):  # type: () -> str
+        return '{} or {}'.format(self.left, self.right)
+
+    def get_value(self) -> bool:
+        return self.left.get_value() or self.right.get_value()
 
 
-class IfIdfVersionClause(IfClause):
-    def __init__(self, spec: str) -> None:
-        self.spec = spec
+_non_terminator_words = Regex(r'[^\n\r\[\]&|\(\)]+')
+LEFT_VALUE = Word(alphas + nums + '${}_-').setParseAction(lambda x: LeftValue(x[0]))
 
-    def __repr__(self) -> str:
-        return f'{self.clause} ({self.bool_value})'
+OPERATORS = MatchFirst(
+    Literal(op)
+    for op in [
+        *IfClause.REUSED_OP_LIST,
+        *IfClause.VERSION_OP_LIST,
+        *IfClause.LIST_OP_LIST,
+    ]
+).setParseAction(lambda x: x[0])
 
-    @property
-    def clause(self) -> str:
-        return f'idf_version {self.spec}'
+STRING = _non_terminator_words.setParseAction(lambda x: String(x[0]))
+LIST = (Literal('[') + STRING + Literal(']')).setParseAction(lambda x: List(f'{x[0]}{x[1]}{x[2]}'))
 
-    @property
-    def bool_value(self) -> bool:
-        try:
-            idf_version = get_idf_version()
-        except FetchingError:
-            return False
-
-        return SimpleSpec(self.spec).match(Version(idf_version))
-
-
-@serializable
-class IfTargetClause(IfClause):
-    def __init__(self, operator: str, target_str: str):
-        """
-        Initialize the IfParser object.
-
-        :param operator: The operator to be used for comparison. One of '==', '!=', 'in', 'not in'.
-        :type operator: str
-        :param target_str: The target string to be compared.
-        :type target_str: str
-        :returns: None
-        """
-        self.operator = operator
-        self.target_str = target_str
-
-    def __repr__(self):
-        return f'{self.clause} ({self.bool_value})'
-
-    @property
-    def clause(self) -> str:
-        return f'target {self.operator} {self.target_str}'
-
-    @property
-    def bool_value(self):
-        try:
-            env_target = get_env_idf_target()
-        except ProcessingError:
-            return False
-
-        if self.operator == '!=':
-            return env_target != self.eval_str(self.target_str)
-
-        if self.operator == '==':
-            return env_target == self.eval_str(self.target_str)
-
-        if self.operator == 'not in':
-            return env_target not in self.eval_list(self.target_str)
-
-        if self.operator == 'in':
-            return env_target in self.eval_list(self.target_str)
-
-
-class BoolAnd(IfClause):
-    def __init__(self, t):
-        self.left: IfClause = t[0][0]
-        self.right: IfClause = t[0][2]
-
-    @property
-    def clause(self) -> str:
-        return f'{self.left.clause} and {self.right.clause}'
-
-    @property
-    def bool_value(self) -> bool:
-        return self.left.bool_value and self.right.bool_value
-
-
-class BoolOr(IfClause):
-    def __init__(self, t):
-        self.left: IfClause = t[0][0]
-        self.right: IfClause = t[0][2]
-
-    @property
-    def clause(self) -> str:
-        return f'{self.left.clause} or {self.right.clause}'
-
-    @property
-    def bool_value(self) -> bool:
-        return self.left.bool_value or self.right.bool_value
-
-
-def _parse_if_idf_version_clause(mat: re.Match) -> IfClause:
-    comparison = mat.group('comparison')
-    spec = mat.group('spec')
-    spec = ','.join([part.strip() for part in spec.split(',')])
-
-    try:
-        simple_spec = SimpleSpec(f'{IfClause.eval_str(comparison)}{IfClause.eval_str(spec)}')
-    except ValueError:
-        raise SchemaError(
-            None,
-            'Invalid version specification for "idf_version": {clause}. Please use a format like '
-            '"idf_version >=4.4,<5.3"\nDocumentation: '
-            'https://docs.espressif.com/projects/idf-component-manager/'
-            'en/latest/reference/manifest_file.html#rules'.format(clause=mat.string),
-        )
-
-    return IfIdfVersionClause(str(simple_spec))
-
-
-def _parser_if_target_clause(mat: re.Match) -> IfClause:
-    operator = mat.group('comparison')
-    target_str = mat.group('targets').strip()
-
-    if operator not in ['==', '!=', 'in', 'not in']:
-        raise SchemaError(
-            None,
-            'Invalid if clause format for target: {clause}. '
-            'You can specify rules based on target using '
-            '"==", "!=", "in" or "not in" like: "target in [esp32, esp32c3]", "target == esp32"\n'
-            'Documentation: '
-            'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference'
-            '/manifest_file.html#rules'.format(clause=mat.string),
-        )
-
-    return IfTargetClause(operator, target_str)
-
-
-def _parse_if_clause(s: str) -> IfClause:
-    s = s.strip()
-    res = IF_IDF_VERSION_REGEX_COMPILED.match(s)
-    if res:
-        return _parse_if_idf_version_clause(res)
-
-    res = IF_TARGET_REGEX_COMPILED.match(s)
-    if res:
-        return _parser_if_target_clause(res)
-
-    raise SchemaError(
-        None,
-        'Invalid if clause format "{clause}". '
-        'You can specify rules based on current ESP-IDF version or target like: '
-        '"idf_version >=3.3,<5.0" or "target in [esp32, esp32c3]"\nDocumentation: '
-        'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/manifest_file.html#rules'.format(
-            clause=s
-        ),
-    )
+IF_CLAUSE = (LEFT_VALUE + OPERATORS + (LIST | STRING)).setParseAction(
+    lambda x: IfClause(x[0], x[1], x[2])
+)
 
 
 AND = Keyword('&&')
 OR = Keyword('||')
 
-CLAUSE = Word(alphanums + ' _.^=~<>![,]"').setParseAction(lambda t: _parse_if_clause(t[0]))
-
 BOOL_EXPR = infixNotation(
-    CLAUSE,
+    IF_CLAUSE,
     [
         (AND, 2, opAssoc.LEFT, BoolAnd),
         (OR, 2, opAssoc.LEFT, BoolOr),
@@ -263,5 +275,5 @@ BOOL_EXPR = infixNotation(
 )
 
 
-def parse_if_clause(s: str) -> IfClause:
+def parse_if_clause(s):  # type: (str) -> IfClause
     return BOOL_EXPR.parseString(s, parseAll=True)[0]

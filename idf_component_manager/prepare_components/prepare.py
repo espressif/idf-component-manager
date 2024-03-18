@@ -11,10 +11,9 @@ import os
 import sys
 import warnings
 
+from idf_component_manager.core import ComponentManager
 from idf_component_manager.utils import print_error, showwarning
 from idf_component_tools.errors import FatalError
-
-from ..core import ComponentManager
 
 
 def _component_list_file(build_dir):

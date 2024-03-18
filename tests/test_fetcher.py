@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os.path
@@ -7,19 +7,19 @@ import pytest
 
 from idf_component_tools.errors import ComponentModifiedError, InvalidComponentHashError
 from idf_component_tools.hash_tools.constants import HASH_FILENAME
-from idf_component_tools.manifest import ComponentVersion
-from idf_component_tools.manifest.solved_component import SolvedComponent
+from idf_component_tools.manifest import SolvedComponent
 from idf_component_tools.sources import WebServiceSource
 from idf_component_tools.sources.fetcher import ComponentFetcher
+from idf_component_tools.utils import ComponentVersion
 
 
 def test_fetcher_download_and_create_hash(fixtures_path):
     components_folder_path = os.path.join(fixtures_path, 'components')
-    source = WebServiceSource({'service_url': 'https://repo.example.com'})
+    source = WebServiceSource(service_url='https://repo.example.com')
     component = SolvedComponent(
-        'cmp',
-        ComponentVersion('1.0.0'),
-        source,
+        name='cmp',
+        version=ComponentVersion('1.0.0'),
+        source=source,
         component_hash='0d7b0d0e9ab239cf4e127dd08990caf869158324c251dc1fbacacbe788dc3f35',
     )
     fetcher = ComponentFetcher(component, components_folder_path)

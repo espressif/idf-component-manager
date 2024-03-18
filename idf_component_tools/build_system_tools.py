@@ -8,7 +8,7 @@ import subprocess  # noqa: S404
 import sys
 from pathlib import Path
 
-from idf_component_tools.errors import FetchingError, ProcessingError
+from idf_component_tools.errors import RunningEnvironmentError
 
 from .semver import Version
 
@@ -28,7 +28,7 @@ def get_env_idf_target() -> str:
     """
     env_idf_target = os.getenv('IDF_TARGET')
     if not env_idf_target:
-        raise ProcessingError(
+        raise RunningEnvironmentError(
             'IDF_TARGET is not set, should be set by CMake, please check your configuration'
         )
     return env_idf_target
@@ -43,7 +43,7 @@ def get_idf_version():
     try:
         idf_version = subprocess.check_output([sys.executable, idf_py_path, '--version'])  # noqa: S603
     except subprocess.CalledProcessError:
-        raise FetchingError(
+        raise RunningEnvironmentError(
             'Could not get IDF version from calling "idf.py --version".\n' 'idf.py path: {}'.format(
                 idf_py_path
             )
@@ -61,7 +61,7 @@ def get_idf_version():
     if len(res) == 1:
         return str(Version.coerce(res[0]))
     else:
-        raise FetchingError(
+        raise RunningEnvironmentError(
             'Could not parse IDF version from calling "idf.py --version".\n' 'Output: {}'.format(
                 idf_version
             )
@@ -72,7 +72,9 @@ def get_idf_path() -> str:
     try:
         return os.environ['IDF_PATH']
     except KeyError:
-        raise FetchingError('Please set IDF_PATH environment variable with a valid path to ESP-IDF')
+        raise RunningEnvironmentError(
+            'Please set IDF_PATH environment variable with a valid path to ESP-IDF'
+        )
 
 
 def is_component(path: Path) -> bool:

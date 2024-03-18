@@ -6,6 +6,7 @@ import os
 import shutil
 import tempfile
 from distutils.dir_util import copy_tree
+from io import open
 from pathlib import Path
 
 import pytest
@@ -16,9 +17,10 @@ from pytest import raises
 
 from idf_component_manager.core import ComponentManager
 from idf_component_tools.archive_tools import unpack_archive
+from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.errors import FatalError, NothingToDoError
 from idf_component_tools.git_client import GitClient
-from idf_component_tools.manifest import MANIFEST_FILENAME, ManifestManager
+from idf_component_tools.manager import ManifestManager
 from idf_component_tools.semver import Version
 
 
@@ -44,7 +46,7 @@ def test_init_project(mock_registry, tmp_path):
         manager.create_manifest(component='foo')
 
         for filepath in [main_manifest_path, foo_manifest_path]:
-            with open(filepath) as file:
+            with open(filepath, mode='r') as file:
                 assert file.readline().startswith('## IDF Component Manager')
 
         manager.add_dependency('cmp==4.0.3')
@@ -192,9 +194,9 @@ def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_comp
 
     tempdir = os.path.join(tempfile.tempdir, 'cmp_pre')
     unpack_archive(os.path.join(component_manager.dist_path, 'pre_3.0.0.tgz'), tempdir)
-    manifest = ManifestManager(tempdir, 'pre', check_required_fields=True).load()
+    manifest = ManifestManager(tempdir, 'pre').load()
     assert manifest.version == '3.0.0'
-    assert set(list_dir(tempdir)) == {
+    assert set(list_dir(tempdir)) == set(
         os.path.join(tempdir, file)
         for file in [
             'idf_component.yml',
@@ -203,7 +205,7 @@ def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_comp
             'LICENSE',
             os.path.join('include', 'cmp.h'),
         ]
-    }
+    )
 
 
 @pytest.mark.parametrize(
@@ -227,8 +229,8 @@ def test_pack_component_with_dest_dir(version, expected_version, tmp_path, relea
     component_manager.pack_component('cmp', version, 'dest_dir')
 
     tempdir = os.path.join(tempfile.tempdir, 'cmp')
-    unpack_archive(os.path.join(str(dest_path), f'cmp_{expected_version}.tgz'), tempdir)
-    manifest = ManifestManager(tempdir, 'cmp', check_required_fields=True).load()
+    unpack_archive(os.path.join(str(dest_path), 'cmp_{}.tgz'.format(expected_version)), tempdir)
+    manifest = ManifestManager(tempdir, 'cmp').load()
     assert manifest.version == expected_version
 
 
@@ -245,7 +247,7 @@ def test_pack_component_with_replacing_manifest_params(tmp_path, release_compone
 
     tempdir = os.path.join(tempfile.tempdir, 'cmp')
     unpack_archive(os.path.join(component_manager.dist_path, 'cmp_2.3.5.tgz'), tempdir)
-    manifest = ManifestManager(tempdir, 'cmp', check_required_fields=True).load()
+    manifest = ManifestManager(tempdir, 'cmp').load()
 
     assert manifest.version == '2.3.5'
     assert manifest.links.repository == repository_url
@@ -310,10 +312,8 @@ def test_pack_component_with_examples_errors(tmp_path, example_component_path, e
     component_manager = ComponentManager(path=str(project_path))
 
     # Add folder with the same name of the example
-    manifest_manager = ManifestManager(
-        str(project_path), 'cmp', check_required_fields=True, version='2.3.4'
-    )
-    manifest_manager.manifest_tree['examples'] = examples
+    manifest_manager = ManifestManager(str(project_path), 'cmp')
+    manifest_manager.manifest.examples = examples
     manifest_manager.dump(str(project_path))
 
     with pytest.raises(FatalError, match=message):

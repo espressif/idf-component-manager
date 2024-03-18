@@ -11,7 +11,7 @@ import yaml
 from jinja2 import Environment, FileSystemLoader
 
 from idf_component_tools.config import root_managed_components_dir
-from idf_component_tools.manifest import MANIFEST_FILENAME
+from idf_component_tools.constants import MANIFEST_FILENAME
 
 from .integration_test_helpers import create_component, generate_from_template
 from .integration_test_helpers import idf_version as system_idf_version

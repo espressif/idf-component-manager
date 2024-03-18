@@ -5,6 +5,8 @@
 import os
 import typing as t
 
+from idf_component_tools.build_system_tools import build_name
+from idf_component_tools.errors import ComponentModifiedError, InvalidComponentHashError
 from idf_component_tools.hash_tools.constants import HASH_FILENAME
 from idf_component_tools.hash_tools.errors import (
     HashDoesNotExistError,
@@ -14,11 +16,10 @@ from idf_component_tools.hash_tools.errors import (
 from idf_component_tools.hash_tools.validate_managed_component import (
     validate_managed_component_hash,
 )
+from idf_component_tools.manifest import SolvedComponent
 
-from ..build_system_tools import build_name
-from ..errors import ComponentModifiedError, InvalidComponentHashError
-from ..manifest.solved_component import SolvedComponent
-from . import BaseSource
+if t.TYPE_CHECKING:
+    from . import BaseSource
 
 
 class ComponentFetcher:
@@ -26,7 +27,7 @@ class ComponentFetcher:
         self,
         solved_component: SolvedComponent,
         components_path: str,
-        source: t.Optional[BaseSource] = None,
+        source: t.Optional['BaseSource'] = None,
     ) -> None:
         self.source = source if source else solved_component.source
         self.component = solved_component

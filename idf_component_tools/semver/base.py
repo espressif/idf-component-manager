@@ -261,22 +261,22 @@ class Version:
             version_string (str), the version string to parse
         """
         if not version_string:
-            raise ValueError(f'Invalid empty version string: {version_string!r}')
+            raise ValueError(f'Invalid empty version string: "{version_string}"')
 
         version_re = cls.version_re
 
         match = version_re.match(version_string)
         if not match:
-            raise ValueError(f'Invalid version string: {version_string!r}')
+            raise ValueError(f'Invalid version string: "{version_string}"')
 
         major, minor, patch, revision, prerelease, build = match.groups()
 
         if _has_leading_zero(major):
-            raise ValueError(f'Invalid leading zero in major: {version_string!r}')
+            raise ValueError(f'Invalid leading zero in major: "{version_string}"')
         if _has_leading_zero(minor):
-            raise ValueError(f'Invalid leading zero in minor: {version_string!r}')
+            raise ValueError(f'Invalid leading zero in minor: "{version_string}"')
         if _has_leading_zero(patch):
-            raise ValueError(f'Invalid leading zero in patch: {version_string!r}')
+            raise ValueError(f'Invalid leading zero in patch: "{version_string}"')
 
         major = int(major)
         minor = cls._coerce(minor)
@@ -284,7 +284,7 @@ class Version:
         revision = int(revision) if revision else 0
         if revision < 0:
             raise ValueError(
-                'Invalid revision number, must be an integer greater than or equal to 0'
+                f'Invalid revision number in "{version_string}", must be an integer greater than or equal to 0'
             )
 
         if not prerelease:
@@ -453,9 +453,6 @@ def validate(version_string):
         return True
     except ValueError:
         return False
-
-
-DEFAULT_SYNTAX = 'simple'
 
 
 class BaseSpec:

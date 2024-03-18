@@ -3,9 +3,9 @@
 
 import typing as t
 
-from idf_component_tools.manifest import HashedComponentVersion
 from idf_component_tools.semver import Range as SemverRange
 from idf_component_tools.semver import SimpleSpec
+from idf_component_tools.utils import HashedComponentVersion
 
 from .mixology.constraint import Constraint
 from .mixology.failure import SolverFailure

@@ -9,20 +9,20 @@ import vcr
 from requests import Response
 
 from idf_component_manager import version
-from idf_component_tools.config import component_registry_url
-from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL
+from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL
 from idf_component_tools.registry.api_client import APIClient
-from idf_component_tools.registry.api_client_errors import APIClientError, NoRegistrySet
 from idf_component_tools.registry.base_client import env_cache_time, user_agent
+from idf_component_tools.registry.client_errors import APIClientError
 from idf_component_tools.registry.multi_storage_client import MultiStorageClient
 from idf_component_tools.registry.request_processor import join_url
+from idf_component_tools.registry.service_details import get_registry_url, get_storage_urls
 from idf_component_tools.registry.storage_client import StorageClient
 from idf_component_tools.semver import Version
 
 
 @pytest.fixture
-def base_url():
-    return 'http://localhost:5000/api'
+def registry_url():
+    return 'http://localhost:5000'
 
 
 @pytest.fixture
@@ -76,16 +76,16 @@ class TestAPIClient:
         client = StorageClient(storage_url=storage_url)
 
         # Also check case normalisation
-        manifest = client.component(component_name='tesT/CMP')
+        result = client.component(component_name='tesT/CMP')
 
-        assert manifest.name == 'test/cmp'
-        assert str(manifest.version) == '1.0.1'
-        assert manifest.download_url.startswith(storage_url)
-        assert manifest.documents['readme'].startswith(storage_url)
-        assert manifest.examples[0]['url'].startswith(storage_url)
-        assert manifest.license_url.startswith(storage_url)
+        assert result['name'] == 'test/cmp'
+        assert result['version'] == '1.0.1'
+        assert result['download_url'].startswith(storage_url)
+        assert result['docs']['readme'].startswith(storage_url)
+        assert result['examples'][0]['url'].startswith(storage_url)
+        assert result['license']['url'].startswith(storage_url)
 
-    def test_user_agent(self, base_url):
+    def test_user_agent(self, registry_url):
         ua = user_agent()
         assert str(version) in ua
 
@@ -126,30 +126,30 @@ class TestAPIClient:
         client.component(component_name='test/cmp')
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_api_information.yaml')
-    def test_api_information(self, base_url):
-        client = APIClient(base_url=base_url)
+    def test_api_information(self, registry_url):
+        client = APIClient(registry_url=registry_url)
         information = client.api_information()
         assert information['components_base_url'] == 'http://localhost:9000/test-public'
 
     def test_file_adapter(self, fixtures_path):
         storage_url = f'file://{fixtures_path}'
         client = StorageClient(storage_url=storage_url)
+        result = client.component(component_name='example/cmp')
 
-        assert client.component(component_name='example/cmp').download_url == os.path.join(
+        assert result['download_url'] == os.path.join(
             storage_url, '5390a837-5bc7-4564-b747-3adb22ad55f8.tgz'
         )
 
-    def test_no_registry_url_error(self, monkeypatch, tmp_path):
+    def test_no_registry_token_error(self, monkeypatch, tmp_path):
         monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'http://localhost:9000/test-public')
 
-        registry_url, _ = component_registry_url()
-        client = APIClient(base_url=registry_url, auth_token='test')
+        client = APIClient(registry_url=get_registry_url(), api_token='test')
 
         file_path = str(tmp_path / 'cmp.tgz')
         with open(file_path, 'w+') as f:
             f.write('a')
 
-        with pytest.raises(NoRegistrySet):
+        with pytest.raises(APIClientError, match='Invalid token'):
             client.upload_version(component_name='example/cmp', file_path=file_path)
 
     def test_env_var_for_upload_empty(self, monkeypatch):
@@ -157,15 +157,16 @@ class TestAPIClient:
         monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', '')
         monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', '')
 
-        registry_url, storage_urls = component_registry_url()
-        assert registry_url == IDF_COMPONENT_REGISTRY_URL + 'api/'
-        assert storage_urls == [IDF_COMPONENT_STORAGE_URL]
+        registry_url = get_registry_url()
+        storage_urls = get_storage_urls()
+        assert registry_url == IDF_COMPONENT_REGISTRY_URL
+        assert storage_urls == []
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_no_registry_url_use_static.yaml')
     def test_no_registry_url_use_static(self, monkeypatch):
         monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'http://localhost:9000/test-public')
 
-        _, storage_urls = component_registry_url()
+        storage_urls = get_storage_urls()
         client = MultiStorageClient(storage_urls=storage_urls)
         client.component(component_name='espressif/cmp')  # no errors
 
@@ -192,7 +193,7 @@ class TestAPIClient:
         client = StorageClient(storage_url=storage_url)
         result = client.component(component_name='example/cmp_yanked', version=spec)
 
-        assert result.version == '1.0.1'
+        assert result['version'] == '1.0.1'
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
     @pytest.mark.parametrize(
@@ -211,8 +212,8 @@ class TestAPIClient:
         result = client.versions(component_name='example/cmp_yanked', spec=spec)
         assert result.versions[0].semver == Version('1.0.1')
 
-    def test_token_information(self, base_url, mock_registry, mock_token_information):
-        client = APIClient(base_url=base_url, auth_token='test')
+    def test_token_information(self, registry_url, mock_registry, mock_token_information):
+        client = APIClient(registry_url=registry_url, api_token='test')
         response = client.token_information()
 
         for k, v in {
@@ -226,8 +227,8 @@ class TestAPIClient:
             assert response[k] == v
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_token_information_with_exception.yaml')
-    def test_token_information_with_exception(self, base_url):
-        client = APIClient(base_url=base_url)
+    def test_token_information_with_exception(self, registry_url):
+        client = APIClient(registry_url=registry_url)
         with pytest.raises(Exception):
             client.token_information()
 
@@ -239,20 +240,22 @@ class TestAPIClient:
         result = client.versions(component_name='example/cmp')
 
         assert result.versions
-        assert result.storage_url == storage_file_path
+        for v in result.versions:
+            assert v.download_url == storage_file_path
 
         result = client.versions('espressif/mdns')
 
         assert result.versions
-        assert result.storage_url == 'https://components-file.espressif.com'
+        for v in result.versions:
+            assert v.download_url == 'https://components-file.espressif.com'
 
-    def test_upload_component_returns_413_status(self, tmp_path, base_url, monkeypatch):
+    def test_upload_component_returns_413_status(self, tmp_path, registry_url, monkeypatch):
         monkeypatch.setattr(
             'idf_component_tools.registry.request_processor.make_request', response_413
         )
         client = APIClient(
-            base_url=base_url,
-            auth_token='test',
+            registry_url=registry_url,
+            api_token='test',
         )
 
         file_path = str(tmp_path / 'cmp.tgz')
@@ -266,13 +269,13 @@ class TestAPIClient:
             )
         assert str(e.value).startswith('The component archive exceeds the maximum allowed size')
 
-    def test_upload_component_SSLEOFError(self, tmp_path, base_url, monkeypatch):
+    def test_upload_component_SSLEOFError(self, tmp_path, registry_url, monkeypatch):
         monkeypatch.setattr(
             'idf_component_tools.registry.request_processor.make_request', raise_SSLEOFError
         )
         client = APIClient(
-            base_url=base_url,
-            auth_token='test',
+            registry_url=registry_url,
+            api_token='test',
         )
 
         file_path = str(tmp_path / 'cmp.tgz')

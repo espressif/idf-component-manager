@@ -8,14 +8,14 @@ import shutil
 import pytest
 import vcr
 
-from idf_component_tools.constants import IDF_COMPONENT_STORAGE_URL
-from idf_component_tools.errors import FetchingError, SourceError
+from idf_component_tools.errors import FetchingError
 from idf_component_tools.hash_tools.calculate import hash_dir
-from idf_component_tools.manifest import ComponentVersion, ManifestManager
-from idf_component_tools.manifest.solved_component import SolvedComponent
+from idf_component_tools.manager import ManifestManager
+from idf_component_tools.manifest import SolvedComponent
 from idf_component_tools.messages import UserHint
 from idf_component_tools.sources import WebServiceSource
-from idf_component_tools.sources.web_service import IDF_COMPONENT_REGISTRY_API_URL, download_archive
+from idf_component_tools.sources.web_service import download_archive
+from idf_component_tools.utils import ComponentVersion
 
 
 class TestComponentWebServiceSource:
@@ -23,16 +23,13 @@ class TestComponentWebServiceSource:
     LOCALHOST_HASH = '02d9269ed8690352e6bfc5f6a6c60e859fa6cbfc56efe75a1199b35bdd6c54c8'
     CMP_HASH = '15a658f759a13f1767ca3810cd822e010aba1e36b3a980d140cc5e80e823f422'
 
-    def test_service_create_sources_if_valid(self):
-        assert WebServiceSource.create_sources_if_valid('test', None)
-        assert WebServiceSource.create_sources_if_valid('test', {})
-        with pytest.raises(SourceError):
-            assert WebServiceSource.create_sources_if_valid('test', {'path': '/'})
-
     def test_cache_path(self):
-        source = WebServiceSource(source_details={'service_url': 'https://example.com/api'})
+        source = WebServiceSource(service_url='https://example.com/api')
         component = SolvedComponent(
-            'cmp', ComponentVersion('1.0.0'), source=source, component_hash=self.CMP_HASH
+            name='cmp',
+            version=ComponentVersion('1.0.0'),
+            source=source,
+            component_hash=self.CMP_HASH,
         )
         assert source.component_cache_path(component).endswith(
             f'service_{self.EXAMPLE_HASH[:8]}/espressif__cmp_1.0.0_{self.CMP_HASH[:8]}'
@@ -47,13 +44,16 @@ class TestComponentWebServiceSource:
         monkeypatch.setenv('IDF_COMPONENT_CACHE_PATH', cache_dir)
 
         source = WebServiceSource(
-            source_details={'service_url': 'https://example.com/api'}, system_cache_path=cache_dir
+            service_url='https://example.com/api', system_cache_path=cache_dir
         )
-        cmp = SolvedComponent('test/cmp', '1.0.1', source, component_hash=self.CMP_HASH)
+        cmp = SolvedComponent(
+            name='test/cmp',
+            version=ComponentVersion('1.0.1'),
+            source=source,
+            component_hash=self.CMP_HASH,
+            download_url='http://localhost:9000/test-public',
+        )
 
-        source = WebServiceSource(
-            source_details={'storage_url': 'http://localhost:9000/test-public/'}
-        )
         download_path = str(tmp_path / 'test_download')
         local_path = source.download(cmp, download_path)
 
@@ -75,15 +75,15 @@ class TestComponentWebServiceSource:
         manifest_manager = ManifestManager(release_component_path, 'cmp')
         manifest = manifest_manager.load()
 
-        include = manifest.files['include']
-        exclude = manifest.files['exclude']
-
         fixture_cmp = SolvedComponent(
-            'test/cmp',
-            '1.0.0',
-            source,
+            name='test/cmp',
+            version=ComponentVersion('1.0.0'),
+            source=source,
             component_hash=hash_dir(
-                release_component_path, include=include, exclude=exclude, exclude_default=False
+                release_component_path,
+                include=manifest.include_set,
+                exclude=manifest.exclude_set,
+                exclude_default=False,
             ),
         )
         download_path = str(tmp_path / 'test_cached')
@@ -110,70 +110,48 @@ class TestComponentWebServiceSource:
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_pre_release.yaml')
     def test_pre_release_exists(self, capsys):
-        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/api/'})
+        source = WebServiceSource(service_url='http://localhost:5000/')
 
-        captured = capsys.readouterr()
-        with pytest.raises(FetchingError):
-            with pytest.warns(UserHint) as record:
-                source.versions('example/cmp')
+        with pytest.warns(UserHint) as record:
+            versions = source.versions('example/cmp')
 
-                prerelease_hint_str = (
-                    'Component "example/cmp" has a pre-release version. '
-                    'To use that version, add "pre_release: True" '
-                    'to the dependency in the manifest.'
-                )
+            prerelease_hint_str = (
+                'Component "example/cmp" has some pre-release versions: "0.0.5-alpha1" '
+                'satisfies your requirements. '
+                'To allow pre-release versions add "pre_release: true" '
+                'to the dependency in the manifest.'
+            )
 
-                assert prerelease_hint_str in record.list[0].message.args
-
-                assert prerelease_hint_str in captured.out
-                assert (
-                    'Cannot get versions of "example/cmp" that satisfy spec "*" with all target'
-                    in captured.out
-                )
+            assert prerelease_hint_str in record.list[0].message.args
+            assert versions.versions == []
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_pre_release.yaml')
     def test_pre_release_exists_with_pre_release_spec(self, monkeypatch):
-        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/api/'})
+        source = WebServiceSource(service_url='http://localhost:5000/')
 
         source.versions('example/cmp', spec='^0.0.5-alpha1')
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_versions.yaml')
     def test_skip_pre_release(self):
-        source = WebServiceSource(
-            source_details={'service_url': 'http://localhost:5000/api/', 'pre_release': False}
-        )
+        source = WebServiceSource(service_url='http://localhost:5000/', pre_release=False)
         assert len(source.versions('example/cmp').versions) == 1
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_versions.yaml')
     def test_select_pre_release(self):
-        source = WebServiceSource(
-            source_details={'service_url': 'http://localhost:5000/api/', 'pre_release': True}
-        )
+        source = WebServiceSource(service_url='http://localhost:5000/', pre_release=True)
         assert len(source.versions('example/cmp').versions) == 2
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_target.yaml')
-    def test_target_exists(self, monkeypatch, capsys):
-        source = WebServiceSource(source_details={'service_url': 'http://localhost:5000/api/'})
+    def test_target_exists(self, monkeypatch):
+        source = WebServiceSource(service_url='http://localhost:5000/')
 
-        captured = capsys.readouterr()
-        with pytest.raises(FetchingError):
-            with pytest.warns(UserHint) as record:
-                source.versions('example/cmp', target='esp32s2')
+        with pytest.warns(UserHint) as record:
+            versions = source.versions('example/cmp', target='esp32s2')
 
-                other_targets_hint_str = (
-                    'Component "example/cmp" has versions for the different targets: esp32. '
-                    'Change the target in the manifest to use that versions.'
-                )
+            other_targets_hint_str = (
+                'Component "example/cmp" has suitable versions for other targets: "esp32". '
+                'Is your current target "esp32s2" set correctly?'
+            )
 
-                assert other_targets_hint_str in record[0].message.args
-
-                assert other_targets_hint_str in captured.out
-                assert (
-                    'Cannot get versions of "example/cmp" that satisfy spec "*" with esp32s2 target'
-                    in captured.out
-                )
-
-    def test_default_storage_url(self):
-        source = WebServiceSource(source_details={'service_url': IDF_COMPONENT_REGISTRY_API_URL})
-
-        assert source._storage_url == IDF_COMPONENT_STORAGE_URL
+            assert other_targets_hint_str in record[0].message.args
+            assert versions.versions == []

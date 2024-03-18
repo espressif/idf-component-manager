@@ -7,18 +7,12 @@ import warnings
 import pytest
 
 from idf_component_manager.dependencies import detect_unused_components
-from idf_component_tools.manifest import (
-    SLUG_REGEX,
-    ComponentVersion,
-    ExpandedManifestValidator,
-    ManifestValidator,
-)
+from idf_component_tools.manifest import SLUG_REGEX, OptionalRequirement, SolvedComponent
 from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS, known_targets
-from idf_component_tools.manifest.if_parser import OptionalDependency, parse_if_clause
-from idf_component_tools.manifest.manifest import OptionalRequirement
-from idf_component_tools.manifest.solved_component import SolvedComponent
-from idf_component_tools.messages import MetadataKeyWarning
+from idf_component_tools.manifest.if_parser import parse_if_clause
+from idf_component_tools.manifest.models import Manifest, OptionalDependency
 from idf_component_tools.sources import LocalSource
+from idf_component_tools.utils import ComponentVersion
 
 
 class TestManifestValidator:
@@ -28,122 +22,96 @@ class TestManifestValidator:
         valid_manifest['test'] = 3.1415926
 
         # known root keys, but unknown subkeys
-        valid_manifest['maintainers'] = {}
-        valid_manifest['maintainers']['foo'] = 'bar'
+        valid_manifest['repository_info'] = {}
+        valid_manifest['repository_info']['foo'] = 'bar'
 
-        validator = ManifestValidator(valid_manifest)
+        errors = Manifest.validate_manifest(valid_manifest)
+        assert not errors
 
-        errors = validator.validate_normalize()
-        assert len(errors) == 0
-        assert len(recwarn) == 2
-
-        # manifest_tree is not sorted. compare set not list
-        assert {warning.message.args[0] for warning in recwarn} == {
-            'Unknown string field "foo" in the manifest file',
-            'Dropping key "maintainers" from manifest.',
+        assert len(recwarn) == 3
+        assert set(warning.message.args[0] for warning in recwarn) == {
+            'Dropping unknown key: foo=bar',
+            'Dropping unknown key: unknown=test',
+            'Dropping unknown key: test=3.1415926',
         }
 
     def test_validate_unknown_root_values(self, valid_manifest):
         valid_manifest['version'] = '1!.3.3'
-        validator = ManifestValidator(valid_manifest)
+        errors = Manifest.validate_manifest(valid_manifest)
 
-        errors = validator.validate_normalize()
-
-        assert len(errors) == 2
-        assert errors[1].startswith('Component version should be valid')
+        assert errors == ['Invalid field "version": Invalid version string: "1!.3.3"']
 
     def test_validate_component_versions_not_in_manifest(self, valid_manifest):
         valid_manifest.pop('dependencies')
-        validator = ManifestValidator(valid_manifest)
-
-        errors = validator.validate_normalize()
+        errors = Manifest.validate_manifest(valid_manifest)
 
         assert not errors
 
-    def test_validate_component_version_normalization(self, valid_manifest):
+    def test_validate_dependencies_version_untouched(self, valid_manifest):
         valid_manifest['dependencies'] = {'test': '1.2.3', 'pest': {'version': '3.2.1'}}
-        validator = ManifestValidator(valid_manifest)
 
-        errors = validator.validate_normalize()
+        manifest = Manifest(**valid_manifest)
 
-        assert not errors
-        assert validator.manifest_tree['dependencies'] == {
-            'test': {'version': '1.2.3'},
-            'pest': {'version': '3.2.1'},
+        assert manifest.model_dump()['dependencies'] == {
+            'test': '1.2.3',
+            'pest': {
+                'version': '3.2.1',
+            },
         }
 
     def test_validate_component_versions_are_empty(self, valid_manifest):
         valid_manifest['dependencies'] = {}
-        validator = ManifestValidator(valid_manifest)
-
-        errors = validator.validate_normalize()
+        errors = Manifest.validate_manifest(valid_manifest)
 
         assert not errors
 
     def test_validate_component_versions_not_a_dict(self, valid_manifest):
         valid_manifest['dependencies'] = ['one_component', 'another-one']
-        validator = ManifestValidator(valid_manifest)
+        errors = Manifest.validate_manifest(valid_manifest)
 
-        errors = validator.validate_normalize()
-
-        assert len(errors) == 2
-        assert errors[0].startswith('List of dependencies should be a dictionary')
+        assert errors == ['Invalid field "dependencies": Input should be a valid dictionary']
 
     def test_validate_component_versions_unknown_key(self, valid_manifest):
         valid_manifest['dependencies'] = {
-            'test-component': {'version': '^1.2.3', 'persion': 'asdf'}
+            'test-component': {'version': '^1.2.3', 'foo': 'bar', 'bar': 'foo'}
         }
-        validator = ManifestValidator(valid_manifest)
+        errors = Manifest.validate_manifest(valid_manifest)
 
-        errors = validator.validate_normalize()
-
-        assert len(errors) == 5
-        assert (
-            errors[0]
-            == 'Unknown string field "persion" in the manifest file that may affect build result'
-        )
-        assert errors[-1] == 'Unknown keys in dependency "test-component" details: persion'
+        assert errors == [
+            'Invalid field "dependencies:test-component": Unknown fields "bar,foo" under "dependencies" field that may affect build result'
+        ]
 
     def test_validate_component_versions_invalid_name(self, valid_manifest):
         valid_manifest['dependencies'] = {'asdf!fdsa': {'version': '^1.2.3'}}
-        validator = ManifestValidator(valid_manifest)
+        errors = Manifest.validate_manifest(valid_manifest)
 
-        errors = validator.validate_normalize()
-
-        assert len(errors) == 2
-        assert errors[1].startswith('Component\'s name is not valid "asdf!fdsa",')
+        assert errors == ['Invalid field "dependencies:asdf!fdsa": Invalid component name']
 
     def test_validate_component_versions_invalid_spec_subkey(self, valid_manifest):
         valid_manifest['dependencies'] = {'test-component': {'version': '^1.2a.3'}}
-        validator = ManifestValidator(valid_manifest)
+        errors = Manifest.validate_manifest(valid_manifest)
 
-        errors = validator.validate_normalize()
-
-        assert len(errors) == 1
-        assert errors[0].startswith('Version specifications for "test-component" are invalid.')
+        assert errors == [
+            'Invalid field "dependencies:test-component:version": Invalid version specification "^1.2a.3"'
+        ]
 
     def test_validate_component_versions_invalid_spec(self, valid_manifest):
         valid_manifest['dependencies'] = {'test-component': '~=1a.2.3'}
-        validator = ManifestValidator(valid_manifest)
+        errors = Manifest.validate_manifest(valid_manifest)
 
-        errors = validator.validate_normalize()
-
-        assert len(errors) == 1
-        assert errors[0].startswith('Version specifications for "test-component" are invalid.')
+        assert errors == [
+            'Invalid field "dependencies:test-component:version": Invalid version specification "~=1a.2.3"'
+        ]
 
     def test_validate_targets_unknown(self, valid_manifest):
         valid_manifest['targets'] = ['esp123', 'esp32', 'asdf']
-        validator = ManifestValidator(valid_manifest)
-
-        errors = validator.validate_normalize()
+        errors = Manifest.validate_manifest(valid_manifest)
 
         assert not errors
 
-        validator.check_required_fields = True
-        errors = validator.validate_normalize()
+        errors = Manifest.validate_manifest(valid_manifest, upload_mode=True)
 
-        assert len(errors) == 1
-        assert errors[-1].startswith('Unknown targets: esp123, asdf')
+        assert errors == ['Invalid field "targets". Unknown targets: "asdf,esp123"']
 
     def test_slug_re(self):
         valid_names = ('asdf-fadsf', '123', 'asdf_erw', 'as_df_erw', 'test-stse-sdf_sfd')
@@ -156,52 +124,42 @@ class TestManifestValidator:
             assert not re.match(SLUG_REGEX, name)
 
     def test_validate_version_list(self, valid_manifest):
-        validator = ManifestValidator(valid_manifest)
-
-        errors = validator.validate_normalize()
+        errors = Manifest.validate_manifest(valid_manifest)
 
         assert not errors
 
     def test_check_required_keys(self, valid_manifest):
-        validator = ManifestValidator(valid_manifest, check_required_fields=True)
-
-        errors = validator.validate_normalize()
+        errors = Manifest.validate_manifest(valid_manifest, upload_mode=True)
 
         assert not errors
 
     def test_check_required_keys_empty_manifest(self):
-        validator = ManifestValidator({}, check_required_fields=True)
+        errors = Manifest.validate_manifest({}, upload_mode=True)
 
-        errors = validator.validate_normalize()
-
-        assert len(errors) == 1
+        assert errors == [
+            'Invalid field "version". Must set while uploading component to the registry'
+        ]
 
     def test_validate_files_invalid_format(self, valid_manifest):
         valid_manifest['files']['include'] = 34
-        validator = ManifestValidator(valid_manifest)
-        errors = validator.validate_normalize()
+        errors = Manifest.validate_manifest(valid_manifest)
 
-        assert len(errors) == 2
-        assert (
-            errors[0]
-            == 'Unknown number field "include" in the manifest file that may affect build result'
-        )
+        assert errors == ['Invalid field "files:include": Input should be a valid list']
 
-    def test_validate_tags_invalid_length(self, valid_manifest):
-        valid_manifest['tags'].append('sm')
-        validator = ManifestValidator(valid_manifest)
-        errors = validator.validate_normalize()
+    @pytest.mark.parametrize(
+        'invalid_tag',
+        [
+            'sm',
+            'wrOng t@g',
+        ],
+    )
+    def test_validate_invalid_tags(self, valid_manifest, invalid_tag):
+        valid_manifest['tags'].append(invalid_tag)
+        errors = Manifest.validate_manifest(valid_manifest)
 
-        assert len(errors) == 2
-        assert errors[1].startswith('Invalid tag')
-
-    def test_validate_tags_invalid_symbols(self, valid_manifest):
-        valid_manifest['tags'].append('wrOng t@g')
-        validator = ManifestValidator(valid_manifest)
-        errors = validator.validate_normalize()
-
-        assert len(errors) == 2
-        assert errors[1].startswith('Invalid tag')
+        assert errors == [
+            'Invalid field "tags:[3]": String should match pattern \'^[A-Za-z0-9\\_\\-]{3,32}$\''
+        ]
 
     @pytest.mark.parametrize(
         'key, value',
@@ -217,6 +175,7 @@ class TestManifestValidator:
         if key in ['include', 'exclude']:
             valid_manifest['files'][key].append(value)
             valid_manifest['files'][key].append(value.upper())
+            key = f'files:{key}'
         elif key == 'targets':
             # can't use upper case
             valid_manifest[key].append(value)
@@ -225,12 +184,9 @@ class TestManifestValidator:
             valid_manifest[key].append(value)
             valid_manifest[key].append(value.upper())
 
-        validator = ManifestValidator(valid_manifest)
-        errors = validator.validate_normalize()
+        errors = Manifest.validate_manifest(valid_manifest)
 
-        assert len(errors) == 1
-        assert errors[0].startswith(f'Duplicate item in "{key}":')
-        assert value in errors[0]
+        assert errors == [f'Invalid field "{key}": List must be unique. Duplicate value: "{value}"']
 
     def test_known_targets_env(self, monkeypatch):
         monkeypatch.setenv(
@@ -262,10 +218,10 @@ class TestManifestValidator:
             SolvedComponent(
                 name='example/cmp',
                 version=ComponentVersion('*'),
-                source=LocalSource({'path': 'test'}),
+                source=LocalSource(path='test'),
             ),
             SolvedComponent(
-                name='mag3110', version=ComponentVersion('*'), source=LocalSource({'path': 'test'})
+                name='mag3110', version=ComponentVersion('*'), source=LocalSource(path='test')
             ),
         ]
         detect_unused_components(project_requirements, tmp_managed_components)
@@ -275,7 +231,7 @@ class TestManifestValidator:
     def test_one_unused_component(self, tmp_managed_components):
         project_requirements = [
             SolvedComponent(
-                name='mag3110', version=ComponentVersion('*'), source=LocalSource({'path': 'test'})
+                name='mag3110', version=ComponentVersion('*'), source=LocalSource(path='test')
             )
         ]
         detect_unused_components(project_requirements, tmp_managed_components)
@@ -324,7 +280,6 @@ class TestManifestValidator:
             ('idf_version == 5.0.0', True),
             ('target == esp32', True),
             ('target != "esp32"', False),
-            ('target in esp32', True),
             ('target in [esp32]', True),
             ('target in [esp32, "esp32c3"]', True),
             ('target in ["esp32s2", "esp32c3"]', False),
@@ -340,77 +295,68 @@ class TestManifestValidator:
         monkeypatch.setenv('IDF_VERSION', '5.0.0')
         monkeypatch.setenv('IDF_TARGET', 'esp32')
 
-        assert parse_if_clause(if_clause).bool_value == bool_value
+        assert parse_if_clause(if_clause).get_value() == bool_value
 
     def test_validate_require_public_fields(self, valid_manifest):
         valid_manifest['dependencies']['test-8']['require'] = 'public'
-        validator = ManifestValidator(valid_manifest)
+        errors = Manifest.validate_manifest(valid_manifest)
 
-        errors = validator.validate_normalize()
-
-        assert len(errors) == 1
-        assert 'require' in errors[0]
+        assert errors == [
+            'Invalid field "dependencies:test-8: "public" and "require" fields must not set at the same time'
+        ]
 
     def test_validate_require_field_support_boolean_string(self, valid_manifest):
         valid_manifest['dependencies']['test']['require'] = 'public'
-        validator = ManifestValidator(valid_manifest)
-        errors = validator.validate_normalize()
+        errors = Manifest.validate_manifest(valid_manifest)
 
         assert not errors
 
         valid_manifest['dependencies']['test']['require'] = False
-        validator = ManifestValidator(valid_manifest)
-        errors = validator.validate_normalize()
+        errors = Manifest.validate_manifest(valid_manifest)
 
         assert not errors
 
+    def test_validate_require_field_random_string_error(self, valid_manifest):
+        valid_manifest['dependencies']['test']['require'] = 'random'
+        errors = Manifest.validate_manifest(valid_manifest)
+
+        assert errors == [
+            "Invalid field \"dependencies:test:require\": Input should be 'public', 'private' or 'no'"
+        ]
+
     def test_validate_require_field_true_error(self, valid_manifest):
         valid_manifest['dependencies']['test']['require'] = True
-        validator = ManifestValidator(valid_manifest)
-        errors = validator.validate_normalize()
+        errors = Manifest.validate_manifest(valid_manifest)
 
-        assert len(errors) == 4
-        assert 'require' in errors[-1]
+        assert len(errors) == 1
+        assert errors == ['Invalid field "dependencies:test:require": Input should be False']
 
     def test_validate_links_wrong_url(self, valid_manifest):
         valid_manifest['issues'] = 'test.com/tracker'
+        errors = Manifest.validate_manifest(valid_manifest)
 
-        validator = ManifestValidator(valid_manifest)
-        validator.validate_normalize()
-
-        assert len(validator._errors) == 2
+        assert errors == [
+            'Invalid field "issues": Input should be a valid URL, relative URL without a base'
+        ]
 
     def test_validate_links_wrong_git(self, valid_manifest):
         valid_manifest['repository'] = 'nogit@github.com:test_project/test.git'
+        errors = Manifest.validate_manifest(valid_manifest)
 
-        validator = ManifestValidator(valid_manifest)
-        validator.validate_normalize()
-
-        assert len(validator._errors) == 2
-
-    def test_validate_examples_empty_element(self, valid_manifest):
-        valid_manifest['examples'] = [{'path, test'}]  # list of set of string
-        validator = ManifestValidator(valid_manifest)
-
-        with pytest.warns(
-            MetadataKeyWarning,
-            match='Unknown array of array of string field "examples" in the manifest file',
-        ):
-            validator.validate_normalize()
-
-        assert len(validator._errors) == 0
+        assert errors == [
+            'Invalid field "repository": Invalid git URL: nogit@github.com:test_project/test.git'
+        ]
 
     def test_validate_rules_without_idf(self, valid_optional_dependency_manifest, monkeypatch):
-        validator = ManifestValidator(valid_optional_dependency_manifest)
-        errors = validator.validate_normalize()
+        errors = Manifest.validate_manifest(valid_optional_dependency_manifest)
 
         assert not errors
 
     def test_matches_with_versions(self, monkeypatch):
         req = OptionalRequirement(
             matches=[
-                OptionalDependency('idf_version < 4.4', '1.0.0'),
-                OptionalDependency('idf_version == 4.4.0'),
+                OptionalDependency.fromdict({'if': 'idf_version < 4.4', 'version': '1.0.0'}),
+                OptionalDependency.fromdict({'if': 'idf_version == 4.4.0'}),
             ]
         )
         monkeypatch.setenv('IDF_VERSION', '5.0.0')
@@ -425,8 +371,11 @@ class TestManifestValidator:
     def test_matches_with_rules(self, monkeypatch):
         req = OptionalRequirement(
             rules=[
-                OptionalDependency('idf_version < 4.4', '1.0.0'),
-                OptionalDependency('target == esp32', '1.0.1'),  # shall override
+                OptionalDependency.fromdict({'if': 'idf_version < 4.4', 'version': '1.0.0'}),
+                OptionalDependency.fromdict({
+                    'if': 'target == esp32',
+                    'version': '1.0.1',
+                }),  # shall override
             ]
         )
         monkeypatch.setenv('IDF_VERSION', '5.0.0')
@@ -439,11 +388,14 @@ class TestManifestValidator:
     def test_rules_override_matches(self, monkeypatch):
         req = OptionalRequirement(
             matches=[
-                OptionalDependency('idf_version < 4.4', '1.0.0'),
-                OptionalDependency('idf_version == 4.4.0'),
+                OptionalDependency.fromdict({'if': 'idf_version < 4.4', 'version': '1.0.0'}),
+                OptionalDependency.fromdict({'if': 'idf_version == 4.4.0'}),
             ],
             rules=[
-                OptionalDependency('target == esp32', '1.0.3'),  # shall override
+                OptionalDependency.fromdict({
+                    'if': 'target == esp32',
+                    'version': '1.0.3',
+                }),  # shall override
             ],
         )
         monkeypatch.setenv('IDF_VERSION', '5.0.0')
@@ -459,56 +411,74 @@ class TestManifestValidator:
     def test_validate_optional_dependency_not_expanded_success(
         self, valid_optional_dependency_manifest_with_idf
     ):
-        validator = ManifestValidator(valid_optional_dependency_manifest_with_idf)
-        errors = validator.validate_normalize()
+        errors = Manifest.validate_manifest(valid_optional_dependency_manifest_with_idf)
 
         assert not errors
 
 
-class TestExpandedManifestValidator:
+class TestManifestValidatorUploadMode:
     def test_validate_optional_dependency_success(
         self, valid_optional_dependency_manifest_with_idf
     ):
-        validator = ExpandedManifestValidator(valid_optional_dependency_manifest_with_idf)
-        errors = validator.validate_normalize()
+        errors = Manifest.validate_manifest(
+            valid_optional_dependency_manifest_with_idf, upload_mode=True
+        )
 
         assert not errors
 
     @pytest.mark.parametrize(
-        'invalid_str, error_message',
+        'invalid_str, expected_errors',
         [
-            ('foo >= 4.4', 'Invalid if clause'),
-            ('target is esp32', 'Invalid if clause'),
+            (
+                'foo >= 4.4',
+                ['Invalid field "dependencies:optional:rules:[0]:if": Invalid version spec "foo"'],
+            ),
+            (
+                'target is esp32',
+                [
+                    'Invalid field "dependencies:optional:rules:[0]:if": Invalid syntax: "target is esp32"'
+                ],
+            ),
         ],
     )
-    def test_validate_optional_dependency_invalid_base(
-        self, valid_optional_dependency_manifest_with_idf, invalid_str, error_message
+    def test_validate_optional_dependency_invalid(
+        self, valid_optional_dependency_manifest_with_idf, invalid_str, expected_errors
     ):
         valid_optional_dependency_manifest_with_idf['dependencies']['optional']['rules'][0][
             'if'
         ] = invalid_str
-        validator = ExpandedManifestValidator(valid_optional_dependency_manifest_with_idf)
-        errors = validator.validate_normalize()
+        errors = Manifest.validate_manifest(
+            valid_optional_dependency_manifest_with_idf, upload_mode=True
+        )
 
-        assert len(errors) == 4
-        assert errors[-1].startswith(error_message)
+        assert errors == expected_errors
 
     @pytest.mark.parametrize(
-        'invalid_str, error_message',
+        'invalid_str, expected_errors',
         [
-            ('idf_version >= 4.4!@#', 'Dependency version spec format is invalid'),
-            ('idf_version >= 4.4, <= "3.3"', 'Dependency version spec format is invalid'),
+            (
+                'idf_version >= 4.4!@#',
+                [
+                    'Invalid field "dependencies:optional:rules:[0]:if": Invalid version spec ">=4.4!@#"'
+                ],
+            ),
+            (
+                'idf_version >= 4.4, <= "3.3"',
+                [
+                    'Invalid field "dependencies:optional:rules:[0]:if": Invalid version spec ">=4.4,<="3.3""'
+                ],
+            ),
         ],
     )
     def test_validate_optional_dependency_invalid_derived(
-        self, valid_optional_dependency_manifest_with_idf, invalid_str, error_message
+        self, valid_optional_dependency_manifest_with_idf, invalid_str, expected_errors, monkeypatch
     ):
+        monkeypatch.setenv('IDF_VERSION', '')
         valid_optional_dependency_manifest_with_idf['dependencies']['optional']['rules'][0][
             'if'
         ] = invalid_str
-        validator = ExpandedManifestValidator(valid_optional_dependency_manifest_with_idf)
-        errors = validator.validate_normalize()
+        errors = Manifest.validate_manifest(
+            valid_optional_dependency_manifest_with_idf, upload_mode=True
+        )
 
-        assert len(errors) == 4
-        assert errors[-2].startswith(error_message)
-        assert errors[-1].startswith('Invalid version specification')
+        assert errors == expected_errors

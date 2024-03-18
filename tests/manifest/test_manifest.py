@@ -1,11 +1,12 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import json
 
 import jsonschema
 
-from idf_component_tools.manifest import JSON_SCHEMA, ComponentVersion
+from idf_component_tools.manifest import MANIFEST_JSON_SCHEMA
+from idf_component_tools.utils import ComponentVersion
 
 
 class TestComponentVersion:
@@ -39,7 +40,7 @@ class TestComponentVersion:
 
 
 def test_json_schema():
-    schema_str = json.dumps(JSON_SCHEMA)
+    schema_str = json.dumps(MANIFEST_JSON_SCHEMA)
 
     try:
         validator = jsonschema.Draft7Validator

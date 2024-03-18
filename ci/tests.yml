@@ -32,7 +32,7 @@ test:
     - build_wheel
   before_script:
     - ls ./dist/*.whl | xargs pip install
-    - pip install pytest pytest-cov pytest-mock requests-mock vcrpy jsonschema
+    - pip install "pytest<8" pytest-cov pytest-mock requests-mock vcrpy jsonschema
   script:
     - pytest --cov=. --cov-report=xml
   artifacts:
