@@ -29,11 +29,11 @@ tqdm = '*'
 urllib3 = "<2"
 
 [tool.poetry.group.docs.dependencies]
-sphinx_collapse = "==0.1.2"
-sphinx-click = "==4.4.0"
-sphinx-copybutton = "==0.5.1"
-sphinx-rtd-theme = "==1.1.1"
-sphinx-tabs = "==3.4.0"
+sphinx_collapse = "*"
+sphinx-click = "*"
+sphinx-copybutton = "*"
+sphinx-rtd-theme = "*"
+sphinx-tabs = "*"
 
 [tool.poetry.group.dev.dependencies]
 black = { version = "==23.7.0", python = ">=3.8,<4.0" }

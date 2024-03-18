@@ -152,77 +152,7 @@ What we mentioned above is the basic usage to upload a component. Here are more 
 Authentication with a Config File
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Besides of setting environment variable ``IDF_COMPONENT_API_TOKEN``, it's also possible to authenticate via a config file ``idf_component_manager.yml``.
-
-Be default, it should be located at
-
-.. tabs::
-
-   .. group-tab:: Windows
-
-      C:/Users/YOUR_USERNAME/.espressif
-
-   .. group-tab:: Unix-like
-
-      $HOME/.espressif
-
-Values provided in ``default`` profile would be used by default.
-
-Configurable options:
-
--  ``api_token``
-
-   Access token to the registry. Required for all operations modifying data in the registry.
-
--  ``default_namespace``
-
-   Namespace used for the creation of component or upload of a new version. (Default: ``espressif``)
-
--  ``registry_url``
-
-   URL of the component registry. (Default: ``https://components.espressif.com``)
-
--  ``storage_url``
-
-   URIs of the component storages. Supports ``http[s]`` and ``file`` URI schemas. Can be a single URI or a list of them. (Default: ``https://components-file.espressif.com``)
-
-Here's an example that includes three profiles, default, staging, and offline:
-
-.. code-block:: yaml
-
-   profiles:
-     default:
-       api_token: some_token
-       default_namespace: example
-
-     staging:
-       registry_url: https://example-service.com
-       api_token: my_long_long_token
-       default_namespace: my_namespace
-
-     offline:
-       storage_url:
-         - file:///Users/username/storage/  # Unix path
-         # - file://C:/storage/ # Windows path
-         - http://localhost:9004
-
-All CLI commands accept ``--service-profile`` parameter. If you want to upload ``test_cmp`` to ``staging``, you may run
-
-.. tabs::
-
-   .. group-tab:: ``compote``
-
-      .. code-block:: shell
-
-         compote component upload --service-profile=staging --name test_cmp
-
-   .. group-tab:: ``idf.py`` (deprecated)
-
-      .. code-block:: shell
-
-         idf.py upload-component --service-profile=staging --name test_cmp
-
-The default namespace would be ``my_namespace``, according to the ``staging`` profile.
+You can control which registry you upload to, and provide the authentication token via a config file. For detailed information, please refer to our :doc:`config file reference <../reference/config_file>`.
 
 Filter Component Files
 ^^^^^^^^^^^^^^^^^^^^^^
