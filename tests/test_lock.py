@@ -24,7 +24,7 @@ from idf_component_tools.manifest import (
     SolvedComponent,
     SolvedManifest,
 )
-from idf_component_tools.messages import UserHint
+from idf_component_tools.messages import UserNotice
 from idf_component_tools.sources import IDFSource, LocalSource, WebServiceSource
 from idf_component_tools.utils import ComponentVersion, ProjectRequirements
 
@@ -339,7 +339,7 @@ class TestLockManager(object):
             },
             'manifest_hash': project_requirements.manifest_hash,
         })
-        with pytest.warns(UserHint) as record:
+        with pytest.warns(UserNotice) as record:
             assert not is_solve_required(project_requirements, solution)
             assert (
                 'Cannot establish a connection to the component registry. '

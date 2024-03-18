@@ -28,7 +28,7 @@ from idf_component_tools.hash_tools.validate_managed_component import (
 )
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import SolvedComponent, SolvedManifest
-from idf_component_tools.messages import hint, warn
+from idf_component_tools.messages import hint, notice, warn
 from idf_component_tools.registry.client_errors import NetworkConnectionError
 from idf_component_tools.semver import SimpleSpec, Version
 from idf_component_tools.sources import IDFSource
@@ -166,7 +166,7 @@ def is_solve_required(project_requirements: ProjectRequirements, solution: Solve
                 )
                 return True
             except NetworkConnectionError:
-                hint(
+                notice(
                     'Cannot establish a connection to the component registry. '
                     'Skipping checks of dependency changes.'
                 )
@@ -249,7 +249,7 @@ class DownloadedComponent:
 
 
 def check_for_new_component_versions(project_requirements, old_solution):
-    if getenv_bool('IDF_COMPONENT_CHECK_NEW_VERSION', False):
+    if getenv_bool('IDF_COMPONENT_CHECK_NEW_VERSION', True):
         # Check for newer versions of components
         solver = VersionSolver(project_requirements, old_solution)
         try:
@@ -273,10 +273,11 @@ def check_for_new_component_versions(project_requirements, old_solution):
                     )
 
             if updateable_components_messages:
-                hint(
-                    '\nFollowing dependencies have new versions available:\n{}'
-                    '\nConsider running "idf.py update-dependencies" to update '
-                    'your lock file.\n'.format('\n'.join(updateable_components_messages))
+                messages_concat = '\n'.join(updateable_components_messages)
+                notice(
+                    '\nFollowing dependencies have new versions available:\n'
+                    f'{messages_concat}'
+                    '\nConsider running "idf.py update-dependencies" to update your lock file.'
                 )
 
         except (SolverFailure, NetworkConnectionError):
