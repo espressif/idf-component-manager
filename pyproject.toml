@@ -1,3 +1,7 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [project]
 requires-python = ">=3.7,<4.0"
 
@@ -5,12 +9,32 @@ requires-python = ">=3.7,<4.0"
 name = "idf-component-manager"
 version = "1.5.2"
 description = "Espressif IDF Component Manager"
-authors = []
-license = "Apache2"
+authors = [
+    "Sergei Silnov <sergei.silnov@espressif.com>",
+    "Fu Hanxi <fuhanxi@espressif.com>",
+]
+license = "Apache-2.0"
 readme = "README.md"
 packages = [
     { include = "idf_component_manager" },
     { include = "idf_component_tools" },
+]
+repository = "https://github.com/espressif/idf-component-manager.git"
+documentation = "https://docs.espressif.com/projects/idf-component-manager/en/latest/"
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: Apache Software License',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: Implementation :: CPython',
+]
+include = [
+    { path = "idf_component_manager/templates/idf_component_template.yml", format = ["sdist", "wheel"] },
 ]
 
 [tool.poetry.dependencies]
@@ -36,14 +60,10 @@ sphinx-rtd-theme = "*"
 sphinx-tabs = "*"
 
 [tool.poetry.group.dev.dependencies]
-black = { version = "==23.7.0", python = ">=3.8,<4.0" }
 comment-parser = "*"
 commitizen = { version = "^3.13.0", python = ">=3.8,<4.0" }
 coverage = '*'
 deptry = { version = ">=0.12.0", python = ">=3.9,<4.0" }
-flake8 = '*'
-flake8-pyproject = "*"
-flake8-quotes = '*'
 jinja2 = "*"
 jsonschema = "*"
 mypy = "*"
@@ -75,10 +95,6 @@ line_length = 100
 indent = '    '
 multi_line_output = 3
 force_grid_wrap = 0
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
 python_version = "3.7"
