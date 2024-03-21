@@ -396,7 +396,6 @@ def test_idf_reconfigure_dependency_doesnt_exist(project):
 @pytest.mark.skipif(
     Version(get_idf_version()) < Version('5.3.0'), reason='only master branch support it'
 )
-@pytest.mark.xfail(reason='not supported yet in ESP-IDF')
 def test_idf_build_inject_dependencies_even_with_set_components(project, component_name):
     project_cmake_filepath = os.path.join(project, 'CMakeLists.txt')
     with open(project_cmake_filepath) as fr:
