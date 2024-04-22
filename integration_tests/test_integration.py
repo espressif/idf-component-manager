@@ -428,3 +428,37 @@ def test_idf_build_inject_dependencies_even_with_set_components(project, compone
 
     # didn't download the component
     assert not os.path.isdir(os.path.join(project, 'managed_components'))
+
+
+@pytest.mark.parametrize(
+    'project',
+    [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'espressif/esp-modbus': {
+                            'version': '1.0.5',
+                        },
+                        'espressif/mdns': {
+                            'version': '1.0.7',
+                        },
+                    }
+                }
+            }
+        },
+    ],
+    indirect=True,
+)
+@pytest.mark.skipif(
+    Version(get_idf_version()) < Version('5.0.0'), reason='mdns 1.0.7 supports idf >= 5.0'
+)
+def test_idf_reconfigure_fixed_order_sdkconfig(project):
+    project_action(project, 'reconfigure')
+    last_mtime = os.stat(os.path.join(project, 'sdkconfig')).st_mtime
+
+    for _ in range(10):
+        # this is to make sure that the sdkconfig file
+        # won't be updated if the dependencies are not changed
+        project_action(project, 'reconfigure')
+        assert last_mtime == os.stat(os.path.join(project, 'sdkconfig')).st_mtime

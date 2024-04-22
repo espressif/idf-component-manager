@@ -758,9 +758,11 @@ class ComponentManager:
         }
 
         # Include managed components in project directory
-        all_managed_components = set(
-            sorted(downloaded_components) + sorted(root_managed_components)
-        )
+        # order is important, since kconfig items are processed in order
+        downloaded_components = sorted(downloaded_components)
+        root_managed_components = sorted(root_managed_components)
+        all_managed_components = sorted(set(downloaded_components + root_managed_components))
+
         with open(managed_components_list_file, mode='w', encoding='utf-8') as file:
             for is_root, group in enumerate([downloaded_components, root_managed_components]):
                 for downloaded_component in group:
