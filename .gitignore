@@ -53,3 +53,4 @@ bash.txt
 
 # Doc build artifacts
 docs/**/_build/
+docs/html_output/

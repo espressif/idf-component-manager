@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 # Configuration file for the Sphinx documentation builder.
 #
@@ -28,7 +28,6 @@ extensions = [
     'sphinx_click',
 ]
 
-templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # Make sure the target is unique
@@ -38,6 +37,7 @@ autosectionlabel_prefix_document = True
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 # Directories are relative to the language directory
+templates_path = ['../_templates']
 static_path = ['../_static']
 html_theme = 'sphinx_rtd_theme'
 html_logo = '../_static/logo.png'
