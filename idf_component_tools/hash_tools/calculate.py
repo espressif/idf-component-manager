@@ -8,6 +8,7 @@ from hashlib import sha256
 from pathlib import Path
 from urllib.parse import urlparse
 
+from idf_component_tools.errors import ProcessingError
 from idf_component_tools.file_tools import filtered_paths
 
 from .constants import BLOCK_SIZE
@@ -25,12 +26,15 @@ def hash_file(file_path: t.Union[str, Path]) -> str:
     """Calculate sha256 of file"""
     sha = sha256()
 
-    with open(Path(file_path).as_posix(), 'rb') as f:
-        while True:
-            block = f.read(BLOCK_SIZE)
-            if not block:
-                break
-            sha.update(block)
+    try:
+        with open(Path(file_path).as_posix(), 'rb') as f:
+            while True:
+                block = f.read(BLOCK_SIZE)
+                if not block:
+                    break
+                sha.update(block)
+    except FileNotFoundError:
+        raise ProcessingError(f'Path {file_path} does not exist or is a broken symbolic link')
 
     return sha.hexdigest()
 
