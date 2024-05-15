@@ -1,8 +1,12 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+from pathlib import Path
 
+import pytest
+
+from idf_component_tools.errors import ProcessingError
 from idf_component_tools.hash_tools.calculate import hash_dir, hash_file, hash_object
 
 
@@ -52,3 +56,15 @@ class TestHashTools:
             )
             == expected_sha
         )
+
+    def test_hash_file_broken_symlink(self, tmp_path):
+        target_file_path = tmp_path / 'target_file'
+        symlink_path = tmp_path / 'broken_symlink_symlink'
+
+        Path(target_file_path).write_text('broken symlink file')
+
+        symlink_path.symlink_to(target_file_path)
+        target_file_path.unlink()
+
+        with pytest.raises(ProcessingError, match='broken symbolic link'):
+            hash_file(target_file_path)
