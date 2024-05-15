@@ -3,7 +3,7 @@
 
 import re
 import shutil
-import subprocess  # noqa: S404
+import subprocess
 from io import open
 from os import environ, getenv
 from pathlib import Path

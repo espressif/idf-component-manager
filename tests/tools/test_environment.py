@@ -3,6 +3,7 @@
 from pytest import mark, raises
 
 from idf_component_tools.environment import (
+    KNOWN_CI_ENVIRONMENTS,
     detect_ci,
     getenv_bool,
     getenv_bool_or_string,
@@ -63,9 +64,8 @@ def test_getenv_int_unset(monkeypatch):
 
 def test_detect_ci(monkeypatch):
     # Clear environment variables for github actions and gitlab ci
-    monkeypatch.delenv('CI', raising=False)
-    monkeypatch.delenv('GITHUB_ACTIONS', raising=False)
-    monkeypatch.delenv('GITLAB_CI', raising=False)
+    for k in KNOWN_CI_ENVIRONMENTS:
+        monkeypatch.delenv(k, raising=False)
 
     # Test when not running in a CI environment
     assert detect_ci() is None

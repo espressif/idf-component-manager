@@ -5,16 +5,16 @@ import os
 import typing as t
 from pathlib import Path
 
-from ..errors import SourceError
-from ..manifest import (
-    MANIFEST_FILENAME,
-    ComponentWithVersions,
-    HashedComponentVersion,
-    ManifestManager,
-)
-from ..messages import warn
+from pydantic import model_serializer
+from pydantic_core.core_schema import SerializerFunctionWrapHandler
+
+from idf_component_tools.constants import MANIFEST_FILENAME
+from idf_component_tools.errors import InternalError, SourceError
+from idf_component_tools.manager import ManifestManager
+from idf_component_tools.messages import warn
+from idf_component_tools.utils import ComponentWithVersions, HashedComponentVersion, Literal
+
 from .base import BaseSource
-from .web_service_keys import WEB_SERVICE_OPTIONAL_KEYS
 
 
 class ManifestContextError(SourceError):
@@ -26,44 +26,62 @@ class SourcePathError(SourceError):
 
 
 class LocalSource(BaseSource):
-    NAME = 'local'
+    type: Literal['local'] = 'local'  # type: ignore
+    path: t.Optional[str] = None
+    override_path: t.Optional[str] = None
 
-    def __init__(self, source_details, **kwargs):
-        super().__init__(source_details=source_details, **kwargs)
+    def model_post_init(self, __context: t.Any) -> None:
+        if not self.path and not self.override_path:
+            raise SourceError('Either "path" or "override_path" must be specified for local source')
 
-        self.is_overrider = 'override_path' in self.source_details
-        self._raw_path = Path(
-            self.source_details.get('override_path' if self.is_overrider else 'path')
-        )
+    @model_serializer(mode='wrap')
+    def serialize_model(self, handler: SerializerFunctionWrapHandler) -> t.Dict[str, t.Any]:
+        # serialize from flat dict to {'name': {...}}
+        d = handler(self)
+
+        # only use path in the lock file
+        # turn override path into path
+        d['path'] = str(self._path)
+        d.pop('override_path', None)
+
+        return d
+
+    @property
+    def is_overrider(self) -> bool:
+        return bool(self.override_path)
 
     @property
     def _path(self) -> Path:
-        try:
-            if self._manifest_manager:
-                path = (Path(self._manifest_manager.path).parent / self._raw_path).resolve()
-            elif not self._manifest_manager and self._raw_path.is_absolute():
-                path = self._raw_path.resolve()
-            else:
-                raise ManifestContextError(
-                    "Can't reliably evaluate relative path without context: {}".format(
-                        str(self._raw_path)
-                    )
-                )
+        if self.override_path:
+            if self.path:
+                warn('Both "path" and "override_path" are set. "override_path" will be used.')
+            _raw_path = Path(self.override_path)
+            field_name = 'override_path'
+        elif self.path:
+            _raw_path = Path(self.path)
+            field_name = 'path'
+        else:
+            raise InternalError()
 
-            if not path.is_dir():  # for Python > 3.6, where .resolve(strict=False)
-                raise OSError()
+        if _raw_path.is_absolute():
+            path = _raw_path.resolve()
+        elif self._manifest_manager:
+            path = (Path(self._manifest_manager.path).parent / _raw_path).resolve()
+        else:
+            raise ManifestContextError(
+                "Can't reliably evaluate relative path without context: {}".format(str(_raw_path))
+            )
 
-        except OSError:
+        if not path.is_dir():  # for Python > 3.6, where .resolve(strict=False)
             raise SourcePathError(
-                "The 'override_path' field in the manifest file '{}' "
-                'does not point to a directory. You can safely '
-                'remove this field from the manifest if this project '
-                'is an example copied from a component '
-                'repository. The dependency will be downloaded from '
-                'the ESP component registry. Documentation: '
+                f'The "{field_name}" field in the manifest file "{path / MANIFEST_FILENAME}" '
+                'does not point to a directory. '
+                'You can safely remove this field from the manifest '
+                'if this project is an example copied from a component repository. '
+                'The dependency will be downloaded from the ESP component registry. '
+                'Documentation: '
                 'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/'
-                'manifest_file.html'
-                '#override-path'.format(str(self._raw_path / 'idf_component.yml'))
+                'manifest_file.html#override-path'
             )
 
         if self.is_overrider and path / 'CMakeLists.txt' not in path.iterdir():
@@ -75,29 +93,8 @@ class LocalSource(BaseSource):
         return path
 
     @property
-    def component_hash_required(self) -> bool:
-        return False
-
-    @classmethod
-    def required_keys(cls):
-        return {'path': 'str'}
-
-    @classmethod
-    def optional_keys(cls):
-        # support `web_service` fields for override_path source changing
-        local_keys = {'override_path': 'str'}
-        local_keys.update(WEB_SERVICE_OPTIONAL_KEYS)
-        return local_keys
-
-    @staticmethod
-    def create_sources_if_valid(name, details, manifest_manager=None):
-        if details.get('path', None) or 'override_path' in details:
-            return [LocalSource(details, manifest_manager=manifest_manager)]
-        return None
-
-    @property
-    def hash_key(self):
-        return self.source_details.get('path')
+    def hash_key(self) -> str:
+        return self.path or self.override_path  # type: ignore
 
     @property
     def volatile(self) -> bool:
@@ -128,27 +125,21 @@ class LocalSource(BaseSource):
             )
         return str(self._path)
 
-    def versions(self, name, details=None, spec='*', target=None):
+    def versions(self, name, spec='*', target=None):
         """For local return version from manifest, or * if manifest not found"""
-        manifest_path = self._path / MANIFEST_FILENAME
         name = self._path.name
 
         version_str = '*'
-        targets = []
-        dependencies = []
+        manifest = ManifestManager(str(self._path), name).load()
+        if manifest.version:
+            version_str = str(manifest.version)
 
-        if manifest_path.is_file():
-            manifest = ManifestManager(str(manifest_path), name=name).load()
-            if manifest.version:
-                version_str = str(manifest.version)
+        if manifest.targets:  # only check when exists
+            if target and target not in manifest.targets:
+                return ComponentWithVersions(name=name, versions=[])
 
-            if manifest.targets:  # only check when exists
-                if target and target not in manifest.targets:
-                    return ComponentWithVersions(name=name, versions=[])
-
-                targets = manifest.targets
-
-            dependencies = manifest.dependencies
+        targets = manifest.targets
+        dependencies = manifest.raw_requirements
 
         return ComponentWithVersions(
             name=name,
@@ -156,9 +147,3 @@ class LocalSource(BaseSource):
                 HashedComponentVersion(version_str, targets=targets, dependencies=dependencies)
             ],
         )
-
-    def serialize(self) -> t.Dict:
-        return {
-            'path': str(self._path),
-            'type': self.name,
-        }

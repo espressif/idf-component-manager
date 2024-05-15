@@ -7,7 +7,7 @@ from string import Template
 
 import yaml
 
-from ..errors import ManifestError
+from idf_component_tools.errors import ManifestError
 
 
 def subst_vars_in_str(s: str, env: t.Dict[str, t.Any]) -> str:

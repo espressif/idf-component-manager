@@ -7,13 +7,13 @@ import webbrowser
 import click
 import requests
 
-from idf_component_manager.service_details import get_api_client
+from idf_component_manager.core import ComponentManager
 from idf_component_manager.utils import print_error, print_info
-from idf_component_tools.config import ConfigManager
+from idf_component_tools.config import ConfigManager, ServiceProfileItem
 from idf_component_tools.errors import FatalError
-from idf_component_tools.registry.api_client_errors import APIClientError
+from idf_component_tools.registry.client_errors import APIClientError
+from idf_component_tools.registry.service_details import NoSuchProfile, get_api_client
 
-from ..core import ComponentManager
 from .constants import get_project_dir_option, get_service_profile_option
 from .utils import add_options, deprecated_option
 
@@ -71,23 +71,26 @@ def init_registry():
 
         # Load config for dump later
         config = ConfigManager().load()
-        profile = config.profiles.setdefault(service_profile, {})
+        if service_profile not in config.profiles:
+            profile = ServiceProfileItem()
+            config.profiles[service_profile] = profile
+        else:
+            profile = config.profiles[service_profile]
 
         # Check if token is already in the profile
-        if 'api_token' in profile:
+        if profile.api_token:
             raise FatalError(
                 'You are already logged in with profile "{}", '
                 'please either logout or use different profile'.format(service_profile)
             )
 
-        api_client, _ = get_api_client(
-            service_profile=service_profile,
+        api_client = get_api_client(
             namespace=default_namespace,
-            token_required=False,
-            raise_on_missing_profile=False,
+            service_profile=service_profile,
+            profile=profile,
         )
 
-        auth_url = f'{api_client.frontend_url}/tokens/'
+        auth_url = f'{api_client.registry_url}/tokens/'
 
         auth_params = {
             'scope': 'user write:components',
@@ -116,7 +119,7 @@ def init_registry():
             token = input('Token:')
 
             try:
-                api_client.auth_token = token
+                api_client.api_token = token
                 api_client.token_information()
                 token_valid = True
             except APIClientError as e:
@@ -126,10 +129,10 @@ def init_registry():
 
         # Update config with token and default namespace, registry URL if they are provided
         if default_namespace:
-            profile['namespace'] = default_namespace
+            profile.default_namespace = default_namespace
         if registry_url:
-            profile['registry_url'] = registry_url
-        profile['api_token'] = token
+            profile.registry_url = registry_url
+        profile.api_token = token
 
         ConfigManager().dump(config)
 
@@ -142,11 +145,16 @@ def init_registry():
         config = ConfigManager().load()
 
         # Check if token is already in the profile
-        profile = config.profiles.setdefault(service_profile, {})
-        if 'api_token' not in profile:
+        profile = config.profiles.get(service_profile)
+        if profile is None:
+            raise NoSuchProfile(
+                f'Profile "{service_profile}" not found in the idf_component_manager.yml config file'
+            )
+
+        if profile.api_token is None:
             raise FatalError('You are not logged in')
 
-        del profile['api_token']
+        profile.api_token = None
         ConfigManager().dump(config)
 
         print_info('Successfully logged out')

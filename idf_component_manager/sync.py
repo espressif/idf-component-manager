@@ -11,13 +11,15 @@ from tqdm import tqdm
 from idf_component_manager.core_utils import parse_component
 from idf_component_manager.utils import print_info
 from idf_component_tools.build_system_tools import is_component
+from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.errors import SyncError
-from idf_component_tools.manifest import MANIFEST_FILENAME, ComponentRequirement, ManifestManager
+from idf_component_tools.manager import ManifestManager
+from idf_component_tools.manifest import ComponentRequirement
 from idf_component_tools.messages import warn
-from idf_component_tools.registry.api_client_errors import ComponentNotFound, VersionNotFound
+from idf_component_tools.registry.client_errors import ComponentNotFound, VersionNotFound
 from idf_component_tools.registry.multi_storage_client import MultiStorageClient
 from idf_component_tools.registry.request_processor import join_url
-from idf_component_tools.sources.web_service import WebServiceSource, download_archive
+from idf_component_tools.sources.web_service import download_archive
 
 ComponentVersion = namedtuple('ComponentVersion', ['version', 'file_path', 'storage_url'])
 
@@ -174,7 +176,7 @@ def prepare_metadata(
         warnings = []
 
     for requirement in dependencies:
-        if requirement.source.name == 'service':
+        if requirement.source.type == 'service':
             version_specs = []
             if requirement.optional_requirement and requirement.optional_requirement.matches:
                 version_specs = [elem.version for elem in requirement.optional_requirement.matches]
@@ -211,8 +213,6 @@ def load_saved_metadata(path: Path) -> t.Dict[str, ComponentStaticVersions]:
 def collect_metadata(
     client: MultiStorageClient,
     path: t.Union[str, Path],
-    namespace: str,
-    save_path: t.Union[str, Path],
     components: t.Optional[t.List[str]] = None,
     recursive: bool = False,
 ) -> t.Dict[str, ComponentStaticVersions]:
@@ -227,10 +227,11 @@ def collect_metadata(
     if components:
         dependencies = []
         for component_info in components:
-            component_name, spec = parse_component(component_info, namespace)
+            component_name, spec = parse_component(component_info, client.default_namespace)
             dependencies.append(
                 ComponentRequirement(
-                    component_name, version_spec=spec, sources=[WebServiceSource({})]
+                    name=component_name,
+                    version=spec,
                 )
             )
         metadata, warnings = prepare_metadata(
@@ -242,11 +243,9 @@ def collect_metadata(
             paths = list(path.glob('**'))
         for path in paths:
             if path.is_dir() and is_component(path) and (path / MANIFEST_FILENAME).exists():
-                manifest = ManifestManager(
-                    str(path), '', expand_environment=True, process_opt_deps=True
-                ).load()
+                manifest = ManifestManager(str(path), '').load()
                 metadata, warnings = prepare_metadata(
-                    client, manifest.dependencies, progress_bar, metadata, warnings
+                    client, manifest.requirements, progress_bar, metadata, warnings
                 )
     progress_bar.close()
 
@@ -272,7 +271,6 @@ def metadata_has_changes(old: t.Dict, new: t.Dict) -> bool:
 def sync_components(
     client: MultiStorageClient,
     path: t.Union[str, Path],
-    namespace: str,
     save_path: Path,
     components: t.Optional[t.List[str]] = None,
     recursive: bool = False,
@@ -283,7 +281,7 @@ def sync_components(
     metadata = load_saved_metadata(Path(save_path))
     print_info(f'{len(metadata)} metadata loaded from "{save_path}" folder')
 
-    new_metadata = collect_metadata(client, path, namespace, save_path, components, recursive)
+    new_metadata = collect_metadata(client, path, components, recursive)
     if not len(new_metadata):
         raise SyncError('No components found for those requirements')
 

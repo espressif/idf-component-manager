@@ -57,7 +57,10 @@ def test_changing_target(project):
 )
 def test_idf_check_target_fail_manifest(project):
     res = set_target(project, 'esp32')
-    assert 'Component "main" does not support target esp32' in res
+    assert (
+        f'Component "main" defined in manifest file "{project}/main/idf_component.yml" '
+        f'is not compatible with target "esp32"'
+    ) in res
 
 
 @pytest.mark.parametrize(

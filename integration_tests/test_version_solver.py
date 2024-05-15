@@ -228,7 +228,7 @@ def test_idf_version_dependency_passed(project):
     ],
     indirect=True,
 )
-def test_version_solver_on_local_components(project):
+def test_version_solver_on_local_components_basic(project):
     # need to move to another folder, not under the default `components/`
     project = Path(project)
     (project / 'components' / 'component_foo').rename(project.parent / 'component_foo')
@@ -307,7 +307,7 @@ def test_version_solver_on_local_components_higher_priority(project):
     with open(os.path.join(project, 'dependencies.lock')) as fr:
         d = yaml.safe_load(fr)
         assert d['dependencies']['test/circular_dependency_a'] == {
-            'component_hash': None,
+            'dependencies': [],
             'source': {
                 'path': os.path.join(project, 'test__circular_dependency_a'),
                 'type': 'local',

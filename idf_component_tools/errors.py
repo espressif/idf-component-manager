@@ -20,13 +20,18 @@ class FatalError(RuntimeError):
 class InternalError(RuntimeError):
     """Internal Error, should report to us"""
 
-    def __init__(self):
-        super().__init__(
+    def __init__(self, extra_msg: t.Optional[str] = None):
+        err = (
             'This is an internal error. Please report on '
             '`https://github.com/espressif/idf-component-manager/issues '
             'with your operating system, idf-component-manager version, '
             'and the traceback log. Thanks for reporting! '
         )
+
+        if extra_msg:
+            err = extra_msg + '\n' + err
+
+        super().__init__(err)
 
 
 class NothingToDoError(FatalError):
@@ -83,6 +88,10 @@ class LockError(ProcessingError):
     pass
 
 
+class LockVersionMismatchError(LockError):
+    pass
+
+
 class GitError(ProcessingError):
     pass
 
@@ -103,9 +112,9 @@ class VersionAlreadyExistsError(FatalError):
     pass
 
 
-class ProfileNotValid(FatalError):
+class SyncError(FatalError):
     pass
 
 
-class SyncError(FatalError):
+class RunningEnvironmentError(FatalError):
     pass

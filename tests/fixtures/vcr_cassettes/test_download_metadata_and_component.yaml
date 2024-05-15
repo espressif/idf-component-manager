@@ -6,6 +6,50 @@ interactions:
       - '*/*'
       Accept-Encoding:
       - gzip, deflate
+      Authorization:
+      - Bearer L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.3.2 (Darwin/22.1.0 arm64; python/3.10.0)
+    method: GET
+    uri: http://localhost:5000/api
+  response:
+    body:
+      string: '{"components_base_url":"http://localhost:9000/test-public","info":"Espressif
+        Component Manager Service HTTP JSON API","status":"ok","version":"0.2.0"}
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '151'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 21 Sep 2023 12:02:35 GMT
+      Server:
+      - Werkzeug/2.3.7 Python/3.11.1
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
       Connection:
       - keep-alive
       User-Agent:
@@ -93,6 +137,50 @@ interactions:
       - nosniff
       X-Xss-Protection:
       - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.3.2 (Darwin/22.1.0 arm64; python/3.10.0)
+    method: GET
+    uri: http://localhost:5000/api
+  response:
+    body:
+      string: '{"components_base_url":"http://localhost:9000/test-public","info":"Espressif
+        Component Manager Service HTTP JSON API","status":"ok","version":"0.2.0"}
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '151'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 21 Sep 2023 12:02:35 GMT
+      Server:
+      - Werkzeug/2.3.7 Python/3.11.1
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
     status:
       code: 200
       message: OK

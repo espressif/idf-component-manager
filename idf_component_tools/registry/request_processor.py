@@ -2,15 +2,17 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 import typing as t
+import warnings
+from copy import deepcopy
 
 import requests
+from pydantic import ValidationError
 from requests import Response
-from schema import Schema, SchemaError
 
 from idf_component_tools.environment import getenv_bool_or_string
-from idf_component_tools.registry.api_schemas import ERROR_SCHEMA
 
-from .api_client_errors import (
+from .api_models import ApiBaseModel, ErrorResponse
+from .client_errors import (
     KNOWN_API_ERRORS,
     APIClientError,
     ContentTooLargeError,
@@ -109,10 +111,10 @@ def handle_4xx_error(response: requests.Response) -> None:
         )
 
     try:
-        json = ERROR_SCHEMA.validate(response.json())
-        name = json['error']
-        messages = json['messages']
-    except SchemaError as e:
+        error = ErrorResponse.model_validate(response.json())
+        name = error.error
+        messages = error.messages
+    except ValidationError as e:
         raise APIClientError(
             f'API Endpoint returned unexpected error description:\n{e}',
             endpoint=response.url,
@@ -136,25 +138,6 @@ def handle_4xx_error(response: requests.Response) -> None:
         )
 
 
-def validate_response(
-    response_json: t.Dict,
-    schema: t.Optional[Schema],
-    endpoint: str,
-) -> t.Dict:
-    try:
-        if schema is not None:
-            schema.validate(response_json)
-    except SchemaError as e:
-        raise APIClientError(
-            f'API Endpoint returned unexpected JSON:\n{e}',
-            endpoint=endpoint,
-        )
-    except (ValueError, KeyError, IndexError):
-        raise APIClientError('Unexpected component server response', endpoint=endpoint)
-
-    return response_json
-
-
 def base_request(
     url: str,
     session: requests.Session,
@@ -163,11 +146,29 @@ def base_request(
     data: t.Optional[t.Dict] = None,
     json: t.Optional[t.Dict] = None,
     headers: t.Optional[t.Dict] = None,
-    schema: Schema = None,
+    schema: t.Optional[ApiBaseModel] = None,
     use_storage: bool = False,
 ) -> t.Dict:
     endpoint = join_url(url, *path)
     timeout = get_timeout()
     response = make_request(method, session, endpoint, data, json, headers, timeout)
     response_json = handle_response_errors(response, endpoint, use_storage)
-    return validate_response(response_json, schema, endpoint)
+
+    if schema is None:
+        return response_json
+
+    try:
+        # model validation will modify the response_json, so we need to deepcopy it
+        # besides, the unknown fields will be ignored, suppressing the warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', UserWarning)
+            schema.model_validate(deepcopy(response_json))
+    except ValidationError as e:
+        raise APIClientError(
+            f'API Endpoint returned unexpected JSON:\n{e}',
+            endpoint=endpoint,
+        )
+    except (ValueError, KeyError, IndexError):
+        raise APIClientError('Unexpected component server response', endpoint=endpoint)
+
+    return response_json

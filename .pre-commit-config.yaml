@@ -32,7 +32,9 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies:
-          ["types-requests", "types-PyYAML"]
+          - types-requests
+          - types-PyYAML
+          - pydantic<2.6  # python 3.7
 
   - repo: https://github.com/espressif/check-copyright/
     rev: v1.0.3

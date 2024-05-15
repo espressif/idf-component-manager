@@ -8,7 +8,7 @@ from functools import total_ordering
 from pathlib import Path
 
 from idf_component_manager.core_utils import raise_component_modified_error
-from idf_component_manager.utils import print_info, print_warn
+from idf_component_manager.utils import print_info, print_notice
 from idf_component_manager.version_solver.helper import parse_root_dep_conflict_constraints
 from idf_component_manager.version_solver.mixology.failure import SolverFailure
 from idf_component_manager.version_solver.mixology.package import Package
@@ -19,6 +19,7 @@ from idf_component_tools.errors import (
     ComponentModifiedError,
     FetchingError,
     InvalidComponentHashError,
+    LockVersionMismatchError,
     SolverError,
 )
 from idf_component_tools.hash_tools.errors import ValidatingHashError
@@ -26,12 +27,11 @@ from idf_component_tools.hash_tools.validate_managed_component import (
     validate_managed_component_hash,
 )
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import ProjectRequirements
-from idf_component_tools.manifest.solved_component import SolvedComponent
-from idf_component_tools.manifest.solved_manifest import SolvedManifest
+from idf_component_tools.manifest import SolvedComponent, SolvedManifest
 from idf_component_tools.messages import hint, warn
-from idf_component_tools.registry.api_client_errors import NetworkConnectionError
+from idf_component_tools.registry.client_errors import NetworkConnectionError
 from idf_component_tools.sources.fetcher import ComponentFetcher
+from idf_component_tools.utils import ProjectRequirements
 
 
 def check_manifests_targets(project_requirements: ProjectRequirements) -> None:
@@ -41,9 +41,9 @@ def check_manifests_targets(project_requirements: ProjectRequirements) -> None:
 
         if project_requirements.target not in manifest.targets:
             raise FetchingError(
-                'Component "{}" does not support target {}'.format(
-                    manifest.name, project_requirements.target
-                )
+                f'Component "{manifest.real_name}" '
+                f'defined in manifest file "{manifest.path}" '
+                f'is not compatible with target "{project_requirements.target}"'
             )
 
 
@@ -111,6 +111,11 @@ def is_solve_required(project_requirements: ProjectRequirements, solution: Solve
         )
         return True
 
+    # check the dependencies are the same
+    if set(project_requirements.direct_dep_names) != set(solution.direct_dependencies or []):
+        print_info('Direct dependencies have changed, solving dependencies.')
+        return True
+
     for component in solution.dependencies:
         try:
             # For downloadable volatile dependencies, like ones from git,
@@ -128,7 +133,7 @@ def is_solve_required(project_requirements: ProjectRequirements, solution: Solve
                     component.name, spec=f'=={component.version.semver}'
                 )
             except FetchingError:
-                print_warn(
+                warn(
                     f'Version {component.version} of dependency {component.name} not found, '
                     'probably it was deleted, solving dependencies.'
                 )
@@ -144,7 +149,7 @@ def is_solve_required(project_requirements: ProjectRequirements, solution: Solve
 
             # Handle meta components, like ESP-IDF, and volatile components, like local
             if component.source.meta or component.source.volatile:
-                if component_version != component.version:
+                if component_version.version != component.version:
                     print_info(
                         'Dependency "{}" version has changed from {} to {}, '
                         'solving dependencies.'.format(
@@ -259,7 +264,14 @@ def download_project_dependencies(
 ) -> t.Set[DownloadedComponent]:
     """Solves dependencies and download components"""
     lock_manager = LockManager(lock_path)
-    solution = lock_manager.load()
+
+    try:
+        solution = lock_manager.load()
+    except LockVersionMismatchError as e:
+        print_notice(str(e))
+        os.remove(lock_path)
+        solution = SolvedManifest()
+
     check_manifests_targets(project_requirements)
 
     if is_solve_required(project_requirements, solution):
@@ -272,15 +284,14 @@ def download_project_dependencies(
             components_introduce_conflict = []
             for conflict_constraint in conflict_constraints:
                 for manifest in project_requirements.manifests:
-                    for dep in manifest.dependencies:
-                        for source in dep.sources:
-                            if Package(
-                                dep.name, source
-                            ) == conflict_constraint.package and dep.version_spec == str(
-                                conflict_constraint.constraint
-                            ):
-                                components_introduce_conflict.append(manifest.name)
-                                break
+                    for dep in manifest.requirements:
+                        if Package(
+                            dep.name, dep.source
+                        ) == conflict_constraint.package and dep.version_spec == str(
+                            conflict_constraint.constraint
+                        ):
+                            components_introduce_conflict.append(manifest.real_name)
+                            break
 
             if components_introduce_conflict:
                 hint(
@@ -301,7 +312,7 @@ def download_project_dependencies(
 
     requirement_dependencies = []
     project_requirements_dependencies = [
-        manifest.name for manifest in project_requirements.manifests
+        manifest.real_name for manifest in project_requirements.manifests
     ]
 
     for component in solution.dependencies:

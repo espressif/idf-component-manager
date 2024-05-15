@@ -6,22 +6,21 @@ import os
 
 from pytest import fixture, raises, warns
 
-from idf_component_manager.service_details import (
+from idf_component_tools.config import Config
+from idf_component_tools.constants import DEFAULT_NAMESPACE
+from idf_component_tools.messages import UserDeprecationWarning
+from idf_component_tools.registry.client_errors import APIClientError
+from idf_component_tools.registry.service_details import (
     NoSuchProfile,
     get_api_client,
-    get_component_registry_url_with_profile,
-    get_namespace,
     get_profile,
-    get_token,
+    get_storage_client,
 )
-from idf_component_tools.config import Config, ConfigManager
-from idf_component_tools.errors import FatalError
-from idf_component_tools.messages import UserDeprecationWarning
 
 
 @fixture()
 def service_config(tmp_path):
-    return Config({}).validate().profiles.get('default', {})
+    return Config().profiles.get('default', {})
 
 
 @fixture(scope='module', autouse=True)
@@ -53,37 +52,18 @@ def config_path(tmp_path):
     return config_path
 
 
-def test_get_namespace_from_config():
-    service_config = {
-        'default_namespace': 'test',
-    }
-    assert get_namespace(service_config) == 'test'
-
-
-def test_get_namespace_with_namespace(service_config):
-    namespace = get_namespace(service_config, 'example')
-    assert namespace == 'example'
+def test_get_namespace_with_namespace():
+    assert get_api_client(namespace='example').default_namespace == 'example'
 
 
 def test_get_namespace_default(service_config):
-    namespace = get_namespace(service_config, None)
-    assert namespace == 'espressif'
+    assert get_storage_client(namespace=None).default_namespace == DEFAULT_NAMESPACE
 
 
-def test_get_token_fails(service_config):
-    with raises(FatalError, match='Failed to get API Token*'):
-        get_token(service_config)
-
-
-def test_get_token_env(service_config, monkeypatch):
+def test_get_token_env(monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'some_token')
-    assert get_token(service_config) == 'some_token'
 
-
-def test_empty_env_API_Token(service_config, monkeypatch):
-    monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', '')
-    with raises(FatalError, match='Failed to get API Token from the config file'):
-        get_token(service_config, token_required=True)
+    assert get_api_client().api_token == 'some_token'
 
 
 def test_empty_env_registry_profile(monkeypatch):
@@ -96,30 +76,25 @@ def test_empty_env_registry_profile(monkeypatch):
 
 
 def test_get_token_profile(config_path, monkeypatch):
-    profile = ConfigManager(path=config_path).load().profiles['test']
-    assert get_token(profile) == 'token'
-
-
-def test_get_token_allow_none(service_config):
-    assert get_token(service_config, token_required=False) is None
+    assert get_api_client(service_profile='test', config_path=config_path).api_token == 'token'
 
 
 def test_get_profile_success(config_path):
     profile = get_profile('test', config_path)
-    assert profile['registry_url'] == 'https://example.com/'
-    assert profile['default_namespace'] == 'test'
-    assert profile['api_token'] == 'token'
+    assert profile.registry_url == 'https://example.com/'
+    assert profile.default_namespace == 'test'
+    assert profile.api_token == 'token'
 
 
 def test_get_profile_env_dep(config_path, monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_SERVICE_PROFILE', 'test')
     with warns(UserDeprecationWarning):
-        assert get_profile(None, config_path=config_path)['default_namespace'] == 'test'
+        assert get_profile(None, config_path=config_path).default_namespace == 'test'
 
 
 def test_get_profile_env(config_path, monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_REGISTRY_PROFILE', 'test')
-    assert get_profile(None, config_path=config_path)['default_namespace'] == 'test'
+    assert get_profile(None, config_path=config_path).default_namespace == 'test'
 
 
 def test_get_profile_env_both(config_path, monkeypatch):
@@ -128,44 +103,46 @@ def test_get_profile_env_both(config_path, monkeypatch):
     with warns(
         UserWarning, match='IDF_COMPONENT_SERVICE_PROFILE and IDF_COMPONENT_REGISTRY_PROFILE'
     ):
-        assert get_profile(None, config_path=config_path)['default_namespace'] == 'test'
+        assert get_profile(None, config_path=config_path).default_namespace == 'test'
 
 
 def test_get_profile_not_exist(config_path):
-    assert get_profile('not_test', config_path) is None
+    assert get_profile('not_exists', config_path) is None
 
 
 def test_service_details_success(config_path):
-    client, namespace = get_api_client(
-        service_profile='test', namespace='test', config_path=config_path
-    )
-    assert client.base_url == 'https://example.com/api/'
-    assert namespace == 'test'
+    client = get_storage_client(service_profile='test', namespace='test', config_path=config_path)
+    assert client.registry_url == 'https://example.com/'
+    assert client.default_namespace == 'test'
 
 
 def test_service_details_namespace_not_exist(tmp_path):
     with raises(NoSuchProfile):
-        get_api_client(config_path=str(tmp_path), service_profile='not_exists')
+        get_storage_client(config_path=str(tmp_path), service_profile='not_exists')
 
 
 def test_service_details_without_token(tmp_path):
-    with raises(FatalError, match='Failed to get API Token*'):
-        get_api_client(config_path=str(tmp_path), namespace='test')
+    client = get_api_client(config_path=str(tmp_path), namespace='test')
+
+    with raises(APIClientError, match='API token is required'):
+        client.upload_version('file', 'component', '1.0.0')
 
 
 def test_service_details_without_profile(tmp_path):
     with raises(NoSuchProfile, match='Profile "test" not found*'):
-        get_api_client(config_path=str(tmp_path), service_profile='test', namespace='test')
+        get_storage_client(config_path=str(tmp_path), service_profile='test', namespace='test')
 
 
 def test_service_details_with_empty_profile(config_path):
-    with raises(FatalError, match='Failed to get API Token*'):
-        get_api_client(config_path=config_path, service_profile='emptyprofile')
+    client = get_api_client(config_path=config_path, service_profile='emptyprofile')
+    with raises(APIClientError, match='API token is required'):
+        client.upload_version('file', 'component', '1.0.0')
 
 
 def test_get_component_registry_url_with_profile(monkeypatch, config_path):
     monkeypatch.setenv('IDF_COMPONENT_REGISTRY_PROFILE', 'test')
-    service_url, storage_urls = get_component_registry_url_with_profile(config_path)
 
-    assert service_url == 'https://example.com/api/'
-    assert storage_urls is None
+    client = get_storage_client(config_path=config_path)
+
+    assert client.registry_url == 'https://example.com/'
+    assert client.storage_urls == []

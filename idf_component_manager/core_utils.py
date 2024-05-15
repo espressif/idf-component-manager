@@ -12,7 +12,6 @@ from idf_component_tools.constants import DEFAULT_NAMESPACE
 from idf_component_tools.errors import ComponentModifiedError, FatalError
 from idf_component_tools.file_tools import copy_directories, filtered_paths
 from idf_component_tools.hash_tools.constants import HASH_FILENAME
-from idf_component_tools.manifest import Manifest
 from idf_component_tools.manifest.constants import SLUG_BODY_REGEX
 from idf_component_tools.semver import SimpleSpec
 
@@ -32,19 +31,16 @@ SYNC_REGISTRY_COMPONENT_NAME_REGEX = (
 class ProgressBar(tqdm):
     """Wrapper for tqdm for updating progress bar status"""
 
-    def update_to(self, count: int) -> t.Optional[bool]:
+    def update_to(self, count: t.Union[int, float]) -> t.Optional[bool]:
         return self.update(count - self.n)
 
 
-def dist_name(manifest: Manifest) -> str:
-    if manifest.version is None:
-        raise ValueError('Version is required in this manifest')
-
-    return f'{manifest.name}_{manifest.version}'
+def dist_name(name: str, version: str) -> str:
+    return f'{name}_{version}'
 
 
-def archive_filename(manifest: Manifest) -> str:
-    return f'{dist_name(manifest)}.tgz'
+def archive_filename(name: str, version: str) -> str:
+    return f'{dist_name(name, version)}.tgz'
 
 
 def raise_component_modified_error(managed_components_dir: str, components: t.List[str]) -> None:

@@ -1,11 +1,11 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
 
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import ManifestManager
-from idf_component_tools.manifest.solved_component import SolvedComponent
+from idf_component_tools.manager import ManifestManager
+from idf_component_tools.manifest import SolvedComponent
 from idf_component_tools.sources import WebServiceSource
 
 
@@ -32,11 +32,9 @@ class TestSolverResult:
         monkeypatch.setenv('IDF_VERSION', '5.0.0')
         monkeypatch.setenv('IDF_TARGET', 'esp32')
 
-        manifest_manager = ManifestManager(
-            release_component_path, 'test', expand_environment=True, process_opt_deps=True
-        )
-        manifest_manager.manifest_tree['dependencies'] = {
-            'test': '1.2.3',
+        manifest_manager = ManifestManager(release_component_path, 'test')
+        manifest_manager.manifest.dependencies = {
+            'espressif/test': '1.2.3',
             'pest': {'version': '3.2.1'},
             'foo': {
                 'version': '1.0.0',
@@ -47,6 +45,8 @@ class TestSolverResult:
             },
         }
         manifest = manifest_manager.load()
-        assert len(manifest.dependencies) == 2
-        assert manifest.dependencies[0].name == 'espressif/pest'
-        assert manifest.dependencies[1].name == 'espressif/test'
+        assert len(manifest.requirements) == 2
+
+        # name is the field from the manifest, don't touch it
+        assert manifest.requirements[0].name == 'espressif/pest'
+        assert manifest.requirements[1].name == 'espressif/test'

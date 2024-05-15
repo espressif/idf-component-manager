@@ -122,6 +122,48 @@ interactions:
       User-Agent:
       - idf-component-manager/1.4.1 (Darwin/22.1.0 arm64; python/3.11.1)
     method: GET
+    uri: http://localhost:5000/api
+  response:
+    body:
+      string: '{"components_base_url":"http://localhost:9000/test-public","info":"Espressif
+        Component Manager Service HTTP JSON API","status":"ok","version":"1.4.0"}
+
+        '
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '151'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 10 Oct 2023 10:24:20 GMT
+      Server:
+      - Werkzeug/2.3.7 Python/3.11.1
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/1.4.1 (Darwin/22.1.0 arm64; python/3.11.1)
+    method: GET
     uri: http://localhost:9000/test-public/components/espressif/cmp.json
   response:
     body:

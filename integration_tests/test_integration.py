@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import logging
 import os
 import shutil
 import sys
@@ -11,13 +10,12 @@ import yaml
 
 from idf_component_tools.build_system_tools import get_idf_version
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import ManifestManager
+from idf_component_tools.manager import ManifestManager
 from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS
 from idf_component_tools.semver import Version
 
 from .integration_test_helpers import (
     build_project,
-    current_idf_in_the_list,
     fixtures_path,
     live_print_call,
     project_action,
@@ -120,33 +118,6 @@ def test_known_targets():
                 'main': {
                     'dependencies': {
                         'example/cmp': {
-                            'version': '==$CMP_VERSION',
-                        },
-                    }
-                }
-            }
-        },
-    ],
-    indirect=True,
-)
-def test_env_var(project, monkeypatch):
-    monkeypatch.setenv('CMP_VERSION', '3.0.3')
-    real_result = project_action(project, 'reconfigure')
-    assert 'example/cmp (3.0.3)' in real_result
-
-    monkeypatch.setenv('CMP_VERSION', '3.3.3')
-    real_result = project_action(project, 'reconfigure')
-    assert 'example/cmp (3.3.3)' in real_result
-
-
-@pytest.mark.parametrize(
-    'project',
-    [
-        {
-            'components': {
-                'main': {
-                    'dependencies': {
-                        'example/cmp': {
                             'version': '*',
                             'include': 'cmp.h',
                         },
@@ -158,11 +129,6 @@ def test_env_var(project, monkeypatch):
     indirect=True,
 )
 def test_build_pure_cmake(project):
-    if current_idf_in_the_list('v4.2', 'v4.3'):
-        logging.info('Skipping the test')
-
-        return
-
     build_dir = os.path.join(project, 'build')
     res = live_print_call(['cmake', '-S', project, '-B', build_dir, '-G', 'Ninja'])
     assert 'Generating done' in res
@@ -308,7 +274,7 @@ def test_update_dependencies_outdated(project, monkeypatch):
     project_action(project, 'reconfigure')
 
     manifest_manager = ManifestManager(os.path.join(project, 'cmp'), 'cmp')
-    manifest_manager.manifest_tree['version'] = '1.2.0'
+    manifest_manager.manifest.version = '1.2.0'
     manifest_manager.dump(os.path.join(project, 'cmp'))
 
     lock = LockManager(os.path.join(project, 'dependencies.lock'))
@@ -396,7 +362,6 @@ def test_idf_reconfigure_dependency_doesnt_exist(project):
 @pytest.mark.skipif(
     Version(get_idf_version()) < Version('5.3.0'), reason='only master branch support it'
 )
-@pytest.mark.xfail(reason='not supported yet in ESP-IDF')
 def test_idf_build_inject_dependencies_even_with_set_components(project, component_name):
     project_cmake_filepath = os.path.join(project, 'CMakeLists.txt')
     with open(project_cmake_filepath) as fr:

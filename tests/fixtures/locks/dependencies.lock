@@ -6,10 +6,9 @@ dependencies:
       type: service
     version: 1.2.7
   idf:
-    component_hash: null
     source:
       type: idf
     version: 4.4.4
-manifest_hash: a1a5f092fd8e895c42e8bb1984c5b32b86c49e796369605ca175edb079407f77
+manifest_hash: 41b36c1e91e9dafe8a222e32364619b52b6e22745d012629f9b0162955252457
 target: esp32
-version: 1.0.0
+version: 2.0.0

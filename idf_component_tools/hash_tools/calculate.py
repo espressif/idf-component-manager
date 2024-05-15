@@ -6,9 +6,11 @@ import json
 import typing as t
 from hashlib import sha256
 from pathlib import Path
+from urllib.parse import urlparse
 
 from idf_component_tools.file_tools import filtered_paths
-from idf_component_tools.hash_tools.constants import BLOCK_SIZE
+
+from .constants import BLOCK_SIZE
 
 
 def hash_object(obj: t.Any) -> str:
@@ -31,6 +33,14 @@ def hash_file(file_path: t.Union[str, Path]) -> str:
             sha.update(block)
 
     return sha.hexdigest()
+
+
+def hash_url(url_string: str) -> str:
+    url = urlparse(url_string)
+    netloc = url.netloc
+    path = '/'.join(filter(None, url.path.split('/')))
+    normalized_path = '/'.join([netloc, path])
+    return sha256(normalized_path.encode('utf-8')).hexdigest()
 
 
 def hash_dir(

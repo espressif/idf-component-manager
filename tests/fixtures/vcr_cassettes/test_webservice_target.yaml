@@ -50,7 +50,7 @@ interactions:
     body:
       string: '{"created_at": "2023-03-21T14:14:02.141163+00:00", "name": "cmp", "namespace":
         "example", "versions": [{"url": "8241246f-ad29-435e-94af-c6da11bd19ee.tgz",
-        "targets": ["esp32s2"], "docs": {"readme": "8241246f-ad29-435e-94af-c6da11bd19ee/readme.md"},
+        "targets": ["esp32"], "docs": {"readme": "8241246f-ad29-435e-94af-c6da11bd19ee/readme.md"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "yanked_at": null, "description": "This component is an example, to be used
         with the IDF component manager.", "downloads_total": 0, "issues": "", "tags":

@@ -5,7 +5,7 @@
 import typing as t
 from collections import OrderedDict
 
-from idf_component_tools.manifest import HashedComponentVersion
+from idf_component_tools.utils import HashedComponentVersion
 
 from .assignment import Assignment
 from .constraint import Constraint

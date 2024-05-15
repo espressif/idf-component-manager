@@ -15,9 +15,10 @@ from idf_component_manager.cli.core import initialize_cli
 from idf_component_manager.core import ComponentManager
 from idf_component_tools.__version__ import __version__
 from idf_component_tools.config import Config, ConfigManager
+from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.file_cache import FileCache
 from idf_component_tools.file_tools import directory_size
-from idf_component_tools.manifest import MANIFEST_FILENAME, ManifestManager
+from idf_component_tools.manager import ManifestManager
 
 
 @pytest.fixture(autouse=True)
@@ -148,7 +149,7 @@ def test_login_updated_arguments(monkeypatch, tmp_path, mock_token_information):
 
 def test_logout_from_registry(monkeypatch, tmp_path):
     monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
-    config = Config({
+    config = Config.fromdict({
         'profiles': {
             'default': {
                 'api_token': 'asdf',
@@ -320,7 +321,7 @@ def test_registry_sync_component_flag(tmp_path):
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_download_metadata_and_component.yaml')
-def test_registry_sync_recursive(tmp_path):
+def test_registry_sync_recursive(tmp_path, mock_registry):
     component_path = tmp_path / 'cmp'
     component_path.mkdir()
     (component_path / 'main').mkdir()

@@ -23,6 +23,7 @@ Reference
 
    reference/compote_cli
    reference/manifest_file
+   reference/config_file
    reference/versioning
 
 Guides

@@ -6,23 +6,24 @@ import re
 import shutil
 import tempfile
 import typing as t
-from hashlib import sha256
-from urllib.parse import urlparse  # type: ignore
 
-from idf_component_tools.hash_tools.calculate import hash_dir
-
-from ..errors import FetchingError
-from ..file_tools import copy_filtered_directory
-from ..git_client import GitClient
-from ..manifest import (
-    MANIFEST_FILENAME,
+from idf_component_tools.constants import MANIFEST_FILENAME
+from idf_component_tools.errors import FetchingError
+from idf_component_tools.file_tools import copy_filtered_directory
+from idf_component_tools.git_client import GitClient
+from idf_component_tools.hash_tools.calculate import hash_dir, hash_url
+from idf_component_tools.manager import ManifestManager
+from idf_component_tools.utils import (
     ComponentVersion,
     ComponentWithVersions,
     HashedComponentVersion,
-    ManifestManager,
+    Literal,
 )
-from ..manifest.solved_component import SolvedComponent
+
 from .base import BaseSource
+
+if t.TYPE_CHECKING:
+    from idf_component_tools.manifest import SolvedComponent
 
 BRANCH_TAG_RE = re.compile(
     r'^(?!.*/\.)(?!.*\.\.)(?!/)(?!.*//)(?!.*@\{)(?!.*\\)[^\177\s~^:?*\[]+[^.]$'
@@ -30,12 +31,12 @@ BRANCH_TAG_RE = re.compile(
 
 
 class GitSource(BaseSource):
-    NAME = 'git'
+    type: Literal['git'] = 'git'  # type: ignore
+    git: str
+    path: str = '.'
 
-    def __init__(self, source_details=None, **kwargs):
-        super().__init__(source_details=source_details, **kwargs)
-        self.git_repo = self.source_details['git']
-        self.component_path = self.source_details.get('path') or '.'
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
         self._client = GitClient()
 
@@ -48,29 +49,13 @@ class GitSource(BaseSource):
         if version is not None:
             version = None if version == '*' else str(version)
         return self._client.prepare_ref(
-            repo=self.git_repo,
+            repo=self.git,
             bare_path=self.cache_path(),
             checkout_path=path,
             ref=version,
             with_submodules=True,
             selected_paths=selected_paths,
         )
-
-    @staticmethod
-    def create_sources_if_valid(
-        name: str, details: t.Dict, manifest_manager: t.Optional[ManifestManager] = None
-    ) -> t.Optional[t.List[BaseSource]]:
-        if details.get('git', None):
-            return [GitSource(details, manifest_manager=manifest_manager)]
-        return None
-
-    @classmethod
-    def required_keys(cls):
-        return {'git': 'str'}
-
-    @classmethod
-    def optional_keys(cls):
-        return {'path': 'str'}
 
     @property
     def component_hash_required(self) -> bool:
@@ -83,11 +68,7 @@ class GitSource(BaseSource):
     @property
     def hash_key(self):
         if self._hash_key is None:
-            url = urlparse(self.git_repo)
-            netloc = url.netloc
-            path = '/'.join(filter(None, url.path.split('/')))
-            normalized_path = '/'.join([netloc, path])
-            self._hash_key = sha256(normalized_path.encode('utf-8')).hexdigest()
+            self._hash_key = hash_url(self.git)
         return self._hash_key
 
     @property
@@ -96,10 +77,10 @@ class GitSource(BaseSource):
 
     def cache_path(self):
         # Using `b_` prefix for bare git repos in cache
-        path = os.path.join(self.system_cache_path, f'b_{self.NAME}_{self.hash_key[:8]}')
+        path = os.path.join(self.system_cache_path, 'b_{}_{}'.format(self.type, self.hash_key[:8]))
         return path
 
-    def download(self, component: SolvedComponent, download_path: str) -> t.Optional[str]:
+    def download(self, component: 'SolvedComponent', download_path: str) -> t.Optional[str]:
         # Check for required components
         if not component.component_hash:
             raise FetchingError('Component hash is required for components from git repositories')
@@ -112,16 +93,12 @@ class GitSource(BaseSource):
 
         temp_dir = tempfile.mkdtemp()
         try:
-            self._checkout_git_source(
-                component.version, temp_dir, selected_paths=[self.component_path]
-            )
-            source_path = os.path.join(str(temp_dir), self.component_path)
+            self._checkout_git_source(component.version, temp_dir, selected_paths=[self.path])
+            source_path = os.path.join(str(temp_dir), self.path)
             if not os.path.isdir(source_path):
                 raise FetchingError(
                     'Directory {} wasn\'t found for the commit id "{}" of the '
-                    'git repository "{}"'.format(
-                        self.component_path, component.version, self.git_repo
-                    )
+                    'git repository "{}"'.format(self.path, component.version, self.git)
                 )
 
             if os.path.isdir(download_path):
@@ -131,8 +108,8 @@ class GitSource(BaseSource):
             include, exclude = set(), set()
             if os.path.isfile(possible_manifest_filepath):
                 manifest = ManifestManager(possible_manifest_filepath, component.name).load()
-                include.update(manifest.files['include'])
-                exclude.update(manifest.files['exclude'])
+                include.update(manifest.include_set)
+                exclude.update(manifest.exclude_set)
 
             copy_filtered_directory(source_path, download_path, include=include, exclude=exclude)
         finally:
@@ -140,15 +117,13 @@ class GitSource(BaseSource):
 
         return download_path
 
-    def versions(self, name, details=None, spec='*', target=None):
+    def versions(self, name, spec='*', target=None):
         """For git returns hash of locked commit, ignoring manifest"""
         version = None if spec == '*' else spec
         temp_dir = tempfile.mkdtemp()
         try:
-            commit_id = self._checkout_git_source(
-                version, temp_dir, selected_paths=[self.component_path]
-            )
-            source_path = os.path.join(str(temp_dir), self.component_path)
+            commit_id = self._checkout_git_source(version, temp_dir, selected_paths=[self.path])
+            source_path = os.path.join(str(temp_dir), self.path)
 
             if not os.path.isdir(source_path):
                 dependency_description = f'commit id "{commit_id}"'
@@ -158,7 +133,7 @@ class GitSource(BaseSource):
                     )
                 raise FetchingError(
                     'Directory {} wasn\'t found for the {} of the git repository "{}"'.format(
-                        self.component_path, dependency_description, self.git_repo
+                        self.path, dependency_description, self.git
                     )
                 )
 
@@ -170,7 +145,7 @@ class GitSource(BaseSource):
 
             if os.path.isfile(manifest_path):
                 manifest = ManifestManager(manifest_path, name=name).load()
-                dependencies = manifest.dependencies
+                dependencies = manifest.raw_requirements
 
                 if manifest.targets:  # only check when exists
                     if target and target not in manifest.targets:
@@ -181,8 +156,8 @@ class GitSource(BaseSource):
 
                     targets = manifest.targets
 
-                    include = set(manifest.files['include'])
-                    exclude = set(manifest.files['exclude'])
+                    include = manifest.include_set
+                    exclude = manifest.exclude_set
 
             component_hash = hash_dir(source_path, include=include, exclude=exclude)
         finally:
@@ -200,17 +175,6 @@ class GitSource(BaseSource):
             ],
         )
 
-    def serialize(self) -> t.Dict:
-        source = {
-            'git': self.git_repo,
-            'type': self.name,
-        }
-
-        if self.component_path:
-            source['path'] = self.component_path
-
-        return source
-
     def validate_version_spec(self, spec: str) -> bool:
         if not spec or spec == '*':
             return True
@@ -221,5 +185,5 @@ class GitSource(BaseSource):
         if not spec:
             return '*'
         ref = None if spec == '*' else spec
-        commit_id = self._client.get_commit_id_by_ref(self.git_repo, self.cache_path(), ref)
+        commit_id = self._client.get_commit_id_by_ref(self.git, self.cache_path(), ref)
         return commit_id

@@ -4,19 +4,17 @@
 import os
 import typing as t
 
-from idf_component_tools.errors import DependencySolveError, FetchingError, SolverError
+from idf_component_manager.utils import print_info
+from idf_component_tools.errors import DependencySolveError, SolverError
 from idf_component_tools.manifest import (
     ComponentRequirement,
-    ComponentWithVersions,
     Manifest,
-    ProjectRequirements,
+    SolvedComponent,
+    SolvedManifest,
 )
-from idf_component_tools.manifest.solved_component import SolvedComponent
-from idf_component_tools.manifest.solved_manifest import SolvedManifest
-from idf_component_tools.registry.api_client_errors import ComponentNotFound
-from idf_component_tools.sources import BaseSource, LocalSource
+from idf_component_tools.sources import LocalSource, WebServiceSource
+from idf_component_tools.utils import ProjectRequirements
 
-from ..utils import print_info, print_warn
 from .helper import PackageSource
 from .mixology.package import Package
 from .mixology.version_solver import VersionSolver as Solver
@@ -52,7 +50,7 @@ class VersionSolver:
 
         # scan all root local requirements
         for manifest in self.requirements.manifests:
-            for requirement in manifest.dependencies:  # type: ComponentRequirement
+            for requirement in manifest.requirements:
                 if isinstance(requirement.source, LocalSource):
                     _recorded_requirement = self._local_root_requirements.get(
                         requirement.build_name
@@ -71,20 +69,24 @@ class VersionSolver:
         # scan all root local components
         for manifest in self.requirements.manifests[1:]:
             # add itself as highest priority component
-            if manifest.name and manifest.version and manifest._manifest_manager:
-                _source = LocalSource({'path': os.path.dirname(manifest._manifest_manager.path)})
+            if manifest.real_name and manifest.version and manifest._manifest_manager:
+                _source = LocalSource(
+                    path=os.path.dirname(manifest.path),
+                    manifest_manager=manifest._manifest_manager,
+                )
                 self._source.add(
-                    Package(manifest.name, _source),
+                    Package(manifest.real_name, _source),
                     str(manifest.version),
                     deps=self._component_dependencies_with_local_precedence(
-                        manifest.dependencies, manifest.name
+                        manifest.requirements, manifest.real_name
                     ),
                 )
 
-                self._local_root_requirements[manifest.name] = ComponentRequirement(
-                    name=manifest.name,
-                    sources=[_source],
-                    version_spec=str(manifest.version),
+                self._local_root_requirements[manifest.real_name] = ComponentRequirement(
+                    name=manifest.real_name,
+                    path=os.path.dirname(manifest.path),
+                    version=str(manifest.version),
+                    manifest_manager=manifest._manifest_manager,
                 )
 
         for manifest in self.requirements.manifests:
@@ -98,47 +100,36 @@ class VersionSolver:
         for package, version in result.decisions.items():
             if package == Package.root():
                 continue
-            kwargs = {'name': package.name, 'source': package.source, 'version': version}
+
+            kwargs = {
+                'name': package.name,
+                'source': package.source,
+                'version': version.version,
+                'dependencies': version.dependencies,
+            }
             if package.source.component_hash_required:
                 kwargs['component_hash'] = version.component_hash
+
             if version.targets:
                 kwargs['targets'] = version.targets
-            solved_components.append(SolvedComponent(**kwargs))  # type: ignore
-        return SolvedManifest(
-            solved_components, self.requirements.manifest_hash, self.requirements.target
-        )
 
-    def get_versions_from_sources(
-        self, requirement: ComponentRequirement
-    ) -> t.Tuple[t.Optional[ComponentWithVersions], t.Optional[BaseSource]]:
-        latest_source = None
-        cmp_with_versions = None
-        for source in requirement.sources:
-            try:
-                cmp_with_versions = source.versions(
-                    name=requirement.name,
-                    spec=requirement.version_spec,
-                    target=self.requirements.target,
-                )
-                latest_source = source
-                if cmp_with_versions.versions:
-                    break
-            # ComponentNotFound will be raised by API client
-            # FetchingError will be raised by sources
-            except (ComponentNotFound, FetchingError):
-                pass
-        return cmp_with_versions, latest_source
+            if isinstance(package.source, WebServiceSource):
+                kwargs['download_url'] = version.download_url
+
+            solved_components.append(SolvedComponent.fromdict(kwargs))
+
+        return SolvedManifest.fromdict({
+            'direct_dependencies': self.requirements.direct_dep_names or None,
+            'dependencies': solved_components,
+            'manifest_hash': self.requirements.manifest_hash,
+            'target': self.requirements.target,
+        })
 
     def solve_manifest(self, manifest: Manifest) -> None:
         for dep in self._dependencies_with_local_precedence(
-            manifest.dependencies, manifest_path=manifest.path
+            manifest.requirements, manifest_path=manifest.path
         ):
-            if len(dep.sources) == 1:
-                source = dep.source
-            else:
-                _, source = self.get_versions_from_sources(dep)
-
-            self._source.root_dep(Package(dep.name, source), dep.version_spec)
+            self._source.root_dep(Package(dep.name, dep.source), dep.version_spec)
             try:
                 self.solve_component(dep, manifest_path=manifest.path)
             except DependencySolveError as e:
@@ -161,14 +152,15 @@ class VersionSolver:
         if requirement in self._solved_requirements:
             return
 
-        cmp_with_versions, source = self.get_versions_from_sources(requirement)
+        cmp_with_versions = requirement.source.versions(
+            name=requirement.name, spec=requirement.version_spec, target=self.requirements.target
+        )
 
-        if not cmp_with_versions or not cmp_with_versions.versions or not source:
-            print_warn(f'Component "{requirement.name}" not found')
+        if not cmp_with_versions or not cmp_with_versions.versions:
             return
 
         for version in cmp_with_versions.versions:
-            if source.is_overrider:
+            if requirement.source.is_overrider:
                 self._overriders.add(requirement.build_name)
 
             deps = self._component_dependencies_with_local_precedence(
@@ -176,7 +168,7 @@ class VersionSolver:
             )
 
             self._source.add(
-                Package(requirement.name, source),
+                Package(requirement.name, requirement.source),
                 version,
                 deps=deps,
             )

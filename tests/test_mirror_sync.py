@@ -14,10 +14,11 @@ from idf_component_manager.sync import (
     prepare_metadata,
     update_component_metadata,
 )
+from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.errors import SyncError
-from idf_component_tools.manifest import MANIFEST_FILENAME, ComponentRequirement, ManifestManager
+from idf_component_tools.manager import ManifestManager
+from idf_component_tools.manifest import ComponentRequirement
 from idf_component_tools.registry.multi_storage_client import MultiStorageClient
-from idf_component_tools.sources import WebServiceSource
 
 
 def get_component_metadata_mock(req, spec, metadata):
@@ -49,8 +50,8 @@ def test_sync_dependency_with_matches(monkeypatch, tmp_path):
     """
     )
 
-    manifest = ManifestManager(str(component_path), '', process_opt_deps=True).load()
-    metadata, _ = prepare_metadata(None, manifest.dependencies, metadata={})
+    manifest = ManifestManager(str(component_path), '').load()
+    metadata, _ = prepare_metadata(None, manifest.raw_requirements, metadata={})
 
     assert '3.3.3' in metadata['example/cmp']
     assert '^3.3.8' in metadata['example/cmp']
@@ -75,8 +76,8 @@ def test_sync_dependency_with_rules(monkeypatch, tmp_path):
     """
     )
 
-    manifest = ManifestManager(str(component_path), '', process_opt_deps=True).load()
-    metadata, _ = prepare_metadata(None, manifest._dependencies, tmp_path / 'test')
+    manifest = ManifestManager(str(component_path), '').load()
+    metadata, _ = prepare_metadata(None, manifest.raw_requirements, tmp_path / 'test')
 
     assert '~1.0.0' in metadata['example/cmp']
 
@@ -85,7 +86,7 @@ def test_sync_dependency_with_rules(monkeypatch, tmp_path):
 def test_download_metadata_all_versions(tmp_path):
     client = MultiStorageClient(storage_urls=['http://localhost:9000/test-public/'])
 
-    req = ComponentRequirement('espressif/test', version_spec='*', sources=[WebServiceSource({})])
+    req = ComponentRequirement(name='espressif/test', version='*')
 
     components, _ = get_component_metadata(client, req, '*', {}, [])
 
@@ -98,7 +99,7 @@ def test_download_metadata_all_versions(tmp_path):
 def test_download_metadata_version_with_dependency(tmp_path):
     client = MultiStorageClient(storage_urls=['http://localhost:9000/test-public/'])
 
-    req = ComponentRequirement('espressif/test', version_spec='*', sources=[WebServiceSource({})])
+    req = ComponentRequirement(name='espressif/test', version='*')
 
     components, _ = get_component_metadata(client, req, '==1.0.2', {}, [])
 
@@ -111,7 +112,7 @@ def test_download_metadata_version_with_dependency(tmp_path):
 def test_download_metadata_version_multiple_versions(tmp_path):
     client = MultiStorageClient(storage_urls=['http://localhost:9000/test-public/'])
 
-    req = ComponentRequirement('espressif/test', version_spec='*', sources=[WebServiceSource({})])
+    req = ComponentRequirement(name='espressif/test', version='*')
 
     components, _ = get_component_metadata(client, req, '<1.0.2', {}, [])
 
@@ -122,9 +123,7 @@ def test_download_metadata_version_multiple_versions(tmp_path):
 def test_download_metadata_add_metadata(tmp_path):
     client = MultiStorageClient(storage_urls=['http://localhost:9000/test-public/'])
 
-    req = ComponentRequirement(
-        'espressif/test', version_spec='==1.0.0', sources=[WebServiceSource({})]
-    )
+    req = ComponentRequirement(name='espressif/test', version='==1.0.0')
     metadata, _ = get_component_metadata(client, req, '==1.0.0', {}, [])
     assert len(metadata) == 1
     assert sum([len(data.versions) for data in metadata.values()]) == 1
@@ -138,9 +137,7 @@ def test_download_metadata_add_metadata(tmp_path):
 def test_download_metadata_version_not_found(tmp_path):
     client = MultiStorageClient(storage_urls=['http://localhost:9000/test-public/'])
 
-    req = ComponentRequirement(
-        'unknown/component', version_spec='*', sources=[WebServiceSource({})]
-    )
+    req = ComponentRequirement(name='unknown/component', version='*')
 
     components, warnings = get_component_metadata(client, req, '*', {}, [])
     assert len(components) == 0
