@@ -7,7 +7,7 @@ requires-python = ">=3.7,<4.0"
 
 [tool.poetry]
 name = "idf-component-manager"
-version = "1.5.2"
+version = "2.0.0-dev0"
 description = "Espressif IDF Component Manager"
 authors = [
     "Sergei Silnov <sergei.silnov@espressif.com>",
