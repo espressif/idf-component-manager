@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.0.0-dev0 (2024-05-17)
+
+### Feat
+
+- add esp32c61 to the list of known targets
+- Drop support of Python 2.7
+
+### Fix
+
+- Handle missing files/broken symlinks when calculating hash
+- fix the order of managed_components
+
+### Refactor
+
+- rewrite with pydantic
+- Change comment types to regular ones
+- Replace format() with f-strings
+
 ## v1.5.2 (2024-02-23)
 
 ### Fix
