@@ -9,24 +9,18 @@ build:
   timeout: 2h
   parallel:
     matrix:
-      - IDF_BRANCH_TAG: [release-v4.4]
-        PYTHON_IMAGE_TAG: [3.7-bullseye, 3.12-bullseye]
       - IDF_BRANCH_TAG: [release-v5.0, release-v5.1]
         PYTHON_IMAGE_TAG: [3.7-bullseye, 3.12-bullseye]
-      - IDF_BRANCH_TAG: [release-v5.2, master]
+      - IDF_BRANCH_TAG: [release-v5.2, release-v5.3, master]
         PYTHON_IMAGE_TAG: [3.8-bullseye, 3.12-bullseye]
   script:
     - BRANCH_NAME=$(echo $IDF_BRANCH_TAG | sed -e "s/release-v/release\/v/g")
-    # starts from idf 5.3, requires IDF_VERSION
     - |
-      if [ "${IDF_BRANCH_TAG}" = "master" ]; then
-        export IDF_VERSION=5.3.0
-
-        if [ -n "${MASTER_RELEASE_CUSTOM_TAG:-}" ]; then
-          BRANCH_NAME=${MASTER_RELEASE_CUSTOM_TAG/-//}
-          IDF_BRANCH_TAG=${MASTER_RELEASE_CUSTOM_TAG}
-        fi
+      if [ -n "${MASTER_RELEASE_CUSTOM_TAG:-}" ]; then
+        BRANCH_NAME=${MASTER_RELEASE_CUSTOM_TAG/-//}
+        IDF_BRANCH_TAG=${MASTER_RELEASE_CUSTOM_TAG}
       fi
+
     - IMAGE_TAG="${DOCKER_REGISTRY}/component-manager-integration-tests:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}"
 
     - echo "Using esp-idf branch - ${BRANCH_NAME}"
