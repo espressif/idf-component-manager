@@ -90,12 +90,11 @@ publish_on_pypi:
   tags:
     - internet
   variables:
-    TWINE_NON_INTERACTIVE: "true"
-    TWINE_USERNAME: __token__
-    TWINE_PASSWORD: ${PYPI_TOKEN}
+    POETRY_HTTP_BASIC_PYPI_USERNAME: __token__
+    POETRY_HTTP_BASIC_PYPI_PASSWORD: ${PYPI_TOKEN}
   before_script:
     - apt update && apt install curl jq -y
-    - pip install twine
+    - pip install poetry
   script:
     - ./publish.sh
   rules:
