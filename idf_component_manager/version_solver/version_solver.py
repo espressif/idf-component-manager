@@ -206,11 +206,11 @@ class VersionSolver:
 
             print_info(
                 'Using component placed at {path} '
-                'for dependency {dep}{introduced_by}{specified_in}'.format(
+                'for dependency "{dep}"{introduced_by}{specified_in}'.format(
                     # must be a local source here
                     path=component_path,
-                    dep=dep,
-                    introduced_by='(introduced by component {})'.format(component_name)
+                    dep=dep.name,
+                    introduced_by='(introduced by component "{}")'.format(component_name)
                     if component_name
                     else '',
                     specified_in=', specified in {}'.format(manifest_path) if manifest_path else '',
