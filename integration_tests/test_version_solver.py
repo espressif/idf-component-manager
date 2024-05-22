@@ -298,9 +298,9 @@ def test_version_solver_on_local_components_higher_priority(project):
     )
     real_result = project_action(project, 'fullclean', 'reconfigure')
     for line in [
-        '[1/3] idf',
-        '[2/3] test/circular_dependency_a (*)',
-        '[3/3] test/circular_dependency_b (1.0.0)',
+        '[1/3] test/circular_dependency_a (*)',
+        '[2/3] test/circular_dependency_b (1.0.0)',
+        '[3/3] idf',
     ]:
         assert line in real_result
 

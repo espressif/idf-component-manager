@@ -1,14 +1,15 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-
 import os
 import typing as t
 from collections import OrderedDict
+from io import StringIO
 
 from pydantic import ValidationError
 from yaml import Node, SafeDumper, YAMLError, safe_load
 from yaml import dump as dump_yaml
 
+from idf_component_manager.utils import print_info
 from idf_component_tools.build_system_tools import get_env_idf_target, get_idf_version
 from idf_component_tools.errors import LockError, LockVersionMismatchError
 from idf_component_tools.manifest import SolvedComponent, SolvedManifest
@@ -39,33 +40,55 @@ class LockManager:
     def exists(self):
         return os.path.isfile(self._path)
 
-    def dump(self, solution: SolvedManifest) -> None:
-        """Writes updated lockfile to disk"""
-        # add idf version if not in solution.dependencies
-        if 'idf' not in solution.solved_components:
-            solution.dependencies.append(
-                SolvedComponent(
-                    name='idf',
-                    version=ComponentVersion(get_idf_version()),
-                    source=IDFSource(),
-                )
-            )
+    def dump(self, solution: SolvedManifest) -> bool:
+        """
+        Writes updated lockfile to disk. Won't write if lockfile is already up to date.
+
+        :param: the solved manifest, which includes all the components with decided versions
+        :return: True if lockfile was updated, False otherwise
+        """
+        current_idf = SolvedComponent(
+            name='idf',
+            version=ComponentVersion(get_idf_version()),
+            source=IDFSource(),
+        )
+
+        # always use the current idf version
+        if 'idf' in solution.solved_components:
+            solution.dependencies.remove(solution.solved_components['idf'])
+            solution.dependencies.append(current_idf)
+        else:
+            solution.dependencies.append(current_idf)
 
         try:
-            with open(self._path, mode='w', encoding='utf-8') as f:
+            with StringIO() as new_lock:
                 # inject lock file version and current target
                 lock = LockFile(**solution.model_dump())
                 lock.target = get_env_idf_target()
 
                 dump_yaml(
                     data=lock.model_dump(),
-                    stream=f,
+                    stream=new_lock,
                     encoding='utf-8',
                     allow_unicode=True,
                     Dumper=SafeDumper,
                 )
+                new_lock.seek(0)
+                new_lock_content = new_lock.read()
         except ValidationError as e:
             raise LockError(f'Lock format is not valid:\n{e}')
+
+        # create it when string is different
+        if (
+            not self.exists()
+            or new_lock_content != open(self._path, mode='r', encoding='utf-8').read()
+        ):
+            with open(self._path, mode='w', encoding='utf-8') as fw:
+                fw.write(new_lock_content)
+                print_info('Updating lock file at {}'.format(self._path))
+                return True
+
+        return False
 
     def load(self) -> SolvedManifest:
         if not self.exists():

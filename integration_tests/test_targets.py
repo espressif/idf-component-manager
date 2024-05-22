@@ -32,7 +32,8 @@ def test_changing_target(project):
         assert 'esp32\n' in f.read()
     res = set_target(project, 'esp32s2')
     assert 'Building ESP-IDF components for target esp32s2' in res
-    assert 'Target changed from esp32 to esp32s2, solving dependencies' in res
+    assert 'Updating lock file at {}'.format(lock_path) in res
+    assert 'solving dependencies' not in res  # since the current solution is working
     with open(lock_path, encoding='utf-8') as f:
         assert 'esp32s2\n' in f.read()
 
