@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import io
@@ -16,7 +16,8 @@ LICENSE = 'Apache License 2.0'
 URL = 'https://github.com/espressif/idf-component-manager'
 REQUIRES = [
     'enum34;python_version<"3.4"',
-    'brotli<=1.0.9;python_version=="2.7.*"',  # Workaround for https://github.com/google/brotli/issues/1074
+    # Workaround for https://github.com/google/brotli/issues/1074
+    'brotli<=1.0.9;python_version=="2.7.*"',
     'cachecontrol[filecache]<=0.12.6;python_version<"3.6"',
     'cachecontrol[filecache]>0.12.6;python_version>="3.6"',
     'cffi<1.15;python_version<"3.6"',
@@ -38,7 +39,9 @@ REQUIRES = [
     'urllib3<2',
     'requests-file<2',  # setuptools >=61.2
     'requests-toolbelt',
-    'schema',
+    # 0.7.7 not working with throwing all required errors, python 3.6+
+    # 0.7.6 yanked
+    'schema<=0.7.5',
     'six',
     'tqdm<5',
     'pyparsing',
