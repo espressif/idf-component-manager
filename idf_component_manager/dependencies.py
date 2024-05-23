@@ -13,7 +13,7 @@ from idf_component_manager.version_solver.helper import parse_root_dep_conflict_
 from idf_component_manager.version_solver.mixology.failure import SolverFailure
 from idf_component_manager.version_solver.mixology.package import Package
 from idf_component_manager.version_solver.version_solver import VersionSolver
-from idf_component_tools.build_system_tools import build_name
+from idf_component_tools.build_system_tools import build_name, get_idf_version
 from idf_component_tools.environment import getenv_bool
 from idf_component_tools.errors import (
     ComponentModifiedError,
@@ -30,6 +30,8 @@ from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import SolvedComponent, SolvedManifest
 from idf_component_tools.messages import hint, warn
 from idf_component_tools.registry.client_errors import NetworkConnectionError
+from idf_component_tools.semver import SimpleSpec, Version
+from idf_component_tools.sources import IDFSource
 from idf_component_tools.sources.fetcher import ComponentFetcher
 from idf_component_tools.utils import ProjectRequirements
 
@@ -103,13 +105,35 @@ def is_solve_required(project_requirements: ProjectRequirements, solution: Solve
         print_info('Manifest files have changed, solving dependencies.')
         return True
 
+    # check if the target has changed
+    # if so, check if the components are compatible with the new target
     if solution.target and project_requirements.target != solution.target:
-        print_info(
-            'Target changed from {} to {}, solving dependencies.'.format(
-                solution.target, project_requirements.target
-            )
-        )
-        return True
+        for comp in solution.solved_components.values():
+            if comp.targets and project_requirements.target not in comp.targets:
+                print_info(
+                    '{} is not compatible with the current target {}, solving dependencies.'.format(
+                        comp, project_requirements.target
+                    )
+                )
+                return True
+
+    # check if the idf version has changed
+    # if so, check if the components are compatible with the new idf version
+    cur_idf_version = get_idf_version()
+    if solution.idf_version != cur_idf_version:
+        idf_sem_ver = Version(cur_idf_version)
+        for comp in solution.solved_components.values():
+            if comp.name == IDFSource().type or (not comp.dependencies):
+                continue
+
+            for dep in comp.dependencies:
+                if dep.name == IDFSource().type:
+                    if not SimpleSpec(dep.version_spec).match(idf_sem_ver):
+                        print_info(
+                            '{} is not compatible with the current idf version {}, '
+                            'solving dependencies.'.format(comp, cur_idf_version)
+                        )
+                        return True
 
     # check the dependencies are the same
     if set(project_requirements.direct_dep_names) != set(solution.direct_dependencies or []):
@@ -117,6 +141,9 @@ def is_solve_required(project_requirements: ProjectRequirements, solution: Solve
         return True
 
     for component in solution.dependencies:
+        if component.name == IDFSource().type:  # IDF version might have changed
+            continue
+
         try:
             # For downloadable volatile dependencies, like ones from git,
             # if manifest didn't change, no need to solve
@@ -300,13 +327,14 @@ def download_project_dependencies(
                     )
                 )
             raise SolverError(str(e))
-        print_info(f'Updating lock file at {lock_path}')
-        lock_manager.dump(solution)
-
     else:
         check_for_new_component_versions(
             project_requirements=project_requirements, old_solution=solution
         )
+
+    # always dump file, file won't be touched if content is the same
+    lock_manager.dump(solution)
+
     # Download components
     downloaded_components = set()
 

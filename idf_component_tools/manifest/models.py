@@ -47,6 +47,7 @@ from idf_component_tools.utils import (
     validation_error_to_str,
 )
 
+from ..semver import Version
 from .constants import COMPILED_FULL_SLUG_REGEX, known_targets
 from .if_parser import IfClause, parse_if_clause
 
@@ -695,3 +696,10 @@ class SolvedManifest(BaseModel):
     @property
     def solved_components(self) -> t.Dict[str, SolvedComponent]:
         return {cmp.name: cmp for cmp in self.dependencies}
+
+    @property
+    def idf_version(self) -> t.Optional[Version]:
+        if 'idf' in self.solved_components:
+            return self.solved_components['idf'].version.semver
+
+        return None

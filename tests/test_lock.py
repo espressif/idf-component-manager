@@ -18,7 +18,12 @@ from idf_component_tools.build_system_tools import get_idf_version
 from idf_component_tools.errors import LockError
 from idf_component_tools.lock import EMPTY_LOCK, LockFile, LockManager
 from idf_component_tools.manager import ManifestManager
-from idf_component_tools.manifest import Manifest, SolvedComponent, SolvedManifest
+from idf_component_tools.manifest import (
+    ComponentRequirement,
+    Manifest,
+    SolvedComponent,
+    SolvedManifest,
+)
 from idf_component_tools.messages import UserHint
 from idf_component_tools.sources import IDFSource, LocalSource, WebServiceSource
 from idf_component_tools.utils import ComponentVersion, ProjectRequirements
@@ -77,6 +82,7 @@ class TestLockManager(object):
         assert test_cmp.source.service_url == 'https://repo.example.com'
 
     def test_lock_dump_with_solution(self, tmp_path, monkeypatch, manifest_path, valid_lock_path):
+        monkeypatch.setenv('IDF_VERSION', '4.4.4')
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
 
@@ -101,6 +107,94 @@ class TestLockManager(object):
 
         assert filecmp.cmp(lock_path, valid_lock_path, shallow=False)
 
+    def test_lock_dump_with_current_solution(
+        self, tmp_path, monkeypatch, manifest_path, valid_lock_path, capsys
+    ):
+        monkeypatch.setenv('IDF_VERSION', '4.4.4')
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
+        lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
+
+        lock = LockManager(lock_path)
+        manifest = ManifestManager(manifest_path, name='test').load()
+        project_requirements = ProjectRequirements([manifest])
+
+        components = [
+            SolvedComponent(
+                name='idf',
+                version=ComponentVersion('4.4.4'),
+                source=IDFSource(),
+            ),
+            SolvedComponent(
+                name='espressif/test_cmp',
+                version=ComponentVersion('1.2.7'),
+                source=WebServiceSource(service_url='https://repo.example.com'),
+                component_hash='f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b',
+                targets=['esp32', 'esp32s2'],
+                dependencies=[
+                    ComponentRequirement(
+                        name='idf',
+                        version='<5.1',
+                        source=IDFSource(),
+                    )
+                ],
+            ),
+        ]
+
+        solution = SolvedManifest(
+            dependencies=components,
+            manifest_hash=project_requirements.manifest_hash,
+            target='esp32',
+            direct_dependencies=[
+                'espressif/some_component',
+                'espressif/test',
+                'espressif/test-1',
+                'idf',
+            ],  # this is not reflecting the actual dependencies, but to fool the solver.
+            # the direct_dependencies is calculated by the fixtures/idf_component.yml
+        )
+        assert lock.dump(solution)
+
+        # solution with a different manifest hash
+        solution.manifest_hash = 'x' * 64
+        assert is_solve_required(ProjectRequirements([manifest]), solution)
+        captured = capsys.readouterr()
+        assert 'Manifest files have changed' in captured.out
+        assert lock.dump(solution)
+
+        # reset solution manifest hash
+        solution.manifest_hash = project_requirements.manifest_hash
+
+        # idf change to 5.0, shouldn't trigger solve, but update the lock
+        monkeypatch.setenv('IDF_VERSION', '5.0.0')
+        assert not is_solve_required(ProjectRequirements([manifest]), solution)
+        assert lock.dump(solution)
+
+        # idf change to 5.1, should trigger solve, since dependency idf<5.1
+        monkeypatch.setenv('IDF_VERSION', '5.1.0')
+        assert is_solve_required(ProjectRequirements([manifest]), solution)
+        captured = capsys.readouterr()
+        assert (
+            'espressif/test_cmp (1.2.7) is not compatible with the current idf version'
+            in captured.out
+        )
+
+        # reset idf version
+        monkeypatch.setenv('IDF_VERSION', '4.4.4')
+
+        # target change to esp32s2, shouldn't trigger solve, but update the lock
+        monkeypatch.setenv('IDF_TARGET', 'esp32s2')
+        assert not is_solve_required(ProjectRequirements([manifest]), solution)
+        assert lock.dump(solution)
+
+        # target change to esp32s3, should trigger solve, since dependency target esp32, esp32s2
+        monkeypatch.setenv('IDF_TARGET', 'esp32s3')
+        assert is_solve_required(ProjectRequirements([manifest]), solution)
+        captured = capsys.readouterr()
+        assert (
+            'espressif/test_cmp (1.2.7) is not compatible with the current target esp32s3'
+            in captured.out
+        )
+
     def test_lock_dump_with_dictionary(
         self,
         tmp_path,
@@ -109,6 +203,7 @@ class TestLockManager(object):
         valid_solution_dependency_dict,
         valid_solution_hash,
     ):
+        monkeypatch.setenv('IDF_VERSION', '4.4.4')
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
@@ -132,6 +227,7 @@ class TestLockManager(object):
         valid_solution_dependency_dict,
         valid_solution_hash,
     ):
+        monkeypatch.setenv('IDF_VERSION', '4.4.4')
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
 
@@ -249,42 +345,6 @@ class TestLockManager(object):
                 'Cannot establish a connection to the component registry. '
                 'Skipping checks of dependency changes.' in record.list[0].message.args[0]
             )
-
-    def test_change_manifest_file_idf_version(self, monkeypatch, capsys):
-        monkeypatch.setenv('IDF_VERSION', '4.2.0')
-        monkeypatch.setenv('IDF_TARGET', 'esp32')
-        manifest = Manifest.fromdict({'dependencies': {'idf': '4.2.0'}})
-        project_requirements = ProjectRequirements([manifest])
-        correct_manifest_hash = project_requirements.manifest_hash
-
-        solution = SolvedManifest.fromdict({
-            'direct_dependencies': ['idf'],
-            'dependencies': {
-                'idf': {
-                    'source': {'type': 'idf'},
-                    'version': '4.2.0',
-                }
-            },
-            'manifest_hash': correct_manifest_hash,
-        })
-
-        # Different idf version
-        monkeypatch.setenv('IDF_VERSION', '4.4.0')
-        assert is_solve_required(project_requirements, solution)
-        capsys.readouterr()
-
-        # Wrong manifest hash
-        monkeypatch.setenv('IDF_VERSION', '4.2.0')
-        solution.manifest_hash = 'f' * 64
-        assert is_solve_required(project_requirements, solution)
-        captured = capsys.readouterr()
-        assert 'Manifest files have changed, solving dependencies' in captured.out
-
-        monkeypatch.setenv('IDF_VERSION', '4.2.0')
-        solution.manifest_hash = correct_manifest_hash
-        captured = capsys.readouterr()
-        assert not is_solve_required(project_requirements, solution)
-        assert 'solving dependencies.' not in captured.out
 
     def test_change_manifest_file_idf_version_required_in_dependencies_rules(
         self, monkeypatch, capsys, release_component_path
