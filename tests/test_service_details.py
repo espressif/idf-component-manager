@@ -40,6 +40,11 @@ def config_path(tmp_path):
         f.write(
             json.dumps({
                 'profiles': {
+                    'default': {
+                        'registry_url': 'https://example.com/',
+                        'default_namespace': 'test',
+                        'api_token': None,
+                    },
                     'test': {
                         'registry_url': 'https://example.com/',
                         'default_namespace': 'test',
@@ -101,13 +106,21 @@ def test_get_profile_env_both(config_path, monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_SERVICE_PROFILE', 'test')
     monkeypatch.setenv('IDF_COMPONENT_REGISTRY_PROFILE', 'test')
     with warns(
-        UserWarning, match='IDF_COMPONENT_SERVICE_PROFILE and IDF_COMPONENT_REGISTRY_PROFILE'
+        UserWarning,
+        match='IDF_COMPONENT_SERVICE_PROFILE and IDF_COMPONENT_REGISTRY_PROFILE',
     ):
         assert get_profile(None, config_path=config_path).default_namespace == 'test'
 
 
 def test_get_profile_not_exist(config_path):
     assert get_profile('not_exists', config_path) is None
+
+
+def test_get_profile_with_default_name(config_path):
+    profile = get_profile('default', config_path)
+    assert profile.registry_url == 'https://example.com/'
+    assert profile.default_namespace == 'test'
+    assert profile.api_token is None
 
 
 def test_service_details_success(config_path):
