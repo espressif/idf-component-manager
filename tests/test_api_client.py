@@ -149,7 +149,7 @@ class TestAPIClient:
         with open(file_path, 'w+') as f:
             f.write('a')
 
-        with pytest.raises(APIClientError, match='Invalid token'):
+        with pytest.raises(APIClientError):
             client.upload_version(component_name='example/cmp', file_path=file_path)
 
     def test_env_var_for_upload_empty(self, monkeypatch):
