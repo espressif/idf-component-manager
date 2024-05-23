@@ -172,11 +172,30 @@ def test_create_project_from_example_non_default_registry(mocker):
 
     runner.invoke(
         cli,
-        ['project', 'create-from-example', 'test/cmp=1.0.0:ex', '--service-profile', 'non-default'],
+        [
+            'project',
+            'create-from-example',
+            'test/cmp=1.0.0:ex',
+            '--service-profile',
+            'non-default',
+        ],
     )
     ComponentManager.create_project_from_example.assert_called_once_with(
         'test/cmp=1.0.0:ex', path=None, service_profile='non-default'
     )
+
+
+def test_upload_component_with_invalid_name():
+    runner = CliRunner()
+    cli = initialize_cli()
+
+    result = runner.invoke(
+        cli,
+        ['component', 'upload', '--name', 'тест'],
+    )
+
+    assert result.exit_code == 2
+    assert 'Invalid value for' in result.output
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_manifest_create_add_dependency.yaml')
@@ -218,7 +237,8 @@ def test_manifest_create_add_dependency(mock_registry):
         assert (
             'Successfully added dependency'
             in runner.invoke(
-                cli, ['manifest', 'add-dependency', 'espressif/cmp', '--component', 'foo']
+                cli,
+                ['manifest', 'add-dependency', 'espressif/cmp', '--component', 'foo'],
             ).output
         )
         manifest_manager = ManifestManager(foo_manifest_path, 'foo')
