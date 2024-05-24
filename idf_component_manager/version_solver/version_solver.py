@@ -129,6 +129,9 @@ class VersionSolver:
         for dep in self._dependencies_with_local_precedence(
             manifest.requirements, manifest_path=manifest.path
         ):
+            if not dep.meet_optional_dependencies:
+                continue
+
             self._source.root_dep(Package(dep.name, dep.source), dep.version_spec)
             try:
                 self.solve_component(dep, manifest_path=manifest.path)
@@ -232,6 +235,7 @@ class VersionSolver:
             component_name,
             manifest_path,
         ):
-            deps[Package(dep.name, dep.source)] = dep.version_spec
+            if dep.meet_optional_dependencies:
+                deps[Package(dep.name, dep.source)] = dep.version_spec
 
         return deps
