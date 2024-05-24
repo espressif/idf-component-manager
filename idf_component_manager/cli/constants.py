@@ -1,10 +1,11 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 
 import click
 
 from idf_component_manager.core import ComponentManager
+from idf_component_manager.utils import validate_name
 
 
 def get_project_dir_option():
@@ -52,7 +53,9 @@ def get_namespace_option():
 
 
 def get_name_option():
-    NAME_OPTION = [click.option('--name', required=True, help='Component name')]
+    NAME_OPTION = [
+        click.option('--name', required=True, callback=validate_name, help='Component name')
+    ]
 
     return NAME_OPTION
 
@@ -66,7 +69,9 @@ def get_namespace_name_options():
 def get_dest_dir_option():
     DEST_DIR_OPTION = [
         click.option(
-            '--dest-dir', default=None, help='Destination directory for the component archive.'
+            '--dest-dir',
+            default=None,
+            help='Destination directory for the component archive.',
         )
     ]
 

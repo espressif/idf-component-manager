@@ -2,11 +2,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import enum
+import re
 import typing as t
 
 import click
 from packaging import version
 
+from idf_component_tools.manifest.constants import SLUG_REGEX
 from idf_component_tools.messages import UserHint, UserNotice
 
 CLICK_SUPPORTS_SHOW_DEFAULT = version.parse(click.__version__) >= version.parse('7.1.0')
@@ -56,6 +58,17 @@ def print_info(
     **kwargs,
 ) -> None:
     click.secho(message, fg=fg, bg=bg, bold=bold, underline=underline, blink=blink, **kwargs)
+
+
+def validate_name(ctx, param, value):
+    name = value.lower()
+
+    if not re.match(SLUG_REGEX, name):
+        raise click.BadParameter(
+            f'"{name}" should consist of 2 or more letters, numbers, "-" or "_". '
+            'It cannot start or end with "_" or "-", or have sequences of these characters.'
+        )
+    return name
 
 
 # total_ordering will raise an error in python 2.7 with enum34
