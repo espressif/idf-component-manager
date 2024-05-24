@@ -200,10 +200,14 @@ class VersionSolver(object):
             # replace version dependencies to local one if exists
             # use build_name in both recording and replacing
             matching_dep_name = None
-            if dep.build_name in self._local_root_requirements:
-                matching_dep_name = dep.build_name
-            elif dep.short_name in self._local_root_requirements:
-                matching_dep_name = dep.short_name
+            for name in [
+                dep.build_name,
+                dep.name,
+                dep.short_name,
+            ]:
+                if name in self._local_root_requirements:
+                    matching_dep_name = name
+                    break
 
             if not matching_dep_name:
                 deps.append(dep)

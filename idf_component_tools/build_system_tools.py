@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 '''Tools for interaction with IDF build system'''
 import os
@@ -16,9 +16,13 @@ IDF_VERSION_REGEX = re.compile(r'v(\d\.\d(?:\.\d)?)')
 CMAKE_PROJECT_LINE = r'include($ENV{IDF_PATH}/tools/cmake/project.cmake)'
 
 
-def build_name(name):
+def build_name(name):  # type: (str) -> str
     name_parts = name.split('/')
     return '__'.join(name_parts)
+
+
+def build_name_to_namespace_name(build_name):  # type: (str) -> str
+    return build_name.replace('__', '/')
 
 
 def get_env_idf_target():  # type: () -> str
