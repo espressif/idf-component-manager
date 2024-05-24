@@ -729,9 +729,8 @@ class ComponentManager(object):
         ]
 
         downloaded_components = set()
+        manifests = []
         if local_components:
-            manifests = []
-
             for component in local_components:
                 manifests.append(
                     ManifestManager(
@@ -761,6 +760,19 @@ class ComponentManager(object):
         all_managed_components = sorted(set(downloaded_components + root_managed_components))
 
         with open(managed_components_list_file, mode='w', encoding='utf-8') as file:
+            # Set versions for manifests in requierements too
+            # It's useful in the case when the component was moved from `managed_components`
+            # to `components`
+            for requirement in manifests:
+                if requirement.version:
+                    file.write(
+                        'idf_component_set_property({} {} "{}")\n'.format(
+                            requirement.name,
+                            'COMPONENT_VERSION',
+                            requirement.version,
+                        )
+                    )
+
             for is_root, group in enumerate([downloaded_components, root_managed_components]):
                 for downloaded_component in group:
                     file.write(
