@@ -127,6 +127,13 @@ def is_solve_required(project_requirements: ProjectRequirements, solution: Solve
                 continue
 
             for dep in comp.dependencies:
+                if dep.meet_optional_dependencies and dep.name not in solution.solved_components:
+                    print_info(
+                        f'Optional dependency "{dep.name}" of "{comp}" is not present in the lock file, '
+                        f'solving dependencies.'
+                    )
+                    return True
+
                 if dep.name == IDFSource().type:
                     if not SimpleSpec(dep.version_spec).match(idf_sem_ver):
                         print_info(

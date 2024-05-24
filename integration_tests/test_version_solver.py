@@ -563,3 +563,65 @@ def test_optional_dependencies_version_solving(project):
         ]
 
         assert 'espressif/esp_wrover_kit' not in d['dependencies']
+
+
+@pytest.mark.parametrize(
+    'project',
+    [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'example/cmp': {'version': '*'},
+                        'foo': {'path': '../foo'},
+                    }
+                },
+                'foo': {
+                    'dependencies': {
+                        'espressif/esp_wrover_kit': {
+                            'version': '*',
+                            'rules': [
+                                {'if': 'target in [esp32]'},
+                            ],
+                        },
+                    }
+                },
+            },
+        }
+    ],
+    indirect=True,
+)
+def test_optional_dependencies_unmet_first_then_met(project):
+    # move foo out of the components folder
+    shutil.move(
+        os.path.join(project, 'components', 'foo'),
+        os.path.join(project, 'foo'),
+    )
+
+    # reconfigure with s3
+    output = project_action(project, 'set-target', 'esp32s3', 'reconfigure')
+    assert 'Configuring done' in output
+
+    with open(os.path.join(project, 'dependencies.lock')) as fr:
+        d = yaml.safe_load(fr)
+        assert d['direct_dependencies'] == [
+            'example/cmp',
+            'foo',
+            'idf',
+        ]
+
+        assert 'espressif/esp_wrover_kit' not in d['dependencies']
+
+    # reconfigure with esp32
+    output = project_action(project, 'set-target', 'esp32', 'reconfigure')
+    assert 'Configuring done' in output
+
+    with open(os.path.join(project, 'dependencies.lock')) as fr:
+        d = yaml.safe_load(fr)
+        assert d['direct_dependencies'] == [
+            'example/cmp',
+            'foo',
+            'idf',
+        ]
+
+        assert 'espressif/esp_wrover_kit' in d['dependencies']
