@@ -17,7 +17,7 @@ from pydantic import (
 from pydantic_core.core_schema import SerializerFunctionWrapHandler
 from pyparsing import ParseException
 
-from idf_component_tools.build_system_tools import build_name
+from idf_component_tools.build_system_tools import build_name, build_name_to_namespace_name
 from idf_component_tools.constants import (
     COMMIT_ID_RE,
     COMPILED_GIT_URL_RE,
@@ -557,7 +557,9 @@ class Manifest(BaseModel):
 
     @property
     def real_name(self) -> str:
-        return self.name or (self._manifest_manager.name if self._manifest_manager else None) or ''
+        return build_name_to_namespace_name(
+            self.name or (self._manifest_manager.name if self._manifest_manager else None) or ''
+        )
 
     @property
     def path(self) -> str:

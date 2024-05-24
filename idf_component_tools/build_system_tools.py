@@ -17,9 +17,13 @@ IDF_VERSION_REGEX = re.compile(r'v(\d\.\d(?:\.\d)?)')
 CMAKE_PROJECT_LINE = r'include($ENV{IDF_PATH}/tools/cmake/project.cmake)'
 
 
-def build_name(name):
+def build_name(name: str) -> str:
     name_parts = name.split('/')
     return '__'.join(name_parts)
+
+
+def build_name_to_namespace_name(build_name: str) -> str:
+    return build_name.replace('__', '/')
 
 
 def get_env_idf_target() -> str:

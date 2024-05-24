@@ -14,6 +14,7 @@ from idf_component_tools.manager import ManifestManager
 from idf_component_tools.messages import warn
 from idf_component_tools.utils import ComponentWithVersions, HashedComponentVersion, Literal
 
+from ..build_system_tools import build_name_to_namespace_name
 from .base import BaseSource
 
 
@@ -33,6 +34,9 @@ class LocalSource(BaseSource):
     def model_post_init(self, __context: t.Any) -> None:
         if not self.path and not self.override_path:
             raise SourceError('Either "path" or "override_path" must be specified for local source')
+
+    def normalized_name(self, name):
+        return build_name_to_namespace_name(name)
 
     @model_serializer(mode='wrap')
     def serialize_model(self, handler: SerializerFunctionWrapHandler) -> t.Dict[str, t.Any]:

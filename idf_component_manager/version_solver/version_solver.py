@@ -5,7 +5,7 @@ import os
 import typing as t
 
 from idf_component_manager.utils import print_info
-from idf_component_tools.errors import DependencySolveError, SolverError
+from idf_component_tools.errors import DependencySolveError, InternalError, SolverError
 from idf_component_tools.manifest import (
     ComponentRequirement,
     Manifest,
@@ -196,22 +196,29 @@ class VersionSolver:
             # replace version dependencies to local one if exists
             # use build_name in both recording and replacing
             matching_dep_name = None
-            if dep.build_name in self._local_root_requirements:
-                matching_dep_name = dep.build_name
-            elif dep.short_name in self._local_root_requirements:
-                matching_dep_name = dep.short_name
+            for name in [
+                dep.build_name,
+                dep.name,
+                dep.short_name,
+            ]:
+                if name in self._local_root_requirements:
+                    matching_dep_name = name
+                    break
 
             if not matching_dep_name:
                 deps.append(dep)
                 continue
 
-            component_path = self._local_root_requirements[matching_dep_name].source._path  # type: ignore
+            if not isinstance(self._local_root_requirements[matching_dep_name].source, LocalSource):
+                raise InternalError(
+                    f'Local source is expected, got {self._local_root_requirements[matching_dep_name].source}'
+                )
 
             print_info(
                 'Using component placed at {path} '
                 'for dependency "{dep}"{introduced_by}{specified_in}'.format(
                     # must be a local source here
-                    path=component_path,
+                    path=self._local_root_requirements[matching_dep_name].source._path,  # type: ignore
                     dep=dep.name,
                     introduced_by='(introduced by component "{}")'.format(component_name)
                     if component_name
