@@ -15,7 +15,10 @@ from idf_component_tools.registry.base_client import env_cache_time, user_agent
 from idf_component_tools.registry.client_errors import APIClientError
 from idf_component_tools.registry.multi_storage_client import MultiStorageClient
 from idf_component_tools.registry.request_processor import join_url
-from idf_component_tools.registry.service_details import get_registry_url, get_storage_urls
+from idf_component_tools.registry.service_details import (
+    get_registry_url,
+    get_storage_urls,
+)
 from idf_component_tools.registry.storage_client import StorageClient
 from idf_component_tools.semver import Version
 
@@ -149,7 +152,7 @@ class TestAPIClient:
         with open(file_path, 'w+') as f:
             f.write('a')
 
-        with pytest.raises(APIClientError):
+        with pytest.raises(APIClientError, match='Token not found.'):
             client.upload_version(component_name='example/cmp', file_path=file_path)
 
     def test_env_var_for_upload_empty(self, monkeypatch):
@@ -271,7 +274,8 @@ class TestAPIClient:
 
     def test_upload_component_SSLEOFError(self, tmp_path, registry_url, monkeypatch):
         monkeypatch.setattr(
-            'idf_component_tools.registry.request_processor.make_request', raise_SSLEOFError
+            'idf_component_tools.registry.request_processor.make_request',
+            raise_SSLEOFError,
         )
         client = APIClient(
             registry_url=registry_url,

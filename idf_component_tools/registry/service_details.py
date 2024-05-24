@@ -8,7 +8,10 @@ import typing as t
 import warnings
 
 from idf_component_tools.config import ConfigManager, ServiceProfileItem
-from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL, IDF_COMPONENT_STORAGE_URL
+from idf_component_tools.constants import (
+    IDF_COMPONENT_REGISTRY_URL,
+    IDF_COMPONENT_STORAGE_URL,
+)
 from idf_component_tools.errors import FatalError
 from idf_component_tools.messages import UserDeprecationWarning
 
@@ -45,7 +48,9 @@ def get_profile(
     config = ConfigManager(path=config_path).load()
 
     _profile_name = profile_name_env or profile_name_env_deprecated or profile_name
-    if _profile_name == 'default' or not _profile_name:
+    if (
+        _profile_name == 'default' and config.profiles.get(_profile_name) is None
+    ) or not _profile_name:
         return ServiceProfileItem()  # empty profile
 
     if _profile_name in config.profiles:
