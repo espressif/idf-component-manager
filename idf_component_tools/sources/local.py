@@ -45,7 +45,8 @@ class LocalSource(BaseSource):
 
         # only use path in the lock file
         # turn override path into path
-        d['path'] = str(self._path)
+        # the dir may not exist
+        d['path'] = str(self._get_raw_path())  # type: ignore
         d.pop('override_path', None)
 
         return d
@@ -54,16 +55,13 @@ class LocalSource(BaseSource):
     def is_overrider(self) -> bool:
         return bool(self.override_path)
 
-    @property
-    def _path(self) -> Path:
+    def _get_raw_path(self) -> Path:
         if self.override_path:
             if self.path:
                 warn('Both "path" and "override_path" are set. "override_path" will be used.')
             _raw_path = Path(self.override_path)
-            field_name = 'override_path'
         elif self.path:
             _raw_path = Path(self.path)
-            field_name = 'path'
         else:
             raise InternalError()
 
@@ -75,6 +73,17 @@ class LocalSource(BaseSource):
             raise ManifestContextError(
                 "Can't reliably evaluate relative path without context: {}".format(str(_raw_path))
             )
+
+        return path
+
+    @property
+    def _path(self) -> Path:
+        path = self._get_raw_path()
+
+        if self.override_path:
+            field_name = 'override_path'
+        else:
+            field_name = 'path'
 
         if not path.is_dir():  # for Python > 3.6, where .resolve(strict=False)
             raise SourcePathError(
