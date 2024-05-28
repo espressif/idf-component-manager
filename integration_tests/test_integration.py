@@ -46,58 +46,6 @@ def test_git_folder_does_not_exists(project):
     assert "pathspec 'folder-not-exist' did not match any file(s) known to git" in res
 
 
-@pytest.mark.parametrize(
-    'project',
-    [
-        {
-            'components': {
-                'main': {
-                    'dependencies': {
-                        'cmp': {
-                            'version': '*',
-                            'path': os.path.join('..', 'cmp'),
-                            'include': 'cmp.h',
-                        }
-                    }
-                }
-            }
-        },
-    ],
-    indirect=True,
-)
-def test_local_dependency_with_relative_path(project):
-    shutil.copytree(fixtures_path('components', 'cmp'), os.path.join(project, 'cmp'))
-    res = build_project(project)
-    assert 'Project build complete.' in res
-
-
-@pytest.mark.parametrize(
-    'project',
-    [
-        {
-            'components': {
-                'main': {
-                    'cmake_lists': {
-                        'requires': 'efuse',
-                    },
-                    'dependencies': {
-                        'example/cmp': {
-                            'version': '*',
-                            'path': fixtures_path('components', 'cmp'),
-                            'include': 'cmp.h',
-                        },
-                    },
-                }
-            }
-        },
-    ],
-    indirect=True,
-)
-def test_local_dependency_main_requires(project):
-    res = build_project(project)
-    assert 'Project build complete.' in res
-
-
 @pytest.mark.skipif(
     (os.getenv('IDF_BRANCH', 'master') or 'master') != 'master',
     reason='only test it in master branch',

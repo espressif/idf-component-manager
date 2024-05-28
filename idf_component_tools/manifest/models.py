@@ -30,7 +30,7 @@ from idf_component_tools.errors import (
 )
 from idf_component_tools.hash_tools.calculate import hash_object
 from idf_component_tools.messages import notice
-from idf_component_tools.sources import BaseSource, Source, WebServiceSource
+from idf_component_tools.sources import BaseSource, LocalSource, Source, WebServiceSource
 from idf_component_tools.utils import (
     BOOL_MARKER,
     MODEL_MARKER,
@@ -592,6 +592,9 @@ class SolvedComponent(BaseModel):
             IDF_COMPONENT_STORAGE_URL,
         ]:
             base_str += f' from {self._download_url}'
+
+        if isinstance(self.source, LocalSource):
+            base_str += f' ({self.source._path})'
 
         return base_str
 
