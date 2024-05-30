@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-"""Classes to work with Espressif Component Web Service"""
+"""Classes to work with ESP Component Registry"""
 
 import os
 import typing as t
@@ -134,7 +134,10 @@ class APIClient(BaseClient):
     @_request(cache=False)
     def upload_version(self, request, component_name, file_path, callback=None):
         return self._upload_version_to_endpoint(
-            request, file_path, ['components', component_name.lower(), 'versions'], callback
+            request,
+            file_path,
+            ['components', component_name.lower(), 'versions'],
+            callback,
         )
 
     @_request(cache=False)

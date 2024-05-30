@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-"""Classes to work with Espressif Component Web Service"""
+"""Classes to work with ESP Component Registry"""
 
 import typing as t
 from collections import namedtuple

@@ -5,6 +5,7 @@ This documentation is for the IDF Component Manager and the ESP Component Regist
 
 The `ESP Component Registry <https://components.espressif.com>` is a central repository for components that can be used with the ESP-IDF via the IDF Component Manager.
 
+With the IDF Component Manager, developers can easily install components from the ESP Component Registry, streamlining the process of adding new functionality to their projects.
 
 Getting Started
 ---------------

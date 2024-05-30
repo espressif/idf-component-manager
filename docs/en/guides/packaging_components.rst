@@ -33,7 +33,7 @@ You have created your first bare minimum component. These files are sufficient f
 Extra Packaging Files
 ---------------------
 
-In this section, you would add files that are used to help component registry know your component better. When this section is finished, the file structure would look like:
+In this section, you would add files that are used to help the ESP Component Registry know your component better. When this section is finished, the file structure would look like:
 
 .. code-block:: text
 
@@ -50,7 +50,7 @@ In this section, you would add files that are used to help component registry kn
 Create ``idf_component.yml``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A manifest file ``idf_component.yml`` is required to let the component registry recognize your ESP-IDF component.
+A manifest file ``idf_component.yml`` is required to let the ESP Component Registry recognize your ESP-IDF component.
 
 Here's the minimal ``idf_component.yml``:
 
@@ -58,7 +58,7 @@ Here's the minimal ``idf_component.yml``:
 
    version: "0.0.1"
 
-The Component registry only requires the ``version`` of the component in the `idf_component.yml`.
+The ESP Component Registry only requires the ``version`` of the component in the `idf_component.yml`.
 ``version`` must follow :ref:`versioning scheme <reference/versioning:Versioning Scheme>`.
 
 However, we recommend adding ``url`` and ``description``. Otherwise, a warning will be printed.
@@ -113,7 +113,7 @@ Publish the Component
 Authentication
 ^^^^^^^^^^^^^^
 
-To publish your component to the component registry, you need to provide the authentication token. The simplest way is to set it via the environment variable ``IDF_COMPONENT_API_TOKEN``.
+To publish your component to the ESP Component Registry, you need to provide the authentication token. The simplest way is to set it via the environment variable ``IDF_COMPONENT_API_TOKEN``.
 
 All components would be published under their namespace. If ``--namespace`` is not passed, the default namespace is ``espressif``.
 
@@ -154,7 +154,7 @@ You can control which registry you upload to, and provide the authentication tok
 Filter Component Files
 ^^^^^^^^^^^^^^^^^^^^^^
 
-As a component developer, you may want to choose what files from the component directory will be uploaded to the registry. In this case, your ``idf_component.yml`` manifest may have ``include`` and ``exclude`` filters. For example:
+As a component developer, you may want to choose what files from the component directory will be uploaded to the ESP Component Registry. In this case, your ``idf_component.yml`` manifest may have ``include`` and ``exclude`` filters. For example:
 
 .. code-block:: yaml
 

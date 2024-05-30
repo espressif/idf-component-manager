@@ -1,6 +1,6 @@
 blank_issues_enabled: false
 contact_links:
-  - name: IDF Component Registry
+  - name: ESP Component Registry
     url: https://components.espressif.com/
     about: List of available components
   - name: IDF Component Manager Documentation
