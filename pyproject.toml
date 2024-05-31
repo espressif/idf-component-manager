@@ -62,7 +62,7 @@ test = [
     "jinja2",
     "jsonschema",
     "pexpect",
-    "pytest",
+    "pytest<8",  # PACMAN-898
     "pytest-cov",
     "pytest-mock",
     "requests-mock",
