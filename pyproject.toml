@@ -76,7 +76,7 @@ dev = [
     'pre-commit',
 ]
 
-all = ["idf-component-manager[docs,tests,dev]"]
+all = ["idf-component-manager[docs,test,dev]"]
 
 [project.scripts]
 compote = "idf_component_manager.cli:safe_cli"
@@ -118,8 +118,8 @@ pyyaml = ["yaml"]
 [tool.commitizen]
 name = "cz_conventional_commits"
 tag_format = "v$version"
-version_scheme = "semver"
-version_provider = "poetry"
+version_scheme = "pep440"
+version_provider = "pep621"
 version_files = [
     "idf_component_tools/__version__.py:__version__",
     "pyproject.toml:project.version",

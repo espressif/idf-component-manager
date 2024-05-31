@@ -5,7 +5,6 @@
 import os
 import shutil
 import tempfile
-from distutils.dir_util import copy_tree
 from io import open
 from pathlib import Path
 
@@ -30,6 +29,16 @@ def list_dir(folder):
         for file in files:
             res.append(os.path.join(root, file))
     return res
+
+
+def copy_into(src, dest):
+    for item in os.listdir(src):
+        s = os.path.join(src, item)
+        d = os.path.join(dest, item)
+        if os.path.isdir(s):
+            shutil.copytree(s, d)
+        else:
+            shutil.copy2(s, d)
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_init_project.yaml')
@@ -179,7 +188,7 @@ def remove_version_line(path):
 
 
 def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_component_path):
-    copy_tree(pre_release_component_path, str(tmp_path))
+    copy_into(pre_release_component_path, str(tmp_path))
     component_manager = ComponentManager(path=str(tmp_path))
 
     # remove the first version line
@@ -217,7 +226,7 @@ def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_comp
     ],
 )
 def test_pack_component_with_dest_dir(version, expected_version, tmp_path, release_component_path):
-    copy_tree(release_component_path, str(tmp_path))
+    copy_into(release_component_path, str(tmp_path))
     component_manager = ComponentManager(path=str(tmp_path))
 
     dest_path = tmp_path / 'dest_dir'
@@ -235,7 +244,7 @@ def test_pack_component_with_dest_dir(version, expected_version, tmp_path, relea
 
 
 def test_pack_component_with_replacing_manifest_params(tmp_path, release_component_path):
-    copy_tree(release_component_path, str(tmp_path))
+    copy_into(release_component_path, str(tmp_path))
     component_manager = ComponentManager(path=str(tmp_path))
 
     repository_url = 'https://github.com/kumekay/test_multiple_comp'
@@ -256,7 +265,7 @@ def test_pack_component_with_replacing_manifest_params(tmp_path, release_compone
 
 def test_pack_component_with_examples(tmp_path, example_component_path):
     project_path = tmp_path / 'cmp'
-    copy_tree(example_component_path, str(project_path))
+    shutil.copytree(example_component_path, str(project_path))
     component_manager = ComponentManager(path=str(project_path))
 
     component_manager.pack_component('cmp', '2.3.4')
@@ -276,7 +285,7 @@ def test_pack_component_with_rules_if(
     tmp_path, release_component_path, valid_optional_dependency_manifest_with_idf
 ):
     project_path = tmp_path / 'cmp'
-    copy_tree(release_component_path, str(project_path))
+    shutil.copytree(release_component_path, str(project_path))
     with open(str(project_path / MANIFEST_FILENAME), 'w') as fw:
         yaml.dump(valid_optional_dependency_manifest_with_idf, fw)
 
@@ -302,9 +311,9 @@ def test_pack_component_with_rules_if(
 )
 def test_pack_component_with_examples_errors(tmp_path, example_component_path, examples, message):
     project_path = tmp_path / 'cmp'
-    copy_tree(example_component_path, str(project_path))
+    shutil.copytree(example_component_path, str(project_path))
     if len(examples) == 2 and examples[0] != examples[1]:  # Add second example
-        copy_tree(
+        shutil.copytree(
             str(Path(example_component_path, 'custom_example_path')),
             str(project_path / 'custom_example_path_2'),
         )

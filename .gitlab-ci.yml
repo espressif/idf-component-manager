@@ -44,10 +44,9 @@ check_pre_commit:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
   before_script:
-    - pip install poetry
-    - poetry install
+    - pip install '.[dev]'
   script:
-    - git diff --name-only --no-commit-id "origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}" "${CI_COMMIT_SHA}" | xargs poetry run pre-commit run --files
+    - git diff --name-only --no-commit-id "origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}" "${CI_COMMIT_SHA}" | xargs pre-commit run --files
 
 prepare_tests:
   extends: .check
@@ -63,7 +62,7 @@ build-docs:
   tags:
     - internet
   script:
-    - pip install -r docs/requirements.txt
+    - pip install '.[docs]'
     - sphinx-build docs/en html_output
   after_script:
     - 'echo "preview link: ${GITLAB_PAGE_HTTPS_URL}/-/idf-component-manager/-/jobs/${CI_JOB_ID}/artifacts/html_output/index.html"'
@@ -90,11 +89,12 @@ publish_on_pypi:
   tags:
     - internet
   variables:
-    POETRY_HTTP_BASIC_PYPI_USERNAME: __token__
-    POETRY_HTTP_BASIC_PYPI_PASSWORD: ${PYPI_TOKEN}
+    TWINE_NON_INTERACTIVE: "true"
+    TWINE_USERNAME: __token__
+    TWINE_PASSWORD: ${PYPI_TOKEN}
   before_script:
     - apt update && apt install curl jq -y
-    - pip install poetry
+    - pip install build twine
   script:
     - ./publish.sh
   rules:
