@@ -6,12 +6,12 @@ import re
 import typing as t
 
 import click
-from packaging import version
 
 from idf_component_tools.manifest.constants import SLUG_REGEX
 from idf_component_tools.messages import UserHint, UserNotice
+from idf_component_tools.semver import Version
 
-CLICK_SUPPORTS_SHOW_DEFAULT = version.parse(click.__version__) >= version.parse('7.1.0')
+CLICK_SUPPORTS_SHOW_DEFAULT = Version(click.__version__) >= Version('7.1.0')
 
 
 def print_prefixed(prefix: str, color: str, message: t.Union[Exception, str], stderr: bool) -> None:
