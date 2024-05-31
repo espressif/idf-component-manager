@@ -115,11 +115,8 @@ class LockManager:
             return SolvedManifest.fromdict(lock_dict)
         except (YAMLError, ValidationError):
             raise LockError(
-                (
-                    'Cannot parse components lock file. '
-                    'Please check that\n\t%s\nis a valid lock YAML file.\n'
-                    'You can delete corrupted lock file and it will be recreated on next run. '
-                    'Some components may be updated in this case.'
-                )
-                % self._path
+                'Cannot parse components lock file. '
+                f'Please check that\n\t{self._path}\nis a valid lock YAML file.\n'
+                'You can delete corrupted lock file and it will be recreated on next run. '
+                'Some components may be updated in this case.'
             )
