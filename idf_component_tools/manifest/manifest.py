@@ -7,7 +7,11 @@ from collections import namedtuple
 from functools import total_ordering
 
 import idf_component_tools as tools
-from idf_component_tools.build_system_tools import build_name, get_env_idf_target
+from idf_component_tools.build_system_tools import (
+    build_name,
+    build_name_to_namespace_name,
+    get_env_idf_target,
+)
 from idf_component_tools.errors import ManifestError
 from idf_component_tools.hash_tools.calculate import hash_object
 from idf_component_tools.manifest.env_expander import contains_env_variables
@@ -78,7 +82,7 @@ class Manifest(object):
     ):
         # type: (...) -> None
 
-        self.name = name or ''
+        self.name = build_name_to_namespace_name(name or '')
         self.version = version
         self.maintainers = maintainers
         self.description = description
@@ -224,7 +228,8 @@ class OptionalRequirement(object):
         - All the IfClauses that are true among all the specified `rules`
 
         :return:
-            - if the optional dependency matches, return the version spec if specified, else return '*'
+            - if the optional dependency matches,
+                return the version spec if specified, else return '*'
             - else, return None
         """
         if not self.matches and not self.rules:

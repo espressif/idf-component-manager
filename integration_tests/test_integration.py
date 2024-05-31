@@ -388,17 +388,18 @@ def test_idf_reconfigure_dependency_doesnt_exist(project):
     indirect=True,
 )
 @pytest.mark.parametrize(
-    'component_name',
+    'component_name, namespace_name',
     [
-        'example__cmp',  # work with long name
-        'cmp',  # also short name
+        ('example__cmp', 'example/cmp'),  # work with long name
+        ('cmp', 'cmp'),  # also short name
     ],
 )
 @pytest.mark.skipif(
     Version(get_idf_version()) < Version('5.3.0'), reason='only master branch support it'
 )
-@pytest.mark.xfail(reason='not supported yet in ESP-IDF')
-def test_idf_build_inject_dependencies_even_with_set_components(project, component_name):
+def test_idf_build_inject_dependencies_even_with_set_components(
+    project, component_name, namespace_name
+):
     project_cmake_filepath = os.path.join(project, 'CMakeLists.txt')
     with open(project_cmake_filepath) as fr:
         s = fr.read()
@@ -421,11 +422,12 @@ def test_idf_build_inject_dependencies_even_with_set_components(project, compone
     print(res)
     with open(os.path.join(project, 'dependencies.lock')) as fr:
         lock = yaml.safe_load(fr)
-    assert component_name in lock['dependencies']
-    assert lock['dependencies'][component_name]['source']['path'] == os.path.join(
+
+    assert namespace_name in lock['dependencies']
+    assert lock['dependencies'][namespace_name]['source']['path'] == os.path.join(
         project, 'components', component_name
     )
-    assert lock['dependencies'][component_name]['source']['type'] == 'local'
+    assert lock['dependencies'][namespace_name]['source']['type'] == 'local'
 
     # didn't download the component
     assert not os.path.isdir(os.path.join(project, 'managed_components'))
