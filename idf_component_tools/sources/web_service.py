@@ -11,7 +11,11 @@ import typing as t
 import requests
 from pydantic import field_validator
 
-from idf_component_tools.archive_tools import ArchiveError, get_format_from_path, unpack_archive
+from idf_component_tools.archive_tools import (
+    ArchiveError,
+    get_format_from_path,
+    unpack_archive,
+)
 from idf_component_tools.constants import (
     DEFAULT_NAMESPACE,
     IDF_COMPONENT_REGISTRY_URL,
@@ -34,7 +38,9 @@ CANONICAL_IDF_COMPONENT_REGISTRY_API_URL = 'https://api.components.espressif.com
 
 
 def download_archive(url: str, download_dir: str, save_original_filename: bool = False) -> str:
-    from idf_component_tools.registry.base_client import create_session  # avoid circular import
+    from idf_component_tools.registry.base_client import (
+        create_session,
+    )
 
     session = create_session(cache=False)
 
@@ -58,7 +64,7 @@ def download_archive(url: str, download_dir: str, save_original_filename: bool =
                 try:
                     extension = get_format_from_path(filenames[0])[1]
                 except IndexError:
-                    raise FetchingError('Web Service returned invalid download url')
+                    raise FetchingError('Server has returned invalid download url')
 
             filename = original_filename
             if not save_original_filename:
@@ -187,7 +193,9 @@ class WebServiceSource(BaseSource):
                     'that support only newer version of idf-component-manager '
                     'that satisfy your requirements.\n'
                     '{}'.format(
-                        name, '", "'.join(newer_component_manager_versions), UPDATE_SUGGESTION
+                        name,
+                        '", "'.join(newer_component_manager_versions),
+                        UPDATE_SUGGESTION,
                     )
                 )
 
@@ -217,7 +225,9 @@ class WebServiceSource(BaseSource):
 
         # Check for required components
         if not component.component_hash:
-            raise FetchingError('Component hash is required for components from web service')
+            raise FetchingError(
+                'Component hash is required for components from the ESP Component Registry'
+            )
 
         if not component.version:
             raise FetchingError(f'Version should be provided for {component.name}')

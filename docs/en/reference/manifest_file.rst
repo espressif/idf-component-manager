@@ -12,7 +12,7 @@ The file contains the following fields:
 - ``maintainers``: A list of maintainers of the component, while format is not fixed, we recommend using the ``First Last <email@example.com>`` format. This field is optional.
 - ``tags``: A list of tags related to the component functionality. This field is optional.
 - ``targets``: A list of targets that the component supports. This field is optional and can be omitted if the component supports all targets.
-- ``version``: The version of the component. This field is always present for a component in the component registry. At the same time, it is optional for components in the local component directory or in git.
+- ``version``: The version of the component. This field is always present for a component in the ESP Component Registry. At the same time, it is optional for components in the local component directory or in git.
 - ``license``: The license of the component. It should be a valid SPDX license identifier listed in https://spdx.org/licenses/. This field is optional. The license will be automatically detected if it's not specified.
 
 External Links:
@@ -30,7 +30,7 @@ Dependencies
 
 Dependencies are specified in the ``dependencies`` field of the manifest file. The field is a dictionary of dependencies, where the key is the name of the dependency.
 
-Component manager supports several sources of dependencies: local directory, git repository, and component registry.
+Component manager supports several sources of dependencies: local directory, git repository, and ESP Component Registry.
 
 Common Fields for All Dependency Types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,10 +44,10 @@ Common Fields for All Dependency Types
 - ``matches``: A list of if clauses that should be applied to the dependency. The dependency is only included when any of the if-clauses is true. More details on :ref:`rules<reference/manifest_file:Matches and Rules>`.
 - ``rules``: A list of if clauses that should be applied to the dependency. The dependency is only included when all of the if-clauses are true. More details on :ref:`rules<reference/manifest_file:Matches and Rules>`.
 
-Dependencies from the Component Registry
+Dependencies from the ESP Component Registry
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Components in the component registry are specified by their name in the ``namespace/component_name`` format. The version of the dependency is specified in the ``version`` field of the dependency.
+Components in the ESP Component Registry are specified by their name in the ``namespace/component_name`` format. The version of the dependency is specified in the ``version`` field of the dependency.
 
 .. code-block:: yaml
 
@@ -79,12 +79,12 @@ This will be equivalent to:
 Override Path
 ^^^^^^^^^^^^^
 
-Dependencies from the component registry may also contain the ``override_path`` field. You can specify a local path in this field, and it will be used instead of the one downloaded from the registry. This field is mainly used for :ref:`example projects inside components<guides/packaging_components:Add example projects>`.
+Dependencies from the ESP Component Registry may also contain the ``override_path`` field. You can specify a local path in this field, and it will be used instead of the one downloaded from the registry. This field is mainly used for :ref:`example projects inside components<guides/packaging_components:Add example projects>`.
 
 Dependencies from Local Directory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you work on a component that is not yet published to the component registry, you can add it as a dependency from a local directory. The dependency is specified by the ``path`` field of the dependency. The path is relative to the ``idf_component.yml`` manifest file. You can use absolute paths as well.
+If you work on a component that is not yet published to the ESP Component Registry, you can add it as a dependency from a local directory. The dependency is specified by the ``path`` field of the dependency. The path is relative to the ``idf_component.yml`` manifest file. You can use absolute paths as well.
 
 .. code-block:: yaml
 
@@ -105,7 +105,7 @@ Dependencies from Git support two additional fields:
 
 .. note::
 
-    ``version`` and ``path`` fields of Git dependencies have a different meaning than the same fields of dependencies from the component registry or local dependencies.
+    ``version`` and ``path`` fields of Git dependencies have a different meaning than the same fields of dependencies from the ESP Component Registry or local dependencies.
 
 .. code-block:: yaml
 
@@ -269,7 +269,7 @@ One possible use-case is providing authentication to Git repositories accessed t
 
 .. note::
 
-      Environment variables are not allowed in manifests of components and examples uploaded to the component registry.
+      Environment variables are not allowed in manifests of components and examples uploaded to the ESP Component Registry.
 
 
 Special Rules

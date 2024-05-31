@@ -1,6 +1,6 @@
 # Test Components
 
-The components under this folder would be uploaded to the component registry under namespace `test`. Would be used
+The components under this folder would be uploaded to the ESP Component Registry under namespace `test`. Would be used
 for testing with the following scenarios.
 
 ## Scenarios

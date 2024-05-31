@@ -67,7 +67,7 @@ component dictionary.
     - `git` - denotes the url address for the git repository of the component (combine with `path`)
     - `path` - denotes the path to the component from the root of the git repository
     - `include`- value that is included in the source file of the component
-    - `version` - version of the component in the component registry
+    - `version` - version of the component in the ESP Component Registry
 
 - `cmake_lists` - key-value in this dictionary will be used as the name of parameter and its value in the
   function `idf_component_register` of the `CMakeLists.txt`.
@@ -114,7 +114,7 @@ tmp7F1Ssf
 ```
 
 2. The project contains only one component - main. Test adds version of the component into manifest and assumes
-   dependency from the component registry. Test is successful when build of the project is successful.
+   dependency from the ESP Component Registry. Test is successful when build of the project is successful.
 
 ```python
 {
@@ -133,7 +133,7 @@ tmp7F1Ssf
 
 3. The project contains two components - the main and "new_component". The "new_component"
 privately requires the component button. This component is added into manifest of the main component
-   as a component registry dependency. The `main.c` of the main component includes `new_component.h`
+   as a ESP Component Registry dependency. The `main.c` of the main component includes `new_component.h`
    and `button.h`. Test is successful when build of the project is successful.
 
 ```python

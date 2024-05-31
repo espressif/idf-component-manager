@@ -41,11 +41,12 @@ def main(command_args: t.Optional[t.List[str]] = None) -> None:
         default=os.getcwd(),
     )
     parser.add_argument(
-        '--namespace', help='Namespace for the component. Can be set in the config file.'
+        '--namespace',
+        help='Namespace for the component. Can be set in the config file.',
     )
     parser.add_argument(
         '--service-profile',
-        help='Profile for the component registry to use. '
+        help='Profile for the ESP Component Registry to use. '
         'By default profile named "default" will be used.',
         default='default',
     )
