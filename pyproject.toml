@@ -33,7 +33,6 @@ classifiers = [
     'Programming Language :: Python :: Implementation :: CPython',
 ]
 dependencies = [
-    "cachecontrol[filecache]",
     "click",
     "colorama",
     "pyparsing",

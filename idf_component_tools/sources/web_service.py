@@ -36,7 +36,7 @@ CANONICAL_IDF_COMPONENT_REGISTRY_API_URL = 'https://api.components.espressif.com
 def download_archive(url: str, download_dir: str, save_original_filename: bool = False) -> str:
     from idf_component_tools.registry.base_client import create_session  # avoid circular import
 
-    session = create_session(cache=False)
+    session = create_session()
 
     try:
         with session.get(url, stream=True, allow_redirects=True) as r:  # type: requests.Response

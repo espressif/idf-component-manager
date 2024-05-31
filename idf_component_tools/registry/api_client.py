@@ -45,57 +45,54 @@ class APIClient(BaseClient):
         self.registry_url = registry_url
         self.api_token = api_token
 
-    def _request(cache: bool = False) -> t.Callable:  # type: ignore
-        def decorator(f: t.Callable[..., t.Any]) -> t.Callable:
-            @wraps(f)  # type: ignore
-            def wrapper(self, *args, **kwargs):
-                if not self.registry_url:
-                    raise NoRegistrySet(
-                        'The current operation requires access to the IDF component registry. '
-                        'However, the registry URL is not set. You can set the '
-                        'IDF_COMPONENT_REGISTRY_URL environment variable or "registry_url" field '
-                        'for your current profile in "idf_component_manager.yml" file. '
-                        'To use the default IDF component registry '
-                        'unset IDF_COMPONENT_STORAGE_URL environment variable or remove '
-                        '"storage_url" field from the "idf_component_manager.yml" file'
-                    )
+    def _request(f: t.Callable[..., t.Any]) -> t.Callable:  # type: ignore
+        @wraps(f)  # type: ignore
+        def wrapper(self, *args, **kwargs):
+            if not self.registry_url:
+                raise NoRegistrySet(
+                    'The current operation requires access to the IDF component registry. '
+                    'However, the registry URL is not set. You can set the '
+                    'IDF_COMPONENT_REGISTRY_URL environment variable or "registry_url" field '
+                    'for your current profile in "idf_component_manager.yml" file. '
+                    'To use the default IDF component registry '
+                    'unset IDF_COMPONENT_STORAGE_URL environment variable or remove '
+                    '"storage_url" field from the "idf_component_manager.yml" file'
+                )
 
-                session = create_session(cache=cache, token=self.api_token)
+            session = create_session(token=self.api_token)
 
-                def request(
-                    method: str,
-                    path: t.List[str],
-                    data: t.Optional[t.Dict] = None,
-                    json: t.Optional[t.Dict] = None,
-                    headers: t.Optional[t.Dict] = None,
-                    schema: t.Optional[ApiBaseModel] = None,
-                ):
-                    # always access '<registry_url>/api' while doing api calls
-                    path = ['api', *path]
+            def request(
+                method: str,
+                path: t.List[str],
+                data: t.Optional[t.Dict] = None,
+                json: t.Optional[t.Dict] = None,
+                headers: t.Optional[t.Dict] = None,
+                schema: t.Optional[ApiBaseModel] = None,
+            ):
+                # always access '<registry_url>/api' while doing api calls
+                path = ['api', *path]
 
-                    return base_request(
-                        self.registry_url,
-                        session,
-                        method,
-                        path,
-                        data=data,
-                        json=json,
-                        headers=headers,
-                        schema=schema,
-                    )
+                return base_request(
+                    self.registry_url,
+                    session,
+                    method,
+                    path,
+                    data=data,
+                    json=json,
+                    headers=headers,
+                    schema=schema,
+                )
 
-                return f(self, request=request, *args, **kwargs)
+            return f(self, request=request, *args, **kwargs)
 
-            return wrapper
+        return wrapper
 
-        return decorator
-
-    @_request(cache=True)
+    @_request
     def api_information(self, request: t.Callable) -> t.Dict:
         return request('get', [], schema=ApiInformation)
 
     @auth_required
-    @_request(cache=False)
+    @_request
     def token_information(self, request: t.Callable) -> t.Dict:
         return request('get', ['tokens', 'current'], schema=ApiToken)
 
@@ -123,7 +120,7 @@ class APIClient(BaseClient):
                     'should be uploaded as it is, please contact components@espressif.com'
                 )
 
-    @_request(cache=False)
+    @_request
     def versions(
         self, request: t.Callable, component_name: str, spec: str = '*'
     ) -> ComponentWithVersions:
@@ -131,20 +128,20 @@ class APIClient(BaseClient):
         return super().versions(request=request, component_name=component_name, spec=spec)
 
     @auth_required
-    @_request(cache=False)
+    @_request
     def upload_version(self, request, component_name, file_path, callback=None):
         return self._upload_version_to_endpoint(
             request, file_path, ['components', component_name.lower(), 'versions'], callback
         )
 
-    @_request(cache=False)
+    @_request
     def validate_version(self, request, file_path, callback=None):
         return self._upload_version_to_endpoint(
             request, file_path, ['components', 'validate'], callback
         )
 
     @auth_required
-    @_request(cache=False)
+    @_request
     def delete_version(
         self,
         request: t.Callable,
@@ -154,7 +151,7 @@ class APIClient(BaseClient):
         request('delete', ['components', component_name.lower(), component_version])
 
     @auth_required
-    @_request(cache=False)
+    @_request
     def yank_version(
         self,
         request: t.Callable,
@@ -168,6 +165,6 @@ class APIClient(BaseClient):
             json={'message': yank_message},
         )
 
-    @_request(cache=False)
+    @_request
     def task_status(self, request: t.Callable, job_id: str) -> TaskStatus:
         return TaskStatus.model_validate(request('get', ['tasks', job_id]))

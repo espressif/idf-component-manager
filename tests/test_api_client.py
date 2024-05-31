@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
-import sys
 from ssl import SSLEOFError
 
 import pytest
@@ -11,7 +10,7 @@ from requests import Response
 from idf_component_manager import version
 from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL
 from idf_component_tools.registry.api_client import APIClient
-from idf_component_tools.registry.base_client import env_cache_time, user_agent
+from idf_component_tools.registry.base_client import user_agent
 from idf_component_tools.registry.client_errors import APIClientError
 from idf_component_tools.registry.multi_storage_client import MultiStorageClient
 from idf_component_tools.registry.request_processor import join_url
@@ -91,42 +90,6 @@ class TestAPIClient:
     def test_user_agent(self, registry_url):
         ua = user_agent()
         assert str(version) in ua
-
-    def test_env_cache_time_empty(self, monkeypatch):
-        monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '')
-        assert env_cache_time() == 0
-
-    def test_env_cache_time_env_var(self, monkeypatch):
-        monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '10')
-        assert env_cache_time() == 10
-
-    def test_env_cache_time(self, monkeypatch):
-        monkeypatch.delenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES')
-        assert env_cache_time() == 0
-
-    @vcr.use_cassette(
-        'tests/fixtures/vcr_cassettes/test_api_cache.yaml',
-        record_mode='none',
-    )
-    def test_api_cache(self, storage_url, monkeypatch, tmp_path):
-        """
-        This test is checking api caching with using the same requests 2 times.
-        In test_api_cache.yaml we have just one request, so if test is passed,
-        one request was from the cassette, and one from the cache.
-        WARNING: Don't overwrite the test_api_cache.yaml file. It can break the test.
-        """
-
-        # vcrpy 2.0.1 compatible with py3.4 doesn't play nice with caching
-        # It was manually checked that cache itself works
-        if sys.version_info[0] == 3 and sys.version_info[1] == 4:
-            return
-
-        monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '180')
-        monkeypatch.setenv('IDF_COMPONENT_CACHE_PATH', str(tmp_path))
-        client = StorageClient(storage_url=storage_url)
-
-        client.component(component_name='test/cmp')
-        client.component(component_name='test/cmp')
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_api_information.yaml')
     def test_api_information(self, registry_url):
