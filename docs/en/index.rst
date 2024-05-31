@@ -1,11 +1,10 @@
 IDF Component Manager and ESP Component Registry Documentation
 ===============================================================
 
-The IDF Component Manager is a tool that allows developers to manage components for the ESP-IDF development framework. The tool is compatible with ESP-IDF versions 4.1 and later, and is included by default starting with ESP-IDF version 4.4.
+This documentation is for the IDF Component Manager and the ESP Component Registry. The IDF Component Manager is a tool that allows developers to easily and reliably add components developed by Espressif and the community to the projects developed with the ESP-IDF framework and create their own components for others to use.
 
-The ESP Component Registry is a central repository for components that can be used with the ESP-IDF. It is hosted at https://components.espressif.com and provides a convenient way for developers to discover and download components for their projects.
+The `ESP Component Registry <https://components.espressif.com>` is a central repository for components that can be used with the ESP-IDF via the IDF Component Manager.
 
-With the IDF Component Manager, developers can easily install components from the ESP-IDF Component Registry, streamlining the process of adding new functionality to their projects.
 
 Getting Started
 ---------------
