@@ -60,4 +60,5 @@ repos:
       - id: conventional-precommit-linter
         stages: [commit-msg]
         args:
-          - --types=change,chore,ci,docs,feat,fix,refactor,remove,revert,test,feat!
+          - --types=change,chore,ci,docs,feat,fix,refactor,remove,revert,test
+          - --allow-breaking
