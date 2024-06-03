@@ -82,7 +82,7 @@ class BaseClient:
             if source_str == 'idf':
                 dependency['name'] = 'idf'
             elif source_str == 'service':
-                dependency['service_url'] = IDF_COMPONENT_REGISTRY_URL
+                dependency['registry_url'] = IDF_COMPONENT_REGISTRY_URL
             else:
                 raise ValueError('Unknown source type, Internal error')
 

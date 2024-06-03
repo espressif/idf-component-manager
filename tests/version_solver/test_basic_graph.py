@@ -75,13 +75,13 @@ def test_circular_dependency(source, check_solver_result):
 
 
 def test_override_dependency(source, check_solver_result):
-    foo = Package('foo', source=WebServiceSource(service_url='https://example.test/api'))
-    bar = Package('bar', source=WebServiceSource(service_url='https://example.test/api'))
+    foo = Package('foo', source=WebServiceSource(registry_url='https://example.test/api'))
+    bar = Package('bar', source=WebServiceSource(registry_url='https://example.test/api'))
     # cmp_local was the WebServiceSource (name with namespace),
     # but override_path changed it to the LocalSource.
     cmp_local = Package('example/cmp', source=LocalSource(path='test', override_path='test'))
     cmp_web = Package(
-        'example/cmp', source=WebServiceSource(service_url='https://example.test/api')
+        'example/cmp', source=WebServiceSource(registry_url='https://example.test/api')
     )
 
     source.root_dep(foo, '1.0.0')

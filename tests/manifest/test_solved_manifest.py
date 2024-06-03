@@ -25,7 +25,7 @@ class TestSolverResult:
         cmp = solution.dependencies[0]
         assert isinstance(cmp, SolvedComponent)
         assert isinstance(cmp.source, WebServiceSource)
-        assert cmp.source.base_url == 'https://repo.example.com'
+        assert cmp.source.registry_url == 'https://repo.example.com'
         assert str(solution.dependencies[1].version) == '4.4.4'
 
     def test_solve_optional_dependency(self, monkeypatch, release_component_path):

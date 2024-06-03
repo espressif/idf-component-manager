@@ -34,7 +34,7 @@ class Source(BaseModel):
         name: str,  # actually `type`...
         path: t.Optional[str] = None,
         git: t.Optional[str] = None,
-        service_url: t.Optional[str] = None,
+        registry_url: t.Optional[str] = None,
         override_path: t.Optional[str] = None,
         pre_release: bool = None,  # type: ignore # None as unset by default
         manifest_manager: t.Optional['ManifestManager'] = None,
@@ -50,7 +50,7 @@ class Source(BaseModel):
             d.update({'path': path, 'override_path': override_path})
             return LocalSource.fromdict(d)
 
-        d.update({'service_url': service_url, 'pre_release': pre_release})
+        d.update({'registry_url': registry_url, 'pre_release': pre_release})
         return WebServiceSource.fromdict(d)
 
     @classmethod

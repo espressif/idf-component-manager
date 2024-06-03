@@ -5,6 +5,7 @@ from copy import deepcopy
 
 from pydantic import (
     AfterValidator,
+    AliasChoices,
     Discriminator,
     Field,
     Tag,
@@ -132,7 +133,9 @@ class DependencyItem(BaseModel):
     public: bool = None  # type: ignore
     path: str = None  # type: ignore
     git: str = None  # type: ignore
-    service_url: str = None  # type: ignore
+    registry_url: str = Field(
+        default=None, validation_alias=AliasChoices('service_url', 'registry_url')
+    )  # type: ignore
     rules: t.List[OptionalDependency] = None  # type: ignore
     matches: t.List[OptionalDependency] = None  # type: ignore
     override_path: str = None  # type: ignore
@@ -240,7 +243,7 @@ class ComponentRequirement(DependencyItem):
                 name=self.name,
                 path=self.path,
                 git=self.git,
-                service_url=self.service_url,
+                registry_url=self.registry_url,
                 override_path=self.override_path,
                 pre_release=self.pre_release,
                 manifest_manager=self._manifest_manager,
@@ -612,7 +615,7 @@ class SolvedComponent(BaseModel):
             raise ValueError('Download URL is not supported for source {}'.format(self.source))
 
         if not self._download_url:
-            self._download_url = self.source.service_url or IDF_COMPONENT_STORAGE_URL
+            self._download_url = self.source.registry_url or IDF_COMPONENT_STORAGE_URL
 
         return self._download_url
 

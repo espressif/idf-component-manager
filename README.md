@@ -47,7 +47,7 @@ dependencies:
   # For components hosted on non-default registry:
   company_user/component:
     version: "~1.0.0"
-    service_url: "https://componentregistry.company.com"
+    registry_url: "https://componentregistry.company.com"
   # For components in git repository:
   test_component:
     path: test_component

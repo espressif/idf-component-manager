@@ -79,7 +79,7 @@ class TestLockManager(object):
         assert parser.exists()
 
         test_cmp = [cmp for cmp in lock.dependencies if cmp.name == 'espressif/test_cmp'][0]
-        assert test_cmp.source.service_url == 'https://repo.example.com'
+        assert test_cmp.source.registry_url == 'https://repo.example.com'
 
     def test_lock_dump_with_solution(self, tmp_path, monkeypatch, manifest_path, valid_lock_path):
         monkeypatch.setenv('IDF_VERSION', '4.4.4')
@@ -97,7 +97,7 @@ class TestLockManager(object):
             SolvedComponent(
                 name='espressif/test_cmp',
                 version=ComponentVersion('1.2.7'),
-                source=WebServiceSource(service_url='https://repo.example.com'),
+                source=WebServiceSource(registry_url='https://repo.example.com'),
                 component_hash='f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b',
             ),
         ]
@@ -127,7 +127,7 @@ class TestLockManager(object):
             SolvedComponent(
                 name='espressif/test_cmp',
                 version=ComponentVersion('1.2.7'),
-                source=WebServiceSource(service_url='https://repo.example.com'),
+                source=WebServiceSource(registry_url='https://repo.example.com'),
                 component_hash='f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b',
                 targets=['esp32', 'esp32s2'],
                 dependencies=[

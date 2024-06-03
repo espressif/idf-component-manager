@@ -15,9 +15,12 @@ def dep_by_name(manifest: Manifest, name: str) -> t.Optional[ComponentRequiremen
     return None
 
 
-def test_manifest_hash(valid_manifest, valid_manifest_hash):
+def test_manifest_hash(valid_manifest):
     manifest = Manifest.fromdict(valid_manifest)
-    assert manifest.manifest_hash == valid_manifest_hash
+    # ONLY UPDATE MANIFEST HASH WHEN IT'S NECESSARY!!!
+    assert (
+        manifest.manifest_hash == '1bd6824f65d801ec3014b407dafde5e6cf6020f04f7bfee88b7e7d723da4bac0'
+    )
 
 
 def test_project_manifest_builder(valid_manifest):

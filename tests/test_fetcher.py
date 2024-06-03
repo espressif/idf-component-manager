@@ -15,7 +15,7 @@ from idf_component_tools.utils import ComponentVersion
 
 def test_fetcher_download_and_create_hash(fixtures_path):
     components_folder_path = os.path.join(fixtures_path, 'components')
-    source = WebServiceSource(service_url='https://repo.example.com')
+    source = WebServiceSource(registry_url='https://repo.example.com')
     component = SolvedComponent(
         name='cmp',
         version=ComponentVersion('1.0.0'),

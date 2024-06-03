@@ -7,6 +7,7 @@ from functools import total_ordering
 
 from pydantic import (
     AfterValidator,
+    AliasChoices,
     BeforeValidator,
     ConfigDict,
     Field,
@@ -182,6 +183,12 @@ class BaseModel(_BaseModel):
             known_keys.add(_k)
             if _v.alias:
                 known_keys.add(_v.alias)
+            if _v.validation_alias:
+                if isinstance(_v.validation_alias, str):
+                    known_keys.add(_v.validation_alias)
+                elif isinstance(_v.validation_alias, AliasChoices):
+                    for _alias in _v.validation_alias.choices:
+                        known_keys.add(_alias)
 
         for _k, _v in cls.__private_attributes__.items():
             known_keys.add(_k.lstrip('_'))  # remove the leading underscore
