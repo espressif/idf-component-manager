@@ -143,6 +143,7 @@ def action_extensions(base_actions, project_path):
             'upload-component': {
                 'callback': callback,
                 'deprecated': True,
+                'hidden': True,
                 'help': (
                     'New CLI command: "compote component upload". '
                     'Upload component to the component registry. '
@@ -180,6 +181,7 @@ def action_extensions(base_actions, project_path):
             'delete-version': {
                 'callback': callback,
                 'deprecated': True,
+                'hidden': True,
                 'help': (
                     'New CLI command: "compote component delete". '
                     'Delete specified version of the component from the component registry.'
@@ -196,6 +198,7 @@ def action_extensions(base_actions, project_path):
             'upload-component-status': {
                 'callback': callback,
                 'deprecated': True,
+                'hidden': True,
                 'help': (
                     'New CLI command: "compote component upload-status". '
                     'Check the component uploading status by the job ID.'
@@ -212,6 +215,7 @@ def action_extensions(base_actions, project_path):
             'pack-component': {
                 'callback': callback,
                 'deprecated': True,
+                'hidden': True,
                 'help': (
                     'New CLI command: "compote component pack". '
                     'Create component archive and store it in the dist directory.'
