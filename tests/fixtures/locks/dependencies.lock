@@ -2,13 +2,13 @@ dependencies:
   espressif/test_cmp:
     component_hash: f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b
     source:
-      service_url: https://repo.example.com
+      registry_url: https://repo.example.com
       type: service
     version: 1.2.7
   idf:
     source:
       type: idf
     version: 4.4.4
-manifest_hash: 41b36c1e91e9dafe8a222e32364619b52b6e22745d012629f9b0162955252457
+manifest_hash: aedea05dfa3ce0abb1435f08e111503b8e4469ec2378069ea3cc7599bccce6f7
 target: esp32
 version: 2.0.0

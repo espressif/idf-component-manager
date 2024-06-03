@@ -19,12 +19,12 @@ from idf_component_tools.utils import ComponentVersion
 
 
 class TestComponentWebServiceSource:
-    EXAMPLE_HASH = 'ed55692af0eed2feb68f6d7a2ef95a0142b20518a53a0ceb7c699795359d7dc5'
+    EXAMPLE_HASH = '73d986e009065f182c10bcb6a45db3d6eda9498f8930654af2653f8a938cd801'
     LOCALHOST_HASH = '02d9269ed8690352e6bfc5f6a6c60e859fa6cbfc56efe75a1199b35bdd6c54c8'
     CMP_HASH = '15a658f759a13f1767ca3810cd822e010aba1e36b3a980d140cc5e80e823f422'
 
     def test_cache_path(self):
-        source = WebServiceSource(service_url='https://example.com/api')
+        source = WebServiceSource(registry_url='https://example.com/api')
         component = SolvedComponent(
             name='cmp',
             version=ComponentVersion('1.0.0'),
@@ -44,8 +44,11 @@ class TestComponentWebServiceSource:
         monkeypatch.setenv('IDF_COMPONENT_CACHE_PATH', cache_dir)
 
         source = WebServiceSource(
-            service_url='https://example.com/api', system_cache_path=cache_dir
+            registry_url='https://example.com/api', system_cache_path=cache_dir
         )
+        # without 'api'
+        assert source.registry_url == 'https://example.com'
+
         cmp = SolvedComponent(
             name='test/cmp',
             version=ComponentVersion('1.0.1'),
@@ -110,7 +113,7 @@ class TestComponentWebServiceSource:
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_pre_release.yaml')
     def test_pre_release_exists(self, capsys):
-        source = WebServiceSource(service_url='http://localhost:5000/')
+        source = WebServiceSource(registry_url='http://localhost:5000/')
 
         with pytest.warns(UserHint) as record:
             versions = source.versions('example/cmp')
@@ -127,23 +130,23 @@ class TestComponentWebServiceSource:
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_pre_release.yaml')
     def test_pre_release_exists_with_pre_release_spec(self, monkeypatch):
-        source = WebServiceSource(service_url='http://localhost:5000/')
+        source = WebServiceSource(registry_url='http://localhost:5000/')
 
         source.versions('example/cmp', spec='^0.0.5-alpha1')
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_versions.yaml')
     def test_skip_pre_release(self):
-        source = WebServiceSource(service_url='http://localhost:5000/', pre_release=False)
+        source = WebServiceSource(registry_url='http://localhost:5000/', pre_release=False)
         assert len(source.versions('example/cmp').versions) == 1
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_versions.yaml')
     def test_select_pre_release(self):
-        source = WebServiceSource(service_url='http://localhost:5000/', pre_release=True)
+        source = WebServiceSource(registry_url='http://localhost:5000/', pre_release=True)
         assert len(source.versions('example/cmp').versions) == 2
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_target.yaml')
     def test_target_exists(self, monkeypatch):
-        source = WebServiceSource(service_url='http://localhost:5000/')
+        source = WebServiceSource(registry_url='http://localhost:5000/')
 
         with pytest.warns(UserHint) as record:
             versions = source.versions('example/cmp', target='esp32s2')

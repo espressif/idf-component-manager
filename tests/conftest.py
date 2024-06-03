@@ -20,11 +20,6 @@ def file_with_size():
     return file_builder
 
 
-@pytest.fixture()
-def valid_manifest_hash():
-    return 'b4c7479005e3bed9df2e93fbbf1e90313791727a9310581f7fb0c1f479450191'
-
-
 @pytest.fixture(autouse=True)
 def monkeypatch_idf_version(monkeypatch):
     monkeypatch.setenv('IDF_VERSION', '5.3.0')

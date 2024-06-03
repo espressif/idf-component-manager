@@ -9,7 +9,7 @@ import tempfile
 import typing as t
 
 import requests
-from pydantic import field_validator
+from pydantic import AliasChoices, Field, field_validator
 
 from idf_component_tools.archive_tools import (
     ArchiveError,
@@ -88,36 +88,30 @@ def download_archive(url: str, download_dir: str, save_original_filename: bool =
 
 
 class WebServiceSource(BaseSource):
-    service_url: str = None  # type: ignore
+    registry_url: str = Field(
+        default=IDF_COMPONENT_REGISTRY_URL,
+        validation_alias=AliasChoices('service_url', 'registry_url'),
+    )  # type: ignore
     type: Literal['service'] = 'service'  # type: ignore
     pre_release: bool = None  # type: ignore
 
-    @field_validator('service_url')
+    @field_validator('registry_url')
     @classmethod
-    def validate_service_url(cls, v):
-        # Use canonical API url for lock file
-        if not v or v == IDF_COMPONENT_REGISTRY_URL:
-            return CANONICAL_IDF_COMPONENT_REGISTRY_API_URL
+    def validate_registry_url(cls, v):
+        # Use registry url for lock file
+        if not v or v == CANONICAL_IDF_COMPONENT_REGISTRY_API_URL:
+            return IDF_COMPONENT_REGISTRY_URL
+
+        # if url endswith /api, remove it
+        if v.endswith('/api'):
+            return v[:-4]
 
         return v
-
-    def model_post_init(self, __context: t.Any) -> None:
-        if not self.base_url:
-            FetchingError('Cannot fetch a dependency with when registry is not defined')
-
-    @property
-    def base_url(self) -> str:
-        # Use the default URL, even if the lock file was made with the canonical one
-        return (
-            IDF_COMPONENT_REGISTRY_URL
-            if self.service_url == CANONICAL_IDF_COMPONENT_REGISTRY_API_URL
-            else self.service_url
-        ) or IDF_COMPONENT_REGISTRY_URL
 
     @property
     def hash_key(self):
         if self._hash_key is None:
-            self._hash_key = hash_url(self.base_url)
+            self._hash_key = hash_url(self.registry_url)
         return self._hash_key
 
     def component_cache_path(self, component: 'SolvedComponent') -> str:
@@ -134,9 +128,9 @@ class WebServiceSource(BaseSource):
             get_storage_client,  # avoid circular import
         )
 
-        client = get_storage_client(self.base_url)
-        if self.base_url != client.registry_url:
-            client.registry_url = self.base_url
+        client = get_storage_client(self.registry_url)
+        if self.registry_url != client.registry_url:
+            client.registry_url = self.registry_url
 
         cmp_with_versions = client.versions(component_name=self.normalized_name(name), spec=spec)
 
