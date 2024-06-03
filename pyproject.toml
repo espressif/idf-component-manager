@@ -1,26 +1,24 @@
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = [
+    "idf_component_manager*",
+    "idf_component_tools*",
+]
 
 [project]
-requires-python = ">=3.7,<4.0"
-
-[tool.poetry]
 name = "idf-component-manager"
-version = "2.0.0-dev0"
-description = "Espressif IDF Component Manager"
+version = "2.0.0.dev0"
 authors = [
-    "Sergei Silnov <sergei.silnov@espressif.com>",
-    "Fu Hanxi <fuhanxi@espressif.com>",
+    { name = "Sergei Silnov", email = "sergei.silnov@espressif.com" },
+    { name = "Fu Hanxi", email = "fuhanxi@espressif.com" },
 ]
-license = "Apache-2.0"
+description = "Espressif IDF Component Manager"
 readme = "README.md"
-packages = [
-    { include = "idf_component_manager" },
-    { include = "idf_component_tools" },
-]
-repository = "https://github.com/espressif/idf-component-manager.git"
-documentation = "https://docs.espressif.com/projects/idf-component-manager/en/latest/"
+requires-python = ">=3.7,<4.0"
+license = { text = "Apache-2.0" }
 classifiers = [
     'Development Status :: 5 - Production/Stable',
     'Intended Audience :: Developers',
@@ -34,77 +32,67 @@ classifiers = [
     'Programming Language :: Python :: 3.12',
     'Programming Language :: Python :: Implementation :: CPython',
 ]
-include = [
-    { path = "idf_component_manager/templates/idf_component_template.yml", format = ["sdist", "wheel"] },
+dependencies = [
+    "click",
+    "colorama",
+    "pyparsing",
+    "pyyaml",
+    "requests",
+    "requests-file",
+    "requests-toolbelt",
+    "tqdm",
+    "jsonref",
+    "pydantic",
+    "pydantic-core",
+    "typing-extensions; python_version < '3.12'",
 ]
 
-[tool.poetry.dependencies]
-cachecontrol = { version = '*', extras = ["filecache"] }
-click = '*'
-colorama = '*'
-packaging = "*"
-pyparsing = '*'
-python = ">=3.7,<4.0"
-pyyaml = "*"
-requests = "*"
-requests-file = "*"
-requests-toolbelt = "*"
-tqdm = '*'
-urllib3 = "<2"
-pydantic = "^2.5"  # python 3.8 starts from 2.6
-typing-extensions = "^4.7"  # python 3.8 starts from 4.8
-jsonref = "^1.1.0"
-pydantic-core = "^2.14"  # python 3.8 starts from 2.15
+[project.optional-dependencies]
+docs = [
+    "sphinx",
+    "sphinx-click",
+    "sphinx-copybutton",
+    "sphinx-rtd-theme",
+    "sphinx-tabs",
+    "sphinx_collapse",
+]
 
-[tool.poetry.group.docs.dependencies]
-sphinx_collapse = "*"
-sphinx-click = "*"
-sphinx-copybutton = "*"
-sphinx-rtd-theme = "*"
-sphinx-tabs = "*"
+test = [
+    "jinja2",
+    "jsonschema",
+    "pexpect",
+    "pytest<8",  # PACMAN-898
+    "pytest-cov",
+    "pytest-mock",
+    "requests-mock",
+    "vcrpy",
+]
 
-[tool.poetry.group.dev.dependencies]
-comment-parser = "*"
-commitizen = { version = "^3.13.0", python = ">=3.8,<4.0" }
-coverage = '*'
-deptry = { version = ">=0.12.0", python = ">=3.9,<4.0" }
-jinja2 = "*"
-jsonschema = "*"
-mypy = "*"
-pexpect = "*"
-pre-commit = '*'
-pytest = '*'
-pytest-cov = '*'
-pytest-mock = '*'
-pytest-rerunfailures = "*"
-requests-mock = "^1.11.0"
-rope = '*'
-setuptools = "*"
-thefuzz = "*"
-twine = "*"
-types-pyyaml = "^6.0.12.10"
-types-requests = "^2.31.0.1"
-unify = '*'
-vcrpy = '<5'
-wheel = "*"
+# for dev please use python >3.8
+dev = [
+    'commitizen',
+    'deptry',
+    'pre-commit',
+]
 
-[tool.poetry.scripts]
-compote = { callable = "idf_component_manager.cli:safe_cli" }
+all = ["idf-component-manager[docs,test,dev]"]
 
-[tool.isort]
-include_trailing_comma = true
-use_parentheses = true
-ensure_newline_before_comments = true
-line_length = 100
-indent = '    '
-multi_line_output = 3
-force_grid_wrap = 0
+[project.scripts]
+compote = "idf_component_manager.cli:safe_cli"
 
+[project.urls]
+Repository = "https://github.com/espressif/idf-component-manager.git"
+Documentation = "https://docs.espressif.com/projects/idf-component-manager/en/latest/"
+Issues = "https://github.com/espressif/idf-component-manager/issues"
+Changelog = "https://github.com/espressif/idf-component-manager/blob/main/CHANGELOG.md"
+
+#########
+# Tools #
+#########
 [tool.mypy]
 python_version = "3.7"
-
 plugins = [
-  "pydantic.mypy"
+    "pydantic.mypy"
 ]
 
 [[tool.mypy.overrides]]
@@ -117,10 +105,11 @@ extend_exclude = [
     "integration_tests",
     "idf_component_tools/file_cache.py", # Tries a number of ways to detect paths on Windows
 ]
+pep621_dev_dependency_groups = ["test", "docs", "dev"]
 
 [tool.deptry.per_rule_ignores]
-DEP001 = ["urlparse", "idf_py_actions", "functools32", "httplib"]
-DEP002 = ["colorama", "urllib3"]
+DEP001 = ["idf_py_actions"]
+DEP002 = ["colorama"]
 
 [tool.deptry.package_module_name_map]
 pyyaml = ["yaml"]
@@ -128,9 +117,12 @@ pyyaml = ["yaml"]
 [tool.commitizen]
 name = "cz_conventional_commits"
 tag_format = "v$version"
-version_scheme = "semver"
-version_provider = "poetry"
-version_files = ["idf_component_tools/__version__.py:__version__"]
+version_scheme = "pep440"
+version_provider = "pep621"
+version_files = [
+    "idf_component_tools/__version__.py:__version__",
+    "pyproject.toml:project.version",
+]
 update_changelog_on_bump = true
 bump_message = "change: bump version from v$current_version to v$new_version"
 
@@ -141,10 +133,10 @@ target-version = "py37"
 [tool.ruff.lint]
 extend-select = [
     "S", # flake8-bandit
-    "I",  # isort
-    "ERA",  # eradicate
-    "ICN",  # flake8-import-conventions
-    "RUF100",  # unused noqa
+    "I", # isort
+    "ERA", # eradicate
+    "ICN", # flake8-import-conventions
+    "RUF100", # unused noqa
 ]
 typing-modules = [
     "idf_component_tools.utils",
@@ -171,18 +163,18 @@ banned-from = ["typing"]
 
 "integration_tests/*" = [
     "S",
-    "E712",  # comparison to False/True
+    "E712", # comparison to False/True
 ]
 
 "tests/*" = [
     "S",
-    "E712",  # comparison to False/True
+    "E712", # comparison to False/True
 ]
 
 "idf_component_tools/semver/base.py" = [
-    "S101",  # use of assert
+    "S101", # use of assert
 ]
 
 "idf_component_manager/version_solver/mixology/*" = [
-    "S101",  # use of assert
+    "S101", # use of assert
 ]

@@ -20,40 +20,37 @@ class StorageClient(BaseClient):
 
         self.storage_url = storage_url
 
-    def _request(cache: bool = False) -> t.Callable:  # type: ignore
-        def decorator(f: t.Callable[..., t.Any]) -> t.Callable:
-            @wraps(f)  # type: ignore
-            def wrapper(self, *args, **kwargs):
-                session = create_session(cache=cache)
+    def _request(f: t.Callable[..., t.Any]) -> t.Callable:  # type: ignore
+        @wraps(f)  # type: ignore
+        def wrapper(self, *args, **kwargs):
+            session = create_session()
 
-                def request(
-                    method: str,
-                    path: t.List[str],
-                    data: t.Optional[t.Dict] = None,
-                    json: t.Optional[t.Dict] = None,
-                    headers: t.Optional[t.Dict] = None,
-                    schema: t.Optional[ApiBaseModel] = None,
-                ):
-                    path[-1] += '.json'
-                    return base_request(
-                        self.storage_url,
-                        session,
-                        method,
-                        path,
-                        data=data,
-                        json=json,
-                        headers=headers,
-                        schema=schema,
-                        use_storage=True,
-                    )
+            def request(
+                method: str,
+                path: t.List[str],
+                data: t.Optional[t.Dict] = None,
+                json: t.Optional[t.Dict] = None,
+                headers: t.Optional[t.Dict] = None,
+                schema: t.Optional[ApiBaseModel] = None,
+            ):
+                path[-1] += '.json'
+                return base_request(
+                    self.storage_url,
+                    session,
+                    method,
+                    path,
+                    data=data,
+                    json=json,
+                    headers=headers,
+                    schema=schema,
+                    use_storage=True,
+                )
 
-                return f(self, request=request, *args, **kwargs)
+            return f(self, request=request, *args, **kwargs)
 
-            return wrapper
+        return wrapper
 
-        return decorator
-
-    @_request(cache=True)
+    @_request
     def versions(
         self, request: t.Callable, component_name: str, spec: str = '*', **kwargs
     ) -> ComponentWithVersions:
@@ -108,7 +105,7 @@ class StorageClient(BaseClient):
 
         return best_version
 
-    @_request(cache=True)
+    @_request
     def get_component_info(
         self, request: t.Callable, component_name: str, spec: str = '*'
     ) -> t.Dict:

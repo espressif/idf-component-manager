@@ -63,12 +63,12 @@ integration_test:
     - sed -i "\+${ORIGINAL_REQ}+c${WHEEL}" ${REQ_FILE:-requirements.txt}
     - pip install -U pip
     - ./install.sh
-    # And replace it back to avoid export.sh check dependecies error
+    # And replace it back to avoid export.sh check dependencies error
     - sed -i "\+${WHEEL}+c${ORIGINAL_REQ}" ${REQ_FILE:-requirements.txt}
     - . ./export.sh
     - cd ..
     - apt update && apt install -y fish zsh
-    - pip install pytest pytest-cov requests-mock pexpect "jinja2<3.1"
+    - pip install "${WHEEL}[test]"
   script:
     - ls dist
     - pytest -s -c pytest_integration.ini --cov=. --cov-report=xml:coverage_integration.xml --log-cli-level=INFO

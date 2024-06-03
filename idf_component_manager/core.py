@@ -10,6 +10,7 @@ import tarfile
 import tempfile
 import time
 import typing as t
+import warnings
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from functools import lru_cache
@@ -89,7 +90,7 @@ def get_processing_timeout():
     try:
         return getenv_int('COMPONENT_MANAGER_JOB_TIMEOUT', 300)
     except ValueError:
-        print_warn(
+        warnings.warn(
             'Cannot parse value of COMPONENT_MANAGER_JOB_TIMEOUT.'
             ' It should be number of seconds to wait for job result.'
         )

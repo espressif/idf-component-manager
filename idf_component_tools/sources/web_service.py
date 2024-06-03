@@ -42,7 +42,7 @@ def download_archive(url: str, download_dir: str, save_original_filename: bool =
         create_session,
     )
 
-    session = create_session(cache=False)
+    session = create_session()
 
     try:
         with session.get(url, stream=True, allow_redirects=True) as r:  # type: requests.Response

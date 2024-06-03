@@ -5,7 +5,7 @@ To build documentation locally, run these command from the root of the project
 Install dependencies:
 
 ```sh
-pip install -r docs/requirements.txt
+pip install .[docs]
 ```
 
 Build the docs:

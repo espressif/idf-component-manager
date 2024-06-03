@@ -28,7 +28,7 @@ def mock_token(monkeypatch):
 
 def test_raise_exception_on_warnings(monkeypatch):
     # Raises warning in api_client.py in env_cache_time()
-    monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', 'test')
+    monkeypatch.setenv('IDF_COMPONENT_SERVICE_PROFILE', 'test')
 
     process = subprocess.Popen(
         [
@@ -46,10 +46,9 @@ def test_raise_exception_on_warnings(monkeypatch):
 
     assert process.returncode == 1
     assert (
-        'ERROR: IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES is set to a non-numeric value.'
-        in decoded
+        'ERROR: IDF_COMPONENT_SERVICE_PROFILE environment variable is deprecated. '
+        'Please use IDF_COMPONENT_REGISTRY_PROFILE instead' in decoded
     )
-    assert 'Please set the variable to the number of minutes. Disabling caching.' in decoded
 
 
 def test_login_to_registry(monkeypatch, tmp_path, mock_registry, mock_token_information):
