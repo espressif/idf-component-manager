@@ -82,7 +82,6 @@ class TestAPIClient:
 
         assert result['name'] == 'test/cmp'
         assert result['version'] == '1.0.1'
-        assert result['download_url'].startswith(storage_url)
         assert result['docs']['readme'].startswith(storage_url)
         assert result['examples'][0]['url'].startswith(storage_url)
         assert result['license']['url'].startswith(storage_url)
@@ -203,17 +202,12 @@ class TestAPIClient:
         storage_file_path = f'file://{fixtures_path}/'
         storage_urls = [storage_file_path, 'https://components-file.espressif.com']
         client = MultiStorageClient(storage_urls=storage_urls)
-        result = client.versions(component_name='example/cmp')
 
-        assert result.versions
-        for v in result.versions:
-            assert v.download_url == storage_file_path
+        result = client.component(component_name='example/cmp')
+        assert result['download_url'].startswith(storage_file_path)
 
-        result = client.versions('espressif/mdns')
-
-        assert result.versions
-        for v in result.versions:
-            assert v.download_url == 'https://components-file.espressif.com'
+        result = client.component(component_name='espressif/mdns')
+        assert result['download_url'].startswith('https://components-file.espressif.com')
 
     def test_upload_component_returns_413_status(self, tmp_path, registry_url, monkeypatch):
         monkeypatch.setattr(

@@ -54,7 +54,6 @@ class TestComponentWebServiceSource:
             version=ComponentVersion('1.0.1'),
             source=source,
             component_hash=self.CMP_HASH,
-            download_url='http://localhost:9000/test-public',
         )
 
         download_path = str(tmp_path / 'test_download')

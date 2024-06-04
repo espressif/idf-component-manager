@@ -60,7 +60,6 @@ class StorageClient(BaseClient):
                 request=request,
                 component_name=component_name,
                 spec=spec,
-                download_url=self.storage_url,
                 **kwargs,
             )
         except StorageFileNotFound:
