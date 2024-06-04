@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import filecmp
@@ -214,7 +214,7 @@ class TestLockManager(object):
                         'dependencies',
                         {
                             'example/cmp': {
-                                'component_hash': '8644358a11a35a986b0ce4d325ba3d1aa9491b9518111acd4ea9447f11dc47c1',
+                                'component_hash': '8644358a11a35a986b0ce4d325ba3d1aa9491b9518111acd4ea9447f11dc47c1',  # noqa
                                 'source': {
                                     'service_url': 'https://ohnoIdonthaveinternetconnection.com',
                                     'type': 'service',
@@ -234,7 +234,7 @@ class TestLockManager(object):
         with pytest.warns(UserHint) as record:
             assert not is_solve_required(project_requirements, solution)
             assert (
-                'Cannot establish a connection to the component registry. Skipping checks of dependency changes.'
+                'Cannot establish a connection to the component registry. Skipping checks of dependency changes.'  # noqa
                 in record.list[0].message.args[0]
             )
 

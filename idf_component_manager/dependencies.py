@@ -1,6 +1,5 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-
 import os
 import shutil
 from functools import total_ordering
@@ -12,7 +11,7 @@ from idf_component_manager.version_solver.helper import parse_root_dep_conflict_
 from idf_component_manager.version_solver.mixology.failure import SolverFailure
 from idf_component_manager.version_solver.mixology.package import Package
 from idf_component_manager.version_solver.version_solver import VersionSolver
-from idf_component_tools.build_system_tools import build_name
+from idf_component_tools.build_system_tools import build_name, get_idf_version
 from idf_component_tools.environment import getenv_bool
 from idf_component_tools.errors import (
     ComponentModifiedError,
@@ -25,11 +24,13 @@ from idf_component_tools.hash_tools.validate_managed_component import (
     validate_managed_component_hash,
 )
 from idf_component_tools.lock import LockManager
-from idf_component_tools.manifest import ProjectRequirements
+from idf_component_tools.manifest import ComponentVersion, ProjectRequirements
 from idf_component_tools.manifest.solved_component import SolvedComponent
 from idf_component_tools.manifest.solved_manifest import SolvedManifest
 from idf_component_tools.messages import hint, warn
 from idf_component_tools.registry.api_client_errors import NetworkConnectionError
+from idf_component_tools.semver import Version
+from idf_component_tools.sources import IDFSource
 from idf_component_tools.sources.fetcher import ComponentFetcher
 
 
@@ -104,6 +105,14 @@ def is_solve_required(project_requirements, solution):
         print_info('Manifest files have changed, solving dependencies.')
         return True
 
+    if solution.idf_version and solution.idf_version != Version(get_idf_version()):
+        print_info(
+            'IDF version changed from {} to {}, solving dependencies.'.format(
+                solution.idf_version, get_idf_version()
+            )
+        )
+        return True
+
     if solution.target and project_requirements.target != solution.target:
         print_info(
             'Target changed from {} to {}, solving dependencies.'.format(
@@ -130,14 +139,14 @@ def is_solve_required(project_requirements, solution):
                 )
             except FetchingError:
                 print_warn(
-                    'Version {} of dependency {} not found, probably it was deleted, solving dependencies.'.format(
-                        component.version, component.name
-                    )
+                    'Version {} of dependency {} not found, probably it was deleted, '
+                    'solving dependencies.'.format(component.version, component.name)
                 )
                 return True
             except NetworkConnectionError:
                 hint(
-                    'Cannot establish a connection to the component registry. Skipping checks of dependency changes.'
+                    'Cannot establish a connection to the component registry. '
+                    'Skipping checks of dependency changes.'
                 )
                 return False
 
@@ -222,7 +231,7 @@ class DownloadedComponent:
 def check_for_new_component_versions(project_requirements, old_solution):
     if getenv_bool('IDF_COMPONENT_CHECK_NEW_VERSION', False):
         # Check for newer versions of components
-        solver = VersionSolver(project_requirements, old_solution)
+        solver = VersionSolver(project_requirements)
         try:
             new_solution = solver.solve()
             new_deps_names = [dep.name for dep in new_solution.dependencies]
@@ -246,9 +255,8 @@ def check_for_new_component_versions(project_requirements, old_solution):
             if updateable_components_messages:
                 hint(
                     '\nFollowing dependencies have new versions available:\n{}'
-                    '\nConsider running "idf.py update-dependencies" to update your lock file.\n'.format(
-                        '\n'.join(updateable_components_messages)
-                    )
+                    '\nConsider running "idf.py update-dependencies" '
+                    'to update your lock file.\n'.format('\n'.join(updateable_components_messages))
                 )
 
         except (SolverFailure, NetworkConnectionError):
@@ -262,10 +270,18 @@ def download_project_dependencies(
     """Solves dependencies and download components"""
     lock_manager = LockManager(lock_path)
     solution = lock_manager.load()
+
     check_manifests_targets(project_requirements)
 
     if is_solve_required(project_requirements, solution):
-        solver = VersionSolver(project_requirements, solution, component_solved_callback=print_dot)
+        # replace the old solution with the current idf
+        for dep in solution.dependencies:
+            if dep.name == IDFSource().NAME:
+                dep.version = ComponentVersion(get_idf_version())
+
+        solver = VersionSolver(
+            project_requirements, old_solution=solution, component_solved_callback=print_dot
+        )
 
         try:
             solution = solver.solve()
@@ -274,11 +290,11 @@ def download_project_dependencies(
             components_introduce_conflict = []
             for conflict_constraint in conflict_constraints:
                 for manifest in project_requirements.manifests:
-                    for dep in manifest.dependencies:
-                        for source in dep.sources:
+                    for req in manifest.dependencies:
+                        for source in req.sources:
                             if Package(
-                                dep.name, source
-                            ) == conflict_constraint.package and dep.version_spec == str(
+                                req.name, source
+                            ) == conflict_constraint.package and req.version_spec == str(
                                 conflict_constraint.constraint
                             ):
                                 components_introduce_conflict.append(manifest.name)
