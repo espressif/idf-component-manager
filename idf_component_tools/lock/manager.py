@@ -9,10 +9,10 @@ from pydantic import ValidationError
 from yaml import Node, SafeDumper, YAMLError, safe_load
 from yaml import dump as dump_yaml
 
-from idf_component_manager.utils import print_info
 from idf_component_tools.build_system_tools import get_env_idf_target, get_idf_version
-from idf_component_tools.errors import LockError, LockVersionMismatchError
+from idf_component_tools.errors import LockError
 from idf_component_tools.manifest import SolvedComponent, SolvedManifest
+from idf_component_tools.messages import notice
 from idf_component_tools.sources import IDFSource
 from idf_component_tools.utils import ComponentVersion
 
@@ -85,7 +85,7 @@ class LockManager:
         ):
             with open(self._path, mode='w', encoding='utf-8') as fw:
                 fw.write(new_lock_content)
-                print_info('Updating lock file at {}'.format(self._path))
+                notice('Updating lock file at {}'.format(self._path))
                 return True
 
         return False
@@ -106,7 +106,7 @@ class LockManager:
             lock_dict = lock.model_dump()
             version = lock_dict.pop('version')
             if version != FORMAT_VERSION:
-                raise LockVersionMismatchError(
+                notice(
                     f'Current idf-component-manager default lock file version is {FORMAT_VERSION}, '
                     f'but found {version} in {self._path}. '
                     f'Recreating lock file with the current version.'

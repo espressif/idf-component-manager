@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
+import logging
 import os
 import typing as t
 
@@ -16,8 +17,11 @@ from idf_component_tools.sources import LocalSource, WebServiceSource
 from idf_component_tools.utils import ProjectRequirements
 
 from .helper import PackageSource
+from .mixology.failure import SolverFailure
 from .mixology.package import Package
 from .mixology.version_solver import VersionSolver as Solver
+
+logger = logging.getLogger(__name__)
 
 
 class VersionSolver:
@@ -34,21 +38,26 @@ class VersionSolver:
     ) -> None:
         self.requirements = requirements
         self.old_solution = old_solution
+        # remove idf from the old solution. always use the current idf version
+        if self.old_solution:
+            for d in self.old_solution.dependencies:
+                if d.name == 'idf':
+                    self.old_solution.dependencies.remove(d)
+
         self.component_solved_callback = component_solved_callback
 
         self._source = PackageSource()
         self._solver = Solver(self._source)
         self._target = None
         self._overriders: t.Set[str] = set()
-        self._local_root_requirements: t.Dict[str, ComponentRequirement] = dict()
+
+        self._local_root_requirements: t.Dict[str, ComponentRequirement] = {}
+        self._parse_local_root_requirements()
+
         self._solved_requirements: t.Set[ComponentRequirement] = set()
 
-    def solve(self) -> SolvedManifest:
-        # scan all root local requirements
-        # root local requirements defined in the file system manifest files
-        # would have higher priorities
-
-        # scan all root local requirements
+    def _parse_local_root_requirements(self) -> None:
+        # scan all LocalSource dependencies
         for manifest in self.requirements.manifests:
             for requirement in manifest.requirements:
                 if isinstance(requirement.source, LocalSource):
@@ -66,7 +75,7 @@ class VersionSolver:
                     else:
                         self._local_root_requirements[requirement.build_name] = requirement
 
-        # scan all root local components
+        # add all local components, except [0] -> main component
         for manifest in self.requirements.manifests[1:]:
             # add itself as highest priority component
             if manifest.real_name and manifest.version and manifest._manifest_manager:
@@ -89,8 +98,17 @@ class VersionSolver:
                     manifest_manager=manifest._manifest_manager,
                 )
 
+    def _solve(self, cur_solution: t.Optional[SolvedManifest] = None) -> SolvedManifest:
+        """
+        Solve the version requirements and return the result.
+
+        :param cur_solution: The current solution to be used as a starting point.
+        :raises SolverError: If the solver fails to solve the requirements.
+        """
+        # root local requirements defined in the file system manifest files
+        # would have higher priorities
         for manifest in self.requirements.manifests:
-            self.solve_manifest(manifest)
+            self.solve_manifest(manifest, cur_solution=cur_solution)
 
         self._source.override_dependencies(self._overriders)
 
@@ -125,7 +143,25 @@ class VersionSolver:
             'target': self.requirements.target,
         })
 
-    def solve_manifest(self, manifest: Manifest) -> None:
+    def solve(self) -> SolvedManifest:
+        """
+        Solve the version requirements and return the result.
+        """
+        if self.old_solution != SolvedManifest():
+            try:
+                return self._solve(cur_solution=self.old_solution)
+            except SolverFailure as e:
+                logger.debug(
+                    'Solver failed to solve the requirements with the current solution. Error: %s.\n'
+                    'Retrying without the current solution. ',
+                    e,
+                )
+
+        return self._solve()
+
+    def solve_manifest(
+        self, manifest: Manifest, cur_solution: t.Optional[SolvedManifest] = None
+    ) -> None:
         for dep in self._dependencies_with_local_precedence(
             manifest.requirements, manifest_path=manifest.path
         ):
@@ -134,7 +170,7 @@ class VersionSolver:
 
             self._source.root_dep(Package(dep.name, dep.source), dep.version_spec)
             try:
-                self.solve_component(dep, manifest_path=manifest.path)
+                self.solve_component(dep, manifest_path=manifest.path, cur_solution=cur_solution)
             except DependencySolveError as e:
                 raise SolverError(
                     'Solver failed processing dependency "{dependency}" '
@@ -150,14 +186,29 @@ class VersionSolver:
                 )
 
     def solve_component(
-        self, requirement: ComponentRequirement, manifest_path: t.Optional[str] = None
+        self,
+        requirement: ComponentRequirement,
+        manifest_path: t.Optional[str] = None,
+        cur_solution: t.Optional[SolvedManifest] = None,
     ) -> None:
         if requirement in self._solved_requirements:
             return
 
-        cmp_with_versions = requirement.source.versions(
-            name=requirement.name, spec=requirement.version_spec, target=self.requirements.target
-        )
+        if cur_solution and requirement.name in cur_solution.solved_components:
+            # need to get again to get all info from the SolvedComponent
+            # version 1.0 lock file does not include all the info
+            # like `dependencies`, and `targets`
+            cmp_with_versions = requirement.source.versions(
+                name=requirement.name,
+                spec=cur_solution.solved_components[requirement.name].version,
+                target=cur_solution.target,
+            )
+        else:
+            cmp_with_versions = requirement.source.versions(
+                name=requirement.name,
+                spec=requirement.version_spec,
+                target=self.requirements.target,
+            )
 
         if not cmp_with_versions or not cmp_with_versions.versions:
             return
