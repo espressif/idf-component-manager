@@ -15,7 +15,6 @@ from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS
 from idf_component_tools.semver import Version
 
 from .integration_test_helpers import (
-    build_project,
     fixtures_path,
     live_print_call,
     project_action,
@@ -42,7 +41,7 @@ from .integration_test_helpers import (
     indirect=True,
 )
 def test_git_folder_does_not_exists(project):
-    res = build_project(project)
+    res = project_action(project, 'reconfigure')
     assert "pathspec 'folder-not-exist' did not match any file(s) known to git" in res
 
 

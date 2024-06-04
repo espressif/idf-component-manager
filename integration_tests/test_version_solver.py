@@ -10,7 +10,6 @@ import yaml
 from idf_component_tools.semver import Version
 from integration_tests.integration_test_helpers import (
     assert_dependency_version,
-    build_project,
     project_action,
 )
 
@@ -148,8 +147,8 @@ def test_version_solver(project, result):
     indirect=True,
 )
 def test_single_dependency(project):
-    res = build_project(project)
-    assert 'Project build complete.' in res
+    res = project_action(project, 'reconfigure')
+    assert 'Configuring done' in res
 
 
 @pytest.mark.parametrize(
@@ -201,8 +200,8 @@ def test_idf_version_dependency_failed(project):
     indirect=True,
 )
 def test_idf_version_dependency_passed(project):
-    res = build_project(project)
-    assert 'Project build complete.' in res
+    res = project_action(project, 'reconfigure')
+    assert 'Configuring done' in res
 
 
 @pytest.mark.parametrize(
