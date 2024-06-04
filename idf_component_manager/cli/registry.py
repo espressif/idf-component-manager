@@ -3,6 +3,7 @@
 import os
 import typing as t
 import webbrowser
+from urllib.parse import urljoin
 
 import click
 import requests
@@ -90,7 +91,7 @@ def init_registry():
             profile=profile,
         )
 
-        auth_url = f'{api_client.registry_url}/tokens/'
+        auth_url = urljoin(api_client.registry_url, 'settings/tokens')
 
         auth_params = {
             'scope': 'user write:components',
