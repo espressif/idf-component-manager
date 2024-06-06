@@ -3,6 +3,11 @@
 import os
 import webbrowser
 
+try:
+    from urllib.parse import urljoin
+except ImportError:
+    from urlparse import urljoin  # type: ignore
+
 import click
 import requests
 from six.moves import input
@@ -87,7 +92,7 @@ def init_registry():
             raise_on_missing_profile=False,
         )
 
-        auth_url = '{}/tokens/'.format(api_client.frontend_url)
+        auth_url = urljoin(api_client.frontend_url, 'settings/tokens')
 
         auth_params = {
             'scope': 'user write:components',
