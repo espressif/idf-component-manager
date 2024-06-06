@@ -74,7 +74,13 @@ def should_run_integration_tests() -> bool:
     # Check for changed files
     target_branch = getenv('CI_MERGE_REQUEST_TARGET_BRANCH_NAME')
     if target_branch:
-        if 'integration_tests' in _modified_files(target_branch):
+        modified_files = _modified_files(target_branch)
+        # If integration tests were modified
+        if 'integration_tests' in modified_files:
+            return True
+
+        # If version was bumped during release preparation
+        if 'CHANGELOG.md' in modified_files:
             return True
 
     return False
