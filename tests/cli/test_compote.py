@@ -65,7 +65,7 @@ def test_login_to_registry(monkeypatch, tmp_path, mock_registry, mock_token_info
 
     assert output.exit_code == 0
     # assert that login url is printed
-    assert 'http://localhost:5000/tokens/?' in output.output
+    assert 'http://localhost:5000/settings/tokens?' in output.output
     assert 'Successfully logged in' in output.output
 
 
