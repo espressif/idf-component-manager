@@ -7,6 +7,7 @@ from copy import deepcopy
 
 import jsonschema
 import pytest
+import requests_mock
 import vcr
 from click.testing import CliRunner
 from jsonschema.exceptions import ValidationError
@@ -152,6 +153,7 @@ def test_logout_from_registry(monkeypatch, tmp_path):
         'profiles': {
             'default': {
                 'api_token': 'asdf',
+                'registry_url': 'http:/localhost:5000',
             },
         }
     })
@@ -159,7 +161,65 @@ def test_logout_from_registry(monkeypatch, tmp_path):
 
     runner = CliRunner()
     cli = initialize_cli()
-    output = runner.invoke(cli, ['registry', 'logout'], env={'IDF_TOOLS_PATH': str(tmp_path)})
+
+    with requests_mock.Mocker() as m:
+        m.delete(
+            'http://localhost:5000/api/tokens/current',
+            status_code=204,
+        )
+
+        output = runner.invoke(cli, ['registry', 'logout'], env={'IDF_TOOLS_PATH': str(tmp_path)})
+
+        assert m.call_count == 1
+        assert m.request_history[0].method == 'DELETE'
+        assert m.request_history[0].url == 'http://localhost:5000/api/tokens/current'
+
+    assert 'Successfully logged out' in output.stdout
+
+
+def test_logout_from_registry_revoked_token(monkeypatch, tmp_path):
+    monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
+    config = Config.fromdict({
+        'profiles': {
+            'default': {
+                'api_token': 'asdf',
+                'registry_url': 'http:/localhost:5000',
+            },
+        }
+    })
+    ConfigManager().dump(config)
+
+    runner = CliRunner()
+    cli = initialize_cli()
+
+    with requests_mock.Mocker() as m:
+        m.delete(
+            'http://localhost:5000/api/tokens/current',
+            status_code=401,
+        )
+
+        output = runner.invoke(cli, ['registry', 'logout'], env={'IDF_TOOLS_PATH': str(tmp_path)})
+
+    assert 'Successfully logged out' in output.stdout
+    assert 'Failed to revoke token from the registry' in output.stdout
+
+
+def test_logout_from_registry_no_revoke(monkeypatch, tmp_path):
+    monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
+    config = Config.fromdict({
+        'profiles': {
+            'default': {
+                'api_token': 'asdf',
+            },
+        }
+    })
+    ConfigManager().dump(config)
+
+    runner = CliRunner()
+    cli = initialize_cli()
+    output = runner.invoke(
+        cli, ['registry', 'logout', '--no-revoke'], env={'IDF_TOOLS_PATH': str(tmp_path)}
+    )
 
     assert 'Successfully logged out' in output.stdout
 

@@ -89,12 +89,20 @@ class APIClient(BaseClient):
 
     @_request
     def api_information(self, request: t.Callable) -> t.Dict:
+        """Get information about API status, including storage URL"""
         return request('get', [], schema=ApiInformation)
 
     @auth_required
     @_request
     def token_information(self, request: t.Callable) -> t.Dict:
+        """Get information about current token"""
         return request('get', ['tokens', 'current'], schema=ApiToken)
+
+    @auth_required
+    @_request
+    def revoke_current_token(self, request: t.Callable) -> None:
+        """Revoke current token"""
+        request('delete', ['tokens', 'current'])
 
     def _upload_version_to_endpoint(self, request, file_path, endpoint, callback=None):
         with open(file_path, 'rb') as file:
