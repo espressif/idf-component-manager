@@ -300,15 +300,12 @@ class HashedComponentVersion:
         dependencies: t.List['ComponentRequirement'] = None,  # type: ignore
         targets: t.List[str] = None,  # type: ignore
         all_build_keys_known: bool = True,
-        # download_url should be used while downloading, required for web service source
-        download_url: t.Optional[str] = None,
     ) -> None:
         self.version = ComponentVersion(version_string)
         self.component_hash = component_hash
         self.dependencies = dependencies or []
         self.targets = targets or []
         self.all_build_keys_known = all_build_keys_known
-        self.download_url = download_url
 
     def __str__(self):
         return str(self.version)

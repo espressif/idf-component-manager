@@ -13,7 +13,7 @@ from idf_component_tools.manifest import (
     SolvedComponent,
     SolvedManifest,
 )
-from idf_component_tools.sources import LocalSource, WebServiceSource
+from idf_component_tools.sources import LocalSource
 from idf_component_tools.utils import ProjectRequirements
 
 from .helper import PackageSource
@@ -130,9 +130,6 @@ class VersionSolver:
 
             if version.targets:
                 kwargs['targets'] = version.targets
-
-            if isinstance(package.source, WebServiceSource):
-                kwargs['download_url'] = version.download_url
 
             solved_components.append(SolvedComponent.fromdict(kwargs))
 

@@ -23,7 +23,6 @@ from idf_component_tools.constants import (
     COMMIT_ID_RE,
     COMPILED_GIT_URL_RE,
     DEFAULT_NAMESPACE,
-    IDF_COMPONENT_STORAGE_URL,
 )
 from idf_component_tools.errors import (
     InternalError,
@@ -31,7 +30,7 @@ from idf_component_tools.errors import (
 )
 from idf_component_tools.hash_tools.calculate import hash_object
 from idf_component_tools.messages import notice
-from idf_component_tools.sources import BaseSource, LocalSource, Source, WebServiceSource
+from idf_component_tools.sources import BaseSource, LocalSource, Source
 from idf_component_tools.utils import (
     BOOL_MARKER,
     MODEL_MARKER,
@@ -577,24 +576,14 @@ class SolvedComponent(BaseModel):
     dependencies: t.List[ComponentRequirement] = None  # type: ignore
     targets: UniqueStrListField = None  # type: ignore
 
-    # don't put it in the lock file
-    _download_url: t.Optional[str] = None  # mandatory for web service source
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-        self._download_url = kwargs.pop('download_url', None)
 
     def __repr__(self):
         return 'SolvedComponent <{}({}) {}>'.format(self.name, self.version, self.component_hash)
 
     def __str__(self):
         base_str = f'{self.name} ({self.version})'
-        if self._download_url and self._download_url not in [
-            # our hosted ones
-            IDF_COMPONENT_STORAGE_URL,
-        ]:
-            base_str += f' from {self._download_url}'
 
         if isinstance(self.source, LocalSource):
             base_str += f' ({self.source._path})'
@@ -608,16 +597,6 @@ class SolvedComponent(BaseModel):
     @field_serializer('name')
     def serialize_name(self, name: str) -> str:
         return self.source.normalized_name(name)
-
-    @property
-    def download_url(self) -> str:
-        if not isinstance(self.source, WebServiceSource):
-            raise ValueError('Download URL is not supported for source {}'.format(self.source))
-
-        if not self._download_url:
-            self._download_url = self.source.registry_url or IDF_COMPONENT_STORAGE_URL
-
-        return self._download_url
 
     @field_validator('version')
     @classmethod

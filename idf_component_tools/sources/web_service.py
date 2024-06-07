@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Component source that downloads components from web service"""
 
+import logging
 import os
 import re
 import shutil
@@ -35,6 +36,9 @@ if t.TYPE_CHECKING:
 from idf_component_tools.utils import Literal
 
 CANONICAL_IDF_COMPONENT_REGISTRY_API_URL = 'https://api.components.espressif.com/'
+
+
+logger = logging.getLogger(__name__)
 
 
 def download_archive(url: str, download_dir: str, save_original_filename: bool = False) -> str:
@@ -129,7 +133,7 @@ class WebServiceSource(BaseSource):
         )
 
         client = get_storage_client(self.registry_url)
-        if self.registry_url != client.registry_url:
+        if client.registry_url != self.registry_url:
             client.registry_url = self.registry_url
 
         cmp_with_versions = client.versions(component_name=self.normalized_name(name), spec=spec)
@@ -213,9 +217,7 @@ class WebServiceSource(BaseSource):
         from idf_component_tools.hash_tools.validate_managed_component import (
             validate_managed_component_by_manifest,  # avoid circular import
         )
-        from idf_component_tools.registry.storage_client import (
-            StorageClient,  # avoid circular import
-        )
+        from idf_component_tools.registry.service_details import get_storage_client
 
         # Check for required components
         if not component.component_hash:
@@ -237,10 +239,15 @@ class WebServiceSource(BaseSource):
             return download_path
 
         tempdir = tempfile.mkdtemp()
+
         try:
-            url = StorageClient(component.download_url).component(
+            url = get_storage_client(service_profile='default').component(
                 component.name, component.version
-            )['download_url']
+            )['download_url']  # PACMAN-906
+
+            logger.debug(
+                'Downloading component %s@%s from %s', component.name, component.version, url
+            )
 
             file_path = download_archive(url, tempdir)
             unpack_archive(file_path, self.component_cache_path(component))
