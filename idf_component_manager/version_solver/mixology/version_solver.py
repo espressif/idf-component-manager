@@ -50,8 +50,9 @@ class VersionSolver:
 
     def solve(self) -> SolverResult:
         """
-        Finds a set of dependencies that match the root package's constraints,
-        or raises an error if no such set is available.
+        Finds a set of dependencies that match the root package's constraints
+
+        :raises: SolverFailure: If no such set is available
         """
         start = time.time()
 

@@ -165,8 +165,11 @@ def project_action(project_path, *actions):
     return live_print_call(['idf.py', '-C', str(project_path)] + list(actions))
 
 
-def build_project(project_path):
-    return project_action(project_path, 'build')
+def assert_dependency_version(project_path, component_name, version):
+    with open(os.path.join(project_path, 'dependencies.lock')) as f:
+        lock = yaml.safe_load(f)
+        assert component_name in lock['dependencies']
+        assert lock['dependencies'][component_name]['version'] == version
 
 
 def set_target(project_path, target):

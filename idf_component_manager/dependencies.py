@@ -8,7 +8,7 @@ from functools import total_ordering
 from pathlib import Path
 
 from idf_component_manager.core_utils import raise_component_modified_error
-from idf_component_manager.utils import print_info, print_notice
+from idf_component_manager.utils import print_info
 from idf_component_manager.version_solver.helper import parse_root_dep_conflict_constraints
 from idf_component_manager.version_solver.mixology.failure import SolverFailure
 from idf_component_manager.version_solver.mixology.package import Package
@@ -19,7 +19,6 @@ from idf_component_tools.errors import (
     ComponentModifiedError,
     FetchingError,
     InvalidComponentHashError,
-    LockVersionMismatchError,
     SolverError,
 )
 from idf_component_tools.hash_tools.errors import ValidatingHashError
@@ -258,7 +257,7 @@ class DownloadedComponent:
 def check_for_new_component_versions(project_requirements, old_solution):
     if getenv_bool('IDF_COMPONENT_CHECK_NEW_VERSION', True):
         # Check for newer versions of components
-        solver = VersionSolver(project_requirements, old_solution)
+        solver = VersionSolver(project_requirements)
         try:
             new_solution = solver.solve()
             new_deps_names = [dep.name for dep in new_solution.dependencies]
@@ -297,20 +296,27 @@ def download_project_dependencies(
     managed_components_path: str,
     is_idf_root_dependencies: bool = False,
 ) -> t.Set[DownloadedComponent]:
-    """Solves dependencies and download components"""
+    """
+    Solves dependencies and download components (only talk about resolve-required scenario)
+
+    By default, we run as local-first mode, the process is:
+    - read existing lock file first, get the solved_components
+    - use the solved_components with the version solver, to see if solution is still valid
+    - if not, solve again
+    - dump the lock file
+    """
     lock_manager = LockManager(lock_path)
 
-    try:
-        solution = lock_manager.load()
-    except LockVersionMismatchError as e:
-        print_notice(str(e))
-        os.remove(lock_path)
-        solution = SolvedManifest()
+    solution = lock_manager.load()
 
     check_manifests_targets(project_requirements)
 
     if is_solve_required(project_requirements, solution):
-        solver = VersionSolver(project_requirements, solution, component_solved_callback=print_dot)
+        solver = VersionSolver(
+            project_requirements,
+            old_solution=solution,
+            component_solved_callback=print_dot,
+        )
 
         try:
             solution = solver.solve()

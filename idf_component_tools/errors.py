@@ -88,10 +88,6 @@ class LockError(ProcessingError):
     pass
 
 
-class LockVersionMismatchError(LockError):
-    pass
-
-
 class GitError(ProcessingError):
     pass
 

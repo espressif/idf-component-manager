@@ -8,8 +8,10 @@ import pytest
 import yaml
 
 from idf_component_tools.semver import Version
-
-from .integration_test_helpers import build_project, project_action
+from integration_tests.integration_test_helpers import (
+    assert_dependency_version,
+    project_action,
+)
 
 
 @pytest.mark.parametrize(
@@ -145,8 +147,8 @@ def test_version_solver(project, result):
     indirect=True,
 )
 def test_single_dependency(project):
-    res = build_project(project)
-    assert 'Project build complete.' in res
+    res = project_action(project, 'reconfigure')
+    assert 'Configuring done' in res
 
 
 @pytest.mark.parametrize(
@@ -198,8 +200,8 @@ def test_idf_version_dependency_failed(project):
     indirect=True,
 )
 def test_idf_version_dependency_passed(project):
-    res = build_project(project)
-    assert 'Project build complete.' in res
+    res = project_action(project, 'reconfigure')
+    assert 'Configuring done' in res
 
 
 @pytest.mark.parametrize(
@@ -625,3 +627,109 @@ def test_optional_dependencies_unmet_first_then_met(project):
         ]
 
         assert 'espressif/esp_wrover_kit' in d['dependencies']
+
+
+@pytest.mark.parametrize(
+    'project',
+    [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'idf': {
+                            'version': '>=4.3',
+                        },
+                        'espressif/rmaker_common': {
+                            'version': '*',
+                        },
+                    }
+                }
+            }
+        }
+    ],
+    indirect=True,
+)
+def test_major_version_changed_with_existing_lock(project, monkeypatch):
+    monkeypatch.setenv('IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32s3')
+
+    # lock file is an old version 1.0.0
+    with open(os.path.join(project, 'dependencies.lock'), 'w') as fw:
+        yaml.dump(
+            {
+                'dependencies': {
+                    'espressif/rmaker_common': {
+                        'component_hash': 'ea9a31452ba0f21209376d30f8f97a41c36287cfd729ad400606ad63c62313c5',
+                        'version': '1.0.0',
+                        'source': {
+                            'type': 'service',
+                        },
+                    },
+                    'idf': {
+                        'version': '5.4.0',
+                        'source': {
+                            'type': 'idf',
+                        },
+                    },
+                },
+                'manifest_hash': 'a5f45fdb2f073046b6ee07dcc567b37b255a3d302f9646e1e44e16adcef39db3',
+                'target': 'esp32s3',
+                'version': '1.0.0',
+            },
+            fw,
+        )
+
+    res = project_action(project, 'reconfigure')
+    assert 'Configuring done' in res
+    assert_dependency_version(project, 'espressif/rmaker_common', '1.0.0')
+
+
+@pytest.mark.parametrize(
+    'project',
+    [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'idf': {
+                            'version': '>=4.3',
+                        },
+                        'espressif/rmaker_common': {
+                            'version': '*',
+                        },
+                    }
+                }
+            }
+        }
+    ],
+    indirect=True,
+)
+def test_major_version_changed_with_incomplete_existing_lock(project, monkeypatch):
+    monkeypatch.setenv('IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32s3')
+
+    # lock file is an old version 1.0.0
+    with open(os.path.join(project, 'dependencies.lock'), 'w') as fw:
+        yaml.dump(
+            {
+                'dependencies': {
+                    'espressif/rmaker_common': {
+                        'component_hash': 'ea9a31452ba0f21209376d30f8f97a41c36287cfd729ad400606ad63c62313c5',
+                        'version': '1.0.0',
+                        'source': {
+                            'type': 'service',
+                        },
+                    },
+                    # idf missing
+                },
+                'manifest_hash': 'a5f45fdb2f073046b6ee07dcc567b37b255a3d302f9646e1e44e16adcef39db3',
+                'target': 'esp32s3',
+                'version': '1.0.0',
+            },
+            fw,
+        )
+
+    res = project_action(project, 'reconfigure')
+    assert 'Configuring done' in res
+
+    assert_dependency_version(project, 'espressif/rmaker_common', '1.0.0')

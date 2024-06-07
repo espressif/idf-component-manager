@@ -6,7 +6,7 @@ import shutil
 import pytest
 import yaml
 
-from integration_tests.integration_test_helpers import build_project, fixtures_path, project_action
+from integration_tests.integration_test_helpers import fixtures_path, project_action
 
 
 @pytest.mark.parametrize(
@@ -30,8 +30,8 @@ from integration_tests.integration_test_helpers import build_project, fixtures_p
 )
 def test_local_dependency_with_relative_path(project):
     shutil.copytree(fixtures_path('components', 'cmp'), os.path.join(project, 'cmp'))
-    res = build_project(project)
-    assert 'Project build complete.' in res
+    res = project_action(project, 'reconfigure')
+    assert 'Configuring done' in res
 
 
 @pytest.mark.parametrize(
@@ -57,8 +57,8 @@ def test_local_dependency_with_relative_path(project):
     indirect=True,
 )
 def test_local_dependency_main_requires(project):
-    res = build_project(project)
-    assert 'Project build complete.' in res
+    res = project_action(project, 'reconfigure')
+    assert 'Configuring done' in res
 
 
 @pytest.mark.parametrize(
