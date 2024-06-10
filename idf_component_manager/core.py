@@ -767,7 +767,7 @@ class ComponentManager(object):
                 if requirement.version:
                     file.write(
                         'idf_component_set_property({} {} "{}")\n'.format(
-                            requirement.name,
+                            build_name(requirement.name),
                             'COMPONENT_VERSION',
                             requirement.version,
                         )
