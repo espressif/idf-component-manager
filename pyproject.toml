@@ -105,7 +105,7 @@ extend_exclude = [
     "integration_tests",
     "idf_component_tools/file_cache.py", # Tries a number of ways to detect paths on Windows
 ]
-pep621_dev_dependency_groups = ["test", "docs", "dev"]
+pep621_dev_dependency_groups = ["test", "docs", "dev", "all"]
 
 [tool.deptry.per_rule_ignores]
 DEP001 = ["idf_py_actions"]
