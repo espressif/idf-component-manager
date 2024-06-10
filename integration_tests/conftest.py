@@ -118,3 +118,8 @@ def pytest_configure(config):
 @pytest.fixture(scope='session')
 def idf_version():
     return system_idf_version()
+
+
+@pytest.fixture
+def debug_mode(monkeypatch):
+    monkeypatch.setenv('IDF_COMPONENT_MANAGER_DEBUG_MODE', '1')

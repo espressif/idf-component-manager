@@ -464,14 +464,16 @@ def test_check_for_newer_component_versions(project, tmp_path, monkeypatch, fixt
     ],
     indirect=True,
 )
-def test_multiple_storage_urls(monkeypatch, project):
+def test_multiple_storage_urls(monkeypatch, project, debug_mode):
     fixtures = os.path.join(os.path.dirname(__file__), 'fixtures')
     monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', f'file://{fixtures};default')
+
     output = project_action(project, 'reconfigure')
 
     assert 'Configuring done' in output
     assert 'example/cmp (3.3.3)' in output
-    assert 'test/cmp2 (1.0.0) from file:///' in output
+    assert 'test/cmp2 (1.0.0)' in output
+    assert 'Downloading component test/cmp2@1.0.0 from file:///' in output
 
 
 @pytest.mark.parametrize(
