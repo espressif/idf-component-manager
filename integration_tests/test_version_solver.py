@@ -446,6 +446,7 @@ def test_check_for_newer_component_versions(project, tmp_path, monkeypatch, fixt
     assert 'Following dependencies have new versions available:' in output
     assert 'Dependency "example/cmp": "3.3.99" -> "3.4.0"' in output
     assert 'Consider running "idf.py update-dependencies" to update your lock file.' in output
+    assert 'Configuring done' in output
 
 
 @pytest.mark.parametrize(
