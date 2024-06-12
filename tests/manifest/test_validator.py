@@ -290,7 +290,7 @@ class TestManifestValidator:
         ],
     )
     def test_parse_if_clause(self, if_clause, bool_value, monkeypatch):
-        monkeypatch.setenv('IDF_VERSION', '5.0.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.0.0')
         monkeypatch.setenv('IDF_TARGET', 'esp32')
 
         assert parse_if_clause(if_clause).get_value() == bool_value
@@ -357,13 +357,13 @@ class TestManifestValidator:
                 OptionalDependency.fromdict({'if': 'idf_version == 4.4.0'}),
             ]
         )
-        monkeypatch.setenv('IDF_VERSION', '5.0.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.0.0')
         assert req.version_spec_if_meet_conditions('*') is None
 
-        monkeypatch.setenv('IDF_VERSION', '4.4.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '4.4.0')
         assert req.version_spec_if_meet_conditions('*') == '*'
 
-        monkeypatch.setenv('IDF_VERSION', '3.0.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '3.0.0')
         assert req.version_spec_if_meet_conditions('*') == '1.0.0'
 
     def test_matches_with_rules(self, monkeypatch):
@@ -376,11 +376,11 @@ class TestManifestValidator:
                 }),  # shall override
             ]
         )
-        monkeypatch.setenv('IDF_VERSION', '5.0.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.0.0')
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         assert req.version_spec_if_meet_conditions('*') is None
 
-        monkeypatch.setenv('IDF_VERSION', '3.0.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '3.0.0')
         assert req.version_spec_if_meet_conditions('*') == '1.0.1'
 
     def test_rules_override_matches(self, monkeypatch):
@@ -396,14 +396,14 @@ class TestManifestValidator:
                 }),  # shall override
             ],
         )
-        monkeypatch.setenv('IDF_VERSION', '5.0.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.0.0')
         monkeypatch.setenv('IDF_TARGET', 'esp32s2')
         assert req.version_spec_if_meet_conditions('*') is None
 
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         assert req.version_spec_if_meet_conditions('*') is None
 
-        monkeypatch.setenv('IDF_VERSION', '3.0.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '3.0.0')
         assert req.version_spec_if_meet_conditions('*') == '1.0.3'
 
     def test_validate_optional_dependency_not_expanded_success(
@@ -471,7 +471,7 @@ class TestManifestValidatorUploadMode:
     def test_validate_optional_dependency_invalid_derived(
         self, valid_optional_dependency_manifest_with_idf, invalid_str, expected_errors, monkeypatch
     ):
-        monkeypatch.setenv('IDF_VERSION', '')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '')
         valid_optional_dependency_manifest_with_idf['dependencies']['optional']['rules'][0][
             'if'
         ] = invalid_str

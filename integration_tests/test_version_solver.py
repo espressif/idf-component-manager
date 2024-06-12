@@ -653,7 +653,7 @@ def test_optional_dependencies_unmet_first_then_met(project):
     indirect=True,
 )
 def test_major_version_changed_with_existing_lock(project, monkeypatch):
-    monkeypatch.setenv('IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
     monkeypatch.setenv('IDF_TARGET', 'esp32s3')
 
     # lock file is an old version 1.0.0
@@ -708,7 +708,7 @@ def test_major_version_changed_with_existing_lock(project, monkeypatch):
     indirect=True,
 )
 def test_major_version_changed_with_incomplete_existing_lock(project, monkeypatch):
-    monkeypatch.setenv('IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
     monkeypatch.setenv('IDF_TARGET', 'esp32s3')
 
     # lock file is an old version 1.0.0

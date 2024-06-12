@@ -82,7 +82,7 @@ class TestLockManager(object):
         assert test_cmp.source.registry_url == 'https://repo.example.com'
 
     def test_lock_dump_with_solution(self, tmp_path, monkeypatch, manifest_path, valid_lock_path):
-        monkeypatch.setenv('IDF_VERSION', '4.4.4')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '4.4.4')
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
 
@@ -110,7 +110,7 @@ class TestLockManager(object):
     def test_lock_dump_with_current_solution(
         self, tmp_path, monkeypatch, manifest_path, valid_lock_path, capsys
     ):
-        monkeypatch.setenv('IDF_VERSION', '4.4.4')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '4.4.4')
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
 
@@ -165,12 +165,12 @@ class TestLockManager(object):
         solution.manifest_hash = project_requirements.manifest_hash
 
         # idf change to 5.0, shouldn't trigger solve, but update the lock
-        monkeypatch.setenv('IDF_VERSION', '5.0.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.0.0')
         assert not is_solve_required(ProjectRequirements([manifest]), solution)
         assert lock.dump(solution)
 
         # idf change to 5.1, should trigger solve, since dependency idf<5.1
-        monkeypatch.setenv('IDF_VERSION', '5.1.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.1.0')
         assert is_solve_required(ProjectRequirements([manifest]), solution)
         captured = capsys.readouterr()
         assert (
@@ -179,7 +179,7 @@ class TestLockManager(object):
         )
 
         # reset idf version
-        monkeypatch.setenv('IDF_VERSION', '4.4.4')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '4.4.4')
 
         # target change to esp32s2, shouldn't trigger solve, but update the lock
         monkeypatch.setenv('IDF_TARGET', 'esp32s2')
@@ -203,7 +203,7 @@ class TestLockManager(object):
         valid_solution_dependency_dict,
         valid_solution_hash,
     ):
-        monkeypatch.setenv('IDF_VERSION', '4.4.4')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '4.4.4')
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
@@ -227,7 +227,7 @@ class TestLockManager(object):
         valid_solution_dependency_dict,
         valid_solution_hash,
     ):
-        monkeypatch.setenv('IDF_VERSION', '4.4.4')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '4.4.4')
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
 
@@ -263,7 +263,7 @@ class TestLockManager(object):
         self, tmp_path, monkeypatch, valid_solution_dependency_dict, valid_solution_hash
     ):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
-        monkeypatch.setenv('IDF_VERSION', '5.1.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.1.0')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
         solution = SolvedManifest.fromdict({
@@ -350,7 +350,7 @@ class TestLockManager(object):
         self, monkeypatch, capsys, release_component_path
     ):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
-        monkeypatch.setenv('IDF_VERSION', '4.4.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '4.4.0')
         manifest_dict = {
             'dependencies': {
                 'foo': {
@@ -374,14 +374,14 @@ class TestLockManager(object):
             'manifest_hash': project_requirements.manifest_hash,
         })
 
-        monkeypatch.setenv('IDF_VERSION', '5.0.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.0.0')
         manifest = Manifest.fromdict(manifest_dict)
         project_requirements = ProjectRequirements([manifest])
         assert not is_solve_required(project_requirements, solution)
         captured = capsys.readouterr()
         assert 'solving dependencies.' not in captured.out
 
-        monkeypatch.setenv('IDF_VERSION', '3.0.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '3.0.0')
         manifest = Manifest.fromdict(manifest_dict)
         project_requirements = ProjectRequirements([manifest])
         assert is_solve_required(project_requirements, solution)
