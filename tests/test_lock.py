@@ -150,7 +150,7 @@ class TestLockManager(object):
 
     def test_minimal_lock(self, tmp_path, monkeypatch):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
-        monkeypatch.setenv('IDF_VERSION', '5.1.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.1.0')
         lock_path = os.path.join(str(tmp_path), 'dependencies.lock')
         parser = LockManager(lock_path)
         solution = SolvedManifest.fromdict(
@@ -264,7 +264,7 @@ class TestLockManager(object):
             )
         )
 
-        monkeypatch.setenv('IDF_VERSION', '4.4.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '4.4.0')
         assert is_solve_required(project_requirements, solution)  # Different idf version
         captured = capsys.readouterr()
 
@@ -273,7 +273,7 @@ class TestLockManager(object):
         captured = capsys.readouterr()
         assert 'Manifest files have changed, solving dependencies' in captured.out
 
-        monkeypatch.setenv('IDF_VERSION', '4.2.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '4.2.0')
         solution.manifest_hash = 'cfedb62005f55b7e817bb733bb4d5df5047267a0229a162d4904ca9869af1522'
         assert not is_solve_required(project_requirements, solution)
         captured = capsys.readouterr()
@@ -283,7 +283,7 @@ class TestLockManager(object):
         self, monkeypatch, capsys, release_component_path
     ):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
-        monkeypatch.setenv('IDF_VERSION', '4.4.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '4.4.0')
         manifest_dict = {
             'dependencies': {
                 'foo': {
@@ -316,7 +316,7 @@ class TestLockManager(object):
             )
         )
 
-        monkeypatch.setenv('IDF_VERSION', '5.0.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.0.0')
         manifest_dict['dependencies']['foo']['rules'] = [{'if': 'idf_version > 4'}]
         manifest = Manifest.fromdict(manifest_dict, name='test_manifest')
         project_requirements = ProjectRequirements([manifest])
@@ -324,7 +324,7 @@ class TestLockManager(object):
         captured = capsys.readouterr()
         assert 'solving dependencies.' not in captured.out
 
-        monkeypatch.setenv('IDF_VERSION', '3.0.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '3.0.0')
         manifest_dict['dependencies']['foo']['rules'] = [{'if': 'idf_version > 4'}]
         manifest = Manifest.fromdict(manifest_dict, name='test_manifest')
         project_requirements = ProjectRequirements([manifest])
