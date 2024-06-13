@@ -591,7 +591,7 @@ class SolvedComponent(BaseModel):
         return base_str
 
     def model_post_init(self, __context: t.Any) -> None:
-        if self.source.component_hash_required and not self.component_hash:
+        if self.source.downloadable and not self.component_hash:
             raise ValueError('Component hash is required for source {}'.format(self.source))
 
     @field_serializer('name')

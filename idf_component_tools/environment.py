@@ -125,6 +125,8 @@ class ComponentManagerSettings(BaseSettings):
             'IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS',
         ),
     )
+    # if true, calculate by hash_dir() instead of checking the .component_hash file
+    STRICT_CHECKSUM: bool = False
 
     # version solver
     CHECK_NEW_VERSION: bool = True

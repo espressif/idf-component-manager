@@ -26,24 +26,30 @@ from .integration_test_helpers import project_action
     ],
     indirect=True,
 )
-def test_changes_in_component(project):
+def test_changes_in_component(project, monkeypatch):
     res = project_action(project, 'reconfigure')
     assert 'Build files have been written to' in res
 
-    with open(os.path.join(project, 'managed_components', 'example__cmp', 'README.md'), 'w') as f:
-        f.write('TEST STRING')
-    shutil.rmtree(os.path.join(project, 'build'))
-    res = project_action(project, 'reconfigure')
+    with open(os.path.join(project, 'managed_components', 'example__cmp', 'cmp.c'), 'a') as f:
+        f.write('// just a comment')
 
+    # .component_hash same, no error
+    res = project_action(project, 'reconfigure')
+    assert 'Configuring done' in res
+
+    # error when in strict mode
+    monkeypatch.setenv('IDF_COMPONENT_STRICT_CHECKSUM', 'y')
+    res = project_action(project, 'reconfigure')
     assert 'in the "managed_components" directory' in res
+    assert 'Configuring done' not in res
+    monkeypatch.delenv('IDF_COMPONENT_STRICT_CHECKSUM')
 
     shutil.move(
         os.path.join(project, 'managed_components', 'example__cmp'),
         os.path.join(project, 'components', 'example__cmp'),
     )
     res = project_action(project, 'reconfigure')
-
-    assert 'Build files have been written to' in res
+    assert 'Configuring done' in res
 
     shutil.move(
         os.path.join(project, 'components', 'example__cmp'),
@@ -59,8 +65,7 @@ def test_changes_in_component(project):
         fw.write(file_str.replace(old_str, new_str))
 
     res = project_action(project, 'reconfigure')
-
-    assert 'Build files have been written to' in res
+    assert 'Configuring done' in res
 
 
 @pytest.mark.parametrize(
@@ -122,14 +127,18 @@ def test_fullclean_managed_components(project):
                     }
                 }
             },
-            'Build files have been written to',
+            'Configuring done',
         ),
     ],
     indirect=True,
 )
-def test_component_hash_exclude_built_files(project, result):
-    res = project_action(project, 'build')
-    assert 'Project build complete' in res
+def test_component_hash_exclude_built_files(project, result, monkeypatch):
+    res = project_action(project, 'reconfigure')
+    assert 'Configuring done' in res
 
+    res = project_action(project, 'reconfigure')
+    assert 'Configuring done' in res
+
+    monkeypatch.setenv('IDF_COMPONENT_STRICT_CHECKSUM', 'y')
     res = project_action(project, 'reconfigure')
     assert result in res

@@ -6,36 +6,50 @@ import typing as t
 from pathlib import Path
 
 from idf_component_tools import ComponentManagerSettings
-from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.manager import ManifestManager
 
+from .calculate import hash_dir
 from .constants import HASH_FILENAME, SHA256_RE
 from .errors import HashDoesNotExistError, HashNotEqualError, HashNotSHA256Error
-from .validator import validate_dir
 
 
-def validate_managed_component_by_manifest(
+def validate_managed_component_by_hashdir(
     root: t.Union[str, Path],
-    component_hash: str,
+    expected_component_hash: str,
 ) -> bool:
-    # TODO Te dependency is weird
-    #   move to source?
-
-    """Validate component in managed directory"""
-    manifest_file_path = os.path.join(root, MANIFEST_FILENAME)
-
-    manifest_manager = ManifestManager(manifest_file_path, 'cmp')
+    manifest_manager = ManifestManager(str(root), 'cmp')
     manifest = manifest_manager.load()
+
     exclude_set = set(manifest.exclude_set)
     exclude_set.add('**/.component_hash')
 
     return validate_dir(
         root,
-        component_hash,
+        expected_component_hash,
         include=manifest.include_set,
         exclude=exclude_set,
         exclude_default=False,
     )
+
+
+def validate_managed_component_by_hashfile(
+    root: t.Union[str, Path],
+    expected_component_hash: str,
+) -> bool:
+    if not os.path.isdir(root):
+        return False
+
+    hash_file_path = os.path.join(root, HASH_FILENAME)
+    if not os.path.isfile(hash_file_path):
+        return False
+
+    with open(hash_file_path, encoding='utf-8') as f:
+        hash_from_file = f.read().strip()
+
+    if not re.match(SHA256_RE, hash_from_file):
+        raise HashNotSHA256Error()
+
+    return hash_from_file == expected_component_hash
 
 
 def validate_managed_component_hash(root: str) -> None:
@@ -54,5 +68,19 @@ def validate_managed_component_hash(root: str) -> None:
     if not re.match(SHA256_RE, hash_from_file):
         raise HashNotSHA256Error()
 
-    if not validate_managed_component_by_manifest(root, hash_from_file):
+    if not validate_managed_component_by_hashdir(root, hash_from_file):
         raise HashNotEqualError()
+
+
+def validate_dir(
+    root: t.Union[str, Path],
+    dir_hash: str,
+    include: t.Optional[t.Iterable[str]] = None,
+    exclude: t.Optional[t.Iterable[str]] = None,
+    exclude_default: bool = True,
+) -> bool:
+    """Check if directory hash is the same as provided"""
+    current_hash = Path(root).is_dir() and hash_dir(
+        root, include=include, exclude=exclude, exclude_default=exclude_default
+    )
+    return current_hash == dir_hash

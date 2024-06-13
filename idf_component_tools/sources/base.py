@@ -5,8 +5,12 @@ import os
 import typing as t
 from abc import abstractmethod
 
+from idf_component_tools import ComponentManagerSettings
 from idf_component_tools.errors import FetchingError
 from idf_component_tools.file_cache import FileCache
+from idf_component_tools.hash_tools.validate_managed_component import (
+    validate_managed_component_by_hashfile,
+)
 from idf_component_tools.semver import SimpleSpec
 from idf_component_tools.utils import BaseModel, ComponentWithVersions, Literal
 
@@ -69,11 +73,6 @@ class BaseSource(BaseModel):
         return self.type
 
     @property
-    def component_hash_required(self) -> bool:
-        """Returns True if component's hash have to present and be validated"""
-        return False
-
-    @property
     def downloadable(self) -> bool:
         """Returns True if components have to be fetched"""
         return False
@@ -99,18 +98,20 @@ class BaseSource(BaseModel):
 
     def up_to_date(self, component: 'SolvedComponent', path: str) -> bool:
         from idf_component_tools.hash_tools.validate_managed_component import (  # avoid circular import
-            validate_managed_component_by_manifest,
+            validate_managed_component_by_hashdir,
         )
 
-        if self.component_hash_required and not component.component_hash:
-            raise FetchingError('Cannot install component with unknown hash')
-
         if self.downloadable:
+            if not component.component_hash:
+                raise FetchingError('Cannot install component with unknown hash')
+
             if not os.path.isdir(path):
                 return False
 
-            if component.component_hash:
-                return validate_managed_component_by_manifest(path, component.component_hash)
+            if ComponentManagerSettings().STRICT_CHECKSUM:
+                return validate_managed_component_by_hashdir(path, component.component_hash)
+            else:
+                return validate_managed_component_by_hashfile(path, component.component_hash)
 
         return True
 
@@ -138,3 +139,4 @@ class BaseSource(BaseModel):
         Fetch required component version from the source
         Returns list of absolute paths to directories with component on local filesystem
         """
+        return None

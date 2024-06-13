@@ -28,6 +28,7 @@ from idf_component_tools.hash_tools.calculate import hash_url
 from idf_component_tools.messages import hint
 from idf_component_tools.semver import SimpleSpec
 
+from ..hash_tools.validate_managed_component import validate_managed_component_by_hashdir
 from .base import BaseSource
 
 if t.TYPE_CHECKING:
@@ -214,9 +215,6 @@ class WebServiceSource(BaseSource):
         return name
 
     def download(self, component: 'SolvedComponent', download_path: str) -> str:
-        from idf_component_tools.hash_tools.validate_managed_component import (
-            validate_managed_component_by_manifest,  # avoid circular import
-        )
         from idf_component_tools.registry.service_details import get_storage_client
 
         # Check for required components
@@ -232,7 +230,7 @@ class WebServiceSource(BaseSource):
             return download_path
 
         # Check if component is in the cache
-        if validate_managed_component_by_manifest(
+        if validate_managed_component_by_hashdir(
             self.component_cache_path(component), component.component_hash
         ):
             copy_directory(self.component_cache_path(component), download_path)

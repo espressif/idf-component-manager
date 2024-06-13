@@ -43,12 +43,7 @@ class TestComponentWebServiceSource:
         cache_dir = str(tmp_path / 'cache')
         monkeypatch.setenv('IDF_COMPONENT_CACHE_PATH', cache_dir)
 
-        source = WebServiceSource(
-            registry_url='https://example.com/api', system_cache_path=cache_dir
-        )
-        # without 'api'
-        assert source.registry_url == 'https://example.com'
-
+        source = WebServiceSource(registry_url='https://example.com', system_cache_path=cache_dir)
         cmp = SolvedComponent(
             name='test/cmp',
             version=ComponentVersion('1.0.1'),
@@ -57,7 +52,7 @@ class TestComponentWebServiceSource:
         )
 
         download_path = str(tmp_path / 'test_download')
-        local_path = source.download(cmp, download_path)
+        local_path = source.download(cmp, download_path)  # first download shall download something
 
         assert local_path == download_path
         assert os.path.isdir(local_path)
