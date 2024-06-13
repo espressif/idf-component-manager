@@ -7,6 +7,7 @@ This module contains utility functions for working with environment variables.
 import os
 import typing as t
 import warnings
+from functools import lru_cache
 
 from pydantic import AliasChoices, Field, field_validator
 from pydantic_core.core_schema import ValidationInfo, ValidatorFunctionWrapHandler
@@ -170,3 +171,17 @@ class ComponentManagerSettings(BaseSettings):
     ) -> t.Tuple[PydanticBaseSettingsSource, ...]:
         # we only want to use the env_settings
         return (env_settings,)
+
+    @classmethod
+    @lru_cache(1)
+    def known_env_vars(cls) -> t.List[str]:
+        env_var_names = set()
+
+        for name, field in ComponentManagerSettings.model_fields.items():
+            if field.validation_alias:
+                env_var_names.update(field.validation_alias.choices)
+            else:
+                prefix = ComponentManagerSettings.model_config.get('env_prefix', '')
+                env_var_names.add(prefix + name)
+
+        return sorted(env_var_names)
