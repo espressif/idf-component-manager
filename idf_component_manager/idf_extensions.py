@@ -15,7 +15,7 @@ SERVICE_PROFILE: t.List[t.Dict[str, t.Any]] = [
         'names': ['--service-profile'],
         'help': 'Profile for the component registry to use. '
         'By default profile named "default" will be used.',
-        'envvar': 'IDF_COMPONENT_SERVICE_PROFILE',
+        'envvar': 'IDF_COMPONENT_REGISTRY_PROFILE',
     },
 ]
 

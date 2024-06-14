@@ -5,8 +5,8 @@ import re
 import typing as t
 from pathlib import Path
 
+from idf_component_tools import ComponentManagerSettings
 from idf_component_tools.constants import MANIFEST_FILENAME
-from idf_component_tools.environment import getenv_bool
 from idf_component_tools.manager import ManifestManager
 
 from .constants import HASH_FILENAME, SHA256_RE
@@ -40,7 +40,7 @@ def validate_managed_component_by_manifest(
 
 def validate_managed_component_hash(root: str) -> None:
     """Validate managed components directory, raise exception if validation fails"""
-    if getenv_bool('IDF_COMPONENT_OVERWRITE_MANAGED_COMPONENTS'):
+    if ComponentManagerSettings().OVERWRITE_MANAGED_COMPONENTS:
         return
 
     hash_file_path = os.path.join(root, HASH_FILENAME)

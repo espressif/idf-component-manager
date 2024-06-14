@@ -1,13 +1,12 @@
 # SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-from pytest import mark, raises
+from pytest import mark
 
 from idf_component_tools.environment import (
     KNOWN_CI_ENVIRONMENTS,
+    _env_to_bool,
+    _env_to_bool_or_string,
     detect_ci,
-    getenv_bool,
-    getenv_bool_or_string,
-    getenv_int,
 )
 
 
@@ -30,36 +29,8 @@ from idf_component_tools.environment import (
         ('asdf', False),
     ],
 )
-def test_getenv_bool(value, expected, monkeypatch):
-    monkeypatch.setenv('TEST_GETENV_BOOL', value)
-    assert getenv_bool('TEST_GETENV_BOOL') == expected
-
-
-def test_getenv_bool_true(monkeypatch):
-    monkeypatch.setenv('TEST_GETENV_BOOL_TRUE', '0')
-    assert not getenv_bool('TEST_GETENV_BOOL_TRUE', True)
-
-    monkeypatch.delenv('TEST_GETENV_BOOL_TRUE')
-    assert getenv_bool('TEST_GETENV_BOOL_TRUE', True)
-
-
-def test_getenv_int_ok(monkeypatch):
-    monkeypatch.setenv('TEST_GETENV_INT_OK', '1000')
-    assert getenv_int('TEST_GETENV_INT_OK', 5) == 1000
-
-
-def test_getenv_int_err(monkeypatch):
-    monkeypatch.setenv('TEST_GETENV_INT_ERR', '1aaa')
-
-    with raises(
-        ValueError, match='Environment variable "TEST_GETENV_INT_ERR" must contain a numeric value'
-    ):
-        getenv_int('TEST_GETENV_INT_ERR', 5)
-
-
-def test_getenv_int_unset(monkeypatch):
-    monkeypatch.delenv('TEST_GETENV_INT_UNSET', raising=False)
-    assert getenv_int('TEST_GETENV_INT_UNSET', 5) == 5
+def test_env_to_bool(value, expected):
+    assert _env_to_bool(value) == expected
 
 
 def test_detect_ci(monkeypatch):
@@ -81,32 +52,24 @@ def test_detect_ci(monkeypatch):
 
 
 @mark.parametrize(
-    ('name', 'env', 'expected'),
+    ('value', 'expected'),
     [
-        ('TEST_ENV_VAR', 'True', True),
-        ('TEST_ENV_VAR', 'False', False),
-        ('TEST_ENV_VAR', 'yes', True),
-        ('TEST_ENV_VAR', 'no', False),
-        ('TEST_ENV_VAR', '1', True),
-        ('TEST_ENV_VAR', '0', False),
-        ('TEST_ENV_VAR', 't', True),
-        ('TEST_ENV_VAR', 'f', False),
-        ('TEST_ENV_VAR', 'y', True),
-        ('TEST_ENV_VAR', 'n', False),
-        ('TEST_ENV_VAR', 'true', True),
-        ('TEST_ENV_VAR', 'false', False),
-        ('TEST_ENV_VAR', 'yes', True),
-        ('TEST_ENV_VAR', 'no', False),
-        ('TEST_ENV_VAR', 'other', 'other'),
+        ('True', True),
+        ('False', False),
+        ('yes', True),
+        ('no', False),
+        ('1', True),
+        ('0', False),
+        ('t', True),
+        ('f', False),
+        ('y', True),
+        ('n', False),
+        ('true', True),
+        ('false', False),
+        ('yes', True),
+        ('no', False),
+        ('other', 'other'),
     ],
 )
-def test_getenv_bool_or_string(name, env, expected, monkeypatch):
-    monkeypatch.setenv('TEST_ENV_VAR', str(env))
-    assert getenv_bool_or_string(name) == expected
-
-
-def test_getenv_bool_or_string_unset(monkeypatch):
-    monkeypatch.delenv('TEST_ENV_VAR', raising=False)
-    assert getenv_bool_or_string('TEST_ENV_VAR', False) == False
-    assert getenv_bool_or_string('TEST_ENV_VAR', True) == True
-    assert getenv_bool_or_string('TEST_ENV_VAR', 'default') == 'default'
+def test_env_to_bool_or_string(value, expected):
+    assert _env_to_bool_or_string(value) == expected

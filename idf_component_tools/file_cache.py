@@ -14,6 +14,7 @@ import shutil
 import sys
 import typing as t
 
+from idf_component_tools import ComponentManagerSettings
 from idf_component_tools.errors import FatalError
 from idf_component_tools.file_tools import directory_size
 
@@ -43,7 +44,7 @@ class FileCache:
     def path(self) -> str:
         """Path of cache directory. Make directory if it doesn't exist"""
         if not self._path:
-            self._path = os.getenv('IDF_COMPONENT_CACHE_PATH')
+            self._path = ComponentManagerSettings().CACHE_PATH
 
         if not self._path:
             self._path = system_cache_path()

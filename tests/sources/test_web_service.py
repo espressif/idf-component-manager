@@ -38,8 +38,6 @@ class TestComponentWebServiceSource:
     # If you re-record this cassette, make sure the file downloaded only once
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_fetch_webservice.yaml')
     def test_download(self, monkeypatch, release_component_path, tmp_path):
-        monkeypatch.delenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES')
-
         cache_dir = str(tmp_path / 'cache')
         monkeypatch.setenv('IDF_COMPONENT_CACHE_PATH', cache_dir)
 

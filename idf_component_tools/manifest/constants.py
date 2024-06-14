@@ -6,6 +6,8 @@ import re
 import sys
 import typing as t
 
+from idf_component_tools import ComponentManagerSettings
+
 SLUG_BODY_REGEX = r'[a-zA-Z\d]+(?:[_-][a-zA-Z\d]*)*[a-zA-Z\d]+'
 SLUG_REGEX = r'^{}$'.format(SLUG_BODY_REGEX)
 FULL_SLUG_REGEX = r'^((?:{slug}/{slug})|(?:{slug}))$'.format(slug=SLUG_BODY_REGEX)
@@ -39,12 +41,14 @@ DEFAULT_KNOWN_TARGETS = [
 
 
 def known_targets() -> t.List[str]:
-    try:
-        targets = os.environ['IDF_COMPONENT_MANAGER_KNOWN_TARGETS'].split(',')
-        if any(targets):
-            return targets
-    except KeyError:
-        pass
+    env_targets = ComponentManagerSettings().KNOWN_TARGETS
+    if env_targets:
+        try:
+            targets = env_targets.split(',')
+            if any(targets):
+                return targets
+        except KeyError:
+            pass
 
     try:
         idf_path = os.environ['IDF_PATH']

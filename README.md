@@ -113,19 +113,18 @@ examples:
 
 ## Environment variables
 
-| Variable                                    | Default value (or example for required) | Description                                                                                                   |
-| ------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| IDF_COMPONENT_API_TOKEN                     |                                         | API token to access the component registry                                                                    |
-| IDF_COMPONENT_REGISTRY_URL                  | https://components.espressif.com/       | URL of the default component registry                                                                         |
-| IDF_COMPONENT_STORAGE_URL                   | https://components-file.espressif.com/  | URL of the default file storage server                                                                        |
-| IDF_COMPONENT_REGISTRY_PROFILE              | default                                 | Profile in the config file to use for component registry                                                      |
-| IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES  | 0                                       | API Cache expiration time in minutes                                                                          |
-| IDF_COMPONENT_CACHE_PATH                    | \* Depends on OS                        | Cache directory for component manager                                                                         |
-| COMPONENT_MANAGER_JOB_TIMEOUT               | 300                                     | Timeout in seconds to wait for component processing                                                           |
-| IDF_COMPONENT_OVERWRITE_MANAGED_COMPONENTS  | 0                                       | Overwrite files in the managed_component directory, even if they have been modified by the user               |
-| IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS | 0                                       | Ignore unknown files in managed_components directory                                                          |
-| IDF_COMPONENT_CHECK_NEW_VERSION             | 1                                       | Check for new versions of components                                                                          |
-| IDF_COMPONENT_VERIFY_SSL                    | 1                                       | Verify SSL certificates when making requests to the registry, set it 0 to disable or provide a CA bundle path |
+| Variable                                     | Default value (or example for required) | Description                                                                                                   |
+|----------------------------------------------|-----------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| IDF_COMPONENT_API_TOKEN                      |                                         | API token to access the component registry                                                                    |
+| IDF_COMPONENT_REGISTRY_URL                   | https://components.espressif.com/       | URL of the default component registry                                                                         |
+| IDF_COMPONENT_STORAGE_URL                    | https://components-file.espressif.com/  | URL of the default file storage server                                                                        |
+| IDF_COMPONENT_REGISTRY_PROFILE               | default                                 | Profile in the config file to use for component registry                                                      |
+| IDF_COMPONENT_CACHE_PATH                     | \* Depends on OS                        | Cache directory for component manager                                                                         |
+| IDF_COMPONENT_VERSION_PROCESS_TIMEOUT        | 300                                     | Timeout in seconds to wait for component processing                                                           |
+| IDF_COMPONENT_OVERWRITE_MANAGED_COMPONENTS   | 0                                       | Overwrite files in the managed_component directory, even if they have been modified by the user               |
+| IDF_COMPONENT_SUPPRESS_UNKNOWN_FILE_WARNINGS | 0                                       | Ignore unknown files in managed_components directory                                                          |
+| IDF_COMPONENT_CHECK_NEW_VERSION              | 1                                       | Check for new versions of components                                                                          |
+| IDF_COMPONENT_VERIFY_SSL                     | 1                                       | Verify SSL certificates when making requests to the registry, set it 0 to disable or provide a CA bundle path |
 
 ## Contributions Guide
 

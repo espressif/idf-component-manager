@@ -44,6 +44,7 @@ dependencies = [
     "jsonref",
     "pydantic",
     "pydantic-core",
+    "pydantic-settings",
     "typing-extensions; python_version < '3.12'",
 ]
 

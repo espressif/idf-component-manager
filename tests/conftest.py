@@ -61,12 +61,6 @@ def valid_manifest():
     }
 
 
-@pytest.fixture(autouse=True)
-def disable_cache(monkeypatch):
-    """Disable cache for all tests."""
-    monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '0')
-
-
 @pytest.fixture
 def valid_optional_dependency_manifest(valid_manifest):
     valid_manifest['dependencies']['optional'] = {

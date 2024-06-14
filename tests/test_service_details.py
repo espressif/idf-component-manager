@@ -102,16 +102,6 @@ def test_get_profile_env(config_path, monkeypatch):
     assert get_profile(None, config_path=config_path).default_namespace == 'test'
 
 
-def test_get_profile_env_both(config_path, monkeypatch):
-    monkeypatch.setenv('IDF_COMPONENT_SERVICE_PROFILE', 'test')
-    monkeypatch.setenv('IDF_COMPONENT_REGISTRY_PROFILE', 'test')
-    with warns(
-        UserWarning,
-        match='IDF_COMPONENT_SERVICE_PROFILE and IDF_COMPONENT_REGISTRY_PROFILE',
-    ):
-        assert get_profile(None, config_path=config_path).default_namespace == 'test'
-
-
 def test_get_profile_not_exist(config_path):
     assert get_profile('not_exists', config_path) is None
 

@@ -13,8 +13,8 @@ from idf_component_manager.version_solver.helper import parse_root_dep_conflict_
 from idf_component_manager.version_solver.mixology.failure import SolverFailure
 from idf_component_manager.version_solver.mixology.package import Package
 from idf_component_manager.version_solver.version_solver import VersionSolver
+from idf_component_tools import ComponentManagerSettings
 from idf_component_tools.build_system_tools import build_name, get_idf_version
-from idf_component_tools.environment import getenv_bool
 from idf_component_tools.errors import (
     ComponentModifiedError,
     FetchingError,
@@ -77,7 +77,7 @@ def detect_unused_components(
         for unused_component_name in unused_components:
             print_info(f' {unused_component_name}')
             shutil.rmtree(os.path.join(managed_components_path, unused_component_name))
-    if unused_files and not getenv_bool('IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS'):
+    if unused_files and not ComponentManagerSettings().SUPPRESS_UNKNOWN_FILE_WARNINGS:
         warning = (
             '{} unexpected files and directories were found in the "managed_components" directory:'
         )
@@ -90,7 +90,7 @@ def detect_unused_components(
             '\nContent of the managed components directory is managed automatically '
             "and it's not recommended to place any files there manually. "
             'To suppress this warning set the environment variable: '
-            'IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS=1'
+            'IDF_COMPONENT_SUPPRESS_UNKNOWN_FILE_WARNINGS=1'
         )
         warn(warning)
 
@@ -255,7 +255,7 @@ class DownloadedComponent:
 
 
 def check_for_new_component_versions(project_requirements, old_solution):
-    if getenv_bool('IDF_COMPONENT_CHECK_NEW_VERSION', True):
+    if ComponentManagerSettings().CHECK_NEW_VERSION:
         # Check for newer versions of components
         solver = VersionSolver(project_requirements)
         try:
