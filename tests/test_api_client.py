@@ -4,6 +4,7 @@ import os
 from ssl import SSLEOFError
 
 import pytest
+import requests_mock
 import vcr
 from requests import Response
 
@@ -196,6 +197,20 @@ class TestAPIClient:
         client = APIClient(registry_url=registry_url)
         with pytest.raises(Exception):
             client.token_information()
+
+    def test_revoke_token(self, registry_url):
+        client = APIClient(registry_url=registry_url, api_token='test')
+        with requests_mock.Mocker() as m:
+            m.delete(
+                'http://localhost:5000/api/tokens/current',
+                status_code=204,
+            )
+
+            client.revoke_current_token()
+
+            assert m.call_count == 1
+            assert m.request_history[0].method == 'DELETE'
+            assert m.request_history[0].url == 'http://localhost:5000/api/tokens/current'
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_version_multiple_storages.yaml')
     def test_version_multiple_storages(self, fixtures_path):

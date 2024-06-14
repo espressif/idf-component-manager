@@ -9,7 +9,7 @@ import click
 import requests
 
 from idf_component_manager.core import ComponentManager
-from idf_component_manager.utils import print_error, print_info
+from idf_component_manager.utils import print_error, print_info, print_warn
 from idf_component_tools.config import ConfigManager, ServiceProfileItem
 from idf_component_tools.errors import FatalError
 from idf_component_tools.registry.client_errors import APIClientError
@@ -141,7 +141,18 @@ def init_registry():
 
     @registry.command()
     @add_options(get_service_profile_option())
-    def logout(service_profile):
+    @click.option(
+        '--no-revoke',
+        is_flag=True,
+        default=False,
+        help='Do not revoke the token on the server side when logging out',
+    )
+    def logout(service_profile, no_revoke):
+        """
+        Logout from the component registry.
+        Removes the token from the profile and revokes it on the registy.
+        """
+
         # Load config to get
         config = ConfigManager().load()
 
@@ -154,6 +165,15 @@ def init_registry():
 
         if profile.api_token is None:
             raise FatalError('You are not logged in')
+
+        if not no_revoke:
+            api_client = get_api_client(profile=profile)
+            try:
+                api_client.revoke_current_token()
+            except APIClientError:
+                print_warn(
+                    'Failed to revoke token from the registry. Probably it was revoked before.'
+                )
 
         profile.api_token = None
         ConfigManager().dump(config)
