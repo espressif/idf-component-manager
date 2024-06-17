@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -18,6 +18,7 @@ from ..errors import LockError
 from ..manifest import ComponentVersion, known_targets
 from ..manifest.solved_component import SolvedComponent
 from ..manifest.solved_manifest import SolvedManifest
+from ..messages import notice
 from ..sources import IDFSource
 
 FORMAT_VERSION = '1.0.0'
@@ -36,11 +37,13 @@ LOCK_SCHEMA = Schema(
                 'source': Or(*[source.schema() for source in tools.sources.KNOWN_SOURCES]),
                 'version': Or(*string_types),
                 Optional('component_hash'): HASH_SCHEMA,
+                Optional(str): object,  # optional fields for future extensions
             }
         },
         'manifest_hash': HASH_SCHEMA,
         'version': And(Or(*string_types), len),
         Optional('target'): And(Use(str.lower), lambda s: s in known_targets()),
+        Optional(str): object,  # optional fields for future extensions
     }
 )
 
@@ -104,10 +107,15 @@ class LockManager:
 
                 version = lock.pop('version')
                 if version != FORMAT_VERSION:
-                    raise LockError(
-                        'Cannot parse components lock file.'
-                        'Lock file format version is %s, while only %s is supported'
-                        % (version, FORMAT_VERSION)
+                    notice(
+                        'Current idf-component-manager default lock file version is '
+                        '{}, '
+                        'but found {} in {}. '
+                        'Recreating lock file with the current version.'.format(
+                            FORMAT_VERSION,
+                            version,
+                            self._path,
+                        )
                     )
 
                 return SolvedManifest.fromdict(lock)

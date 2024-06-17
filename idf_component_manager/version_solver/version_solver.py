@@ -1,9 +1,10 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-
+import logging
 import os
 
 from idf_component_tools.errors import DependencySolveError, FetchingError, SolverError
+from idf_component_tools.lock.manager import EMPTY_LOCK
 from idf_component_tools.manifest import (
     ComponentRequirement,
     ComponentWithVersions,
@@ -17,6 +18,7 @@ from idf_component_tools.sources import BaseSource, LocalSource
 
 from ..utils import print_info, print_warn
 from .helper import PackageSource
+from .mixology.failure import SolverFailure
 from .mixology.package import Package
 from .mixology.version_solver import VersionSolver as Solver
 
@@ -24,6 +26,8 @@ try:
     from typing import Callable
 except ImportError:
     pass
+
+logger = logging.getLogger(__name__)
 
 
 class VersionSolver(object):
@@ -38,18 +42,21 @@ class VersionSolver(object):
         self.old_solution = old_solution
         self.component_solved_callback = component_solved_callback
 
+        self._init()
+
+    def _init(self):
+        # put all the intermediate generated attrs here
+        # to reset them when the solver is re-used
         self._source = PackageSource()
         self._solver = Solver(self._source)
         self._target = None
         self._overriders = set()  # type: set[str]
         self._local_root_requirements = dict()  # type: dict[str, ComponentRequirement]
+        self._parse_local_root_requirements()
+
         self._solved_requirements = set()  # type: set[ComponentRequirement]
 
-    def solve(self):  # type: () -> SolvedManifest
-        # scan all root local requirements
-        # root local requirements defined in the file system manifest files
-        # would have higher priorities
-
+    def _parse_local_root_requirements(self):  # type: () -> None
         # scan all root local requirements
         for manifest in self.requirements.manifests:
             for requirement in manifest.dependencies:  # type: ComponentRequirement
@@ -68,7 +75,7 @@ class VersionSolver(object):
                     else:
                         self._local_root_requirements[requirement.build_name] = requirement
 
-        # scan all root local components
+        # add all local components, except [0] -> main component
         for manifest in self.requirements.manifests[1:]:
             # add itself as highest priority component
             if manifest.name and manifest.version and manifest._manifest_manager:
@@ -87,8 +94,17 @@ class VersionSolver(object):
                     version_spec=str(manifest.version),
                 )
 
+    def _solve(self, cur_solution=None):  # type: (SolvedManifest | None) -> SolvedManifest
+        """
+        Solve the version requirements and return the result.
+
+        :param cur_solution: The current solution to be used as a starting point.
+        :raises SolverError: If the solver fails to solve the requirements.
+        """
+        # root local requirements defined in the file system manifest files
+        # would have higher priorities
         for manifest in self.requirements.manifests:
-            self.solve_manifest(manifest)
+            self.solve_manifest(manifest, cur_solution=cur_solution)
 
         self._source.override_dependencies(self._overriders)
 
@@ -108,18 +124,42 @@ class VersionSolver(object):
             solved_components, self.requirements.manifest_hash, self.requirements.target
         )
 
+    def solve(self):  # type: () -> SolvedManifest
+        if self.old_solution != SolvedManifest.fromdict(EMPTY_LOCK):
+            try:
+                return self._solve(self.old_solution)
+            except SolverFailure as e:
+                logger.debug(
+                    'Solver failed to solve the requirements with the current solution. '
+                    'Error: %s.\n'
+                    'Retrying without the current solution. ',
+                    e,
+                )
+
+        self._init()
+        return self._solve()
+
     def get_versions_from_sources(
-        self, requirement
-    ):  # type: (ComponentRequirement) -> tuple[ComponentWithVersions | None, BaseSource | None]
+        self,
+        requirement,  # type: ComponentRequirement
+        cur_solution=None,  # type: SolvedManifest | None
+    ):  # type: (...) -> tuple[ComponentWithVersions | None, BaseSource | None]
         latest_source = None
         cmp_with_versions = None
         for source in requirement.sources:
             try:
-                cmp_with_versions = source.versions(
-                    name=requirement.name,
-                    spec=requirement.version_spec,
-                    target=self.requirements.target,
-                )
+                if cur_solution and requirement.name in cur_solution.solved_components:
+                    cmp_with_versions = requirement.source.versions(
+                        name=requirement.name,
+                        spec=str(cur_solution.solved_components[requirement.name].version),
+                        target=self.requirements.target,
+                    )
+                else:
+                    cmp_with_versions = source.versions(
+                        name=requirement.name,
+                        spec=requirement.version_spec,
+                        target=self.requirements.target,
+                    )
                 latest_source = source
                 if cmp_with_versions.versions:
                     break
@@ -129,18 +169,22 @@ class VersionSolver(object):
                 pass
         return cmp_with_versions, latest_source
 
-    def solve_manifest(self, manifest):  # type: (Manifest) -> None
+    def solve_manifest(
+        self,
+        manifest,  # type: Manifest
+        cur_solution=None,  # type: SolvedManifest | None
+    ):  # type: (...) -> None
         for dep in self._dependencies_with_local_precedence(
             manifest.dependencies, manifest_path=manifest.path
         ):
             if len(dep.sources) == 1:
                 source = dep.source
             else:
-                _, source = self.get_versions_from_sources(dep)
+                _, source = self.get_versions_from_sources(dep, cur_solution=cur_solution)
 
             self._source.root_dep(Package(dep.name, source), dep.version_spec)
             try:
-                self.solve_component(dep, manifest_path=manifest.path)
+                self.solve_component(dep, manifest_path=manifest.path, cur_solution=cur_solution)
             except DependencySolveError as e:
                 raise SolverError(
                     'Solver failed processing dependency "{dependency}" '
@@ -155,12 +199,14 @@ class VersionSolver(object):
                 )
 
     def solve_component(
-        self, requirement, manifest_path=None
-    ):  # type: (ComponentRequirement, str | None) -> None
+        self, requirement, manifest_path=None, cur_solution=None
+    ):  # type: (ComponentRequirement, str | None, SolvedManifest | None) -> None
         if requirement in self._solved_requirements:
             return
 
-        cmp_with_versions, source = self.get_versions_from_sources(requirement)
+        cmp_with_versions, source = self.get_versions_from_sources(
+            requirement, cur_solution=cur_solution
+        )
 
         if not cmp_with_versions or not cmp_with_versions.versions or not source:
             print_warn('Component "{}" not found'.format(requirement.name))

@@ -27,7 +27,7 @@ def valid_manifest_hash():
 
 @pytest.fixture(autouse=True)
 def monkeypatch_idf_version(monkeypatch):
-    monkeypatch.setenv('IDF_VERSION', '5.3.0')
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.3.0')
 
 
 @pytest.fixture()
@@ -92,7 +92,7 @@ def valid_optional_dependency_manifest(valid_manifest):
 
 @pytest.fixture
 def valid_optional_dependency_manifest_with_idf(valid_optional_dependency_manifest, monkeypatch):
-    monkeypatch.setenv('IDF_VERSION', '5.0.0')
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.0.0')
     monkeypatch.setenv('IDF_TARGET', 'esp32')
 
     return valid_optional_dependency_manifest

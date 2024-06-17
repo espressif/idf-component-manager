@@ -1,6 +1,7 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
+from ..semver import Version
 from .solved_component import SolvedComponent
 
 try:
@@ -53,3 +54,10 @@ class SolvedManifest(object):
     @property
     def solved_components(self):  # type: () -> dict[str, SolvedComponent]
         return {cmp.name: cmp for cmp in self.dependencies}
+
+    @property
+    def idf_version(self):  # type: () -> Version | None
+        if 'idf' in self.solved_components:
+            return self.solved_components['idf'].version.semver
+
+        return None

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
@@ -159,6 +159,13 @@ def idf_version():
 
 def project_action(project_path, *actions):
     return live_print_call(['idf.py', '-C', str(project_path)] + list(actions))
+
+
+def assert_dependency_version(project_path, component_name, version):
+    with open(os.path.join(project_path, 'dependencies.lock')) as f:
+        lock = yaml.safe_load(f)
+        assert component_name in lock['dependencies']
+        assert lock['dependencies'][component_name]['version'] == version
 
 
 def build_project(project_path):
