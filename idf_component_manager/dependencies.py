@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-
+import logging
 import os
 import shutil
 import typing as t
@@ -33,6 +33,8 @@ from idf_component_tools.semver import SimpleSpec, Version
 from idf_component_tools.sources import IDFSource
 from idf_component_tools.sources.fetcher import ComponentFetcher
 from idf_component_tools.utils import ProjectRequirements
+
+logger = logging.getLogger(__name__)
 
 
 def check_manifests_targets(project_requirements: ProjectRequirements) -> None:
@@ -309,6 +311,15 @@ def download_project_dependencies(
 
     solution = lock_manager.load()
 
+    # replace the old solution with the current idf
+    for dep in solution.dependencies:
+        if dep.name == IDFSource().type:
+            cur_idf_version = get_idf_version()
+            logger.debug(
+                f'replacing {dep.name} version {dep.version} with current idf version {cur_idf_version}'
+            )
+            dep.version = cur_idf_version
+
     check_manifests_targets(project_requirements)
 
     if is_solve_required(project_requirements, solution):
@@ -325,10 +336,10 @@ def download_project_dependencies(
             components_introduce_conflict = []
             for conflict_constraint in conflict_constraints:
                 for manifest in project_requirements.manifests:
-                    for dep in manifest.requirements:
+                    for req in manifest.requirements:
                         if Package(
-                            dep.name, dep.source
-                        ) == conflict_constraint.package and dep.version_spec == str(
+                            req.name, req.source
+                        ) == conflict_constraint.package and req.version_spec == str(
                             conflict_constraint.constraint
                         ):
                             components_introduce_conflict.append(manifest.real_name)

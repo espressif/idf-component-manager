@@ -29,7 +29,7 @@ class TestSolverResult:
         assert str(solution.dependencies[1].version) == '4.4.4'
 
     def test_solve_optional_dependency(self, monkeypatch, release_component_path):
-        monkeypatch.setenv('IDF_VERSION', '5.0.0')
+        monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.0.0')
         monkeypatch.setenv('IDF_TARGET', 'esp32')
 
         manifest_manager = ManifestManager(release_component_path, 'test')

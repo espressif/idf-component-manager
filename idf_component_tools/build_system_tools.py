@@ -39,6 +39,10 @@ def get_env_idf_target() -> str:
 
 
 def get_idf_version():
+    ci_test_idf_version = os.getenv('CI_TESTING_IDF_VERSION')
+    if ci_test_idf_version:
+        return ci_test_idf_version
+
     idf_version = os.getenv('IDF_VERSION')
     if idf_version:
         return idf_version

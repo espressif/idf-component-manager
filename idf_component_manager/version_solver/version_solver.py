@@ -46,6 +46,11 @@ class VersionSolver:
 
         self.component_solved_callback = component_solved_callback
 
+        self._init()
+
+    def _init(self):
+        # put all the intermediate generated attrs here
+        # to reset them when the solver is re-used
         self._source = PackageSource()
         self._solver = Solver(self._source)
         self._target = None
@@ -154,6 +159,7 @@ class VersionSolver:
                     e,
                 )
 
+        self._init()
         return self._solve()
 
     def solve_manifest(

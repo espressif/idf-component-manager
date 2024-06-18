@@ -653,7 +653,7 @@ def test_optional_dependencies_unmet_first_then_met(project):
     indirect=True,
 )
 def test_major_version_changed_with_existing_lock(project, monkeypatch):
-    monkeypatch.setenv('IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
     monkeypatch.setenv('IDF_TARGET', 'esp32s3')
 
     # lock file is an old version 1.0.0
@@ -708,7 +708,7 @@ def test_major_version_changed_with_existing_lock(project, monkeypatch):
     indirect=True,
 )
 def test_major_version_changed_with_incomplete_existing_lock(project, monkeypatch):
-    monkeypatch.setenv('IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
     monkeypatch.setenv('IDF_TARGET', 'esp32s3')
 
     # lock file is an old version 1.0.0
@@ -736,3 +736,70 @@ def test_major_version_changed_with_incomplete_existing_lock(project, monkeypatc
     assert 'Configuring done' in res
 
     assert_dependency_version(project, 'espressif/rmaker_common', '1.0.0')
+
+
+@pytest.mark.parametrize(
+    'project',
+    [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'idf': {
+                            'version': '*',
+                        },
+                        'example/cmp': {
+                            'version': '*',
+                        },
+                    }
+                }
+            }
+        }
+    ],
+    indirect=True,
+)
+def test_major_version_changed_with_changed_idf_version(project, monkeypatch):
+    # lock file is an old version 1.0.0
+    with open(os.path.join(project, 'dependencies.lock'), 'w') as fw:
+        yaml.dump(
+            {
+                'dependencies': {
+                    'example/cmp': {
+                        'component_hash': '8644358a11a35a986b0ce4d325ba3d1aa9491b9518111acd4ea9447f11dc47c1',
+                        'version': '3.3.7',  # requires idf >=4.1
+                        'source': {
+                            'type': 'service',
+                        },
+                    },
+                    'idf': {
+                        'version': '5.2.0',
+                        'source': {
+                            'type': 'idf',
+                        },
+                    },
+                },
+                'manifest_hash': 'a5f45fdb2f073046b6ee07dcc567b37b255a3d302f9646e1e44e16adcef39db3',
+                'target': 'esp32',
+                'version': '1.0.0',
+            },
+            fw,
+        )
+
+    # idf version should match local one
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.3.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32')
+
+    res = project_action(project, 'reconfigure')
+    assert 'Configuring done' in res
+
+    assert_dependency_version(project, 'example/cmp', '3.3.7')  # unchanged
+    assert_dependency_version(project, 'idf', '5.3.0')
+
+    # cmp should be downgraded since the idf version is now 4.0.0
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '4.0.0')
+
+    res = project_action(project, 'reconfigure')
+    assert 'Configuring done' in res
+
+    assert_dependency_version(project, 'example/cmp', '3.0.3')  # >=4.0
+    assert_dependency_version(project, 'idf', '4.0.0')
