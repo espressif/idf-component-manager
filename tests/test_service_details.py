@@ -23,16 +23,6 @@ def service_config(tmp_path):
     return Config().profiles.get('default', {})
 
 
-@fixture(scope='module', autouse=True)
-def ignore_local_token():
-    token = os.environ.pop('IDF_COMPONENT_API_TOKEN', None)
-
-    yield
-
-    if token is not None:
-        os.environ['IDF_COMPONENT_API_TOKEN'] = token
-
-
 @fixture()
 def config_path(tmp_path):
     config_path = os.path.join(str(tmp_path), 'idf_component_manager.yml')
@@ -100,16 +90,6 @@ def test_get_profile_env_dep(config_path, monkeypatch):
 def test_get_profile_env(config_path, monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_REGISTRY_PROFILE', 'test')
     assert get_profile(None, config_path=config_path).default_namespace == 'test'
-
-
-def test_get_profile_env_both(config_path, monkeypatch):
-    monkeypatch.setenv('IDF_COMPONENT_SERVICE_PROFILE', 'test')
-    monkeypatch.setenv('IDF_COMPONENT_REGISTRY_PROFILE', 'test')
-    with warns(
-        UserWarning,
-        match='IDF_COMPONENT_SERVICE_PROFILE and IDF_COMPONENT_REGISTRY_PROFILE',
-    ):
-        assert get_profile(None, config_path=config_path).default_namespace == 'test'
 
 
 def test_get_profile_not_exist(config_path):

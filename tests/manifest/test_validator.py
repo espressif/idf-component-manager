@@ -199,7 +199,6 @@ class TestManifestValidator:
         assert 'test' in result
 
     def test_known_targets_idf(self, monkeypatch, fixtures_path):
-        monkeypatch.delenv('IDF_COMPONENT_MANAGER_KNOWN_TARGETS', raising=False)
         monkeypatch.setenv('IDF_PATH', os.path.join(fixtures_path, 'fake_idf'))
         result = known_targets()
 
@@ -207,7 +206,6 @@ class TestManifestValidator:
         assert 'test' in result
 
     def test_known_targets_default(self, monkeypatch):
-        monkeypatch.delenv('IDF_COMPONENT_MANAGER_KNOWN_TARGETS', raising=False)
         monkeypatch.delenv('IDF_PATH', raising=False)
         result = known_targets()
 

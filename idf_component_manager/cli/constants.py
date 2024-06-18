@@ -25,7 +25,7 @@ def get_service_profile_option():
     SERVICE_PROFILE_OPTION = [
         click.option(
             '--service-profile',
-            envvar='IDF_COMPONENT_SERVICE_PROFILE',
+            envvar='IDF_COMPONENT_REGISTRY_PROFILE',
             default='default',
             help='Profile for component registry to use.',
         ),

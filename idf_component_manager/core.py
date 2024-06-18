@@ -10,7 +10,6 @@ import tarfile
 import tempfile
 import time
 import typing as t
-import warnings
 from collections import OrderedDict
 from datetime import datetime, timedelta
 from functools import lru_cache
@@ -20,11 +19,11 @@ import requests
 from requests_toolbelt import MultipartEncoderMonitor
 
 from idf_component_manager.utils import ComponentSource, print_info, print_warn
+from idf_component_tools import ComponentManagerSettings
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name, is_component
 from idf_component_tools.config import root_managed_components_dir
 from idf_component_tools.constants import MANIFEST_FILENAME
-from idf_component_tools.environment import getenv_int
 from idf_component_tools.errors import (
     FatalError,
     InternalError,
@@ -83,19 +82,6 @@ from .core_utils import (
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
 from .sync import sync_components
-
-
-# PROCESSING_TIMEOUT
-def get_processing_timeout():
-    try:
-        return getenv_int('COMPONENT_MANAGER_JOB_TIMEOUT', 300)
-    except ValueError:
-        warnings.warn(
-            'Cannot parse value of COMPONENT_MANAGER_JOB_TIMEOUT.'
-            ' It should be number of seconds to wait for job result.'
-        )
-        return 300
-
 
 CHECK_INTERVAL = 3
 MAX_PROGRESS = 100  # Expected progress is in percent
@@ -633,8 +619,8 @@ class ComponentManager:
             'You can check the state of processing by running CLI command '
             '"compote component upload-status --job={} {}"'.format(job_id, profile_text)
         )
-
-        timeout_at = datetime.now() + timedelta(seconds=get_processing_timeout())
+        upload_timeout = ComponentManagerSettings().VERSION_PROCESS_TIMEOUT
+        timeout_at = datetime.now() + timedelta(seconds=upload_timeout)
 
         try:
             warnings = set()
@@ -674,7 +660,7 @@ class ComponentManager:
                     time.sleep(CHECK_INTERVAL)
         except TimeoutError:
             raise FatalError(
-                f"Component wasn't processed in {get_processing_timeout()} seconds. "
+                f"Component wasn't processed in {upload_timeout} seconds. "
                 'Check processing status later.'
             )
 

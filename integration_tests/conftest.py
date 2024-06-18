@@ -122,4 +122,4 @@ def idf_version():
 
 @pytest.fixture
 def debug_mode(monkeypatch):
-    monkeypatch.setenv('IDF_COMPONENT_MANAGER_DEBUG_MODE', '1')
+    monkeypatch.setenv('IDF_COMPONENT_DEBUG_MODE', '1')

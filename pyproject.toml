@@ -44,6 +44,7 @@ dependencies = [
     "jsonref",
     "pydantic",
     "pydantic-core",
+    "pydantic-settings",
     "typing-extensions; python_version < '3.12'",
 ]
 
@@ -61,7 +62,7 @@ test = [
     "jinja2",
     "jsonschema",
     "pexpect",
-    "pytest<8",  # PACMAN-898
+    "pytest",
     "pytest-cov",
     "pytest-mock",
     "requests-mock",

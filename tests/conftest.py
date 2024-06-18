@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 import requests_mock
 
+from idf_component_tools import ComponentManagerSettings
 from idf_component_tools.hash_tools.constants import HASH_FILENAME
 
 
@@ -59,12 +60,6 @@ def valid_manifest():
         'issues': 'https://test.com/tracker',
         'discussion': 'https://discuss.com/discuss',
     }
-
-
-@pytest.fixture(autouse=True)
-def disable_cache(monkeypatch):
-    """Disable cache for all tests."""
-    monkeypatch.setenv('IDF_COMPONENT_API_CACHE_EXPIRATION_MINUTES', '0')
 
 
 @pytest.fixture
@@ -144,6 +139,19 @@ def example_component_path(fixtures_path):
         'components',
         'cmp_for_examples',
     )
+
+
+@pytest.fixture(scope='function', autouse=True)
+def disable_local_env():
+    restore_env = {}
+    for name in ComponentManagerSettings.known_env_vars():
+        restore_env[name] = os.environ.pop(name, None)
+
+    yield
+
+    for name, value in restore_env.items():
+        if value is not None:
+            os.environ[name] = value
 
 
 @pytest.fixture()

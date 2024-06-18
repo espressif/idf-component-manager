@@ -3,9 +3,14 @@
 import logging
 import sys
 
-from idf_component_tools.environment import getenv_bool
+from idf_component_tools.environment import ComponentManagerSettings
 
 logger = logging.getLogger(__package__)
-if getenv_bool('IDF_COMPONENT_MANAGER_DEBUG_MODE'):
+if ComponentManagerSettings().DEBUG_MODE:
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logging.StreamHandler(sys.stdout))
+
+
+__all__ = [
+    'ComponentManagerSettings',
+]

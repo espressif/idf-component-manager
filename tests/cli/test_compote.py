@@ -22,11 +22,6 @@ from idf_component_tools.file_tools import directory_size
 from idf_component_tools.manager import ManifestManager
 
 
-@pytest.fixture(autouse=True)
-def mock_token(monkeypatch):
-    monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'test')
-
-
 def test_raise_exception_on_warnings(monkeypatch):
     # Raises warning in api_client.py in env_cache_time()
     monkeypatch.setenv('IDF_COMPONENT_SERVICE_PROFILE', 'test')
@@ -383,7 +378,9 @@ def test_version():
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_download_metadata_and_component.yaml')
-def test_registry_sync_component_flag(tmp_path):
+def test_registry_sync_component_flag(tmp_path, monkeypatch):
+    monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
+
     manager = ComponentManager(path=str(tmp_path))
 
     # Subprocess and CliRunner changed to function call, because vcrpy can't handle subprocess,
@@ -423,7 +420,9 @@ def test_registry_sync_recursive(tmp_path, mock_registry):
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_download_metadata_and_component.yaml')
-def test_registry_sync_one_component(tmp_path):
+def test_registry_sync_one_component(tmp_path, monkeypatch):
+    monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
+
     component_path = tmp_path / 'cmp'
     component_path.mkdir()
     (component_path / 'main').mkdir()

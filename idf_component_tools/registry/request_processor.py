@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import os
 import typing as t
 import warnings
 from copy import deepcopy
@@ -9,7 +8,7 @@ import requests
 from pydantic import ValidationError
 from requests import Response
 
-from idf_component_tools.environment import getenv_bool_or_string
+from idf_component_tools import ComponentManagerSettings
 
 from .api_models import ApiBaseModel, ErrorResponse
 from .client_errors import (
@@ -20,8 +19,6 @@ from .client_errors import (
     StorageFileNotFound,
 )
 
-DEFAULT_TIMEOUT = (6.05, 30.1)  # Connect timeout  # Read timeout
-
 
 def join_url(*args) -> str:
     """
@@ -29,23 +26,6 @@ def join_url(*args) -> str:
     """
     parts = [part[:-1] if part and part[-1] == '/' else part for part in args]
     return '/'.join(parts)
-
-
-def get_timeout() -> t.Union[float, t.Tuple[float, float]]:
-    try:
-        return float(os.environ['IDF_COMPONENT_SERVICE_TIMEOUT'])
-    except ValueError:
-        raise APIClientError(
-            'Cannot parse IDF_COMPONENT_SERVICE_TIMEOUT. It should be a number in seconds.'
-        )
-    except KeyError:
-        return DEFAULT_TIMEOUT
-
-
-def verify_ssl() -> t.Union[bool, str]:
-    """Returns either True, False or a path to a CA bundle file"""
-
-    return getenv_bool_or_string('IDF_COMPONENT_VERIFY_SSL', True)
 
 
 def make_request(
@@ -66,7 +46,7 @@ def make_request(
             headers=headers,
             timeout=timeout,
             allow_redirects=True,
-            verify=verify_ssl(),
+            verify=ComponentManagerSettings().VERIFY_SSL,
         )
     except requests.exceptions.ConnectionError as e:
         raise NetworkConnectionError(str(e), endpoint=endpoint)
@@ -150,7 +130,10 @@ def base_request(
     use_storage: bool = False,
 ) -> t.Dict:
     endpoint = join_url(url, *path)
-    timeout = get_timeout()
+    timeout: t.Union[float, t.Tuple[float, float]] = ComponentManagerSettings().API_TIMEOUT  # type: ignore
+    if timeout is None:
+        # Connect timeout, Read timeout
+        timeout = 6.05, 30.1
     response = make_request(method, session, endpoint, data, json, headers, timeout)
     response_json = handle_response_errors(response, endpoint, use_storage)
 
