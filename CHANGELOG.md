@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v1.5.3 (2024-06-18)
+
+### Feat
+
+- support reuse local existing versions while version solving
+- Set COMPONENT_VERSION in CMake from manifests in requirements file
+- add esp32c61 to the list of known targets
+
+### Fix
+
+- use build_name for component while running idf_component_set_property
+- `compote registry login` url
+- local dep with '__' can be treated as namespace separator correctly
+- fix the order of managed_components
+- package schema 0.7.7 supports python 3.6+
+
 ## v1.5.2 (2024-02-23)
 
 ### Fix
