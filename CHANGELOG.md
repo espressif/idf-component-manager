@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.0.0.dev1 (2024-06-19)
+
+### Feat
+
+- Revoke token on logout CLI command
+- Use compote CLI when executed as module
+- support debug mode by setting env var IDF_COMPONENT_MANAGER_DEBUG_MODE
+- support reuse local existing versions while version solving
+- Set COMPONENT_VERSION in CMake from manifests in requirements file
+- use current solution while changing target or idf version if it works
+
+### Fix
+
+- reset version solver states when the old solution not working
+- test_check_for_newer_component_versions wrong component_hash
+- store download_url only in storage client
+- `compote registry login` url
+- cleanup dependencies, lift version restrictions
+- Consistent naming convention for ESP Component Registry
+- local components in lock file not exist
+- local dep with '__' can be treated as namespace separator correctly
+- re-trigger version solver when optional dependency now meet conditions
+- skip the optional dependencies while version solving
+- Fix 'default' profile not loading from the config file
+- Invalid component name on upload
+
+### Refactor
+
+- unify env var with pydantic-settings
+- rename service_url to registry_url in manifest files
+- remove api cache with file
+- remove poetry and do project cleanup
+
 ## v2.0.0-dev0 (2024-05-17)
 
 ### Feat
