@@ -12,10 +12,14 @@ from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.errors import InternalError, SourceError
 from idf_component_tools.manager import ManifestManager
 from idf_component_tools.messages import warn
-from idf_component_tools.utils import ComponentWithVersions, HashedComponentVersion, Literal
+from idf_component_tools.utils import (
+    ComponentWithVersions,
+    HashedComponentVersion,
+    Literal,
+    subst_vars_in_str,
+)
 
 from ..build_system_tools import build_name_to_namespace_name
-from ..manifest.env_expander import subst_vars_in_str
 from .base import BaseSource
 
 

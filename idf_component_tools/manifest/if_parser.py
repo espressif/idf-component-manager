@@ -23,8 +23,7 @@ from idf_component_tools.build_system_tools import get_env_idf_target, get_idf_v
 from idf_component_tools.errors import RunningEnvironmentError
 from idf_component_tools.messages import warn
 from idf_component_tools.semver import SimpleSpec, Version
-
-from .env_expander import subst_vars_in_str
+from idf_component_tools.utils import subst_vars_in_str
 
 
 class Stmt:

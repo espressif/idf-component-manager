@@ -18,6 +18,7 @@ from idf_component_tools.utils import (
     ComponentWithVersions,
     HashedComponentVersion,
     Literal,
+    subst_vars_in_str,
 )
 
 from .base import BaseSource
@@ -40,6 +41,14 @@ class GitSource(BaseSource):
 
         self._client = GitClient()
 
+    @property
+    def repo(self) -> str:
+        return subst_vars_in_str(self.git)
+
+    @property
+    def repo_path(self) -> str:
+        return subst_vars_in_str(self.path)
+
     def _checkout_git_source(
         self,
         version: t.Union[str, ComponentVersion, None],
@@ -49,7 +58,7 @@ class GitSource(BaseSource):
         if version is not None:
             version = None if version == '*' else str(version)
         return self._client.prepare_ref(
-            repo=self.git,
+            repo=self.repo,
             bare_path=self.cache_path(),
             checkout_path=path,
             ref=version,
@@ -68,7 +77,7 @@ class GitSource(BaseSource):
     @property
     def hash_key(self):
         if self._hash_key is None:
-            self._hash_key = hash_url(self.git)
+            self._hash_key = hash_url(self.repo)
         return self._hash_key
 
     @property
@@ -93,12 +102,12 @@ class GitSource(BaseSource):
 
         temp_dir = tempfile.mkdtemp()
         try:
-            self._checkout_git_source(component.version, temp_dir, selected_paths=[self.path])
-            source_path = os.path.join(str(temp_dir), self.path)
+            self._checkout_git_source(component.version, temp_dir, selected_paths=[self.repo_path])
+            source_path = os.path.join(str(temp_dir), self.repo_path)
             if not os.path.isdir(source_path):
                 raise FetchingError(
                     'Directory {} wasn\'t found for the commit id "{}" of the '
-                    'git repository "{}"'.format(self.path, component.version, self.git)
+                    'git repository "{}"'.format(self.repo_path, component.version, self.repo)
                 )
 
             if os.path.isdir(download_path):
@@ -122,8 +131,10 @@ class GitSource(BaseSource):
         version = None if spec == '*' else spec
         temp_dir = tempfile.mkdtemp()
         try:
-            commit_id = self._checkout_git_source(version, temp_dir, selected_paths=[self.path])
-            source_path = os.path.join(str(temp_dir), self.path)
+            commit_id = self._checkout_git_source(
+                version, temp_dir, selected_paths=[self.repo_path]
+            )
+            source_path = os.path.join(str(temp_dir), self.repo_path)
 
             if not os.path.isdir(source_path):
                 dependency_description = f'commit id "{commit_id}"'
@@ -133,7 +144,7 @@ class GitSource(BaseSource):
                     )
                 raise FetchingError(
                     'Directory {} wasn\'t found for the {} of the git repository "{}"'.format(
-                        self.path, dependency_description, self.git
+                        self.repo_path, dependency_description, self.repo
                     )
                 )
 
@@ -185,5 +196,5 @@ class GitSource(BaseSource):
         if not spec:
             return '*'
         ref = None if spec == '*' else spec
-        commit_id = self._client.get_commit_id_by_ref(self.git, self.cache_path(), ref)
+        commit_id = self._client.get_commit_id_by_ref(self.repo, self.cache_path(), ref)
         return commit_id

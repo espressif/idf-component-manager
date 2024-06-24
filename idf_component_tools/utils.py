@@ -1,9 +1,11 @@
 # SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+import os
 import sys
 import typing as t
 import warnings
 from functools import total_ordering
+from string import Template
 
 from pydantic import (
     AfterValidator,
@@ -23,6 +25,7 @@ from pydantic_core import CoreSchema, ErrorDetails, PydanticCustomError, core_sc
 
 from .build_system_tools import get_env_idf_target
 from .constants import COMPILED_COMMIT_ID_RE
+from .errors import ManifestError, RunningEnvironmentError
 from .hash_tools.calculate import hash_object
 from .manager import ManifestManager
 from .messages import warn
@@ -435,3 +438,18 @@ def validation_error_to_str(error: ErrorDetails) -> str:
         field_msg = ''
 
     return field_msg + msg
+
+
+def subst_vars_in_str(s: str, env: t.Dict[str, t.Any] = None) -> str:  # type: ignore
+    if env is None:
+        env = os.environ
+
+    try:
+        return Template(s).substitute(env)
+    except KeyError as e:
+        raise RunningEnvironmentError(f'Environment variable "{e.args[0]}" is not set')
+    except ValueError:
+        raise ManifestError(
+            'Invalid format of environment variable in the value: "{}".\n'
+            'Note: you can use "$$" to escape the "$" character'.format(s)
+        )

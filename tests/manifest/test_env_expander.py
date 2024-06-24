@@ -4,10 +4,10 @@
 import pytest
 
 from idf_component_tools.errors import ManifestError, RunningEnvironmentError
-from idf_component_tools.manifest.env_expander import (
+from idf_component_tools.manifest.if_parser import parse_if_clause
+from idf_component_tools.utils import (
     subst_vars_in_str,
 )
-from idf_component_tools.manifest.if_parser import parse_if_clause
 
 TEST_ENVIRON = {
     'A': '',
