@@ -12,7 +12,12 @@ from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.errors import InternalError, SourceError
 from idf_component_tools.manager import ManifestManager
 from idf_component_tools.messages import warn
-from idf_component_tools.utils import ComponentWithVersions, HashedComponentVersion, Literal
+from idf_component_tools.utils import (
+    ComponentWithVersions,
+    HashedComponentVersion,
+    Literal,
+    subst_vars_in_str,
+)
 
 from ..build_system_tools import build_name_to_namespace_name
 from .base import BaseSource
@@ -59,19 +64,22 @@ class LocalSource(BaseSource):
         if self.override_path:
             if self.path:
                 warn('Both "path" and "override_path" are set. "override_path" will be used.')
-            _raw_path = Path(self.override_path)
+            _raw_path = self.override_path
         elif self.path:
-            _raw_path = Path(self.path)
+            _raw_path = self.path
         else:
             raise InternalError()
 
-        if _raw_path.is_absolute():
-            path = _raw_path.resolve()
+        # expand env var in runtime
+        path = Path(subst_vars_in_str(_raw_path))
+
+        if path.is_absolute():
+            path = path.resolve()
         elif self._manifest_manager:
-            path = (Path(self._manifest_manager.path).parent / _raw_path).resolve()
+            path = (Path(self._manifest_manager.path).parent / path).resolve()
         else:
             raise ManifestContextError(
-                "Can't reliably evaluate relative path without context: {}".format(str(_raw_path))
+                "Can't reliably evaluate relative path without context: {}".format(str(path))
             )
 
         return path

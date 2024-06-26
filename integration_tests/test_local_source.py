@@ -40,6 +40,46 @@ def test_local_dependency_with_relative_path(project):
         {
             'components': {
                 'main': {
+                    'dependencies': {
+                        'cmp': {
+                            'path': '$COMP_PATH',
+                        }
+                    }
+                }
+            }
+        },
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'cmp': {
+                            'override_path': '$COMP_PATH',
+                        }
+                    }
+                }
+            }
+        },
+    ],
+    indirect=True,
+)
+def test_local_dependency_with_env_var_path(project, monkeypatch):
+    shutil.copytree(fixtures_path('components', 'cmp'), os.path.join(project, 'cmp'))
+
+    monkeypatch.setenv('COMP_PATH', os.path.join('../cmp'))
+    res = project_action(project, 'reconfigure')
+    assert 'Configuring done' in res
+
+    monkeypatch.delenv('COMP_PATH')
+    res = project_action(project, 'reconfigure')
+    assert 'ERROR: Environment variable "COMP_PATH" is not set' in res
+
+
+@pytest.mark.parametrize(
+    'project',
+    [
+        {
+            'components': {
+                'main': {
                     'cmake_lists': {
                         'requires': 'efuse',
                     },

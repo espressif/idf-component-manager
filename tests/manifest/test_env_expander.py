@@ -1,13 +1,11 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import pytest
 
-from idf_component_tools.errors import ManifestError
-from idf_component_tools.manifest.env_expander import (
-    contains_env_variables,
-    expand_env_vars,
-    process_nested_strings,
+from idf_component_tools.errors import ManifestError, RunningEnvironmentError
+from idf_component_tools.manifest.if_parser import parse_if_clause
+from idf_component_tools.utils import (
     subst_vars_in_str,
 )
 
@@ -31,89 +29,51 @@ def test_expand_env_vars_in_str_ok(inp, env, exp):
 
 
 @pytest.mark.parametrize(
-    'inp,env,err',
+    'inp,env',
     [
-        ('$100', TEST_ENVIRON, 'Invalid'),
-        ('$A100', TEST_ENVIRON, 'not set'),
+        ('$A100', TEST_ENVIRON),
+        ('$ABC', TEST_ENVIRON),
     ],
 )
-def test_expand_env_vars_in_str_err(inp, env, err):
-    with pytest.raises(ManifestError, match=err):
+def test_expand_env_vars_in_str_env_not_set_err(inp, env):
+    with pytest.raises(RunningEnvironmentError, match='Environment variable.+is not set'):
         subst_vars_in_str(inp, env)
 
 
 @pytest.mark.parametrize(
-    'inp,env,exp',
+    'inp,env',
     [
-        (
-            {'a': 1, 'b': None, 'c': '$A${B}C'},
-            TEST_ENVIRON,
-            {'a': 1, 'b': None, 'c': 'bC'},
-        ),
-        (
-            {
-                'a': ['1', '2', '3'],
-            },
-            {},
-            {
-                'a': ['1', '2', '3'],
-            },
-        ),
-        (
-            {
-                'a': [{'b': '$B'}],
-            },
-            TEST_ENVIRON,
-            {
-                'a': [{'b': 'b'}],
-            },
-        ),
+        ('$100', TEST_ENVIRON),
+        ('${A', TEST_ENVIRON),
     ],
 )
-def test_env_expander(inp, env, exp):
-    assert expand_env_vars(inp, env) == exp
+def test_expand_env_vars_in_str_env_format_err(inp, env):
+    with pytest.raises(
+        ManifestError, match='Invalid format of environment variable in the value.+'
+    ):
+        subst_vars_in_str(inp, env)
 
 
 @pytest.mark.parametrize(
-    'inp,exp_order,exp',
+    'if_clause',
     [
-        (
-            {'a': 1, 'b': None, 'c': 'C', 'd': {1: 1}},
-            ['C'],
-            {'a': 1, 'b': None, 'c': 1, 'd': {1: 1}},
-        ),
-        (
-            {'a': ['0', '1', '2', '3']},
-            ['0', '1', '2', '3'],
-            {'a': [1, 2, 3, 4]},
-        ),
-        (
-            [1, 2, 'b', (3, 'd')],
-            ['b', 'd'],
-            [1, 2, 1, [3, 2]],
-        ),
+        'target == esp32 && ${FOO} in [ "FOO" ]',
+        '${FOO}_BAR == "FOO_BAR"',
+        '${VER} < 2.11',
     ],
 )
-def test_process_nested_strings(inp, exp_order, exp):
-    order = []
+def test_expand_env_vars_with_optional_dependencies(if_clause, monkeypatch):
+    monkeypatch.setenv('IDF_TARGET', 'esp32')
 
-    def acc(v):
-        order.append(v)
-        return len(order)
+    clause = parse_if_clause(if_clause)
 
-    assert exp == process_nested_strings(inp, acc)
-    assert order == exp_order
+    monkeypatch.setenv('FOO', 'FOO')
+    monkeypatch.setenv('VER', '2.9.0')
+    assert clause.get_value() is True
 
-
-@pytest.mark.parametrize(
-    'obj,expected',
-    [
-        ({'a': 1, 'b': '2', 'c': [3, 4]}, False),
-        ({'a': '$VAR', 'b': '2', 'c': [3, '$VAR']}, True),
-        ({'a': {'b': '$VAR'}, 'c': ['$VAR', {'d': '$VAR'}]}, True),
-        ({}, False),
-        ('$VAR', True),
-    ],
-)
-def test_contains_env_variables(obj, expected):
-    assert contains_env_variables(obj) == expected
+    monkeypatch.delenv('FOO')
+    monkeypatch.delenv('VER')
+    with pytest.warns(
+        UserWarning, match='Environment variable.+is not set, assume the condition is False'
+    ):
+        assert clause.get_value() is False

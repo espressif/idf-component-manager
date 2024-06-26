@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
-import os
 import typing as t
 from ast import literal_eval
 
@@ -24,8 +23,7 @@ from idf_component_tools.build_system_tools import get_env_idf_target, get_idf_v
 from idf_component_tools.errors import RunningEnvironmentError
 from idf_component_tools.messages import warn
 from idf_component_tools.semver import SimpleSpec, Version
-
-from .env_expander import subst_vars_in_str
+from idf_component_tools.utils import subst_vars_in_str
 
 
 class Stmt:
@@ -78,7 +76,7 @@ class LeftValue(Stmt):
                 warn('Running in an environment without IDF. Using "unknown" as IDF target')
                 return 'unknown'
 
-        return subst_vars_in_str(self.stmt, dict(os.environ))
+        return subst_vars_in_str(self.stmt)
 
 
 class String(Stmt):
@@ -185,6 +183,13 @@ class IfClause(Stmt):
         raise ValueError(f'Support operators: "in,not in". Got "{self.op}"')
 
     def get_value(self) -> bool:
+        try:
+            return self._get_value()
+        except RunningEnvironmentError as e:
+            warn(f'{e}, assume the condition is False')
+            return False
+
+    def _get_value(self) -> bool:
         _l = self.left.get_value()
         _r = self.right.get_value()
 

@@ -125,6 +125,7 @@ def get_dependencies(component_dict: t.Dict) -> t.Tuple:
         if 'git' in dependencies[library].keys()
         or 'version' in dependencies[library].keys()
         or 'path' in dependencies[library].keys()
+        or 'override_path' in dependencies[library].keys()
     ]
 
     return include_list, libraries_for_manifest
