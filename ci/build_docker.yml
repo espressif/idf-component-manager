@@ -21,7 +21,7 @@ build:
         IDF_BRANCH_TAG=${MASTER_RELEASE_CUSTOM_TAG}
       fi
 
-    - IMAGE_TAG="${DOCKER_REGISTRY}/component-manager-integration-tests:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}"
+    - IMAGE_TAG="${DOCKER_IMAGE}:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}"
 
     - echo "Using esp-idf branch - ${BRANCH_NAME}"
     - echo "Creating docker image - ${IMAGE_TAG}"

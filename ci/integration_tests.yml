@@ -1,5 +1,5 @@
 integration_test:
-  image: ${DOCKER_REGISTRY}/component-manager-integration-tests:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}
+  image: ${DOCKER_IMAGE}:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}
   stage: integration_test
   tags:
     - test
@@ -35,7 +35,7 @@ integration_test:
         IDF_REPO=https://gitlab-ci-token:${ESPCI_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/espressif/esp-idf.git
       fi
 
-    - IMAGE_TAG="${DOCKER_REGISTRY}/component-manager-integration-tests:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}"
+    - IMAGE_TAG="${DOCKER_IMAGE}:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}"
 
     - echo "Using esp-idf branch - ${BRANCH_NAME}"
     - echo "Creating docker image - ${IMAGE_TAG}"
