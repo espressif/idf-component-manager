@@ -31,6 +31,7 @@ def _modified_files(branch: str) -> str:
 def should_run_build_docker_files() -> bool:
     basic_conditions = [
         BUILD_DOCKER_RE.match(getenv('CI_MERGE_REQUEST_LABELS', '')),
+        getenv('BUILD_DOCKER_IMAGE') == '1',
     ]
 
     if any(basic_conditions):
@@ -41,9 +42,6 @@ def should_run_build_docker_files() -> bool:
     if target_branch:
         changed_files = _modified_files(target_branch)
         if 'Dockerfile' in changed_files:
-            return True
-
-        if 'setup.py' in changed_files:
             return True
 
     return False
@@ -64,7 +62,7 @@ def should_run_integration_tests() -> bool:
         # run_integration_tests label
         INTEGRATION_TESTS_RE.match(getenv('CI_MERGE_REQUEST_LABELS', '')),
         # Check env-variable triggers
-        getenv('RUN_INTEGRATION_TESTS') == 'true',
+        getenv('RUN_INTEGRATION_TESTS') == '1',
         getenv('CI_PIPELINE_SOURCE') == 'schedule',
     ]
 

@@ -1,6 +1,6 @@
 build:
   image:
-    name: gcr.io/kaniko-project/executor:v1.9.1-debug
+    name: gcr.io/kaniko-project/executor:v1.23.1-debug
     entrypoint: [""]
   stage: .pre
   tags:

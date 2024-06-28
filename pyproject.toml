@@ -154,10 +154,6 @@ banned-from = ["typing"]
 "typing" = "t"
 
 [tool.ruff.lint.per-file-ignores]
-"setup.py" = [
-    "S",
-]
-
 "ci/*" = [
     "S",
 ]
