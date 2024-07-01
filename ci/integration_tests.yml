@@ -1,5 +1,5 @@
 integration_test:
-  image: ${DOCKER_REGISTRY}/component-manager-integration-tests:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}
+  image: ${DOCKER_IMAGE}:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}
   stage: integration_test
   tags:
     - test
@@ -19,34 +19,20 @@ integration_test:
     matrix:
       - IDF_BRANCH_TAG: [release-v5.0, release-v5.1]
         PYTHON_IMAGE_TAG: [3.7-bullseye, 3.12-bullseye]
-        REQ_FILE: ["tools/requirements/requirements.core.txt"]
       - IDF_BRANCH_TAG: [release-v5.2, release-v5.3, master]
         PYTHON_IMAGE_TAG: [3.8-bullseye, 3.12-bullseye]
-        REQ_FILE: ["tools/requirements/requirements.core.txt"]
   before_script:
-    # Set the branch name for the esp-idf
-    - BRANCH_NAME=$(echo $IDF_BRANCH_TAG | sed -e "s/release-v/release\/v/g")
-    - export IDF_BRANCH=${BRANCH_NAME}
-
-    - |
-      if [ -n "${MASTER_RELEASE_CUSTOM_TAG:-}" ]; then
-        BRANCH_NAME=${MASTER_RELEASE_CUSTOM_TAG/-//}
-        IDF_BRANCH_TAG=${MASTER_RELEASE_CUSTOM_TAG}
-        IDF_REPO=https://gitlab-ci-token:${ESPCI_TOKEN}@${CI_SERVER_HOST}:${CI_SERVER_PORT}/espressif/esp-idf.git
-      fi
-
-    - IMAGE_TAG="${DOCKER_REGISTRY}/component-manager-integration-tests:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}"
+    - IMAGE_TAG="${DOCKER_IMAGE}:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}"
 
     - echo "Using esp-idf branch - ${BRANCH_NAME}"
     - echo "Creating docker image - ${IMAGE_TAG}"
 
     # Get the version of component manager
+    # There should be only one wheel file in the dist directory
     - WHEEL=$(ls ${CI_PROJECT_DIR}/dist/*.whl)
 
-    - git clone ${IDF_REPO:-https://github.com/espressif/esp-idf.git} --recursive -b $BRANCH_NAME --depth 1
-    - cd ./esp-idf/
-
     # Download the constraints file, and remove the component manager constraint and save it in the .espressif directory
+    # We want to do so, to make sure that all dependencies are installed carefully
     - |
       if [ "${IDF_BRANCH_TAG}" = "master" ]; then
         export CONSTRAINT_FILE_VERSION="v5.4"
@@ -58,16 +44,16 @@ integration_test:
       grep -v "^idf-component-manager" \
       > ~/.espressif/${CI_PYTHON_CONSTRAINT_FILE}
 
-    - ORIGINAL_REQ=$(grep idf-component-manager ${REQ_FILE:-requirements.txt})
+    - REQ_FILE="/esp-idf/tools/requirements/requirements.core.txt"
+    - ORIGINAL_REQ=$(grep idf-component-manager ${REQ_FILE})
     # Replace component manager in the requirements file with local copy
-    - sed -i "\+${ORIGINAL_REQ}+c${WHEEL}" ${REQ_FILE:-requirements.txt}
-    - pip install -U pip
-    - ./install.sh
+    - sed -i "\+${ORIGINAL_REQ}+c${WHEEL}" ${REQ_FILE}
+    - /esp-idf/install.sh
     # And replace it back to avoid export.sh check dependencies error
-    - sed -i "\+${WHEEL}+c${ORIGINAL_REQ}" ${REQ_FILE:-requirements.txt}
-    - . ./export.sh
-    - cd ..
-    - apt update && apt install -y fish zsh
+    - sed -i "\+${WHEEL}+c${ORIGINAL_REQ}" ${REQ_FILE}
+    - . /esp-idf/export.sh
+
+    # Install the test dependencies
     - pip install "${WHEEL}[test]"
   script:
     - ls dist
