@@ -183,11 +183,7 @@ class IfClause(Stmt):
         raise ValueError(f'Support operators: "in,not in". Got "{self.op}"')
 
     def get_value(self) -> bool:
-        try:
-            return self._get_value()
-        except RunningEnvironmentError as e:
-            warn(f'{e}, assume the condition is False')
-            return False
+        return self._get_value()
 
     def _get_value(self) -> bool:
         _l = self.left.get_value()

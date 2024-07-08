@@ -73,7 +73,5 @@ def test_expand_env_vars_with_optional_dependencies(if_clause, monkeypatch):
 
     monkeypatch.delenv('FOO')
     monkeypatch.delenv('VER')
-    with pytest.warns(
-        UserWarning, match='Environment variable.+is not set, assume the condition is False'
-    ):
-        assert clause.get_value() is False
+    with pytest.raises(RunningEnvironmentError, match='Environment variable ".+" is not set'):
+        clause.get_value()
