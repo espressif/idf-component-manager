@@ -27,7 +27,7 @@ extensions = [
     'sphinx.ext.autosectionlabel',
     'sphinx_click',
 ]
-
+smartquotes = False
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # Make sure the target is unique
