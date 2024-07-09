@@ -2,7 +2,9 @@
  ``idf_component.yml`` Manifest File
 #####################################
 
-This reference manual describes the attributes of the ``idf_component.yml`` manifest file. The manifest file is used to describe the component and its dependencies. The file is located in the root directory of the component.
+Use the ``idf_component.yml`` manifest file to describe the component and its dependencies. The manifest file is located in the root directory of the component.
+
+The manifest file supports the following objects:
 
 .. contents::
    :local:
@@ -12,12 +14,18 @@ This reference manual describes the attributes of the ``idf_component.yml`` mani
  Build-Related Attributes
 **************************
 
-Here is a list of attributes that affects the build process. These attributes are the most important when working with the component manager.
+Use the following build-related attributes to affect the build process:
+
+.. contents::
+   :local:
+   :depth: 1
 
 ``targets``
 ===========
 
-A list of targets that the component supports. The field is optional and can be omitted if the component supports all targets.
+A list of targets that the component supports.
+
+The field is optional and can be omitted if the component supports all targets.
 
 Example:
 
@@ -30,24 +38,32 @@ Example:
 ``dependencies``
 ================
 
-A dictionary of dependencies of the component. This field is optional and can be omitted if the component does not have any dependencies. The detailed usage is described in the `component dependencies`_ section.
+A dictionary of dependencies of the component.
+
+This field is optional and can be omitted if the component does not have any dependencies. The detailed usage is described in the `component dependencies`_ section.
 
 *********************
  Metadata Attributes
 *********************
 
-Here is a list of attributes that provide additional information about the component. These attributes are only used when the component is uploaded to the ESP Component Registry.
+Use metadata attributes to provide additional information about the component. The metadata attributes are only evaluated when the component is uploaded to the ESP Component Registry.
+
+The following metadata attributes are available:
+
+.. contents::
+   :local:
+   :depth: 1
 
 ``version``
 ===========
 
-The version of the component. The version should follow the :ref:`versioning scheme <reference/versioning:Versioning Scheme>`.
+The version of the component. Use the :ref:`versioning scheme <reference/versioning:Versioning Scheme>`.
 
 This field is required when uploading the component to the ESP Component Registry. You may declare the version by:
 
 -  specifying the version in the ``idf_component.yml`` file
 -  tagging the commit in the Git repository with the version number
--  pass the version as an argument to the ``compote component upload --version [version]`` command
+-  passing the version as an argument to the ``compote component upload --version [version]`` command
 
 Example:
 
@@ -58,7 +74,9 @@ Example:
 ``maintainers``
 ===============
 
-A list of maintainers of the component. The field is optional.
+A list of maintainers of the component.
+
+The field is optional.
 
 Example:
 
@@ -70,7 +88,9 @@ Example:
 ``description``
 ===============
 
-A brief description of the component. This field is optional, but highly recommended. If it's missing, a warning message will appear when the component is uploaded to the registry.
+A brief description of the component.
+
+This field is optional, but highly recommended. If not specified, a warning message will appear when the component is uploaded to the registry.
 
 Example:
 
@@ -81,11 +101,11 @@ Example:
 ``license``
 ===========
 
-The license of the component. It should be a valid SPDX license identifier listed in https://spdx.org/licenses/.
+The license of the component. It has to be a valid SPDX license identifier listed in https://spdx.org/licenses/.
 
 This field is optional.
 
-If not specified, the license will be automatically detected according to the ``LICENSE``, or ``LICENSE.txt`` file in the component directory if it exists.
+If not specified, and ``LICENSE`` or ``LICENSE.txt`` file exists, the license type will be parsed from the file. If the license type cannot be determined, it will be set to ``unknown``.
 
 Example:
 
@@ -96,7 +116,9 @@ Example:
 ``tags``
 ========
 
-A list of keywords related to the component functionality. This field is optional.
+A list of keywords related to the component functionality.
+
+This field is optional.
 
 Example:
 
@@ -109,7 +131,13 @@ Example:
 ``files``
 =========
 
-A dictionary containing two lists of ``include`` and ``exclude`` patterns. This field is optional and can be omitted if the component contains all files in the root directory with the default list of exceptions.
+A dictionary containing two lists of ``include`` and ``exclude`` patterns.
+
+This field is optional and can be omitted if the component contains all files in the root directory with the default list of exceptions.
+
+.. note::
+
+   The ``files`` field is used only during the creation of the archive before uploading to the registry.
 
 Example:
 
@@ -123,50 +151,48 @@ Example:
      include:
        - "**/.DS_Store" # Include files excluded by default
 
-.. collapse:: Click to expand the list of files and directories excluded by default
+A list of files and directories excluded by default:
 
-   .. code:: python
+.. code:: python
 
-      [
-           # Python files
-           '**/__pycache__',
-           '**/*.pyc',
-           '**/*.pyd',
-           '**/*.pyo',
-           # macOS files
-           '**/.DS_Store',
-           # Git
-           '**/.git/**/*',
-           # SVN
-           '**/.svn/**/*',
-           # dist and build artefacts
-           '**/dist/**/*',
-           '**/build/**/*',
-           # artifacts from example projects
-           '**/managed_components/**/*',
-           '**/dependencies.lock',
-           # CI files
-           '**/.github/**/*',
-           '**/.gitlab-ci.yml',
-           # IDE files
-           '**/.idea/**/*',
-           '**/.vscode/**/*',
-           # Configs
-           '**/.settings/**/*',
-           '**/sdkconfig',
-           '**/sdkconfig.old',
-           # Hash file
-           '**/.component_hash'
-      ]
-
-.. note::
-
-   The ``file`` field is only taken into account during the preparation of the archive before uploading to the registry.
+   [
+         # Python files
+         '**/__pycache__',
+         '**/*.pyc',
+         '**/*.pyd',
+         '**/*.pyo',
+         # macOS files
+         '**/.DS_Store',
+         # Git
+         '**/.git/**/*',
+         # SVN
+         '**/.svn/**/*',
+         # dist and build artefacts
+         '**/dist/**/*',
+         '**/build/**/*',
+         # artifacts from example projects
+         '**/managed_components/**/*',
+         '**/dependencies.lock',
+         # CI files
+         '**/.github/**/*',
+         '**/.gitlab-ci.yml',
+         # IDE files
+         '**/.idea/**/*',
+         '**/.vscode/**/*',
+         # Configs
+         '**/.settings/**/*',
+         '**/sdkconfig',
+         '**/sdkconfig.old',
+         # Hash file
+         '**/.component_hash'
+   ]
 
 ``examples``
 ============
 
-A list of directories with examples. This field is optional and can be omitted if all the component examples are located in the ``examples`` directory.
+A list of directories with examples.
+
+This field is optional and can be omitted if all the component examples are located in the ``examples`` directory.
 
 Example:
 
@@ -180,7 +206,11 @@ Example:
 ``url``
 =======
 
-The homepage of the component. This field is optional, but highly recommended. If it's missing, a warning message will appear when the component is uploaded to the registry.
+The component website.
+
+This field is optional, but highly recommended.
+
+If not specified, a warning message will appear when the component is uploaded to the registry.
 
 Example:
 
@@ -191,7 +221,9 @@ Example:
 ``repository``
 ==============
 
-The URL of the component repository. This field is optional, but highly recommended. The repository URL should be a valid `Git remote URL <https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes>`_. Could be passed as an argument to the ``compote component upload --repository [repository]`` command.
+The URL of the component repository. The repository URL has to be a valid `Git remote URL <https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes>`_.
+
+This field is optional, but highly recommended.
 
 Example:
 
@@ -199,7 +231,7 @@ Example:
 
    repository: "https://example.com/component.git"
 
-If your component is not at the root of the repository, you can specify the path to the component in the repository with an additional field ``repository_info``.
+If your component is not in the root of the repository, specify the path to the component in the repository with the ``repository_info`` field.
 
 .. code:: yaml
 
@@ -211,15 +243,19 @@ If your component is not at the root of the repository, you can specify the path
 ``commit_sha``
 ==============
 
-The commit SHA of the component. This field is optional. Must be used together with the ``repository`` field. Could be passed as an argument to the ``compote component upload --commit-sha [commit_sha]`` command. Could be placed under the ``repository_info`` field.
+A SHA checksum for the Git commit of the component you intend to use.
 
-Example:
+This field is optional.
+
+If used, place it under the ``repository_info`` field (recommended), or used along with the ``repository`` field.
+
+Can be passed as an argument to the ``compote component upload --commit-sha [commit_sha]`` command.
+
+Examples:
 
 .. code:: yaml
 
    commit_sha: "1234567890abcdef1234567890abcdef12345678"
-
-Or (recommended):
 
 .. code:: yaml
 
@@ -229,7 +265,9 @@ Or (recommended):
 ``documentation``
 =================
 
-The URL of the component documentation. This field is optional.
+The URL of the component documentation.
+
+This field is optional.
 
 Example:
 
@@ -240,7 +278,9 @@ Example:
 ``issues``
 ==========
 
-The URL of the component issue tracker. This field is optional.
+The URL of the component issue tracker.
+
+This field is optional.
 
 Example:
 
@@ -251,7 +291,9 @@ Example:
 ``discussion``
 ==============
 
-The URL of the component discussion forum or chat. This field is optional.
+The URL of the component discussion forum or chat.
+
+This field is optional.
 
 Example:
 
@@ -263,205 +305,36 @@ Example:
  Component Dependencies
 ************************
 
-Dependencies are specified in the ``dependencies`` field of the manifest file. The field is a dictionary of dependencies, where the key is the name of the dependency.
+Use the ``dependencies`` field to specify dependencies. The field is a dictionary of dependencies, where the key is the name of the dependency.
 
-Component manager supports several sources of dependencies: `Local Directory Dependencies`_, `Git Dependencies`_, `ESP Component Registry Dependencies`_, and `ESP-IDF Dependency`_.
+Get familiar with the following sections before defining dependencies:
+
+-  `Common Attributes for All Dependency Types`_
+-  `Environment variables`_
+-  `Conditional Dependencies`_.
+
+Component manager supports several sources of dependencies:
+
+-  `Local Directory Dependencies`_
+-  `Git Dependencies`_
+-  `ESP Component Registry Dependencies`_
+-  `ESP-IDF Dependency`_
 
 .. warning::
 
    `Local Directory Dependencies`_ and `Git Dependencies`_ are not supported when uploading the component to the ESP Component Registry.
 
-Local Directory Dependencies
-============================
+Common Attributes for All Dependency Types
+==========================================
 
-If you work on a component that is not yet published to the ESP Component Registry, you can add it as a dependency from a local directory. To specify a local dependency, at least one of the following attributes should be specified:
+The following attributes are supported for all types of dependencies.
 
-``path`` (local)
-----------------
-
-The path to the local directory containing the dependency. The path is relative to the ``idf_component.yml`` manifest file. You can use absolute paths as well.
-
-Example:
-
-.. code:: yaml
-
-   dependencies:
-     some_local_component:
-        path: ../../projects/some_local_component
-
-This field supports `environment variables`_.
-
-``override_path``
------------------
-
-This field is mainly used for :ref:`example projects inside components <guides/packaging_components:Add example projects>`. You can specify a local path in this field, and it will be used instead of the one downloaded from the registry.
-
-Example:
-
-.. code:: yaml
-
-   dependencies:
-     some_local_component:
-       override_path: ../../projects/some_local_component
-
-This field supports `environment variables`_.
-
-Git Dependencies
-================
-
-You can add dependencies from a Git repository by specifying the following attributes:
-
-``git``
--------
-
-The URL of the Git repository. The URL should be a valid `Git remote URL <https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes>`_ or a path to the local Git repository. This field is required for Git dependencies.
-
-Example:
-
-.. code:: yaml
-
-   dependencies:
-     some_git_component:
-       git: /home/user/projects/some_git_component.git
-       # git: https://gitlab.com/user/components.git # remote repository
-
-This field supports `environment variables`_. One possible use-case is providing authentication to Git repositories accessed through HTTPS:
-
-.. code:: yaml
-
-   dependencies:
-    my_component:
-      git: https://git:${ACCESS_TOKEN}@git.my_git.com/my_component.git
-
-``path`` (git)
---------------
-
-The path to the component in the Git repository. The path is relative to the root directory of the Git repository. If the ``path`` field is omitted, the root directory of the Git repository is used as the path to the component.
-
-Example:
-
-.. code:: yaml
-
-   dependencies:
-     # The component is located in /home/user/projects/some_git_component.git/some_git_component
-     some_git_component:
-       git: /home/user/projects/some_git_component.git
-       path: some_git_component
-
-This field supports `environment variables`_.
-
-``version`` (git)
------------------
-
-The version of the dependency. The version of a Git dependency can be specified by any valid Git reference: a tag, a branch, or a commit hash. If the ``version`` field is omitted, the default branch of the Git repository is used.
-
-Example:
-
-.. code:: yaml
-
-   dependencies:
-     some_git_component:
-       git: /home/user/projects/some_git_component.git
-       version: feature/test  # branch
-       # version: v1.0.0  # tag
-       # version: 1234567890abcdef1234567890abcdef12345678  # commit hash
-
-ESP Component Registry Dependencies
-===================================
-
-If no ``path``, ``override_path``, or ``git`` attributes are specified, the component manager will try to resolve the dependency from the ESP Component Registry. Components in the ESP Component Registry are specified by their name in the ``namespace/component_name`` format. You may specify the following attributes:
-
-``version`` (registry)
-----------------------
-
-The version of the dependency. This field is required and could be either a :ref:`specific version <reference/versioning:Versioning Scheme>` or a :ref:`version range <reference/versioning:Range Specifications>`.
-
-Example:
-
-.. code:: yaml
-
-   dependencies:
-     espressif/led_strip:
-       version: ">=2.0"  # a version range
-       # version: "2.0.0"  # a specific version
-
-.. note::
-
-   The default namespace for components in the ESP Component Registry is ``espressif``. You can omit the namespace part for components in the default namespace. For example, the following code is equivalent to the previous example:
-
-   .. code:: yaml
-
-      dependencies:
-        led_strip:
-          version: ">=2.0"
-
-``pre_release``
----------------
-
-A boolean flag that indicates whether the prerelease versions of the dependency should be used. This field is optional and can be omitted. By default, the prerelease versions are ignored.
-
-Example:
-
-.. code:: yaml
-
-   dependencies:
-     espressif/led_strip:
-       version: ">=2.0"
-       pre_release: true
-
-Or you may include the prerelease field in the version string to specify the prerelease version:
-
-.. code:: yaml
-
-   dependencies:
-     espressif/led_strip:
-       version: ">=2.0-beta.1"
-
-Shorthand Syntax
-----------------
-
-You can use the shorthand syntax to specify the version of the dependency if there's only ``version`` field specified:
-
-.. code:: yaml
-
-   dependencies:
-     espressif/component_name:
-       version: ">=1.0"
-
-is equivalent to:
-
-.. code:: yaml
-
-   dependencies:
-     component_name: ">=1.0"
-
-ESP-IDF Dependency
-==================
-
-The ``idf`` dependency is a special case. It is used to specify the version of ESP-IDF that the component is compatible with. The version is specified in the ``version`` field of the ``idf`` dependency, and could be either a :ref:`specific version <reference/versioning:Versioning Scheme>` or a :ref:`version range <reference/versioning:Range Specifications>`.
-
-.. code:: yaml
-
-   dependencies:
-     idf:
-       version: ">=5.0"
-
-You can use the shorthand syntax to specify the version of ESP-IDF:
-
-.. code:: yaml
-
-   dependencies:
-     idf: ">=5.0"
-
-Common Fields for All Dependency Types
-======================================
-
-The following attributes are supported for all types of dependencies. They are optional and can be omitted if not needed.
+These attributes are optional.
 
 ``require``
 -----------
 
-A string specifies component visibility. Possible values are:
+Specifies component visibility. Possible values:
 
 -  ``private``: This is the default value. The required component is added as a private dependency. This is equivalent to adding the component to the ``PRIV_REQUIRES`` argument of ``idf_component_register`` in the component's ``CMakeLists.txt`` file.
 -  ``public``: Sets the transient dependency. This is equivalent to adding the component to the ``REQUIRES`` argument of ``idf_component_register`` in the component's ``CMakeLists.txt`` file.
@@ -484,9 +357,8 @@ A list of `conditional dependencies`_ that should be applied to the dependency. 
 
 A list of `conditional dependencies`_ that should be applied to the dependency. The dependency is only included when all of the if-clauses are true.
 
-**************************
- Conditional Dependencies
-**************************
+Conditional Dependencies
+========================
 
 ``matches`` and ``rules`` attributes are specified to control the dependency inclusion. The dependency is only included when:
 
@@ -498,7 +370,7 @@ A list of `conditional dependencies`_ that should be applied to the dependency. 
 ``matches`` and ``rules`` support the same syntax. The field is a list of conditional dependencies. Each conditional dependency has an ``if`` field, and an optional ``version`` field.
 
 ``if``
-======
+------
 
 The ``if`` field is a boolean expression that is evaluated to determine if the dependency should be included. An expression consists of three parts: left value, operator, and right value.
 
@@ -559,7 +431,7 @@ One possible use-case is to test it in the CI/CD pipeline. For example:
 The dependency will only be included when the environment variable ``TESTING_COMPONENT`` is set to ``foo`` or ``bar``.
 
 ``version`` (if clause)
-=======================
+-----------------------
 
 The ``version`` field is optional, and it could be either a :ref:`specific version <reference/versioning:Versioning Scheme>` or a :ref:`version range <reference/versioning:Range Specifications>`. The version specified here will override the ``version`` field of the dependency when the corresponding if clause is true.
 
@@ -577,17 +449,209 @@ For example,
 
 The ``optional_component`` will be included with version ``~2.0.0`` when the ``idf_version >=3.3``, and it will be included with version ``~1.0.0`` when the ``idf_version <3.3``.
 
-***********************
- Environment Variables
-***********************
+Environment Variables
+=====================
 
 .. warning::
 
    Environment variables are not allowed in manifests when uploading components to the ESP Component Registry.
 
-You can use environment variables for the attributes that support them. The component manager will replace the environment variables with their values. Follow the syntax:
+You can use environment variables for the attributes that support them. The component manager will replace the environment variables with their values. Use the following syntax:
 
 -  ``$VAR``
 -  ``${VAR}``
 
-To escape the dollar sign, use two dollar signs, for example, ``$$VAR`` will be replaced with ``$VAR``, but not with the value of the environment variable ``VAR``.
+If you need to use a literal dollar sign (``$``), escape it with another dollar sign: ``$$string``.
+
+Local Directory Dependencies
+============================
+
+If you work on a component that is not yet published to the ESP Component Registry, you can add it as a dependency from a local directory. To specify a local dependency, at least one of the following attributes should be specified:
+
+``path`` (local)
+----------------
+
+The path to the local directory containing the dependency. Use can use paths relative to the to the ``idf_component.yml`` manifest file, or absolute paths.
+
+This field supports `environment variables`_.
+
+Example:
+
+.. code:: yaml
+
+   dependencies:
+     some_local_component:
+        path: ../../projects/some_local_component
+
+``override_path``
+-----------------
+
+Use this field to use the local component instead of downloading it from the component registry, for example to define :ref:`example projects inside components <guides/packaging_components:Add example projects>`.
+
+This field supports `environment variables`_.
+
+Example:
+
+.. code:: yaml
+
+   dependencies:
+     some_local_component:
+       override_path: ../../projects/some_local_component
+
+Git Dependencies
+================
+
+You can add dependencies from a Git repository by specifying the following attributes:
+
+.. contents::
+   :local:
+   :depth: 1
+
+``git``
+-------
+
+The URL of the Git repository. The URL should be a valid `Git remote URL <https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes>`_ or a path to the local Git repository.
+
+This field is required when using Git dependencies
+
+Example:
+
+.. code:: yaml
+
+   dependencies:
+     some_git_component:
+       git: /home/user/projects/some_git_component.git
+       # git: https://gitlab.com/user/components.git # remote repository
+
+This field supports `environment variables`_. One possible use-case is providing authentication to Git repositories accessed through HTTPS:
+
+.. code:: yaml
+
+   dependencies:
+    my_component:
+      git: https://git:${ACCESS_TOKEN}@git.my_git.com/my_component.git
+
+``path`` (Git)
+--------------
+
+The path to the component in the Git repository. The path is relative to the root directory of the Git repository. If omitted, the root directory of the Git repository is used as the path to the component.
+
+This field supports `environment variables`_.
+
+Example:
+
+.. code:: yaml
+
+   dependencies:
+     # The component is located in /home/user/projects/some_git_component.git/some_git_component
+     some_git_component:
+       git: /home/user/projects/some_git_component.git
+       path: some_git_component
+
+``version`` (Git)
+-----------------
+
+The version of the dependency. The version of a Git dependency can be specified by any valid Git reference: a tag, a branch, or a commit hash.
+
+If omitted, the default branch of the Git repository is used.
+
+Example:
+
+.. code:: yaml
+
+   dependencies:
+     some_git_component:
+       git: /home/user/projects/some_git_component.git
+       version: feature/test  # branch
+       # version: v1.0.0  # tag
+       # version: 1234567890abcdef1234567890abcdef12345678  # commit hash
+
+ESP Component Registry Dependencies
+===================================
+
+If neither ``path``, ``override_path``, nor ``git`` attributes are specified, the component manager will try to resolve the dependency from the ESP Component Registry. Components in the ESP Component Registry are specified by their name in the ``namespace/component_name`` format.
+
+.. note::
+
+   If you need to specify only the ``version`` field, you can use the following syntax:
+
+   .. code:: yaml
+
+      dependencies:
+         component_name: ">=1.0"
+
+   This is equivalent to:
+
+   .. code:: yaml
+
+      dependencies:
+         espressif/component_name:
+            version: ">=1.0"
+
+``version`` (registry)
+----------------------
+
+The version of the dependency.
+
+This field is required and could be either a :ref:`specific version <reference/versioning:Versioning Scheme>` or a :ref:`version range <reference/versioning:Range Specifications>`.
+
+Example:
+
+.. code:: yaml
+
+   dependencies:
+     espressif/led_strip:
+       version: ">=2.0"  # a version range
+       # version: "2.0.0"  # a specific version
+
+The default namespace for components in the ESP Component Registry is ``espressif``. You can omit the namespace part for components in the default namespace:
+
+.. code:: yaml
+
+   dependencies:
+      led_strip:
+         version: ">=2.0"
+
+``pre_release``
+---------------
+
+A boolean that indicates if the prerelease versions of the dependency should be used.
+
+This field is optional.
+
+Example:
+
+.. code:: yaml
+
+   dependencies:
+     espressif/led_strip:
+       version: ">=2.0"
+       pre_release: true
+
+By default, the prerelease versions are ignored. You can include the prerelease field in the version string to specify the prerelease version:
+
+.. code:: yaml
+
+   dependencies:
+     espressif/led_strip:
+       version: ">=2.0-beta.1"
+
+ESP-IDF Dependency
+==================
+
+Use the ``idf:version`` to specify the ESP-IDF version that the component is compatible with.
+
+Use a :ref:`specific version <reference/versioning:Versioning Scheme>` or a :ref:`version range <reference/versioning:Range Specifications>`.
+
+.. code:: yaml
+
+   dependencies:
+     idf:
+       version: ">=5.0"
+
+Shorthand syntax:
+
+.. code:: yaml
+
+   dependencies:
+     idf: ">=5.0"
