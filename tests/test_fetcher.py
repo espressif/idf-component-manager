@@ -13,7 +13,7 @@ from idf_component_tools.sources.fetcher import ComponentFetcher
 from idf_component_tools.utils import ComponentVersion
 
 
-def test_fetcher_download_and_create_hash(fixtures_path):
+def test_fetcher_download_and_create_hash(fixtures_path, monkeypatch):
     components_folder_path = os.path.join(fixtures_path, 'components')
     source = WebServiceSource(registry_url='https://repo.example.com')
     component = SolvedComponent(
@@ -28,9 +28,14 @@ def test_fetcher_download_and_create_hash(fixtures_path):
     try:
         fetcher.create_hash(component_path, component.component_hash)
 
+        # passing since component_hash exists
+        fetcher.download()
+
+        # raise exception if set IDF_COMPONENT_STRICT_CHECKSUM, since it's not downloaded
+        monkeypatch.setenv('IDF_COMPONENT_STRICT_CHECKSUM', 'y')
         with pytest.raises(
             ComponentModifiedError,
-            match='Component directory was modified ' 'on the disk since the last run of the CMake',
+            match='Component directory was modified on the disk since the last run of the CMake',
         ):
             fetcher.download()
 

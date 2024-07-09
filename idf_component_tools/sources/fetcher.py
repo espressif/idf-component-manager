@@ -5,8 +5,13 @@
 import os
 import typing as t
 
+from idf_component_tools import ComponentManagerSettings
 from idf_component_tools.build_system_tools import build_name
-from idf_component_tools.errors import ComponentModifiedError, InvalidComponentHashError
+from idf_component_tools.errors import (
+    ComponentModifiedError,
+    FetchingError,
+    InvalidComponentHashError,
+)
 from idf_component_tools.hash_tools.constants import HASH_FILENAME
 from idf_component_tools.hash_tools.errors import (
     HashDoesNotExistError,
@@ -14,6 +19,7 @@ from idf_component_tools.hash_tools.errors import (
     HashNotSHA256Error,
 )
 from idf_component_tools.hash_tools.validate_managed_component import (
+    validate_managed_component_by_hashfile,
     validate_managed_component_hash,
 )
 from idf_component_tools.manifest import SolvedComponent
@@ -37,7 +43,15 @@ class ComponentFetcher:
     def download(self) -> t.Optional[str]:
         """If necessary, it downloads component and returns local path to component directory"""
         try:
-            validate_managed_component_hash(self.managed_path)
+            if self.source.downloadable and not ComponentManagerSettings().STRICT_CHECKSUM:
+                if not self.component.component_hash:
+                    raise FetchingError('Cannot install component with unknown hash')
+
+                validate_managed_component_by_hashfile(
+                    self.managed_path, self.component.component_hash
+                )
+            else:
+                validate_managed_component_hash(self.managed_path)
         except HashNotEqualError:
             raise ComponentModifiedError(
                 'Component directory was modified on the disk since the last run of ' 'the CMake'

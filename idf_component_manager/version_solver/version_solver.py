@@ -130,7 +130,7 @@ class VersionSolver:
                 'version': version.version,
                 'dependencies': version.dependencies,
             }
-            if package.source.component_hash_required:
+            if package.source.downloadable:
                 kwargs['component_hash'] = version.component_hash
 
             if version.targets:
