@@ -1,32 +1,39 @@
-Installing and Updating the IDF Component Manager
--------------------------------------------------
+###################################################
+ Installing and Updating the IDF Component Manager
+###################################################
 
 To update the IDF Component Manager to the latest version, run the following commands.
 
 .. note::
 
-    If your version of ESP-IDF doesn't come with the IDF Component Manager, you can install it using the same commands.
+   If your version of ESP-IDF doesn't come with the IDF Component Manager, you can install it using the same commands.
 
 .. tabs::
 
-    .. group-tab:: Windows
+   .. group-tab::
 
-        Run ``ESP-IDF PowerShell Environment`` or ``ESP-IDF Command Prompt (cmd.exe)`` from the Start menu and run the following command:
+      Windows
 
-        .. code-block:: powershell
+      Run ``ESP-IDF PowerShell Environment`` or ``ESP-IDF Command Prompt (cmd.exe)`` from the Start menu and run the following command:
 
-            > python -m pip install --upgrade idf-component-manager
+      .. code:: powershell
 
-    .. group-tab:: macOS and Linux (bash or zsh)
+         > python -m pip install --upgrade idf-component-manager
 
-        .. code-block:: bash
+   .. group-tab::
 
-            $ source $IDF_PATH/export.sh
-            $ python -m pip install --upgrade idf-component-manager
+      macOS and Linux (bash or zsh)
 
-    .. group-tab:: macOS and Linux (fish)
+      .. code:: bash
 
-        .. code-block:: fishshell
+         $ source $IDF_PATH/export.sh
+         $ python -m pip install --upgrade idf-component-manager
 
-            $ . $IDF_PATH/export.fish
-            $ python -m pip install --upgrade idf-component-manager
+   .. group-tab::
+
+      macOS and Linux (fish)
+
+      .. code:: fishshell
+
+         $ . $IDF_PATH/export.fish
+         $ python -m pip install --upgrade idf-component-manager
