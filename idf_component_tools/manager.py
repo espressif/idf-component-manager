@@ -65,6 +65,14 @@ class ManifestManager:
                     ]
                     return self
 
+                if not isinstance(d, dict):
+                    self._validation_errors = [
+                        'Manifest file should be a dictionary. Please check that\n'
+                        '\t{}\n'
+                        'is a valid manifest file\n'.format(self.path)
+                    ]
+                    return self
+
                 if self.name:
                     d['name'] = self.name
 

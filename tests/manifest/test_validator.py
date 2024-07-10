@@ -7,6 +7,7 @@ import warnings
 import pytest
 
 from idf_component_manager.dependencies import detect_unused_components
+from idf_component_tools.manager import ManifestManager
 from idf_component_tools.manifest import SLUG_REGEX, OptionalRequirement, SolvedComponent
 from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS, known_targets
 from idf_component_tools.manifest.if_parser import parse_if_clause
@@ -480,3 +481,23 @@ class TestManifestValidatorUploadMode:
         )
 
         assert errors == expected_errors
+
+
+@pytest.mark.parametrize(
+    'manifest_obj, error',
+    [
+        ('a string', 'Manifest file should be a dictionary.'),
+        (None, None),
+        ('version: 1.0.0', None),
+    ],
+)
+def test_validate_manifest_file(tmp_path, manifest_obj, error):
+    with open(tmp_path / 'idf_component.yml', 'w') as fw:
+        if manifest_obj:
+            fw.write(manifest_obj)
+
+    manifest = ManifestManager(str(tmp_path), 'main').validate()
+    if error:
+        assert error in manifest.validation_errors[0]
+    else:
+        assert manifest.validation_errors == []
