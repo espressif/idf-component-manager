@@ -114,15 +114,38 @@ class TestManifestValidator:
 
         assert errors == ['Invalid field "targets". Unknown targets: "asdf,esp123"']
 
-    def test_slug_re(self):
-        valid_names = ('asdf-fadsf', '123', 'asdf_erw', 'as_df_erw', 'test-stse-sdf_sfd')
-        invalid_names = ('!', 'asdf$f', 'daf411~', 'adf\nadsf', '_', '-', '_good', 'asdf-_-fdsa-')
+    @pytest.mark.parametrize(
+        'name',
+        [
+            'asdf-fadsf',
+            '123',
+            'asdf_erw',
+            'as_df_erw',
+            'test-stse-sdf_sfd',
+        ],
+    )
+    def test_slug_re_valid_names(self, name):
+        assert re.match(SLUG_REGEX, name)
 
-        for name in valid_names:
-            assert re.match(SLUG_REGEX, name)
-
-        for name in invalid_names:
-            assert not re.match(SLUG_REGEX, name)
+    @pytest.mark.parametrize(
+        'name',
+        [
+            '!',
+            'asdf$f',
+            'daf411~',
+            'adf\nadsf',
+            '_',
+            '-',
+            '_good',
+            'asdf-_-fdsa-',
+            'asdf_-asdf',
+            'asdf--asdf',
+            'asdf__asdf',
+            'asdf_-_asdf',
+        ],
+    )
+    def test_slug_re_invalid_names(self, name):
+        assert not re.match(SLUG_REGEX, name)
 
     def test_validate_version_list(self, valid_manifest):
         errors = Manifest.validate_manifest(valid_manifest)
