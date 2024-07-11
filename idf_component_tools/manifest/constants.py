@@ -8,7 +8,7 @@ import typing as t
 
 from idf_component_tools import ComponentManagerSettings
 
-SLUG_BODY_REGEX = r'[a-zA-Z\d]+(?:[_-][a-zA-Z\d]*)*[a-zA-Z\d]+'
+SLUG_BODY_REGEX = r'[a-zA-Z\d]+(?:(?:[_-](?![_-]+))|(?:[a-zA-Z\d]))*[a-zA-Z\d]+'
 SLUG_REGEX = r'^{}$'.format(SLUG_BODY_REGEX)
 FULL_SLUG_REGEX = r'^((?:{slug}/{slug})|(?:{slug}))$'.format(slug=SLUG_BODY_REGEX)
 COMPILED_FULL_SLUG_REGEX = re.compile(FULL_SLUG_REGEX)
