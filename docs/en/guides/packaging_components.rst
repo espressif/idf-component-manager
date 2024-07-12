@@ -69,7 +69,7 @@ However, we recommend adding ``url`` and ``description``. Otherwise, a warning w
    description: "This is a test component"
    url: "https://mycomponent.com"  # The homepage of the component. It can be a GitHub repository page.
 
-For information about additional fields in the manifest please check the :ref:`manifest format reference <reference/manifest_file:Manifest File \`\`idf_component.yml\`\` Format Reference>`.
+For information about additional fields in the manifest please check the :doc:`manifest file reference <../reference/manifest_file>`.
 
 Create License File
 ^^^^^^^^^^^^^^^^^^^

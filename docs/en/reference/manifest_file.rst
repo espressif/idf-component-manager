@@ -1,5 +1,5 @@
-Manifest File ``idf_component.yml`` Format Reference
-====================================================
+Manifest File ``idf_component.yml``
+===================================
 
 The ``idf_component.yml`` file is a YAML file that describes the component. The file is located in the root directory of the component.
 
@@ -45,7 +45,7 @@ Common Fields for All Dependency Types
 - ``rules``: A list of if clauses that should be applied to the dependency. The dependency is only included when all of the if-clauses are true. More details on :ref:`rules<reference/manifest_file:Matches and Rules>`.
 
 Dependencies from the ESP Component Registry
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Components in the ESP Component Registry are specified by their name in the ``namespace/component_name`` format. The version of the dependency is specified in the ``version`` field of the dependency.
 

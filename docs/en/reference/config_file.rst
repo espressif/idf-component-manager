@@ -1,5 +1,5 @@
-IDF Component Manager Configuration File
-========================================
+``idf_component_manager.yml`` Configuration File
+================================================
 
 The IDF Component Manager configuration file, which is named
 ``idf_component_manager.yml``, a YAML file that contains a set of
