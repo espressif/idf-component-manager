@@ -39,6 +39,20 @@ def response_413(*_, **__):
     return response
 
 
+def response_403(*_, **__):
+    response = Response()
+    response.status_code = 403
+    return response
+
+
+def get_token_scope_user(*_, **__):
+    return 'user'
+
+
+def get_token_scope_write(*_, **__):
+    return 'write:components'
+
+
 def raise_SSLEOFError(*_, **__):
     raise SSLEOFError()
 
@@ -243,6 +257,64 @@ class TestAPIClient:
                 file_path=file_path,
             )
         assert str(e.value).startswith('The component archive exceeds the maximum allowed size')
+
+    def test_upload_component_token_forbidden(self, tmp_path, registry_url, monkeypatch):
+        monkeypatch.setattr(
+            'idf_component_tools.registry.request_processor.make_request', response_403
+        )
+        monkeypatch.setattr(
+            'idf_component_tools.registry.request_processor.get_token_scope',
+            get_token_scope_user,
+        )
+        client = APIClient(
+            registry_url=registry_url,
+            api_token='test',
+        )
+
+        file_path = str(tmp_path / 'cmp.tgz')
+        with open(file_path, 'w+') as f:
+            f.write('a')
+
+        with pytest.raises(APIClientError) as e:
+            client.upload_version(
+                component_name='kumekay/cmp',
+                file_path=file_path,
+            )
+        assert str(e.value).startswith(
+            'Your token does not have permissions to perform this action.'
+        )
+        assert 'Token scope: user' in str(e.value)
+
+    def test_upload_component_role_forbidden(
+        self,
+        tmp_path,
+        registry_url,
+        monkeypatch,
+    ):
+        monkeypatch.setattr(
+            'idf_component_tools.registry.request_processor.make_request', response_403
+        )
+        monkeypatch.setattr(
+            'idf_component_tools.registry.request_processor.get_token_scope',
+            get_token_scope_write,
+        )
+        client = APIClient(
+            registry_url=registry_url,
+            api_token='test',
+        )
+
+        file_path = str(tmp_path / 'cmp.tgz')
+        with open(file_path, 'w+') as f:
+            f.write('a')
+
+        with pytest.raises(APIClientError) as e:
+            client.upload_version(
+                component_name='kumekay/cmp',
+                file_path=file_path,
+            )
+        assert str(e.value).startswith(
+            'You do not have namespace/component role to perform this action.'
+        )
 
     def test_upload_component_SSLEOFError(self, tmp_path, registry_url, monkeypatch):
         monkeypatch.setattr(
