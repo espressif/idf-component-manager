@@ -62,3 +62,14 @@ repos:
         args:
           - --types=change,chore,ci,docs,feat,fix,refactor,remove,revert,test
           - --allow-breaking
+
+  - repo: https://github.com/hfudev/rstfmt
+    rev: v0.1.1
+    hooks:
+      - id: rstfmt
+        args: ["-w", "-1"]
+        files: "docs\/.+rst$"
+        additional_dependencies: [
+          "sphinx_tabs",
+          "sphinx-click",
+        ]

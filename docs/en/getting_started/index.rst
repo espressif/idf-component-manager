@@ -1,10 +1,12 @@
-Getting Started
-===============
+#################
+ Getting Started
+#################
 
 The IDF Component Manager is included and enabled by default in all `supported ESP-IDF <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/versions.html>`_ versions.
 
-Checking the IDF Component Manager Version
-------------------------------------------
+********************************************
+ Checking the IDF Component Manager Version
+********************************************
 
 If you are unsure which version of the IDF Component Manager is included in your ESP-IDF installation, you can find out by running a CLI command.
 
@@ -12,26 +14,32 @@ First, activate the `ESP-IDF environment <https://docs.espressif.com/projects/es
 
 .. tabs::
 
-    .. group-tab:: Windows
+   .. group-tab::
 
-        Run ``ESP-IDF PowerShell Environment`` or ``ESP-IDF Command Prompt (cmd.exe)`` from the Start menu and run the following command:
+      Windows
 
-        .. code-block:: powershell
+      Run ``ESP-IDF PowerShell Environment`` or ``ESP-IDF Command Prompt (cmd.exe)`` from the Start menu and run the following command:
 
-            > compote version
+      .. code:: powershell
 
-    .. group-tab:: macOS and Linux (bash or zsh)
+         > compote version
 
-        .. code-block:: bash
+   .. group-tab::
 
-            $ source $IDF_PATH/export.sh
-            $ compote version
+      macOS and Linux (bash or zsh)
 
-    .. group-tab:: macOS and Linux (fish)
+      .. code:: bash
 
-        .. code-block:: fishshell
+         $ source $IDF_PATH/export.sh
+         $ compote version
 
-            $ . $IDF_PATH/export.fish
-            $ compote version
+   .. group-tab::
+
+      macOS and Linux (fish)
+
+      .. code:: fishshell
+
+         $ . $IDF_PATH/export.fish
+         $ compote version
 
 Older versions of the component manager may not include the ``compote version`` command. If the command is not available in your IDF Component Manager, please consider upgrading it to the latest version. See `Upgrading the IDF Component Manager <#installing-and-upgrading-the-idf-component-manager>`_.
