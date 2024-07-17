@@ -79,7 +79,7 @@ Besides the URLs, each profile supports the following fields:
    -  -  default_namespace
       -  string
       -  espressif
-      -  The default namespace to use when uploading and downloading the components.
+      -  The default namespace to use when uploading the components.
       -  ❌
 
 By default, the configuration file should behave as follows:
