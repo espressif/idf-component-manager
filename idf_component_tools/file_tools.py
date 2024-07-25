@@ -96,12 +96,6 @@ def filtered_paths(
     return paths
 
 
-def create_directory(directory: str) -> None:
-    """Create directory, if doesn't exist yet"""
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-
-
 def prepare_empty_directory(directory: str) -> None:
     """Prepare directory empty"""
     dir_exist = os.path.exists(directory)

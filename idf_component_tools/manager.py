@@ -27,7 +27,7 @@ class ManifestManager:
 
     def __init__(
         self,
-        path: str,
+        path: t.Union[str, Path],
         name: str,
         *,
         upload_mode: UploadMode = UploadMode.false,

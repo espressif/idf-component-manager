@@ -243,7 +243,7 @@ def collect_metadata(
             paths = list(path.glob('**'))
         for path in paths:
             if path.is_dir() and is_component(path) and (path / MANIFEST_FILENAME).exists():
-                manifest = ManifestManager(str(path), '').load()
+                manifest = ManifestManager(path, '').load()
                 metadata, warnings = prepare_metadata(
                     client, manifest.requirements, progress_bar, metadata, warnings
                 )

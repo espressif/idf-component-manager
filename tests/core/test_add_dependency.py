@@ -26,11 +26,11 @@ def test_init_project(mock_registry, tmp_path):
         assert filepath.read_text().startswith('## IDF Component Manager')
 
     manager.add_dependency('cmp==4.0.3')
-    manifest_manager = ManifestManager(str(main_manifest_path), 'main')
+    manifest_manager = ManifestManager(main_manifest_path, 'main')
     assert manifest_manager.manifest_tree['dependencies']['espressif/cmp'] == '==4.0.3'
 
     manager.add_dependency('espressif/cmp==4.0.3', component='foo')
-    manifest_manager = ManifestManager(str(foo_manifest_path), 'foo')
+    manifest_manager = ManifestManager(foo_manifest_path, 'foo')
     assert manifest_manager.manifest_tree['dependencies']['espressif/cmp'] == '==4.0.3'
 
 
@@ -54,7 +54,7 @@ def test_init_project_with_path(mock_registry, tmp_path):
         manager.create_manifest(component='src', path=str(src_path))
 
     manager.add_dependency('espressif/cmp==4.0.3', path=str(src_path))
-    manifest_manager = ManifestManager(str(src_manifest_path), 'src')
+    manifest_manager = ManifestManager(src_manifest_path, 'src')
 
     assert manifest_manager.manifest_tree['dependencies']['espressif/cmp'] == '==4.0.3'
 

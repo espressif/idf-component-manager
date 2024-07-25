@@ -50,7 +50,7 @@ def test_sync_dependency_with_matches(monkeypatch, tmp_path):
     """
     )
 
-    manifest = ManifestManager(str(component_path), '').load()
+    manifest = ManifestManager(component_path, '').load()
     metadata, _ = prepare_metadata(None, manifest.raw_requirements, metadata={})
 
     assert '3.3.3' in metadata['example/cmp']
@@ -76,7 +76,7 @@ def test_sync_dependency_with_rules(monkeypatch, tmp_path):
     """
     )
 
-    manifest = ManifestManager(str(component_path), '').load()
+    manifest = ManifestManager(component_path, '').load()
     metadata, _ = prepare_metadata(None, manifest.raw_requirements, tmp_path / 'test')
 
     assert '~1.0.0' in metadata['example/cmp']

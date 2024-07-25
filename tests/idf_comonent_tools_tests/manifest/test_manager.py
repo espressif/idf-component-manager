@@ -2,10 +2,12 @@
 # SPDX-License-Identifier: Apache-2.0
 import filecmp
 import os
+from pathlib import Path
 
 import pytest
 import yaml
 
+from idf_component_manager.core import get_validated_manifest
 from idf_component_tools.errors import ManifestError
 from idf_component_tools.manager import ManifestManager
 
@@ -94,3 +96,43 @@ def test_dump_does_not_add_fields(tmp_path):
     dumped_manifiest_content = (test_dump_path / 'idf_component.yml').read_text()
 
     assert manifest_content == dumped_manifiest_content
+
+
+def test_get_validated_manifest(valid_manifest, tmp_path):
+    manifest_path = os.path.join(str(tmp_path), 'idf_component.yml')
+    with open(manifest_path, 'w') as fw:
+        yaml.dump(valid_manifest, fw)
+
+    manager = ManifestManager(manifest_path, name='test', upload_mode=True)
+    manifest = get_validated_manifest(manager, tmp_path)
+
+    assert manifest.name == 'test'
+    assert manifest.version == '2.3.1~2'
+
+
+def test_get_validated_manifest_unexpected_file(valid_manifest, tmp_path):
+    manifest_path = os.path.join(str(tmp_path), 'idf_component.yml')
+    with open(manifest_path, 'w') as fw:
+        yaml.dump(valid_manifest, fw)
+
+    # Create CMakeCache.txt file in tmp_path
+    Path(tmp_path / 'CMakeCache.txt').touch()
+
+    manager = ManifestManager(manifest_path, name='test', upload_mode=True)
+    with pytest.warns(UserWarning) as record:
+        get_validated_manifest(manager, tmp_path)
+        assert 'CMakeCache.txt' in record.list[0].message.args[0]
+        Path(tmp_path / 'CMakeCache.txt').unlink()
+
+
+def test_get_validated_manifest_invalid_component_manifest(valid_manifest, tmp_path):
+    manifest_path = os.path.join(str(tmp_path), 'idf_component.yml')
+
+    with open(manifest_path, 'w') as fw:
+        valid_manifest['version'] = 'invalid'
+        yaml.dump(valid_manifest, fw)
+
+    manager = ManifestManager(manifest_path, name='test', upload_mode=True)
+
+    with pytest.raises(ManifestError, match='Manifest is not valid'):
+        get_validated_manifest(manager, tmp_path)

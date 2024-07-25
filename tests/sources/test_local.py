@@ -71,7 +71,7 @@ def test_local_relative_path_not_exists(tmp_path):
 
     source = LocalSource(
         path='../sub',
-        manifest_manager=ManifestManager(str(main_component_path), 'main'),
+        manifest_manager=ManifestManager(main_component_path, 'main'),
     )
     cmp = SolvedComponent(name='test/cmp', version=ComponentVersion('1.0.1'), source=source)
 
@@ -87,7 +87,7 @@ def test_local_relative_path_success(tmp_path):
 
     source = LocalSource(
         path='../../sub',
-        manifest_manager=ManifestManager(str(main_component_path), 'main'),
+        manifest_manager=ManifestManager(main_component_path, 'main'),
     )
     cmp = SolvedComponent(name='test/cmp', version=ComponentVersion('1.0.1'), source=source)
 
