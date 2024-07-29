@@ -1,6 +1,6 @@
 variables:
   # set this variable to use as the `image: name` for a custom branch in the master release of esp-idf
-  # since we does not support `/` in docker tags, don't forget to escape the `/` in your branch name to `-`
+  # since we do not support `/` in docker tags, don't forget to escape the `/` in your branch name to `-`
   # for example,
   #   branch `test/foo` should be renamed to `test-foo`
   # in esp-idf, more than one `/` is not allowed, so we don't consider the corner case
