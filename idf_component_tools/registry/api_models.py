@@ -9,6 +9,7 @@ from idf_component_tools.utils import BaseModel
 
 class ApiBaseModel(BaseModel):
     model_config = ConfigDict(
+        str_min_length=None,  # type: ignore # overrides the parent non-empty
         extra='allow',
     )
 
