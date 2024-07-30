@@ -60,7 +60,16 @@ def init_component():
         + DEST_DIR_OPTION
         + COMMIT_SHA_REPO_OPTION
     )
-    def pack(manager, namespace, name, version, dest_dir, repository, commit_sha, repository_path):  # noqa: namespace is not used
+    def pack(
+        manager,
+        namespace,
+        name,
+        version,
+        dest_dir,
+        repository,
+        commit_sha,
+        repository_path,
+    ):  # noqa: namespace is not used
         """
         Create component archive and store it in the dist directory.
         """
@@ -112,7 +121,7 @@ def init_component():
     )
     def upload(
         manager,
-        service_profile,
+        profile_name,
         namespace,
         name,
         version,
@@ -134,7 +143,7 @@ def init_component():
         manager.upload_component(
             name,
             version=version,
-            service_profile=service_profile,
+            profile_name=profile_name,
             namespace=namespace,
             archive=archive,
             skip_pre_release=skip_pre_release,
@@ -150,21 +159,21 @@ def init_component():
     @component.command()
     @add_options(PROJECT_OPTIONS)
     @click.option('--job', required=True, help='Upload job ID')
-    def upload_status(manager, service_profile, job):
+    def upload_status(manager, profile_name, job):
         """
         Check the component uploading status.
         """
-        manager.upload_component_status(job, service_profile=service_profile)
+        manager.upload_component_status(job, profile_name=profile_name)
 
     @component.command()
     @add_options(PROJECT_OPTIONS + NAMESPACE_NAME_OPTIONS)
     @click.option('--version', required=True, help='Component version to delete.')
-    def delete(manager, service_profile, namespace, name, version):
+    def delete(manager, profile_name, namespace, name, version):
         """
         Delete specified version of the component from the component registry.
         The deleted version cannot be restored or re-uploaded.
         """
-        manager.delete_version(name, version, service_profile=service_profile, namespace=namespace)
+        manager.delete_version(name, version, profile_name=profile_name, namespace=namespace)
 
     @component.command()
     @add_options(PROJECT_OPTIONS + NAMESPACE_NAME_OPTIONS)
@@ -174,14 +183,12 @@ def init_component():
         required=True,
         help='Message explaining why the component version is being removed from the registry.',
     )
-    def yank(manager, service_profile, namespace, name, version, message):
+    def yank(manager, profile_name, namespace, name, version, message):
         """
         Yank specified version of the component from the component registry.
         Yanked version will only be downloaded if the exact version is specified in the component manifest or lock file.
         A warning message is printed every time a yanked version is downloaded.
         """
-        manager.yank_version(
-            name, version, message, service_profile=service_profile, namespace=namespace
-        )
+        manager.yank_version(name, version, message, profile_name=profile_name, namespace=namespace)
 
     return component

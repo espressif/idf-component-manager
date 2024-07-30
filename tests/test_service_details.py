@@ -67,11 +67,11 @@ def test_empty_env_registry_profile(monkeypatch):
         NoSuchProfile,
         match='Profile "not_exists" not found in the idf_component_manager.yml config file',
     ):
-        get_api_client(service_profile='not_exists')
+        get_api_client(profile_name='not_exists')
 
 
 def test_get_token_profile(config_path, monkeypatch):
-    assert get_api_client(service_profile='test', config_path=config_path).api_token == 'token'
+    assert get_api_client(profile_name='test', config_path=config_path).api_token == 'token'
 
 
 def test_get_profile_success(config_path):
@@ -104,14 +104,14 @@ def test_get_profile_with_default_name(config_path):
 
 
 def test_service_details_success(config_path):
-    client = get_storage_client(service_profile='test', namespace='test', config_path=config_path)
+    client = get_storage_client(profile_name='test', namespace='test', config_path=config_path)
     assert client.registry_url == 'https://example.com/'
     assert client.default_namespace == 'test'
 
 
 def test_service_details_namespace_not_exist(tmp_path):
     with raises(NoSuchProfile):
-        get_storage_client(config_path=str(tmp_path), service_profile='not_exists')
+        get_storage_client(config_path=str(tmp_path), profile_name='not_exists')
 
 
 def test_service_details_without_token(tmp_path):
@@ -123,11 +123,11 @@ def test_service_details_without_token(tmp_path):
 
 def test_service_details_without_profile(tmp_path):
     with raises(NoSuchProfile, match='Profile "test" not found*'):
-        get_storage_client(config_path=str(tmp_path), service_profile='test', namespace='test')
+        get_storage_client(config_path=str(tmp_path), profile_name='test', namespace='test')
 
 
 def test_service_details_with_empty_profile(config_path):
-    client = get_api_client(config_path=config_path, service_profile='emptyprofile')
+    client = get_api_client(config_path=config_path, profile_name='emptyprofile')
     with raises(APIClientError, match='API token is required'):
         client.upload_version('file', 'component', '1.0.0')
 

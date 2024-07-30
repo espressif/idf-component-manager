@@ -10,12 +10,12 @@ import requests
 
 from idf_component_manager.core import ComponentManager
 from idf_component_manager.utils import print_error, print_info, print_warn
-from idf_component_tools.config import ConfigManager, ServiceProfileItem
+from idf_component_tools.config import ConfigManager, ProfileItem
 from idf_component_tools.errors import FatalError
 from idf_component_tools.registry.client_errors import APIClientError
 from idf_component_tools.registry.service_details import NoSuchProfile, get_api_client
 
-from .constants import get_project_dir_option, get_service_profile_option
+from .constants import get_profile_option, get_project_dir_option
 from .utils import add_options, deprecated_option
 
 
@@ -28,7 +28,7 @@ def init_registry():
         pass
 
     @registry.command()
-    @add_options(get_service_profile_option())
+    @add_options(get_profile_option())
     @click.option(
         '--no-browser',
         is_flag=True,
@@ -62,7 +62,7 @@ def init_registry():
         callback=deprecated_option,
         expose_value=False,
     )
-    def login(service_profile, no_browser, description, default_namespace, registry_url):
+    def login(profile_name, no_browser, description, default_namespace, registry_url):
         """
         Login to the component registry
         """
@@ -72,22 +72,22 @@ def init_registry():
 
         # Load config for dump later
         config = ConfigManager().load()
-        if service_profile not in config.profiles:
-            profile = ServiceProfileItem()
-            config.profiles[service_profile] = profile
+        if profile_name not in config.profiles:
+            profile = ProfileItem()
+            config.profiles[profile_name] = profile
         else:
-            profile = config.profiles[service_profile]
+            profile = config.profiles[profile_name]
 
         # Check if token is already in the profile
         if profile.api_token:
             raise FatalError(
                 'You are already logged in with profile "{}", '
-                'please either logout or use different profile'.format(service_profile)
+                'please either logout or use different profile'.format(profile_name)
             )
 
         api_client = get_api_client(
             namespace=default_namespace,
-            service_profile=service_profile,
+            profile_name=profile_name,
             profile=profile,
         )
 
@@ -140,14 +140,14 @@ def init_registry():
         print_info('Successfully logged in')
 
     @registry.command()
-    @add_options(get_service_profile_option())
+    @add_options(get_profile_option())
     @click.option(
         '--no-revoke',
         is_flag=True,
         default=False,
         help='Do not revoke the token on the server side when logging out',
     )
-    def logout(service_profile, no_revoke):
+    def logout(profile_name, no_revoke):
         """
         Logout from the component registry.
         Removes the token from the profile and revokes it on the registy.
@@ -157,10 +157,10 @@ def init_registry():
         config = ConfigManager().load()
 
         # Check if token is already in the profile
-        profile = config.profiles.get(service_profile)
+        profile = config.profiles.get(profile_name)
         if profile is None:
             raise NoSuchProfile(
-                f'Profile "{service_profile}" not found in the idf_component_manager.yml config file'
+                f'Profile "{profile_name}" not found in the idf_component_manager.yml config file'
             )
 
         if profile.api_token is None:
@@ -181,7 +181,7 @@ def init_registry():
         print_info('Successfully logged out')
 
     @registry.command()
-    @add_options(get_service_profile_option() + get_project_dir_option())
+    @add_options(get_profile_option() + get_project_dir_option())
     @click.option(
         '--interval',
         default=0,
@@ -206,14 +206,14 @@ def init_registry():
     @click.argument('path', required=True)
     def sync(
         manager: ComponentManager,
-        service_profile: str,
+        profile_name: str,
         interval: int,
         component: t.List[str],
         recursive: bool,
         path: str,
     ) -> None:
         manager.sync_registry(
-            service_profile,
+            profile_name,
             path,
             interval=interval,
             components=component,

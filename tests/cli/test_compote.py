@@ -74,7 +74,7 @@ def test_login_with_non_existing_service_profile(
     cli = initialize_cli()
     output = runner.invoke(
         cli,
-        ['registry', 'login', '--no-browser', '--service-profile', 'non-existing'],
+        ['registry', 'login', '--no-browser', '--profile', 'non-existing'],
         input='test_token',
         env={'IDF_TOOLS_PATH': str(tmp_path)},
     )
@@ -213,7 +213,9 @@ def test_logout_from_registry_no_revoke(monkeypatch, tmp_path):
     runner = CliRunner()
     cli = initialize_cli()
     output = runner.invoke(
-        cli, ['registry', 'logout', '--no-revoke'], env={'IDF_TOOLS_PATH': str(tmp_path)}
+        cli,
+        ['registry', 'logout', '--no-revoke'],
+        env={'IDF_TOOLS_PATH': str(tmp_path)},
     )
 
     assert 'Successfully logged out' in output.stdout
@@ -230,12 +232,32 @@ def test_create_project_from_example_non_default_registry(mocker):
             'project',
             'create-from-example',
             'test/cmp=1.0.0:ex',
-            '--service-profile',
+            '--profile',
             'non-default',
         ],
     )
     ComponentManager.create_project_from_example.assert_called_once_with(
-        'test/cmp=1.0.0:ex', path=None, service_profile='non-default'
+        'test/cmp=1.0.0:ex', path=None, profile_name='non-default'
+    )
+
+
+def test_check_deprecated_default_registry(mocker):
+    mocker.patch('idf_component_manager.core.ComponentManager.create_project_from_example')
+    runner = CliRunner()
+    cli = initialize_cli()
+
+    runner.invoke(
+        cli,
+        [
+            'project',
+            'create-from-example',
+            'test/cmp=1.0.0:ex',
+            '--profile',
+            'non-default',
+        ],
+    )
+    ComponentManager.create_project_from_example.assert_called_once_with(
+        'test/cmp=1.0.0:ex', path=None, profile_name='non-default'
     )
 
 

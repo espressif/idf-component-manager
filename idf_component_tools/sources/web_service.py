@@ -28,7 +28,9 @@ from idf_component_tools.hash_tools.calculate import hash_url
 from idf_component_tools.messages import hint
 from idf_component_tools.semver import SimpleSpec
 
-from ..hash_tools.validate_managed_component import validate_managed_component_by_hashdir
+from ..hash_tools.validate_managed_component import (
+    validate_managed_component_by_hashdir,
+)
 from .base import BaseSource
 
 if t.TYPE_CHECKING:
@@ -239,12 +241,15 @@ class WebServiceSource(BaseSource):
         tempdir = tempfile.mkdtemp()
 
         try:
-            url = get_storage_client(service_profile='default').component(
+            url = get_storage_client(profile_name='default').component(
                 component.name, component.version
             )['download_url']  # PACMAN-906
 
             logger.debug(
-                'Downloading component %s@%s from %s', component.name, component.version, url
+                'Downloading component %s@%s from %s',
+                component.name,
+                component.version,
+                url,
             )
 
             file_path = download_archive(url, tempdir)

@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
+import typing as t
 
 import click
 
@@ -8,8 +9,8 @@ from idf_component_manager.core import ComponentManager
 from idf_component_manager.utils import validate_name
 
 
-def get_project_dir_option():
-    PROJECT_DIR_OPTION = [
+def get_project_dir_option() -> t.List[click.Option]:
+    return [
         click.option(
             '--project-dir',
             'manager',
@@ -18,29 +19,29 @@ def get_project_dir_option():
         ),
     ]
 
-    return PROJECT_DIR_OPTION
 
-
-def get_service_profile_option():
-    SERVICE_PROFILE_OPTION = [
+def get_profile_option() -> t.List[click.Option]:
+    return [
         click.option(
+            '--profile',
             '--service-profile',
+            'profile_name',
             envvar='IDF_COMPONENT_REGISTRY_PROFILE',
             default='default',
-            help='Profile for component registry to use.',
+            help=(
+                'Specifies the profile to use for this command. '
+                'Alias "--service-profile" is deprecated and will be removed.'
+            ),
         ),
     ]
 
-    return SERVICE_PROFILE_OPTION
+
+def get_project_options() -> t.List[click.Option]:
+    return get_project_dir_option() + get_profile_option()
 
 
-def get_project_options():
-    PROJECT_OPTIONS = get_project_dir_option() + get_service_profile_option()
-    return PROJECT_OPTIONS
-
-
-def get_namespace_option():
-    NAMESPACE_OPTION = [
+def get_namespace_option() -> t.List[click.Option]:
+    return [
         click.option(
             '--namespace',
             envvar='IDF_COMPONENT_NAMESPACE',
@@ -49,30 +50,22 @@ def get_namespace_option():
         ),
     ]
 
-    return NAMESPACE_OPTION
+
+def get_name_option() -> t.List[click.Option]:
+    return [click.option('--name', required=True, callback=validate_name, help='Component name')]
 
 
-def get_name_option():
-    NAME_OPTION = [
-        click.option('--name', required=True, callback=validate_name, help='Component name')
-    ]
-
-    return NAME_OPTION
-
-
-def get_namespace_name_options():
+def get_namespace_name_options() -> t.List[click.Option]:
     NAMESPACE_NAME_OPTIONS = get_namespace_option() + get_name_option()
 
     return NAMESPACE_NAME_OPTIONS
 
 
-def get_dest_dir_option():
-    DEST_DIR_OPTION = [
+def get_dest_dir_option() -> t.List[click.Option]:
+    return [
         click.option(
             '--dest-dir',
             default=None,
             help='Destination directory for the component archive.',
         )
     ]
-
-    return DEST_DIR_OPTION
