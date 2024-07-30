@@ -20,7 +20,7 @@ PROFILE_NAME: t.List[t.Dict[str, t.Any]] = [
         'help': 'Specifies the profile to use for this command.'
         ' By default profile named "default" will be used.'
         ' Alias "--service-profile" is deprecated and will be removed.',
-        'envvar': 'IDF_COMPONENT_REGISTRY_PROFILE',
+        'envvar': 'IDF_COMPONENT_PROFILE',
     },
 ]
 

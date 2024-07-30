@@ -26,7 +26,7 @@ def get_profile_option() -> t.List[click.Option]:
             '--profile',
             '--service-profile',
             'profile_name',
-            envvar='IDF_COMPONENT_REGISTRY_PROFILE',
+            envvar='IDF_COMPONENT_PROFILE',
             default='default',
             help=(
                 'Specifies the profile to use for this command. '

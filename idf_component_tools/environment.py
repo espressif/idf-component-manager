@@ -11,7 +11,11 @@ from functools import lru_cache
 
 from pydantic import AliasChoices, Field, field_validator
 from pydantic_core.core_schema import ValidationInfo, ValidatorFunctionWrapHandler
-from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
 
 from idf_component_tools.messages import UserDeprecationWarning
 
@@ -100,9 +104,10 @@ class ComponentManagerSettings(BaseSettings):
     )
     API_TOKEN: t.Optional[str] = None
     VERIFY_SSL: t.Union[bool, str] = True
-    REGISTRY_PROFILE: t.Optional[str] = Field(
+    PROFILE: t.Optional[str] = Field(
         default=None,
         validation_alias=AliasChoices(
+            'IDF_COMPONENT_PROFILE',
             'IDF_COMPONENT_REGISTRY_PROFILE',
             'IDF_COMPONENT_SERVICE_PROFILE',
         ),

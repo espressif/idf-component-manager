@@ -31,13 +31,23 @@ def config_path(tmp_path):
             json.dumps({
                 'profiles': {
                     'default': {
-                        'registry_url': 'https://example.com/',
-                        'default_namespace': 'test',
+                        'registry_url': 'https://default.com/',
+                        'default_namespace': 'default_ns',
                         'api_token': None,
                     },
                     'test': {
                         'registry_url': 'https://example.com/',
                         'default_namespace': 'test',
+                        'api_token': 'token',
+                    },
+                    'test2': {
+                        'registry_url': 'https://example2.com/',
+                        'default_namespace': 'test2',
+                        'api_token': 'token',
+                    },
+                    'test3': {
+                        'registry_url': 'https://example3.com/',
+                        'default_namespace': 'test3',
                         'api_token': 'token',
                     },
                     'emptyprofile': None,
@@ -61,8 +71,8 @@ def test_get_token_env(monkeypatch):
     assert get_api_client().api_token == 'some_token'
 
 
-def test_empty_env_registry_profile(monkeypatch):
-    monkeypatch.setenv('IDF_COMPONENT_REGISTRY_PROFILE', '')
+def test_empty_env_profile(monkeypatch):
+    monkeypatch.setenv('IDF_COMPONENT_PROFILE', '')
     with raises(
         NoSuchProfile,
         match='Profile "not_exists" not found in the idf_component_manager.yml config file',
@@ -81,15 +91,21 @@ def test_get_profile_success(config_path):
     assert profile.api_token == 'token'
 
 
-def test_get_profile_env_dep(config_path, monkeypatch):
+def test_get_service_profile_env_dep(config_path, monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_SERVICE_PROFILE', 'test')
     with warns(UserDeprecationWarning):
         assert get_profile(None, config_path=config_path).default_namespace == 'test'
 
 
+def test_get_registry_profile_env_dep(config_path, monkeypatch):
+    monkeypatch.setenv('IDF_COMPONENT_REGISTRY_PROFILE', 'test2')
+    with warns(UserDeprecationWarning):
+        assert get_profile(None, config_path=config_path).default_namespace == 'test2'
+
+
 def test_get_profile_env(config_path, monkeypatch):
-    monkeypatch.setenv('IDF_COMPONENT_REGISTRY_PROFILE', 'test')
-    assert get_profile(None, config_path=config_path).default_namespace == 'test'
+    monkeypatch.setenv('IDF_COMPONENT_PROFILE', 'test3')
+    assert get_profile(None, config_path=config_path).default_namespace == 'test3'
 
 
 def test_get_profile_not_exist(config_path):
@@ -98,8 +114,8 @@ def test_get_profile_not_exist(config_path):
 
 def test_get_profile_with_default_name(config_path):
     profile = get_profile('default', config_path)
-    assert profile.registry_url == 'https://example.com/'
-    assert profile.default_namespace == 'test'
+    assert profile.registry_url == 'https://default.com/'
+    assert profile.default_namespace == 'default_ns'
     assert profile.api_token is None
 
 
@@ -133,7 +149,7 @@ def test_service_details_with_empty_profile(config_path):
 
 
 def test_get_component_registry_url_with_profile(monkeypatch, config_path):
-    monkeypatch.setenv('IDF_COMPONENT_REGISTRY_PROFILE', 'test')
+    monkeypatch.setenv('IDF_COMPONENT_PROFILE', 'test')
 
     client = get_storage_client(config_path=config_path)
 

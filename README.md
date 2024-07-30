@@ -114,11 +114,11 @@ examples:
 ## Environment variables
 
 | Variable                                     | Default value (or example for required) | Description                                                                                                   |
-|----------------------------------------------|-----------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| -------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | IDF_COMPONENT_API_TOKEN                      |                                         | API token to access the component registry                                                                    |
 | IDF_COMPONENT_REGISTRY_URL                   | https://components.espressif.com/       | URL of the default component registry                                                                         |
 | IDF_COMPONENT_STORAGE_URL                    | https://components-file.espressif.com/  | URL of the default file storage server                                                                        |
-| IDF_COMPONENT_REGISTRY_PROFILE               | default                                 | Profile in the config file to use for component registry                                                      |
+| IDF_COMPONENT_PROFILE                        | default                                 | Profile in the config file to use                                                                             |
 | IDF_COMPONENT_CACHE_PATH                     | \* Depends on OS                        | Cache directory for component manager                                                                         |
 | IDF_COMPONENT_VERSION_PROCESS_TIMEOUT        | 300                                     | Timeout in seconds to wait for component processing                                                           |
 | IDF_COMPONENT_OVERWRITE_MANAGED_COMPONENTS   | 0                                       | Overwrite files in the managed_component directory, even if they have been modified by the user               |

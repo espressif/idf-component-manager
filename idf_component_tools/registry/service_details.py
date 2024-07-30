@@ -26,7 +26,7 @@ def get_profile(
     config_path: t.Optional[str] = None,
 ) -> t.Optional[ProfileItem]:
     config = ConfigManager(path=config_path).load()
-    _profile_name = ComponentManagerSettings().REGISTRY_PROFILE or profile_name
+    _profile_name = ComponentManagerSettings().PROFILE or profile_name
 
     if (
         _profile_name == 'default' and config.profiles.get(_profile_name) is None

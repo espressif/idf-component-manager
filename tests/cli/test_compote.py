@@ -43,7 +43,7 @@ def test_raise_exception_on_warnings(monkeypatch):
     assert process.returncode == 1
     assert (
         'ERROR: IDF_COMPONENT_SERVICE_PROFILE environment variable is deprecated. '
-        'Please use IDF_COMPONENT_REGISTRY_PROFILE instead' in decoded
+        'Please use IDF_COMPONENT_PROFILE instead' in decoded
     )
 
 
