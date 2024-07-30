@@ -93,7 +93,6 @@ class ManifestManager:
             self._manifest.repository = self._repository
 
         if self._commit_sha is not None:
-            self._manifest.commit_sha = self._commit_sha
             self._manifest.repository_info = RepositoryInfoField.fromdict({
                 'commit_sha': self._commit_sha,
                 'path': self._repository_path,

@@ -337,7 +337,6 @@ class Manifest(BaseModel):
     examples: t.List[t.Dict[str, t.Any]] = None  # type: ignore
     url: UrlField = None  # type: ignore
     repository: GIT_URL_FIELD = None  # type: ignore
-    commit_sha: str = None  # type: ignore
     documentation: UrlField = None  # type: ignore
     issues: UrlField = None  # type: ignore
     discussion: UrlField = None  # type: ignore
@@ -377,8 +376,8 @@ class Manifest(BaseModel):
             raise ValueError(unknown_keys_errs)
 
         # validate repository and commit sha
-        if not self.repository and self.commit_sha:
-            raise ValueError('Invalid field "repository". Must set when "commit_sha" is set')
+        if not self.repository and self.repository_info:
+            raise ValueError('Invalid field "repository". Must set when "repository_info" is set')
 
         if self._upload_mode:
             self._validate_while_uploading()

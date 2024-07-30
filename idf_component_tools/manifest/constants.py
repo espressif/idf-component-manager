@@ -14,7 +14,7 @@ FULL_SLUG_REGEX = r'^((?:{slug}/{slug})|(?:{slug}))$'.format(slug=SLUG_BODY_REGE
 COMPILED_FULL_SLUG_REGEX = re.compile(FULL_SLUG_REGEX)
 WEB_DEPENDENCY_REGEX = r'^((?:{slug}/{slug})|(?:{slug}))(.*)$'.format(slug=SLUG_BODY_REGEX)
 
-LINKS = ['repository', 'commit_sha', 'documentation', 'issues', 'discussion', 'url']
+LINKS = ['repository', 'documentation', 'issues', 'discussion', 'url']
 KNOWN_INFO_METADATA_FIELDS = [
     'maintainers',
     'description',
