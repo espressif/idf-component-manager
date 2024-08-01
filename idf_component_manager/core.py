@@ -557,7 +557,14 @@ class ComponentManager:
             tempdir = tempfile.mkdtemp()
             try:
                 unpack_archive(archive, tempdir)
-                manifest = ManifestManager(tempdir, name, upload_mode=True).load()
+                manifest = ManifestManager(
+                    tempdir,
+                    name,
+                    upload_mode=True,
+                    repository=repository,
+                    commit_sha=commit_sha,
+                    repository_path=repository_path,
+                ).load()
             finally:
                 shutil.rmtree(tempdir)
         else:
