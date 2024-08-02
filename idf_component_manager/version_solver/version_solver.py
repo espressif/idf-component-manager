@@ -232,7 +232,8 @@ class VersionSolver:
 
             if version.dependencies:
                 for dep in version.dependencies:
-                    self.solve_component(dep)
+                    if dep.meet_optional_dependencies:
+                        self.solve_component(dep)
 
         self._solved_requirements.add(requirement)
 

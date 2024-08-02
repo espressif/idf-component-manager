@@ -1,6 +1,8 @@
-# SPDX-FileCopyrightText: 2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import logging
+import os
+import shutil
 
 import pytest
 
@@ -70,3 +72,41 @@ def test_indirect_optional_dependency(project, idf_version):
         assert '[1/6] espressif/cbor (0.6.0~1)' in res
 
     assert 'cmake failed with exit code 1' not in res
+
+
+@pytest.mark.parametrize(
+    'project',
+    [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'foo': {
+                            'version': '*',
+                            'path': '../foo',
+                        }
+                    }
+                },
+                # mv from components/foo to foo later
+                'foo': {
+                    'dependencies': {
+                        'bar': {
+                            'version': '*',
+                            'override_path': '/non_exists',
+                            'rules': [
+                                {'if': 'target in [esp32p4]'},
+                            ],
+                        },
+                    }
+                },
+            }
+        },
+    ],
+    indirect=True,
+)
+def test_optional_dependency_with_invalid_override_path_in_deps(project):
+    shutil.move(os.path.join(project, 'components', 'foo'), os.path.join(project, 'foo'))
+
+    res = project_action(project, 'reconfigure')
+    assert 'Skipping optional dependency: bar' in res
+    assert 'Configuring done' in res
