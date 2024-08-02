@@ -5,17 +5,22 @@ import sys
 import typing as t
 import warnings
 
-from idf_component_manager.utils import CLICK_SUPPORTS_SHOW_DEFAULT, print_error, showwarning
+from idf_component_manager.utils import (
+    CLICK_SUPPORTS_SHOW_DEFAULT,
+    print_error,
+    showwarning,
+)
 from idf_component_tools.errors import FatalError
 
 from .core import ComponentManager
 
-SERVICE_PROFILE: t.List[t.Dict[str, t.Any]] = [
+PROFILE_NAME: t.List[t.Dict[str, t.Any]] = [
     {
-        'names': ['--service-profile'],
-        'help': 'Profile for the component registry to use. '
-        'By default profile named "default" will be used.',
-        'envvar': 'IDF_COMPONENT_REGISTRY_PROFILE',
+        'names': ['--profile', '--service-profile', 'profile_name'],
+        'help': 'Specifies the profile to use for this command.'
+        ' By default profile named "default" will be used.'
+        ' Alias "--service-profile" is deprecated and will be removed.',
+        'envvar': 'IDF_COMPONENT_PROFILE',
     },
 ]
 
@@ -35,7 +40,7 @@ NAME: t.List[t.Dict[str, t.Any]] = [
     },
 ]
 
-SERVICE_OPTIONS = SERVICE_PROFILE + NAMESPACE + NAME
+REGISTRY_OPTIONS = PROFILE_NAME + NAMESPACE + NAME
 
 LOCAL_MANIFEST_OPTIONS: t.List[t.Dict[str, t.Any]] = [
     {
@@ -64,7 +69,7 @@ VERSION_PARAMETER = [
 ]
 
 CREATE_PROJECT_FROM_EXAMPLE_DESCR = """
-Create a project from an example.
+Create a project from an example in the ESP Component Registry.
 
 You can specify EXAMPLE in the format like:
 namespace/name=1.0.0:example
@@ -137,7 +142,7 @@ def action_extensions(base_actions, project_path):
                         'required': True,
                     },
                 ],
-                'options': LOCAL_MANIFEST_OPTIONS + SERVICE_PROFILE,
+                'options': LOCAL_MANIFEST_OPTIONS + PROFILE_NAME,
             },
             'remove_managed_components': {'callback': callback, 'hidden': True},
             'upload-component': {
@@ -150,7 +155,7 @@ def action_extensions(base_actions, project_path):
                     "If the component doesn't exist in the registry "
                     'it will be created automatically.'
                 ),
-                'options': SERVICE_OPTIONS
+                'options': REGISTRY_OPTIONS
                 + VERSION_PARAMETER
                 + [
                     {
@@ -186,7 +191,7 @@ def action_extensions(base_actions, project_path):
                     'New CLI command: "compote component delete". '
                     'Delete specified version of the component from the component registry.'
                 ),
-                'options': SERVICE_OPTIONS
+                'options': REGISTRY_OPTIONS
                 + [
                     {
                         'names': ['--version'],
@@ -203,7 +208,7 @@ def action_extensions(base_actions, project_path):
                     'New CLI command: "compote component upload-status". '
                     'Check the component uploading status by the job ID.'
                 ),
-                'options': SERVICE_PROFILE
+                'options': PROFILE_NAME
                 + [
                     {
                         'names': ['--job'],
@@ -220,13 +225,13 @@ def action_extensions(base_actions, project_path):
                     'New CLI command: "compote component pack". '
                     'Create component archive and store it in the dist directory.'
                 ),
-                'options': SERVICE_PROFILE + NAME + VERSION_PARAMETER,
+                'options': PROFILE_NAME + NAME + VERSION_PARAMETER,
             },
             'create-project-from-example': {
                 'callback': callback,
                 'help': CREATE_PROJECT_FROM_EXAMPLE_DESCR,
                 'arguments': [{'names': ['example']}],
-                'options': SERVICE_PROFILE
+                'options': PROFILE_NAME
                 + [
                     {
                         'names': ['-p', '--path'],

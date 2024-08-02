@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import json
 
@@ -7,13 +7,13 @@ import click
 from idf_component_manager.utils import print_info
 from idf_component_tools.manifest import MANIFEST_JSON_SCHEMA
 
-from .constants import get_project_dir_option, get_service_profile_option
+from .constants import get_profile_option, get_project_dir_option
 from .utils import add_options
 
 
 def init_manifest():
     PROJECT_DIR_OPTION = get_project_dir_option()
-    SERVICE_PROFILE_OPTION = get_service_profile_option()
+    PROFILE_OPTION = get_profile_option()
 
     @click.group()
     def manifest():
@@ -58,9 +58,9 @@ def init_manifest():
         manager.create_manifest(component=component, path=path)
 
     @manifest.command()
-    @add_options(PROJECT_DIR_OPTION + SERVICE_PROFILE_OPTION + MANIFEST_OPTION)
+    @add_options(PROJECT_DIR_OPTION + PROFILE_OPTION + MANIFEST_OPTION)
     @click.argument('dependency', required=True)
-    def add_dependency(manager, service_profile, component, path, dependency):
+    def add_dependency(manager, profile_name, component, path, dependency):
         """
         Add a dependency to the manifest file.
 
@@ -82,7 +82,7 @@ def init_manifest():
           Will add a component `example/cmp` with constraint `<=3.3.3`
         """
         manager.add_dependency(
-            dependency, service_profile=service_profile, component=component, path=path
+            dependency, profile_name=profile_name, component=component, path=path
         )
 
     return manifest

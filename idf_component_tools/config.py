@@ -46,7 +46,7 @@ LocalStorageUrlField = t.Union[
 ]
 
 
-class ServiceProfileItem(BaseModel):
+class ProfileItem(BaseModel):
     registry_url: RegistryUrlField = None
     storage_url: StorageUrlField = None
     local_storage_url: LocalStorageUrlField = None
@@ -78,7 +78,7 @@ class ServiceProfileItem(BaseModel):
 
 
 class Config(BaseModel):
-    profiles: t.Dict[str, t.Optional[ServiceProfileItem]] = {}
+    profiles: t.Dict[str, t.Optional[ProfileItem]] = {}
 
 
 def config_dir():

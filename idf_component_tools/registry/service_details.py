@@ -6,7 +6,7 @@
 import typing as t
 
 from idf_component_tools import ComponentManagerSettings
-from idf_component_tools.config import ConfigManager, ServiceProfileItem
+from idf_component_tools.config import ConfigManager, ProfileItem
 from idf_component_tools.constants import (
     IDF_COMPONENT_REGISTRY_URL,
     IDF_COMPONENT_STORAGE_URL,
@@ -24,22 +24,22 @@ class NoSuchProfile(FatalError):
 def get_profile(
     profile_name: t.Optional[str] = None,
     config_path: t.Optional[str] = None,
-) -> t.Optional[ServiceProfileItem]:
+) -> t.Optional[ProfileItem]:
     config = ConfigManager(path=config_path).load()
-    _profile_name = ComponentManagerSettings().REGISTRY_PROFILE or profile_name
+    _profile_name = ComponentManagerSettings().PROFILE or profile_name
 
     if (
         _profile_name == 'default' and config.profiles.get(_profile_name) is None
     ) or not _profile_name:
-        return ServiceProfileItem()  # empty profile
+        return ProfileItem()  # empty profile
 
     if _profile_name in config.profiles:
-        return config.profiles[_profile_name] or ServiceProfileItem()
+        return config.profiles[_profile_name] or ProfileItem()
 
     return None
 
 
-def get_registry_url(profile: t.Optional[ServiceProfileItem] = None) -> str:
+def get_registry_url(profile: t.Optional[ProfileItem] = None) -> str:
     """
     Env var > profile settings > default
     """
@@ -50,7 +50,7 @@ def get_registry_url(profile: t.Optional[ServiceProfileItem] = None) -> str:
     )
 
 
-def get_storage_urls(profile: t.Optional[ServiceProfileItem] = None) -> t.List[str]:
+def get_storage_urls(profile: t.Optional[ProfileItem] = None) -> t.List[str]:
     """
     Env var > profile settings > default
     """
@@ -75,9 +75,9 @@ def get_storage_urls(profile: t.Optional[ServiceProfileItem] = None) -> t.List[s
 
 def get_api_client(
     namespace: t.Optional[str] = None,
-    service_profile: t.Optional[str] = None,
+    profile_name: t.Optional[str] = None,
     config_path: t.Optional[str] = None,
-    profile: t.Optional[ServiceProfileItem] = None,
+    profile: t.Optional[ProfileItem] = None,
 ) -> APIClient:
     """
     Api Client should be used when you're "writing" to the registry,
@@ -85,11 +85,11 @@ def get_api_client(
     For example, when you need to upload, validate, or delete a component.
     """
     if profile is None:
-        profile = get_profile(service_profile, config_path)
+        profile = get_profile(profile_name, config_path)
 
-    if service_profile and profile is None:
+    if profile_name and profile is None:
         raise NoSuchProfile(
-            f'Profile "{service_profile}" not found in the idf_component_manager.yml config file'
+            f'Profile "{profile_name}" not found in the idf_component_manager.yml config file'
         )
 
     return APIClient(
@@ -101,9 +101,9 @@ def get_api_client(
 
 def get_storage_client(
     namespace: t.Optional[str] = None,
-    service_profile: t.Optional[str] = None,
+    profile_name: t.Optional[str] = None,
     config_path: t.Optional[str] = None,
-    profile: t.Optional[ServiceProfileItem] = None,
+    profile: t.Optional[ProfileItem] = None,
     local_first_mode: bool = True,
 ) -> MultiStorageClient:
     """
@@ -112,11 +112,11 @@ def get_storage_client(
     For example, when you need to download a component or get its metadata.
     """
     if profile is None:
-        profile = get_profile(service_profile, config_path)
+        profile = get_profile(profile_name, config_path)
 
-    if service_profile and profile is None:
+    if profile_name and profile is None:
         raise NoSuchProfile(
-            f'Profile "{service_profile}" not found in the idf_component_manager.yml config file'
+            f'Profile "{profile_name}" not found in the idf_component_manager.yml config file'
         )
 
     return MultiStorageClient(

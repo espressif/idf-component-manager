@@ -59,7 +59,10 @@ from idf_component_tools.registry.client_errors import (
     NetworkConnectionError,
     VersionNotFound,
 )
-from idf_component_tools.registry.service_details import get_api_client, get_storage_client
+from idf_component_tools.registry.service_details import (
+    get_api_client,
+    get_storage_client,
+)
 from idf_component_tools.semver import SimpleSpec, Version
 from idf_component_tools.sources import WebServiceSource
 from idf_component_tools.utils import ProjectRequirements
@@ -114,7 +117,9 @@ def _create_manifest_if_missing(manifest_dir: str) -> bool:
     if os.path.exists(manifest_filepath):
         return False
     example_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)), 'templates', 'idf_component_template.yml'
+        os.path.dirname(os.path.realpath(__file__)),
+        'templates',
+        'idf_component_template.yml',
     )
     create_directory(manifest_dir)
     shutil.copyfile(example_path, manifest_filepath)
@@ -223,9 +228,12 @@ class ComponentManager:
 
     @general_error_handler
     def create_project_from_example(
-        self, example: str, path: t.Optional[str] = None, service_profile: t.Optional[str] = None
+        self,
+        example: str,
+        path: t.Optional[str] = None,
+        profile_name: t.Optional[str] = None,
     ) -> None:
-        client = get_storage_client(None, service_profile)
+        client = get_storage_client(None, profile_name)
         component_name, version_spec, example_name = parse_example(
             example, client.default_namespace
         )
@@ -278,7 +286,7 @@ class ComponentManager:
         dependency: str,
         component: str = 'main',
         path: t.Optional[str] = None,
-        service_profile: t.Optional[str] = None,
+        profile_name: t.Optional[str] = None,
     ) -> None:
         manifest_filepath, _ = self._get_manifest(component=component, path=path)
 
@@ -313,7 +321,7 @@ class ComponentManager:
 
         # Check if dependency exists in the registry
         # make sure it exists in the registry's storage url
-        client = get_storage_client(service_profile=service_profile).registry_storage_client
+        client = get_storage_client(profile_name=profile_name).registry_storage_client
         if not client:
             raise InternalError()
 
@@ -433,13 +441,13 @@ class ComponentManager:
         self,
         name: str,
         version: str,
-        service_profile: t.Optional[str] = None,
+        profile_name: t.Optional[str] = None,
         namespace: t.Optional[str] = None,
     ) -> None:
         if not version:
             raise FatalError('Argument "version" is required')
 
-        api_client = get_api_client(namespace, service_profile)
+        api_client = get_api_client(namespace, profile_name)
         component_name = '/'.join([api_client.default_namespace, name])
 
         # Checking if current version already uploaded
@@ -461,10 +469,10 @@ class ComponentManager:
         name: str,
         version: str,
         message: str,
-        service_profile: t.Optional[str] = None,
+        profile_name: t.Optional[str] = None,
         namespace: t.Optional[str] = None,
     ):
-        api_client = get_api_client(namespace, service_profile)
+        api_client = get_api_client(namespace, profile_name)
         component_name = '/'.join([api_client.default_namespace, name])
 
         versions = api_client.versions(component_name=component_name).versions
@@ -477,7 +485,9 @@ class ComponentManager:
             )
 
         api_client.yank_version(
-            component_name=component_name, component_version=version, yank_message=message
+            component_name=component_name,
+            component_version=version,
+            yank_message=message,
         )
         print_info(
             'Version {} of the component {} was yanked due to reason "{}"'.format(
@@ -518,7 +528,7 @@ class ComponentManager:
         self,
         name: str,
         version: t.Optional[str] = None,
-        service_profile: t.Optional[str] = None,
+        profile_name: t.Optional[str] = None,
         namespace: t.Optional[str] = None,
         archive: t.Optional[str] = None,
         skip_pre_release: bool = False,
@@ -533,7 +543,7 @@ class ComponentManager:
         """
         Uploads a component version to the registry.
         """
-        api_client = get_api_client(namespace, service_profile)
+        api_client = get_api_client(namespace, profile_name)
 
         if archive:
             if not os.path.isfile(archive):
@@ -611,8 +621,8 @@ class ComponentManager:
         # Wait for processing
         profile_text = (
             ''
-            if service_profile is None or service_profile == 'default'
-            else f' --service-profile={service_profile}'
+            if profile_name is None or profile_name == 'default'
+            else f' --profile={profile_name}'
         )
         print_info(
             'Wait for processing, it is safe to press CTRL+C and exit\n'
@@ -665,8 +675,8 @@ class ComponentManager:
             )
 
     @general_error_handler
-    def upload_component_status(self, job_id: str, service_profile: t.Optional[str] = None) -> None:
-        api_client = get_api_client(None, service_profile)
+    def upload_component_status(self, job_id: str, profile_name: t.Optional[str] = None) -> None:
+        api_client = get_api_client(None, profile_name)
         status = api_client.task_status(job_id=job_id)
         if status.status == 'failure':
             raise FatalError(f"Uploaded version wasn't processed successfully.\n{status.message}")
@@ -681,7 +691,10 @@ class ComponentManager:
 
     @general_error_handler
     def prepare_dep_dirs(
-        self, managed_components_list_file, component_list_file, local_components_list_file=None
+        self,
+        managed_components_list_file,
+        component_list_file,
+        local_components_list_file=None,
     ):
         """Process all manifests and download all dependencies"""
         # root core components
@@ -771,7 +784,7 @@ class ComponentManager:
                     file.write(
                         'idf_build_component("{}" "{}")\n'.format(
                             downloaded_component.abs_posix_path,
-                            'idf_components' if is_root == 1 else 'project_managed_components',
+                            ('idf_components' if is_root == 1 else 'project_managed_components'),
                         )
                     )
                     file.write(
@@ -977,13 +990,13 @@ class ComponentManager:
 
     def sync_registry(
         self,
-        service_profile: str,
+        profile_name: str,
         save_path: t.Union[str, Path],
         interval: int = 0,
         components: t.Optional[t.List[str]] = None,
         recursive: bool = True,
     ) -> None:
-        client = get_storage_client(None, service_profile)
+        client = get_storage_client(None, profile_name)
         save_path = Path(save_path)
         if interval:
             while True:

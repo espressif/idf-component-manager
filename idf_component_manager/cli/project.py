@@ -27,7 +27,7 @@ def init_project():
         'The project will be created directly in the given folder if it is empty.',
     )
     @click.argument('example', required=True)
-    def create_from_example(manager, example, path, service_profile):
+    def create_from_example(manager, example, path, profile_name):
         """
         Create a project from an example.
 
@@ -42,7 +42,7 @@ def init_project():
 
         Namespace and version are optional in the EXAMPLE argument.
         """
-        manager.create_project_from_example(example, path=path, service_profile=service_profile)
+        manager.create_project_from_example(example, path=path, profile_name=profile_name)
 
     @project.command()
     @add_options(PROJECT_DIR_OPTION)

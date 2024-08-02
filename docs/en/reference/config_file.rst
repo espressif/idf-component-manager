@@ -114,7 +114,7 @@ Besides, if you have a local storage server, you can also add the local storage 
  Usage
 *******
 
-All CLI commands accept ``--service-profile`` parameter to specify the service profile to use. If the parameter is not provided, the CLI will use the default profile.
+All CLI commands accept ``--profile`` parameter to specify the service profile to use. If the parameter is not provided, the CLI will use the default profile.
 
 For testing purpose, it's recommended to upload the components to the staging server first. To upload components to our staging server, you may use the following configuration file:
 
@@ -128,7 +128,7 @@ For testing purpose, it's recommended to upload the components to the staging se
 
 Instead of manually login, create an access token, and create the configuration file, you may also use the command ``compote registry login`` to login to the registry server interactively and save the configuration to the configuration file.
 
-For example, ``compote registry login --service-profile "staging" --registry-url https://components-staging.espressif.com --default-namespace my_namespace`` will open a browser window to login to the registry server. Once you created the token and copy-paste it to the terminal, the CLI will login to the registry server and save the configuration same as the above example.
+For example, ``compote registry login --profile "staging" --registry-url https://components-staging.espressif.com --default-namespace my_namespace`` will open a browser window to login to the registry server. Once you created the token and copy-paste it to the terminal, the CLI will login to the registry server and save the configuration same as the above example.
 
 To upload a component to the staging server, you may use the following command:
 
@@ -140,7 +140,7 @@ To upload a component to the staging server, you may use the following command:
 
       .. code:: shell
 
-         compote component upload --service-profile=staging --name test_cmp
+         compote component upload --profile=staging --name test_cmp
 
    .. group-tab::
 
@@ -148,6 +148,6 @@ To upload a component to the staging server, you may use the following command:
 
       .. code:: shell
 
-         idf.py upload-component --service-profile=staging --name test_cmp
+         idf.py upload-component --profile=staging --name test_cmp
 
 The component ``my_component`` will be uploaded to the staging server with the namespace ``my_namespace``.

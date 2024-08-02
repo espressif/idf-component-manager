@@ -9,7 +9,7 @@ import pytest
 from idf_component_tools.config import (
     ConfigError,
     ConfigManager,
-    ServiceProfileItem,
+    ProfileItem,
 )
 from idf_component_tools.registry.service_details import (
     get_registry_url,
@@ -103,9 +103,7 @@ def test_config_dump(tmp_path):
             },
         }
     })
-    config.profiles['in_office'] = ServiceProfileItem(
-        registry_url='http://api.localserver.local:5000/'
-    )
+    config.profiles['in_office'] = ProfileItem(registry_url='http://api.localserver.local:5000/')
 
     ConfigManager(path=config_path).dump(config)
 
@@ -178,14 +176,17 @@ def test_component_registry_url_registry_env(monkeypatch):
             ['http://example.com/'],
         ),
         (
-            {'registry_url': None, 'storage_url': ['http://example.com', 'https://test.com']},
+            {
+                'registry_url': None,
+                'storage_url': ['http://example.com', 'https://test.com'],
+            },
             'https://components.espressif.com/',
             ['http://example.com/', 'https://test.com/'],
         ),
     ],
 )
 def test_component_registry_url_profile(profile, registry_url, storage_urls):
-    profile = ServiceProfileItem(**profile) if profile else None
+    profile = ProfileItem(**profile) if profile else None
 
     assert get_registry_url(profile) == registry_url
     assert get_storage_urls(profile) == storage_urls
