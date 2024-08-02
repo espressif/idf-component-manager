@@ -7,7 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
-## v2.0.0.dev1 (2024-06-19)
+## v2.0.0rc0 (2024-08-02)
+
+### Feat
+
+- Add more descriptive error message for authentication
+- compare .component_hash by default, support optionally strict checksum
+- Make environment variables in if rules required to have a value
+- store images on dockerhub
+
+### Fix
+
+- optional dependencies always skipped when "version" undefined
+- skip optional dependencies while solving dependencies
+- api response string could be empty
+- revert name slug re changes
+- correct error message when manifest file is not a dict
+- docs: fix render of '--'
+- support env var in git source fields `git`, `path`
+- support env var in local source fields `path`, `override_path`
+- assume false when exceptions raised in if clause
+
+## v2.0.0dev1 (2024-06-19)
 
 ### Feat
 
@@ -27,7 +48,7 @@ This changelog is managed with commitizen tool, don't update it manually.
 - cleanup dependencies, lift version restrictions
 - Consistent naming convention for ESP Component Registry
 - local components in lock file not exist
-- local dep with '__' can be treated as namespace separator correctly
+- local dep with '\_\_' can be treated as namespace separator correctly
 - re-trigger version solver when optional dependency now meet conditions
 - skip the optional dependencies while version solving
 - Fix 'default' profile not loading from the config file
