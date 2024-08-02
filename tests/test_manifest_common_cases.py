@@ -4,7 +4,7 @@ import typing as t
 
 import pytest
 
-from idf_component_tools.manifest import ComponentRequirement, Manifest
+from idf_component_tools.manifest import ComponentRequirement, Manifest, OptionalDependency
 
 
 def dep_by_name(manifest: Manifest, name: str) -> t.Optional[ComponentRequirement]:
@@ -138,3 +138,19 @@ def test_require_field_public(require_field, public, require):
 
     assert manifest.requirements[0].is_public is public
     assert manifest.requirements[0].is_required is require
+
+
+def test_meet_optional_dependency_with_none_version_requirement(monkeypatch):
+    monkeypatch.setenv('IDF_TARGET', 'esp32c6')
+
+    req = ComponentRequirement(
+        name='foo',
+        path='/test/',
+        rules=[
+            OptionalDependency.fromdict({'if': 'target in [esp32c6]'}),
+        ],
+    )
+
+    assert req.meet_optional_dependencies
+    assert req.version is None
+    assert req.version_spec == '*'

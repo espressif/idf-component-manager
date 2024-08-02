@@ -166,7 +166,9 @@ class DependencyItem(BaseModel):
     @property
     def version_spec(self) -> str:
         if self.optional_requirement:
-            version_spec = self.optional_requirement.version_spec_if_meet_conditions(self.version)
+            version_spec = self.optional_requirement.version_spec_if_meet_conditions(
+                self.version or '*'
+            )
             if version_spec is not None:
                 return version_spec
 
@@ -273,7 +275,7 @@ class ComponentRequirement(DependencyItem):
         if (not self.matches) and (not self.rules):
             return True
 
-        if self.optional_requirement.version_spec_if_meet_conditions(self.version) is not None:
+        if self.optional_requirement.version_spec_if_meet_conditions(self.version_spec) is not None:
             return True
 
         notice('Skipping optional dependency: {}'.format(self.name))
