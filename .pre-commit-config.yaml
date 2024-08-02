@@ -18,7 +18,7 @@ repos:
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.4.6
+    rev: v0.5.5
     hooks:
       # Run the linter.
       - id: ruff
@@ -28,7 +28,7 @@ repos:
         args: ['--preview']
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.10.0
+    rev: v1.11.1
     hooks:
       - id: mypy
         additional_dependencies:
@@ -50,12 +50,12 @@ repos:
           ]
 
   - repo: https://github.com/fpgmaas/deptry.git
-    rev: "0.16.1"
+    rev: "0.18.0"
     hooks:
       - id: deptry
 
   - repo: https://github.com/espressif/conventional-precommit-linter
-    rev: v1.8.0
+    rev: v1.10.0
     hooks:
       - id: conventional-precommit-linter
         stages: [commit-msg]
@@ -64,7 +64,7 @@ repos:
           - --allow-breaking
 
   - repo: https://github.com/hfudev/rstfmt
-    rev: v0.1.1
+    rev: v0.1.3
     hooks:
       - id: rstfmt
         args: ["-w", "-1"]
