@@ -19,7 +19,7 @@ def test_manifest_hash(valid_manifest):
     manifest = Manifest.fromdict(valid_manifest)
     # ONLY UPDATE MANIFEST HASH WHEN IT'S NECESSARY!!!
     assert (
-        manifest.manifest_hash == '1bd6824f65d801ec3014b407dafde5e6cf6020f04f7bfee88b7e7d723da4bac0'
+        manifest.manifest_hash == '8dd1abf83989a97bcd7590b795f5436169f3a2d74a99c832cb97a2d3e8b44205'
     )
 
 

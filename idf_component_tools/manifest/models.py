@@ -526,7 +526,7 @@ class Manifest(BaseModel):
 
     @property
     def manifest_hash(self) -> str:
-        return hash_object(self.model_dump_json())
+        return hash_object(self.model_dump_json(exclude_unset=True))
 
     @property
     def repository_path(self) -> t.Optional[str]:
