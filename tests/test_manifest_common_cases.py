@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import typing as t
+from copy import deepcopy
 
 import pytest
 
@@ -19,7 +20,7 @@ def test_manifest_hash(valid_manifest):
     manifest = Manifest.fromdict(valid_manifest)
     # ONLY UPDATE MANIFEST HASH WHEN IT'S NECESSARY!!!
     assert (
-        manifest.manifest_hash == '1bd6824f65d801ec3014b407dafde5e6cf6020f04f7bfee88b7e7d723da4bac0'
+        manifest.manifest_hash == '8dd1abf83989a97bcd7590b795f5436169f3a2d74a99c832cb97a2d3e8b44205'
     )
 
 
@@ -111,16 +112,39 @@ def test_invalid_manifest(manifest, errors):
         assert error in produced_errors
 
 
-def test_validator_commit_sha_and_repo(valid_manifest):
-    valid_manifest['commit_sha'] = (
-        '252f10c83610ebca1a059c0bae8255eba2f95be4d1d7bcfa89d7248a82d9f111'
-    )
+def test_validator_repo_info_and_repo(valid_manifest):
+    original_valid_manifest = deepcopy(valid_manifest)
+
+    valid_manifest['repository_info'] = {
+        'commit_sha': '252f10c83610ebca1a059c0bae8255eba2f95be4d1d7bcfa89d7248a82d9f111'
+    }
     del valid_manifest['repository']
     errors = Manifest.validate_manifest(valid_manifest)
-
     assert errors == [
-        'Invalid field "repository". Must set when "commit_sha" is set',
+        'Invalid field "repository". Must set when "repository_info" is set',
     ]
+
+    valid_manifest = deepcopy(original_valid_manifest)
+    valid_manifest['repository_info'] = {'path': 'foo/bar'}
+    del valid_manifest['repository']
+    errors = Manifest.validate_manifest(valid_manifest)
+    assert errors == [
+        'Invalid field "repository". Must set when "repository_info" is set',
+    ]
+
+    valid_manifest = deepcopy(original_valid_manifest)
+    valid_manifest['repository_info'] = {}
+    del valid_manifest['repository']
+    errors = Manifest.validate_manifest(valid_manifest)
+    assert errors == [
+        'Invalid field "repository". Must set when "repository_info" is set',
+    ]
+
+    valid_manifest = deepcopy(original_valid_manifest)
+    valid_manifest.pop('repository_info', None)
+    del valid_manifest['repository']
+    errors = Manifest.validate_manifest(valid_manifest)
+    assert errors == []
 
 
 @pytest.mark.parametrize(

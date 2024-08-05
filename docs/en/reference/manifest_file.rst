@@ -231,36 +231,31 @@ Example:
 
    repository: "https://example.com/component.git"
 
-If your component is not in the root of the repository, specify the path to the component in the repository with the ``repository_info`` field.
+``repository_info``
+===================
+
+The additional information of the repository.
+
+This field is optional. But when it's set, ``repository`` field must be set as well.
+
+If your component is not in the root of the repository, specify the path to the component in the ``path`` field.
 
 .. code:: yaml
 
    repository: "https://example.com/component.git"
    repository_info:
-     commit_sha: "1234567890abcdef1234567890abcdef12345678"
      path: "path/to/component"
 
-``commit_sha``
-==============
-
-A SHA checksum for the Git commit of the component you intend to use.
-
-This field is optional.
-
-If used, place it under the ``repository_info`` field (recommended), or used along with the ``repository`` field.
-
-Can be passed as an argument to the ``compote component upload --commit-sha [commit_sha]`` command.
-
-Examples:
-
-.. code:: yaml
-
-   commit_sha: "1234567890abcdef1234567890abcdef12345678"
+You may also put a Git Commit SHA of the component you intend to use in the ``commit_sha`` field.
 
 .. code:: yaml
 
    repository_info:
      commit_sha: "1234567890abcdef1234567890abcdef12345678"
+
+Can be passed as an argument to the ``compote component upload --commit-sha [commit_sha]`` command.
+
+Both ``path`` and ``commit_sha`` sub-fields are optional.
 
 ``documentation``
 =================

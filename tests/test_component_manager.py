@@ -260,7 +260,7 @@ def test_pack_component_with_replacing_manifest_params(tmp_path, release_compone
 
     assert manifest.version == '2.3.5'
     assert manifest.links.repository == repository_url
-    assert manifest.commit_sha == commit_id
+    assert manifest.repository_info.commit_sha == commit_id
 
 
 def test_pack_component_with_examples(tmp_path, example_component_path):

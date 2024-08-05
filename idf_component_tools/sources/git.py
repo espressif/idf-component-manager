@@ -67,10 +67,6 @@ class GitSource(BaseSource):
         )
 
     @property
-    def component_hash_required(self) -> bool:
-        return True
-
-    @property
     def downloadable(self) -> bool:
         return True
 
