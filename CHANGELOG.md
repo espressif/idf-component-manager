@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.0.0rc1 (2024-08-05)
+
+### Feat
+
+- drop support of root level `commit_sha` in the manifest file
+
+### Fix
+
+- pass CLI arguments while uploading packed components
+- calculate manifest hash based on set values
+
+### Refactor
+
+- remove unused attr `component_hash_required`
+
 ## v2.0.0rc0 (2024-08-02)
 
 ### Feat
