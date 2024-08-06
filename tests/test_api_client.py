@@ -8,7 +8,7 @@ import requests_mock
 import vcr
 from requests import Response
 
-from idf_component_manager import version
+from idf_component_tools.__version__ import __version__ as version
 from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL
 from idf_component_tools.registry.api_client import APIClient
 from idf_component_tools.registry.base_client import user_agent
