@@ -51,39 +51,47 @@ class ManifestManager:
         from .manifest.models import Manifest, RepositoryInfoField  # avoid circular dependency
         from .utils import ComponentVersion
 
+        if self._manifest:
+            return self
+
+        if not os.path.isfile(self.path):
+            self._validation_errors = []
+            self._manifest = Manifest(name=self.name, manifest_manager=self)
+            return self
+
         # validate manifest
-        if self._manifest is None:
-            if os.path.isfile(self.path):
-                try:
-                    with open(self.path, 'r') as f:
-                        d = yaml.safe_load(f) or {}
-                except yaml.YAMLError:
-                    self._validation_errors = [
-                        'Cannot parse the manifest file. Please check that\n'
-                        '\t{}\n'
-                        'is a valid YAML file\n'.format(self.path)
-                    ]
-                    return self
+        try:
+            with open(self.path, 'r') as f:
+                d = yaml.safe_load(f) or {}
+        except yaml.YAMLError:
+            self._validation_errors = [
+                'Cannot parse the manifest file. Please check that\n'
+                '\t{}\n'
+                'is a valid YAML file\n'.format(self.path)
+            ]
+            return self
 
-                if not isinstance(d, dict):
-                    self._validation_errors = [
-                        'Manifest file should be a dictionary. Please check that\n'
-                        '\t{}\n'
-                        'is a valid manifest file\n'.format(self.path)
-                    ]
-                    return self
+        if not isinstance(d, dict):
+            self._validation_errors = [
+                'Manifest file should be a dictionary. Please check that\n'
+                '\t{}\n'
+                'is a valid manifest file\n'.format(self.path)
+            ]
+            return self
 
-                if self.name:
-                    d['name'] = self.name
+        if self.name:
+            d['name'] = self.name
 
-                d['manifest_manager'] = self
+        if self._version:
+            d['version'] = self._version
 
-                self._validation_errors, self._manifest = Manifest.validate_manifest(
-                    d, upload_mode=self.upload_mode, return_with_object=True
-                )
-            else:
-                self._validation_errors = []
-                self._manifest = Manifest(name=self.name, manifest_manager=self)
+        d['manifest_manager'] = self
+
+        self._validation_errors, self._manifest = Manifest.validate_manifest(  # type: ignore
+            d,
+            upload_mode=self.upload_mode,
+            return_with_object=True,
+        )
 
         # override fields defined in manifest manager
         if self._version is not None:

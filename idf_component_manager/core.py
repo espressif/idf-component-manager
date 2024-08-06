@@ -404,6 +404,7 @@ class ComponentManager:
         manifest_manager = ManifestManager(
             self.path,
             name,
+            upload_mode=True,
             version=version,
             repository=repository,
             commit_sha=commit_sha,

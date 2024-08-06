@@ -17,7 +17,7 @@ from pytest import raises
 from idf_component_manager.core import ComponentManager
 from idf_component_tools.archive_tools import unpack_archive
 from idf_component_tools.constants import MANIFEST_FILENAME
-from idf_component_tools.errors import FatalError, NothingToDoError
+from idf_component_tools.errors import FatalError, ManifestError, NothingToDoError
 from idf_component_tools.git_client import GitClient
 from idf_component_tools.manager import ManifestManager
 from idf_component_tools.semver import Version
@@ -185,6 +185,31 @@ def remove_version_line(path):
         f.seek(0)
         f.writelines(lines[1:])
         f.truncate()
+
+
+def test_pack_component_version_from_CLI_and_not_in_manifest(tmp_path, release_component_path):
+    copy_into(release_component_path, str(tmp_path))
+    component_manager = ComponentManager(path=str(tmp_path))
+
+    # remove the first version line
+    remove_version_line(tmp_path)
+
+    component_manager.pack_component('cmp', '2.3.4')
+
+    tempdir = os.path.join(tempfile.tempdir, 'cmp')
+    unpack_archive(os.path.join(component_manager.dist_path, 'cmp_2.3.4.tgz'), tempdir)
+    manifest = ManifestManager(tempdir, 'cmp').load()
+    assert manifest.version == '2.3.4'
+
+
+def test_pack_component_no_version_provided(tmp_path, release_component_path):
+    copy_into(release_component_path, str(tmp_path))
+    component_manager = ComponentManager(path=str(tmp_path))
+
+    remove_version_line(tmp_path)
+
+    with pytest.raises(ManifestError, match='Manifest is not valid'):
+        component_manager.pack_component('cmp', None)
 
 
 def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_component_path):
