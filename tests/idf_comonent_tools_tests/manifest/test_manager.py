@@ -11,10 +11,9 @@ from idf_component_tools.manager import ManifestManager
 
 
 def test_check_filename(tmp_path):
-    path = tmp_path.as_posix()
-    parser = ManifestManager(path, name='test')
+    parser = ManifestManager(tmp_path, name='test')
 
-    assert parser.path == os.path.join(path, 'idf_component.yml')
+    assert parser.path == tmp_path / 'idf_component.yml'
 
 
 def test_parse_invalid_yaml(fixtures_path):

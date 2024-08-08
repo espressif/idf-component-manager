@@ -68,6 +68,17 @@ def test_pack_component_no_version_provided(tmp_path, release_component_path):
         component_manager.pack_component('cmp', None)
 
 
+def test_pack_component_no_version_provided_nor_manifest(tmp_path, release_component_path):
+    copy_into(release_component_path, tmp_path)
+
+    component_manager = ComponentManager(path=tmp_path)
+
+    (tmp_path / MANIFEST_FILENAME).unlink()
+
+    with pytest.raises(ManifestError, match='Manifest is not valid'):
+        component_manager.pack_component('cmp', None)
+
+
 def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_component_path):
     copy_into(pre_release_component_path, str(tmp_path))
     component_manager = ComponentManager(path=str(tmp_path))
