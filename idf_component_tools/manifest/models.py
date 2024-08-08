@@ -389,7 +389,7 @@ class Manifest(BaseModel):
         self,
         **kwargs,
     ) -> t.Dict[str, t.Any]:
-        return super().model_dump(exclude=['name'])
+        return super().model_dump(exclude=['name'], exclude_unset=True)
 
     @field_validator('version')
     @classmethod
