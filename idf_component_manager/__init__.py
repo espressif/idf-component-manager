@@ -3,13 +3,7 @@
 import logging
 import sys
 
-from idf_component_tools import semver
-from idf_component_tools.__version__ import __version__
 from idf_component_tools.environment import ComponentManagerSettings
-
-# IDF Component Version is the same as tools
-version = semver.Version(__version__)
-
 
 logger = logging.getLogger(__package__)
 if ComponentManagerSettings().DEBUG_MODE:
