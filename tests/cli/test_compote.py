@@ -47,16 +47,17 @@ def test_raise_exception_on_warnings(monkeypatch):
     )
 
 
-def test_login_to_registry(monkeypatch, tmp_path, mock_registry, mock_token_information):
-    monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
-
+def test_login_to_registry(tmp_path, mock_registry, mock_token_information):
     runner = CliRunner()
     cli = initialize_cli()
     output = runner.invoke(
         cli,
         ['registry', 'login', '--no-browser'],
         input='test_token',
-        env={'IDF_TOOLS_PATH': str(tmp_path)},
+        env={
+            #  non-existing path is to check PACMAN-961
+            'IDF_TOOLS_PATH': str(tmp_path / 'non-existing-path')
+        },
     )
 
     assert output.exit_code == 0

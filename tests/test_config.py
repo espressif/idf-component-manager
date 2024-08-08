@@ -95,7 +95,7 @@ def test_load_config(tmp_path):
 
 
 def test_config_dump(tmp_path):
-    config_path = str(tmp_path / 'idf_component_manager.yml')
+    config_path = tmp_path / 'idf_component_manager.yml'
     config = ConfigManager.validate({
         'profiles': {
             'default': {
@@ -109,6 +109,12 @@ def test_config_dump(tmp_path):
 
     loaded_config = ConfigManager(path=config_path).load()
     assert loaded_config.profiles['in_office'].registry_url == 'http://api.localserver.local:5000/'
+
+
+def test_dump_non_existing_dir(tmp_path):
+    config_path = tmp_path / 'non_existing_dir' / 'idf_component_manager.yml'
+    config = ConfigManager.validate({})
+    ConfigManager(path=config_path).dump(config)
 
 
 def test_component_registry_url_storage_env(monkeypatch):
