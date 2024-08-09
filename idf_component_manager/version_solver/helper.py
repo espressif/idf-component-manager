@@ -48,7 +48,7 @@ def parse_single_constraint(
     elif _range.operator == _range.OP_GTE:
         return Range(min=version, include_min=True, string=str(_range))
     elif _range.operator == _range.OP_NEQ:
-        return Union(Range(min=version, string=str(_range)), Range(max=version, string=str(_range)))
+        return Union(Range(max=version, string=str(_range)), Range(min=version, string=str(_range)))
     else:
         return Range(version, version, True, True, str(_range))
 
@@ -168,7 +168,7 @@ class PackageSource(BasePackageSource):
                 )
                 for r in dependency.constraint.ranges
             ]
-            constraint = Union.of(ranges)
+            constraint = Union.of(*ranges)
         else:
             raise ValueError('should be "Union" or "Range"')
 
