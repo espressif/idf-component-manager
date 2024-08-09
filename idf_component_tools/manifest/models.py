@@ -289,8 +289,23 @@ class ComponentRequirement(DependencyItem):
 
 
 class FilesField(BaseModel):
+    use_gitignore: bool = False
     include: UniqueStrListField = []
     exclude: UniqueStrListField = []
+
+    @model_validator(mode='before')  # type: ignore
+    @classmethod
+    def validate_files(cls, data: t.Any) -> t.Any:
+        if not isinstance(data, dict):
+            return data
+
+        if 'use_gitignore' in data and data['use_gitignore']:
+            if 'exclude' in data or 'include' in data:
+                raise ValueError(
+                    'Invalid field "files": Cannot use ".gitignore" and "exclude"/"include" at the same time'
+                )
+
+        return data
 
 
 class RepositoryInfoField(BaseModel):
@@ -528,6 +543,10 @@ class Manifest(BaseModel):
     @property
     def exclude_set(self) -> t.Set[str]:
         return set(self.files.exclude if self.files else [])
+
+    @property
+    def use_gitignore(self) -> bool:
+        return self.files.use_gitignore if self.files else False
 
     @property
     def metadata(self):

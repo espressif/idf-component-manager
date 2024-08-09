@@ -135,7 +135,38 @@ Example:
 ``files``
 =========
 
-A dictionary containing two lists of ``include`` and ``exclude`` patterns.
+A dictionary with the following options:
+
+-  ``use_gitignore``: Exclude files using the ``.gitignore``.
+-  ``include``: List of patterns to include.
+-  ``exclude``: List of patterns to exclude.
+
+.. note::
+
+   You cannot use ``.gitignore`` and ``include``/``exclude`` rules at the same time.
+
+Examples:
+
+#. Use ``.gitignore`` to exclude files:
+
+.. code:: yaml
+
+   files:
+      use_gitignore: true
+
+2. Use ``include`` and ``exclude`` patterns:
+
+.. code:: yaml
+
+   files:
+      exclude:
+         - "*.py"          # Exclude all Python files
+         - "**/*.list"     # Exclude `.list` files in all directories
+         - "big_dir/**/*"  # Exclude `big_dir` directory and its content
+      include:
+         - "**/.DS_Store"  # Include files excluded by default
+
+..
 
 This field is optional and can be omitted if the component contains all files in the root directory with the default list of exceptions.
 

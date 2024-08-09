@@ -3,6 +3,7 @@
 
 import os
 import shutil
+import typing as t
 from pathlib import Path
 
 import pytest
@@ -14,6 +15,11 @@ from idf_component_tools.file_tools import (
     filtered_paths,
     human_readable_size,
 )
+
+
+def create_gitignore(path: t.Union[str, Path], patterns: t.List[str]):
+    gitignore = Path(path) / '.gitignore'
+    gitignore.write_text('\n'.join(patterns))
 
 
 @pytest.fixture
@@ -134,6 +140,88 @@ def test_excluded_and_included_files(tmpdir_factory):
     )
 
     assert os.listdir(temp_dir.strpath) == ['folder1']
+
+
+def test_exclude_files_with_gitignore(assets_path):
+    create_gitignore(assets_path, ['ignore.me', '1.txt'])
+
+    assert filtered_paths(
+        assets_path,
+        use_gitignore=True,
+    ) == {
+        assets_path / 'ignore.dir' / 'file.txt',
+        assets_path / '.gitignore',
+        assets_path / '.gitlab-ci.yml',
+    }
+
+
+def test_exclude_directory_with_gitignore(assets_path):
+    create_gitignore(assets_path, ['ignore.dir'])
+
+    assert filtered_paths(
+        assets_path,
+        use_gitignore=True,
+    ) == {
+        assets_path / 'ignore.me',
+        assets_path / '1.txt',
+        assets_path / '.gitignore',
+        assets_path / '.gitlab-ci.yml',
+    }
+
+
+def test_exclude_files_with_nested_gitignore(assets_path):
+    create_gitignore(assets_path, ['ignore.me', '1.txt'])
+    nested_dir = assets_path / 'nested.dir'
+    nested_dir.mkdir()
+    (nested_dir / 'file1.txt').write_text('1')
+    (nested_dir / 'file2.txt').write_text('2')
+    create_gitignore(nested_dir, ['file1.txt'])
+
+    assert filtered_paths(
+        assets_path,
+        use_gitignore=True,
+    ) == {
+        assets_path / 'ignore.dir' / 'file.txt',
+        assets_path / 'nested.dir' / 'file2.txt',
+        assets_path / 'nested.dir' / '.gitignore',
+        assets_path / '.gitignore',
+        assets_path / '.gitlab-ci.yml',
+    }
+
+
+def test_include_empty_directory_with_keep_file(assets_path):
+    create_gitignore(assets_path, ['ignore.dir/*', '!**/.keep'])
+    ignore_dir = assets_path / 'ignore.dir'
+    (ignore_dir / '.keep').write_text('1')
+
+    assert filtered_paths(assets_path, use_gitignore=True) == {
+        assets_path / 'ignore.dir' / '.keep',
+        assets_path / '1.txt',
+        assets_path / 'ignore.me',
+        assets_path / '.gitignore',
+        assets_path / '.gitlab-ci.yml',
+    }
+
+
+def test_exclude_files_with_gitignore_and_exclude(assets_path):
+    create_gitignore(assets_path, ['ignore.me'])
+
+    assert filtered_paths(assets_path, use_gitignore=True, exclude=['1.txt']) == {
+        assets_path / 'ignore.dir' / 'file.txt',
+        assets_path / '.gitignore',
+        assets_path / '.gitlab-ci.yml',
+    }
+
+
+def test_no_default_exclude_with_gitignore(assets_path):
+    create_gitignore(assets_path, ['ignore.me'])
+
+    assert filtered_paths(assets_path, use_gitignore=True, exclude_default=True) == {
+        assets_path / '1.txt',
+        assets_path / 'ignore.dir' / 'file.txt',
+        assets_path / '.gitignore',
+        assets_path / '.gitlab-ci.yml',
+    }
 
 
 def test_check_suspisious_component_files(release_component_path, tmp_path):

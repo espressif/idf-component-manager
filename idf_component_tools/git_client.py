@@ -46,15 +46,31 @@ class GitClient:
     """Set of tools for working with git repos"""
 
     def __init__(
-        self, git_command: str = 'git', min_supported: t.Union[str, Version] = '2.0.0'
+        self,
+        git_command: str = 'git',
+        min_supported: t.Union[str, Version] = '2.0.0',
+        work_tree: t.Optional[str] = None,
+        git_dir: t.Optional[str] = None,
     ) -> None:
         self.git_command = git_command or 'git'
         self.git_min_supported = (
             min_supported if isinstance(min_supported, Version) else Version(min_supported)
         )
 
+        self.predefined_options: t.Dict[str, str] = {}
+        self._set_predefined_option('work-tree', work_tree)
+        self._set_predefined_option('git-dir', git_dir)
+
         self._git_checked = False
         self._repo_updated = False
+
+    def _set_predefined_option(self, key: str, value: t.Optional[str]):
+        """Set predefined option for git command"""
+
+        if value is None:
+            return
+
+        self.predefined_options[key] = value
 
     def _git_cmd(func: t.Union[GitClient, t.Callable[..., t.Any]]) -> t.Callable:
         @wraps(func)  # type: ignore
@@ -119,6 +135,28 @@ class GitClient:
             return self.run(['rev-parse', '--is-inside-work-tree'], cwd=path).strip() == 'true'
         except GitCommandError:
             return False
+
+    @_git_cmd
+    def init_empty_repository(self) -> None:
+        """Initializes a new empty git repository"""
+
+        self.run(['init', '-q'], use_predefined_options=True)
+
+    @_git_cmd
+    def ignored_files(self) -> t.List[str]:
+        """Returns a list of untracked and ignored files by .gitignore separated with newlines"""
+
+        output = self.run(
+            [
+                'ls-files',
+                '--others',
+                '--exclude-standard',
+                '--ignored',
+            ],
+            use_predefined_options=True,
+        )
+
+        return output.splitlines()
 
     @_git_cmd
     @_bare_repo
@@ -214,7 +252,7 @@ class GitClient:
             '.gitmodules' in self.run(['ls-tree', '--name-only', ref], cwd=bare_path).splitlines()
         )
 
-    def run(self, args, cwd=None, env=None):
+    def run(self, args, cwd=None, env=None, use_predefined_options=False):
         """
         Executes a Git command with the given arguments.
 
@@ -226,6 +264,8 @@ class GitClient:
             env (dict | None):
                 The environment variables for the Git command.
                 If None, the current environment variables are used.
+            use_predefined_options (bool):
+                If True, the predefined options are added to the Git command.
 
         Returns:
             str: The output of the Git command as a string.
@@ -233,14 +273,20 @@ class GitClient:
         Raises:
             GitCommandError: If the Git command fails with a non-zero exit code.
         """
+
         if cwd is None:
             cwd = os.getcwd()
         env_copy = dict(os.environ)
         if env:
             env_copy.update(env)
 
-        p = subprocess.Popen(
-            [self.git_command] + list(args),  # noqa: S603
+        git_command = [self.git_command]
+
+        if use_predefined_options:
+            git_command += [f'--{opt}={val}' for opt, val in self.predefined_options.items()]
+
+        p = subprocess.Popen(  # noqa: S603
+            git_command + list(args),
             cwd=cwd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -275,8 +321,8 @@ class GitClient:
 
     def version(self) -> Version:
         try:
-            git_version_str = subprocess.check_output(
-                [self.git_command, '--version'],  # noqa: S603
+            git_version_str = subprocess.check_output(  # noqa: S603
+                [self.git_command, '--version'],
                 stderr=subprocess.STDOUT,
             ).decode('utf-8')
         except OSError:

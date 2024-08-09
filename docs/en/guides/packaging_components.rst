@@ -162,23 +162,46 @@ You can control which registry you upload to, and provide the authentication tok
 Filter Component Files
 ======================
 
-As a component developer, you may want to choose what files from the component directory will be uploaded to the ESP Component Registry. In this case, your ``idf_component.yml`` manifest may have ``include`` and ``exclude`` filters. For example:
+As a component developer, you may want to choose which files from the component directory will be uploaded to the ESP Component Registry. There are two ways to achieve this, either by allowing the processing of ``.gitignore`` files or by specifying ``exclude`` and ``include`` filters directly in the ``idf_component.yml`` manifest file. You are not allowed to use both methods simultaneously.
+
+Using .gitignore
+----------------
+
+First, you need to specify ``use_gitignore`` option in the ``idf_component.yml`` manifest file.
 
 .. code:: yaml
 
    files:
-     exclude:
-       - "*.py"         # Exclude all Python files
-       - "**/*.list"    # Exclude `.list` files in all directories
-       - "big_dir/**/*" # Exclude `big_dir` directory and its content
-     include:
-       - "**/.DS_Store" # Include files excluded by default
+      use_gitignore: true
 
-Files and directories that are excluded by default can be found `here <https://github.com/espressif/idf-component-manager/blob/main/idf_component_tools/file_tools.py#L16>`_
+Then patterns specified in the ``.gitignore`` file will be automatically excluded before packaging or uploading the component.
+
+.. code:: yaml
+
+   test_dir/   # Exclude files in all `test_dir` directories (including the directories themselves)
+
+More information on how ``.gitignore`` works is in the `official documentation <https://git-scm.com/docs/gitignore/en>`_.
+
+Using manifest filters
+----------------------
+
+In this case, your ``idf_component.yml`` manifest may have ``include`` and ``exclude`` filters. For example:
+
+.. code:: yaml
+
+   files:
+      exclude:
+         - "*.py"          # Exclude all Python files
+         - "**/*.list"     # Exclude `.list` files in all directories
+         - "big_dir/**/*"  # Exclude `big_dir` directory and its content
+      include:
+         - "**/.DS_Store"  # Include files excluded by default
+
+Files and directories that are excluded by default can be found `here <https://github.com/espressif/idf-component-manager/blob/main/idf_component_tools/file_tools.py#L16>`_.
 
 .. note::
 
-   The ``file`` field is only taken into account during the preparation of the archive before uploading to the registry.
+   The ``files`` field is only taken into account during the preparation of the archive before uploading to the registry.
 
 Add Dependencies
 ================

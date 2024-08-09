@@ -201,6 +201,7 @@ def copy_examples_folders(
     examples_manifest: t.List[t.Dict[str, str]],
     working_path: Path,
     dist_dir: Path,
+    use_gitignore: bool = False,
     include: t.Optional[t.Set[str]] = None,
     exclude: t.Optional[t.Set[str]] = None,
 ) -> None:
@@ -230,7 +231,9 @@ def copy_examples_folders(
 
         example_folders[example_path] = [example_name]
 
-        paths = filtered_paths(full_example_path, include=include, exclude=exclude)
+        paths = filtered_paths(
+            full_example_path, use_gitignore=use_gitignore, include=include, exclude=exclude
+        )
         copy_directories(str(full_example_path), str(dist_dir / 'examples' / example_name), paths)
 
     if error_paths:
