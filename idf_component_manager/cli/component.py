@@ -5,6 +5,7 @@ import click
 
 from .constants import (
     get_dest_dir_option,
+    get_name_option,
     get_namespace_name_options,
     get_project_dir_option,
     get_project_options,
@@ -15,6 +16,7 @@ from .utils import add_options
 def init_component():
     PROJECT_DIR_OPTION = get_project_dir_option()
     PROJECT_OPTIONS = get_project_options()
+    NAME_OPTION = get_name_option()
     NAMESPACE_NAME_OPTIONS = get_namespace_name_options()
     DEST_DIR_OPTION = get_dest_dir_option()
 
@@ -55,14 +57,13 @@ def init_component():
     @component.command()
     @add_options(
         PROJECT_DIR_OPTION
-        + NAMESPACE_NAME_OPTIONS
+        + NAME_OPTION
         + COMPONENT_VERSION_OPTION
         + DEST_DIR_OPTION
         + COMMIT_SHA_REPO_OPTION
     )
     def pack(
         manager,
-        namespace,
         name,
         version,
         dest_dir,

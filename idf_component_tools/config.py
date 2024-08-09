@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import os
 import typing as t
+from pathlib import Path
 
 import yaml
 from pydantic import (
@@ -25,8 +26,6 @@ from idf_component_tools.utils import (
 )
 
 from .build_system_tools import get_idf_version
-
-DEFAULT_CONFIG_DIR = os.path.join('~', '.espressif')
 
 RegistryUrlField = t.Union[
     Literal['default'],
@@ -81,12 +80,12 @@ class Config(BaseModel):
     profiles: t.Dict[str, t.Optional[ProfileItem]] = {}
 
 
-def config_dir():
-    return os.environ.get('IDF_TOOLS_PATH') or os.path.expanduser(DEFAULT_CONFIG_DIR)
+def config_dir() -> Path:
+    return Path(os.environ.get('IDF_TOOLS_PATH') or Path.home() / '.espressif')
 
 
-def root_managed_components_dir():
-    return os.path.join(config_dir(), 'root_managed_components', f'idf{get_idf_version()}')
+def root_managed_components_dir() -> Path:
+    return config_dir() / 'root_managed_components' / f'idf{get_idf_version()}'
 
 
 class ConfigError(FatalError):
@@ -95,11 +94,11 @@ class ConfigError(FatalError):
 
 class ConfigManager:
     def __init__(self, path=None):
-        self.config_path = path or os.path.join(config_dir(), 'idf_component_manager.yml')
+        self.config_path = Path(path) if path else (config_dir() / 'idf_component_manager.yml')
 
     def load(self) -> Config:
         """Loads config from disk"""
-        if not os.path.isfile(self.config_path):
+        if not self.config_path.is_file():
             return Config()
 
         with open(self.config_path, encoding='utf-8') as f:
@@ -120,5 +119,9 @@ class ConfigManager:
 
     def dump(self, config: Config) -> None:
         """Writes config to disk"""
+
+        # Make sure that directory exists
+        self.config_path.parent.mkdir(parents=True, exist_ok=True)
+
         with open(self.config_path, mode='w', encoding='utf-8') as f:
             yaml.dump(data=config.model_dump(), stream=f, encoding='utf-8', allow_unicode=True)

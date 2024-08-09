@@ -11,10 +11,9 @@ from idf_component_tools.manager import ManifestManager
 
 
 def test_check_filename(tmp_path):
-    path = tmp_path.as_posix()
-    parser = ManifestManager(path, name='test')
+    parser = ManifestManager(tmp_path, name='test')
 
-    assert parser.path == os.path.join(path, 'idf_component.yml')
+    assert parser.path == tmp_path / 'idf_component.yml'
 
 
 def test_parse_invalid_yaml(fixtures_path):
@@ -64,7 +63,7 @@ def test_validate_env_not_expanded(valid_manifest, tmp_path):
     valid_manifest['dependencies']['test']['rules'] = [{'if': 'target == $CURRENT_TARGET'}]
     valid_manifest['dependencies']['test']['matches'] = [{'if': 'idf_version == $CURRENT_IDF'}]
 
-    manifest_path = os.path.join(str(tmp_path), 'idf_component.yml')
+    manifest_path = tmp_path / 'idf_component.yml'
     with open(manifest_path, 'w') as fw:
         yaml.dump(valid_manifest, fw)
 
@@ -80,3 +79,18 @@ def test_validate_env_not_expanded(valid_manifest, tmp_path):
 
     # Check that file is not modified
     assert filecmp.cmp(manifest_path, test_dump_path / 'idf_component.yml')
+
+
+def test_dump_does_not_add_fields(tmp_path):
+    manifest_path = tmp_path / 'idf_component.yml'
+    manifest_content = 'version: 1.0.0\n'
+    manifest_path.write_text(manifest_content)
+    manager = ManifestManager(manifest_path, name='tst')
+
+    test_dump_path = tmp_path / 'test'
+    test_dump_path.mkdir()
+    manager.dump(test_dump_path)
+
+    dumped_manifiest_content = (test_dump_path / 'idf_component.yml').read_text()
+
+    assert manifest_content == dumped_manifiest_content

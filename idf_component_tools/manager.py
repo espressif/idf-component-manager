@@ -3,6 +3,7 @@
 
 import os
 import typing as t
+from pathlib import Path
 
 import yaml
 
@@ -30,7 +31,9 @@ class ManifestManager:
         commit_sha: t.Optional[str] = None,
         repository_path: t.Optional[str] = None,
     ) -> None:
-        self.path = os.path.join(path, MANIFEST_FILENAME) if os.path.isdir(path) else path
+        source_path = Path(path)
+        self.path: Path = source_path / MANIFEST_FILENAME if source_path.is_dir() else source_path
+
         self.name = name
 
         self._manifest: 'Manifest' = None  # type: ignore
@@ -48,30 +51,32 @@ class ManifestManager:
         self._validation_errors: t.List[str] = None  # type: ignore
 
     def validate(self) -> 'ManifestManager':
-        from .manifest.models import Manifest, RepositoryInfoField  # avoid circular dependency
+        from .manifest.models import (
+            Manifest,
+            RepositoryInfoField,
+        )
+
+        # avoid circular dependency
         from .utils import ComponentVersion
 
         if self._manifest:
             return self
 
-        if not os.path.isfile(self.path):
-            self._validation_errors = []
-            self._manifest = Manifest(name=self.name, manifest_manager=self)
-            return self
-
+        if not self.path.exists():
+            manifest_dict: t.Dict[str, t.Any] = {}
         # validate manifest
-        try:
-            with open(self.path, 'r') as f:
-                d = yaml.safe_load(f) or {}
-        except yaml.YAMLError:
-            self._validation_errors = [
-                'Cannot parse the manifest file. Please check that\n'
-                '\t{}\n'
-                'is a valid YAML file\n'.format(self.path)
-            ]
-            return self
+        else:
+            try:
+                manifest_dict = yaml.safe_load(self.path.read_text()) or {}
+            except yaml.YAMLError:
+                self._validation_errors = [
+                    'Cannot parse the manifest file. Please check that\n'
+                    '\t{}\n'
+                    'is a valid YAML file\n'.format(self.path)
+                ]
+                return self
 
-        if not isinstance(d, dict):
+        if not isinstance(manifest_dict, dict):
             self._validation_errors = [
                 'Manifest file should be a dictionary. Please check that\n'
                 '\t{}\n'
@@ -80,15 +85,15 @@ class ManifestManager:
             return self
 
         if self.name:
-            d['name'] = self.name
+            manifest_dict['name'] = self.name
 
         if self._version:
-            d['version'] = self._version
+            manifest_dict['version'] = self._version
 
-        d['manifest_manager'] = self
+        manifest_dict['manifest_manager'] = self
 
         self._validation_errors, self._manifest = Manifest.validate_manifest(  # type: ignore
-            d,
+            manifest_dict,
             upload_mode=self.upload_mode,
             return_with_object=True,
         )
@@ -150,7 +155,7 @@ class ManifestManager:
 
     def dump(
         self,
-        path: t.Optional[str] = None,
+        path: t.Optional[t.Union[str, Path]] = None,
     ) -> None:
         if path is None:
             path = self.path

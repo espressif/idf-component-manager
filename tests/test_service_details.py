@@ -61,8 +61,15 @@ def test_get_namespace_with_namespace():
     assert get_api_client(namespace='example').default_namespace == 'example'
 
 
-def test_get_namespace_default(service_config):
+def test_get_namespace_default():
     assert get_storage_client(namespace=None).default_namespace == DEFAULT_NAMESPACE
+
+
+def test_get_namespace_from_profile(
+    config_path,
+):
+    api_client = get_api_client(profile_name='test', config_path=config_path)
+    assert api_client.default_namespace == 'test'
 
 
 def test_get_token_env(monkeypatch):
@@ -81,7 +88,8 @@ def test_empty_env_profile(monkeypatch):
 
 
 def test_get_token_profile(config_path, monkeypatch):
-    assert get_api_client(profile_name='test', config_path=config_path).api_token == 'token'
+    api_client = get_api_client(profile_name='test', config_path=config_path)
+    assert api_client.api_token == 'token'
 
 
 def test_get_profile_success(config_path):

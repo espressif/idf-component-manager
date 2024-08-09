@@ -18,7 +18,10 @@ from pydantic import (
 from pydantic_core.core_schema import SerializerFunctionWrapHandler
 from pyparsing import ParseException
 
-from idf_component_tools.build_system_tools import build_name, build_name_to_namespace_name
+from idf_component_tools.build_system_tools import (
+    build_name,
+    build_name_to_namespace_name,
+)
 from idf_component_tools.constants import (
     COMMIT_ID_RE,
     COMPILED_GIT_URL_RE,
@@ -386,7 +389,7 @@ class Manifest(BaseModel):
         self,
         **kwargs,
     ) -> t.Dict[str, t.Any]:
-        return super().model_dump(exclude=['name'])
+        return super().model_dump(exclude=['name'], exclude_unset=True)
 
     @field_validator('version')
     @classmethod
@@ -566,7 +569,7 @@ class Manifest(BaseModel):
 
     @property
     def path(self) -> str:
-        return self._manifest_manager.path if self._manifest_manager else ''
+        return str(self._manifest_manager.path) if self._manifest_manager else ''
 
 
 class SolvedComponent(BaseModel):
