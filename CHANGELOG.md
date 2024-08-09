@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.0.0rc2 (2024-08-09)
+
+### Fix
+
+- manifest dump always adds empty fields
+- remove redundant option --namespace from component pack CLI
+- pack and upload components without manifests
+- Fix login command with non-existing directory
+- union of constraints of unequal clauses
+- Wrong version returned by `compote version`
+- Add upload mode to the pack_component
+
 ## v2.0.0rc1 (2024-08-05)
 
 ### Feat
