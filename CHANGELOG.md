@@ -7,6 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.0.0 (2024-08-12)
+
+### Feat
+
+- drop support of root level `commit_sha` in the manifest file
+- Add more descriptive error message for authentication
+- compare .component_hash by default, support optionally strict checksum
+- Make environment variables in if rules required to have a value
+- Revoke token on logout CLI command
+- Use compote CLI when executed as module
+- support debug mode by setting env var IDF_COMPONENT_MANAGER_DEBUG_MODE
+- use current solution while changing target or idf version if it works
+- Drop support of Python 2.7
+- remove redundant option --namespace from component pack CLI
+
+### Fix
+
+- pack and upload components without manifests
+- Fix login command with non-existing directory
+- union of constraints of unequal clauses
+- Wrong version returned by `compote version`
+- Add upload mode to the pack_component
+- optional dependencies always skipped when "version" undefined
+- skip optional dependencies while solving dependencies
+- api response string could be empty
+- revert name slug re changes
+- correct error message when manifest file is not a dict
+- docs: fix render of '--'
+- support env var in git source fields `git`, `path`
+- support env var in local source fields `path`, `override_path`
+- assume false when exceptions raised in if clause
+- reset version solver states when the old solution not working
+- test_check_for_newer_component_versions wrong component_hash
+- store download_url only in storage client
+- cleanup dependencies, lift version restrictions
+- Consistent naming convention for ESP Component Registry
+- local components in lock file not exist
+- re-trigger version solver when optional dependency now meet conditions
+- skip the optional dependencies while version solving
+- Fix 'default' profile not loading from the config file
+- Invalid component name on upload
+- Handle missing files/broken symlinks when calculating hash
+
+### Refactor
+
+- unify env var with pydantic-settings
+- rename service_url to registry_url in manifest files
+- remove api cache with file
+- remove poetry and do project cleanup
+- rewrite with pydantic
+- Change comment types to regular ones
+- Replace format() with f-strings
+
+
 ## v2.0.0rc2 (2024-08-09)
 
 ### Fix
