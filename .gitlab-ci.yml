@@ -1,3 +1,6 @@
+variables:
+  FF_TIMESTAMPS: true
+
 stages:
   - check
   - build
