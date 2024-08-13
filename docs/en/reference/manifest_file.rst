@@ -103,9 +103,13 @@ Example:
 
 The license of the component. It has to be a valid SPDX license identifier listed in https://spdx.org/licenses/.
 
-This field is optional.
+Either the ``license`` field or the ``LICENSE`` or ``LICENSE.txt`` file has to be present in the component directory.
 
-If not specified, and ``LICENSE`` or ``LICENSE.txt`` file exists, the license type will be parsed from the file. If the license type cannot be determined, it will be set to ``unknown``.
+The license type will be:
+
+-  exactly the value of the ``license`` field if it is specified, or
+-  parsed from the ``LICENSE`` or ``LICENSE.txt`` file while uploading, or
+-  set to ``Custom`` if the license type cannot be determined.
 
 Example:
 
