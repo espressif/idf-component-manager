@@ -7,7 +7,7 @@ import warnings
 import pytest
 
 from idf_component_manager.dependencies import detect_unused_components
-from idf_component_tools.manager import ManifestManager
+from idf_component_tools.manager import ManifestManager, UploadMode
 from idf_component_tools.manifest import SLUG_REGEX, OptionalRequirement, SolvedComponent
 from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS, known_targets
 from idf_component_tools.manifest.if_parser import parse_if_clause
@@ -110,7 +110,7 @@ class TestManifestValidator:
 
         assert not errors
 
-        errors = Manifest.validate_manifest(valid_manifest, upload_mode=True)
+        errors = Manifest.validate_manifest(valid_manifest, upload_mode=UploadMode.component)
 
         assert errors == ['Invalid field "targets". Unknown targets: "asdf,esp123"']
 
@@ -153,12 +153,12 @@ class TestManifestValidator:
         assert not errors
 
     def test_check_required_keys(self, valid_manifest):
-        errors = Manifest.validate_manifest(valid_manifest, upload_mode=True)
+        errors = Manifest.validate_manifest(valid_manifest, upload_mode=UploadMode.component)
 
         assert not errors
 
     def test_check_required_keys_empty_manifest(self):
-        errors = Manifest.validate_manifest({}, upload_mode=True)
+        errors = Manifest.validate_manifest({}, upload_mode=UploadMode.component)
 
         assert errors == [
             'Invalid field "version". Must set while uploading component to the registry'
@@ -443,7 +443,7 @@ class TestManifestValidatorUploadMode:
         self, valid_optional_dependency_manifest_with_idf
     ):
         errors = Manifest.validate_manifest(
-            valid_optional_dependency_manifest_with_idf, upload_mode=True
+            valid_optional_dependency_manifest_with_idf, upload_mode=UploadMode.component
         )
 
         assert not errors
@@ -470,7 +470,7 @@ class TestManifestValidatorUploadMode:
             'if'
         ] = invalid_str
         errors = Manifest.validate_manifest(
-            valid_optional_dependency_manifest_with_idf, upload_mode=True
+            valid_optional_dependency_manifest_with_idf, upload_mode=UploadMode.component
         )
 
         assert errors == expected_errors
@@ -500,7 +500,7 @@ class TestManifestValidatorUploadMode:
             'if'
         ] = invalid_str
         errors = Manifest.validate_manifest(
-            valid_optional_dependency_manifest_with_idf, upload_mode=True
+            valid_optional_dependency_manifest_with_idf, upload_mode=UploadMode.component
         )
 
         assert errors == expected_errors

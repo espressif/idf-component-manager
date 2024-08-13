@@ -48,6 +48,7 @@ from idf_component_tools.hash_tools.validate_managed_component import (
 )
 from idf_component_tools.manager import (
     ManifestManager,
+    UploadMode,
 )
 from idf_component_tools.manifest import (
     WEB_DEPENDENCY_REGEX,
@@ -404,7 +405,7 @@ class ComponentManager:
         manifest_manager = ManifestManager(
             self.path,
             name,
-            upload_mode=True,
+            upload_mode=UploadMode.component,
             version=version,
             repository=repository,
             commit_sha=commit_sha,
@@ -561,7 +562,7 @@ class ComponentManager:
                 manifest = ManifestManager(
                     tempdir,
                     name,
-                    upload_mode=True,
+                    upload_mode=UploadMode.component,
                     repository=repository,
                     commit_sha=commit_sha,
                     repository_path=repository_path,

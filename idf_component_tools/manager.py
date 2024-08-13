@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-
+import enum
 import os
 import typing as t
 from pathlib import Path
@@ -14,6 +14,12 @@ if t.TYPE_CHECKING:
     from .manifest.models import Manifest
 
 
+class UploadMode(str, enum.Enum):
+    false = 'false'
+    component = 'component'
+    example = 'example'
+
+
 class ManifestManager:
     """
     Parser for manifest files in the project.
@@ -24,7 +30,7 @@ class ManifestManager:
         path: str,
         name: str,
         *,
-        upload_mode: bool = False,
+        upload_mode: UploadMode = UploadMode.false,
         # override fields
         version: t.Optional[str] = None,
         repository: t.Optional[str] = None,
