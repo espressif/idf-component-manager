@@ -79,12 +79,15 @@ def filtered_paths(
     if exclude_default:
         for pattern in DEFAULT_EXCLUDE:
             exclude_paths(pattern)
-            if pattern.endswith('/**/*'):
-                exclude_paths(pattern[: pattern.rindex('/**/*')])
 
     # Exclude user patterns
     for pattern in exclude:
         exclude_paths(pattern)
+
+    # Exclude all the directories
+    for path in list(paths):
+        if path.is_dir():
+            paths.remove(path)
 
     # Include everything that was explicitly added
     for pattern in include:

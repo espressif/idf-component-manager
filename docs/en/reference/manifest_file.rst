@@ -151,7 +151,7 @@ Example:
      exclude:
        - "*.py" # Exclude all Python files
        - "**/*.list" # Exclude `.list` files in all directories
-       - "big_dir/**/*" # Exclude files in `big_dir` directory (but the empty directory will be added to the archive anyway)
+       - "big_dir/**/*" # Exclude `big_dir` directory and its content
      include:
        - "**/.DS_Store" # Include files excluded by default
 
