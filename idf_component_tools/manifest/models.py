@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import typing as t
+import warnings
 from copy import deepcopy
 
 from pydantic import (
@@ -50,12 +51,10 @@ from idf_component_tools.utils import (
     validation_error_to_str,
 )
 
+from ..manager import UploadMode
 from ..semver import Version
 from .constants import COMPILED_FULL_SLUG_REGEX, known_targets
 from .if_parser import IfClause, parse_if_clause
-
-if t.TYPE_CHECKING:
-    pass
 
 
 class OptionalDependency(BaseModel):
@@ -345,7 +344,7 @@ class Manifest(BaseModel):
     discussion: UrlField = None  # type: ignore
     repository_info: RepositoryInfoField = None  # type: ignore
 
-    _upload_mode: bool = False
+    _upload_mode: UploadMode = UploadMode.false
 
     def __init__(
         self,
@@ -353,7 +352,7 @@ class Manifest(BaseModel):
     ):
         super().__init__(**kwargs)
 
-        self._upload_mode = kwargs.pop('upload_mode', False)
+        self._upload_mode = kwargs.pop('upload_mode', UploadMode.false)
 
         self.validate_post_init()
 
@@ -382,7 +381,7 @@ class Manifest(BaseModel):
         if not self.repository and self.repository_info:
             raise ValueError('Invalid field "repository". Must set when "repository_info" is set')
 
-        if self._upload_mode:
+        if self._upload_mode != UploadMode.false:
             self._validate_while_uploading()
 
     def model_dump(
@@ -472,7 +471,7 @@ class Manifest(BaseModel):
         cls,
         obj: t.Any,
         *,
-        upload_mode: bool = False,
+        upload_mode: UploadMode = UploadMode.false,
         return_with_object: bool = False,
         # pydantic options
         strict: t.Optional[bool] = None,
@@ -487,12 +486,18 @@ class Manifest(BaseModel):
 
         obj['upload_mode'] = upload_mode
         try:
-            res = super().model_validate(
-                obj,
-                strict=strict,
-                from_attributes=from_attributes,
-                context=context,
-            )
+            with warnings.catch_warnings():
+                if upload_mode != UploadMode.false:
+                    warnings.filterwarnings(
+                        'ignore', message='^Running in an environment without IDF.'
+                    )
+
+                res = super().model_validate(
+                    obj,
+                    strict=strict,
+                    from_attributes=from_attributes,
+                    context=context,
+                )
         except ValidationError as e:
             errors = e.errors(include_url=False)
 
