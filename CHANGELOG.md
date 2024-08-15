@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.0.1 (2024-08-15)
+
+### Fix
+
+- Fix filtering of files with default exclude filter patterns
+- filterwarning "Running in an environment without IDF" while uploading
+
 ## v2.0.0 (2024-08-12)
 
 ### Feat
