@@ -25,7 +25,7 @@ integration_test:
     - IMAGE_TAG="${DOCKER_IMAGE}:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}"
 
     - echo "Using esp-idf branch - ${BRANCH_NAME}"
-    - echo "Creating docker image - ${IMAGE_TAG}"
+    - echo "Using docker image - ${IMAGE_TAG}"
 
     # Get the version of component manager
     # There should be only one wheel file in the dist directory
@@ -54,10 +54,6 @@ integration_test:
     - . /esp-idf/export.sh
 
     # Install the test dependencies
-    # vcrpy requires setuptools.command.test, which is removed in 72.0.0
-    # for detail information, see https://github.com/kevin1024/vcrpy/issues/855
-    - echo "setuptools<72" > constraints.txt
-    - export PIP_CONSTRAINT=$(pwd)/constraints.txt
     - pip install "${WHEEL}[test]"
   script:
     - ls dist
