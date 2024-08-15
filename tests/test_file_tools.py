@@ -22,46 +22,50 @@ def assets_path(tmp_path, fixtures_path):
     # Avoid `dirs_exist_ok=True` missing in python 2
     subdir = tmp_path / 'sub'
     shutil.copytree(templatepath.as_posix(), subdir.as_posix())
-    return subdir.as_posix()
+    return subdir
 
 
 def test_filtered_path_default(assets_path):
     assert filtered_paths(assets_path) == {
-        Path(assets_path, '1.txt'),
-        Path(assets_path, 'ignore.dir'),
-        Path(assets_path, 'ignore.dir', 'file.txt'),
-        Path(assets_path, 'ignore.me'),
+        assets_path / '1.txt',
+        assets_path / 'ignore.dir' / 'file.txt',
+        assets_path / 'ignore.me',
     }
 
 
 def test_filtered_path_no_default(assets_path):
     assert filtered_paths(assets_path, exclude_default=False) == {
-        Path(assets_path, '1.txt'),
-        Path(assets_path, 'ignore.dir'),
-        Path(assets_path, 'ignore.dir', 'file.txt'),
-        Path(assets_path, 'ignore.me'),
-        Path(assets_path, '.gitlab-ci.yml'),
+        assets_path / '1.txt',
+        assets_path / 'ignore.dir' / 'file.txt',
+        assets_path / 'ignore.me',
+        assets_path / '.gitlab-ci.yml',
     }
 
 
-def test_filtered_path_exclude_file(assets_path):
+def test_filtered_path_exclude_file_and_empty_dirs(assets_path):
     assert filtered_paths(assets_path, exclude=['**/file.txt']) == {
-        Path(assets_path, '1.txt'),
-        Path(assets_path, 'ignore.dir'),
-        Path(assets_path, 'ignore.me'),
+        assets_path / '1.txt',
+        assets_path / 'ignore.me',
     }
 
 
-def test_filtered_path_keep_empty_dir(assets_path):
+def test_filtered_path_exclude_file_and_empty_dir_kept(assets_path):
+    assert filtered_paths(assets_path, exclude=['**/file.txt'], include=['ignore.dir']) == {
+        assets_path / '1.txt',
+        assets_path / 'ignore.me',
+        assets_path / 'ignore.dir',
+    }
+
+
+def test_filtered_path_removes_empty_dir(assets_path):
     assert filtered_paths(
         assets_path,
         exclude=[
             'ignore.dir/**/*',
         ],
     ) == {
-        Path(assets_path, '1.txt'),
-        Path(assets_path, 'ignore.me'),
-        Path(assets_path, 'ignore.dir'),
+        assets_path / '1.txt',
+        assets_path / 'ignore.me',
     }
 
 
@@ -73,18 +77,18 @@ def test_filtered_path_exclude_empty_dir(assets_path):
             'ignore.dir/*',
         ],
     ) == {
-        Path(assets_path, '1.txt'),
-        Path(assets_path, 'ignore.me'),
+        assets_path / '1.txt',
+        assets_path / 'ignore.me',
     }
 
 
 def test_filtered_path_exclude_dir_with_file(assets_path):
-    extra_path = Path(assets_path, 'ignore.dir', 'extra').as_posix()
-    os.mkdir(extra_path)
-    one_more = os.path.join(extra_path, 'one_more.txt')
-    shutil.copy(os.path.join(assets_path, '1.txt'), one_more)
+    extra_path = assets_path / 'ignore.dir' / 'extra'
+    extra_path.mkdir(exist_ok=True)
+    one_more = extra_path / 'one_more.txt'
+    shutil.copy(assets_path / '1.txt', one_more)
 
-    assert os.path.exists(one_more)
+    assert one_more.exists()
 
     assert filtered_paths(
         assets_path,
@@ -92,10 +96,19 @@ def test_filtered_path_exclude_dir_with_file(assets_path):
             'ignore.dir/*',
         ],
     ) == {
-        Path(assets_path, '1.txt'),
-        Path(assets_path, 'ignore.dir'),
-        Path(assets_path, 'ignore.dir', 'extra', 'one_more.txt'),
-        Path(assets_path, 'ignore.me'),
+        assets_path / '1.txt',
+        assets_path / 'ignore.dir' / 'extra' / 'one_more.txt',
+        assets_path / 'ignore.me',
+    }
+
+
+def test_filtered_with_default_path(tmp_path):
+    (tmp_path / 'build_all.sh').touch()
+    (tmp_path / 'build_me').mkdir()
+    (tmp_path / 'build_me' / 'file').touch()
+
+    assert filtered_paths(tmp_path, exclude_default=True) == {
+        tmp_path / 'build_all.sh',
     }
 
 
