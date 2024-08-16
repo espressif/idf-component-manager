@@ -173,6 +173,10 @@ def assert_dependency_version(project_path, component_name, version):
         assert lock['dependencies'][component_name]['version'] == version
 
 
+def build_project(project_path):
+    return project_action(project_path, 'build')
+
+
 def set_target(project_path, target):
     return live_print_call(['idf.py', '-C', project_path, 'set-target', target])
 
