@@ -22,7 +22,7 @@ RUN set -e \
     && git init \
     && git remote add origin https://github.com/espressif/esp-idf.git \
     && git fetch --depth 1 origin ${IDF_BRANCH} \
-    && git checkout FETCH_HEAD
+    && git checkout FETCH_HEAD \
+    && git submodule update --init --depth 1 --recursive
 
-RUN python ./tools/idf_tools.py --non-interactive --tools-json ./tools/tools.json download --platform linux-amd64 all \
-  && ls -lA /root/.espressif/dist/
+RUN /esp-idf/install.sh
