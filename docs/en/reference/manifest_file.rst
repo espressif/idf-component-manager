@@ -196,16 +196,16 @@ A list of files and directories excluded by default:
 
 A list of directories with examples.
 
-This field is optional and can be omitted if all the component examples are located in the ``examples`` directory.
+This field is optional, if you don't have any examples outside of the ``examples`` directory. The ESP Component Registry will automatically discover examples in the ``examples`` directory and its subdirectories.
 
 Example:
 
 .. code:: yaml
 
    examples:
-     - custom_example_path_1
-     - custom_example_path_2
-     # - examples/foo  # no need to be listed if the example is under "examples" folder
+     - path: custom_example_path_1
+     - path: custom_example_path_2
+     # - path: examples/foo  # no need to be listed if the example is under "examples" folder
 
 ``url``
 =======
