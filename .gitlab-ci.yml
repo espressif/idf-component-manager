@@ -1,6 +1,9 @@
 variables:
   FF_TIMESTAMPS: true
 
+default:
+  image: python:3.11.9-bookworm
+
 stages:
   - check
   - build
@@ -15,7 +18,6 @@ workflow:
     - if: "$CI_COMMIT_BRANCH"
 
 .check:
-  image: python:3.10-bullseye
   stage: check
   tags:
     - lint
@@ -42,14 +44,24 @@ check_tests:
         [[ "${CI_MERGE_REQUEST_LABELS}" =~ ^(.*,)*no_tests(,.*)*$ ]] || \
         (echo "Please either cover changes with tests or add 'no_tests' label" && exit 1)
 
-check_pre_commit:
+pre-commit-mr:
+  stage: check
   extends: .check
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+  # needs: [] # does not make sense as the job runs in "check" stage and jobs in stages run in parallel
   before_script:
     - pip install '.[dev]'
   script:
-    - git diff --name-only --no-commit-id "origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}" "${CI_COMMIT_SHA}" | xargs pre-commit run --files
+    - echo "Merge request is from ${CI_COMMIT_REF_NAME} into ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}"
+    - git fetch origin ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME} ${CI_COMMIT_REF_NAME}
+    - export from_sha=$(git merge-base HEAD origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME})
+    - echo "Checking changes from ${from_sha} to ${CI_COMMIT_SHA}:"
+    - git log --oneline ${from_sha}..${CI_COMMIT_SHA}
+    - echo "Modified files:"
+    - git diff-tree --no-commit-id --name-only -r ${from_sha} ${CI_COMMIT_SHA}
+    - echo "Running pre-commit:"
+    - pre-commit run --from ${from_sha} --to ${CI_COMMIT_SHA}
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"' # Include this job in merge request pipelines, only
 
 prepare_tests:
   extends: .check
@@ -61,7 +73,6 @@ prepare_tests:
 
 build-docs:
   stage: test
-  image: python:3.10-slim-bullseye
   tags:
     - internet
   script:
@@ -87,7 +98,6 @@ tests:
         job: prepare_tests
 
 publish_on_pypi:
-  image: python:3.10-slim-bullseye
   stage: deploy
   tags:
     - internet

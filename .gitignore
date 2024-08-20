@@ -43,7 +43,7 @@ bandit_output.txt
 # Coverage reports
 .coverage
 coverage.xml
-
+coverage_integration.xml
 fish.txt
 zsh.txt
 bash.txt
@@ -51,3 +51,9 @@ bash.txt
 # Doc build artifacts
 docs/**/_build/
 docs/html_output/
+
+# .integration_tests_durations_* - unmerged partial JSON files
+.integration_tests_durations_*
+
+# integration_test.log-* - test group log partial files
+integration_test.log*
