@@ -147,6 +147,7 @@ For that, add `examples` field to the root of the manifest:
 examples:
   - path: ../some/path
   - path: ../some/other_path
+  # - path: examples/some_example # this example will be discovered automatically
 ```
 
 ## Environment variables
