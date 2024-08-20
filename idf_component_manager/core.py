@@ -166,7 +166,7 @@ class ComponentManager:
         self.managed_components_path = os.path.join(self.path, 'managed_components')
 
         # Dist directory
-        self.dist_path = os.path.join(self.path, 'dist')
+        self.default_dist_path = os.path.join(self.path, 'dist')
 
         self.interface_version = interface_version
 
@@ -385,7 +385,7 @@ class ComponentManager:
         commit_sha: t.Optional[str] = None,
         repository_path: t.Optional[str] = None,
     ) -> t.Tuple[str, Manifest]:
-        dest_path = os.path.join(self.path, dest_dir) if dest_dir else self.dist_path
+        dest_path = os.path.join(self.path, dest_dir) if dest_dir else self.default_dist_path
 
         if version == 'git':
             version = str(GitClient().get_tag_version(cwd=self.path))
@@ -413,11 +413,17 @@ class ComponentManager:
         )
         manifest = manifest_manager.load()
         dest_temp_dir = Path(dest_path, dist_name(name, manifest.version))
+        exclude_set = manifest.exclude_set
+
+        # If a custom directory is defined, add it to the set of files to exclude
+        if dest_dir is not None:
+            exclude_set.add(os.path.relpath(dest_path, self.path) + '/**/*')
+
         copy_filtered_directory(
             self.path,
             str(dest_temp_dir),
             include=manifest.include_set,
-            exclude=manifest.exclude_set,
+            exclude=exclude_set,
         )
 
         if manifest.examples:
