@@ -1,12 +1,37 @@
-# Framework for integration tests
+# Integration test framework
+The integration tests are configured to run in parallel sub-test groups with [pytest-split](https://pypi.org/project/pytest-split/).
 
-### Running tests:
+This `pytest` plugin enables dividing the test suite for a specific combination of ESP-IDF and Python versions into several test groups. The tests are evenly divided into groups by the plugin.
 
-```
-py.test -s -c pytest_integration.ini
-```
+## Run integration tests locally
+1. Navigate to the root of this repository.
+1. Install the Python dependencies:
+    ```sh
+    pip install '.[test]'
+    ```
+1. Install ESP-IDF.
+1. Run `source ./export.sh` from the ESP-IDF root directory.
+1. Navigate to the `integration_tests` directory.
+1. Run the integration tests locally with the following command
+    ```
+    pytest -c "../pytest_integration.ini" --log-cli-level=INFO
+    ```
+## Configure integration tests in the CI/CD pipeline
 
-### Contribution
+Configure the Gitlab CI/CD pipeline with the `integration_tests.yml` pipeline definition file:
+
+1. In the `parallel:matrix` job definition, add a new matrix dimension `PYTEST_SPLIT_TEST_GROUP`, and define a number of test groups to create. Use a number range starting from 1 to the desired number of groups, for example to split the test suite into 5 groups, use `PYTEST_SPLIT_TEST_GROUP: [1, 2, 3, 4, 5]`.
+    - **Note**: The `parallel:matrix` enables running test suites for a specific ESP-IDF development branch and a Python version in parallel jobs. So this pipeline implements two levels of parallelization.
+
+2. Enter a number of groups in `<number_of_groups>` and configure the pipeline to run the following command. The number of the splits have to be the same as the number of the groups defined in the `PYTEST_SPLIT_TEST_GROUP` list:
+    ```sh
+    pytest -c "pytest_integration.ini" \
+    --log-cli-level=INFO \
+    --splits <number_of_groups> \
+    --group ${PYTEST_SPLIT_TEST_GROUP}
+    ```
+
+## Create an integration test
 
 To create an integration test scenario add the declaration of the test case into the file with prefix
 `test_`. Generally, the test structure should look like the following code. Decorator of the test procedure should
@@ -92,7 +117,7 @@ tmp7F1Ssf
 └── CMakeLists.txt
 ```
 
-### Tests
+## Examples of integration tests
 
 1. The project contains only one component - main. This test adds git path and path to the component in the manifest and
    also includes `unity.h` in the `main.c`. Test is successful when build of the project is successful.

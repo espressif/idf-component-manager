@@ -1,14 +1,52 @@
 # IDF Component Manager
 
-The IDF Component manager is a tool that downloads dependencies for any [ESP-IDF](https://www.espressif.com/en/products/sdks/esp-idf) CMake project. It makes sure that the right versions of all components required for a successful build of your project are in place. The download happens automatically during a run of CMake. It can source components either from [the ESP Component Registry](https://components.espressif.com/) or from a git repository.
+The IDF Component Manager is a tool that ensures the correct versions of all components required for a successful build are present in your [ESP-IDF](https://www.espressif.com/en/products/sdks/esp-idf) project.
+- The Component Manager downloads the dependencies for your project automatically during a `CMake` run.
+- The components can be sourced either from [the ESP Component Registry](https://components.espressif.com/) or from a Git repository.
+- A list of components can be found at https://components.espressif.com/
 
-**A list of components can be found at https://components.espressif.com/**
+## Contributing to the project
+See [CONTRIBUTING.md](CONTRIBUTING.md)
 
-## [Official documentation](https://docs.espressif.com/projects/idf-component-manager/en/latest/)
+## Resources
+- [Offical Documentation at docs.espressif.com](https://docs.espressif.com/projects/idf-component-manager/en/latest/)
+- The Python Package Index project page https://pypi.org/project/idf-component-manager/
+- The Component Manager section in the [ESP-IDF Programming Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/tools/idf-component-manager.html)
+
+# Develop ESP-IDF projects with the IDF Component Manager
+
+## Installing a development version of the Component Manager
+
+You can install the development version of the Component Manager from the main branch of this repository:
+
+**On Linux/macOS:**
+
+Go to the directory with your ESP-IDF installation and run:
+
+```bash
+# activate ESP-IDF environment
+source ./export.sh # or . ./export.fish, if you use fish shell
+# remove old version of the Component Manager
+python -m pip uninstall -y idf-component-manager
+# install the development version (from the main branch)
+python -m pip install git+https://github.com/espressif/idf-component-manager.git@main
+```
+
+**On Windows:**
+
+Run `ESP-IDF PowerShell Environment` or `ESP-IDF Command Prompt (cmd.exe)` from the Start menu and run the following command:
+
+```powershell
+# remove old version of the Component Manager
+python -m pip uninstall -y idf-component-manager
+# install the development version (from the main branch)
+python -m pip install git+https://github.com/espressif/idf-component-manager.git@main
+```
+
 
 ## Disabling the Component Manager
 
-The component manager can be explicitly disabled by setting `IDF_COMPONENT_MANAGER` environment variable to `0`.
+The Component Manager can be explicitly disabled by setting `IDF_COMPONENT_MANAGER` environment variable to `0`.
 
 ## Using with a project
 
@@ -16,13 +54,13 @@ You can add `idf_component.yml` manifest files with the list of dependencies to 
 
 IDF Component Manager will download dependencies automatically during the project build process.
 
-When CMake configures the project (e.g. `idf.py reconfigure`) component manager does a few things:
+When CMake configures the project (e.g. `idf.py reconfigure`) Component Manager does a few things:
 
 - Processes `idf_component.yml` manifests for every component in the project
 - Creates a `dependencies.lock` file in the root of the project with a full list of dependencies
 - Downloads all dependencies to the `managed_components` directory
 
-The component manager won't try to regenerate `dependencies.lock` or download any components if manifests, lock file, and content of `managed_component` directory weren't modified since the last successful build.
+The Component Manager won't try to regenerate `dependencies.lock` or download any components if manifests, lock file, and content of `managed_component` directory weren't modified since the last successful build.
 
 ## Defining dependencies in the manifest
 
@@ -119,51 +157,9 @@ examples:
 | IDF_COMPONENT_REGISTRY_URL                   | https://components.espressif.com/       | URL of the default component registry                                                                         |
 | IDF_COMPONENT_STORAGE_URL                    | https://components-file.espressif.com/  | URL of the default file storage server                                                                        |
 | IDF_COMPONENT_PROFILE                        | default                                 | Profile in the config file to use                                                                             |
-| IDF_COMPONENT_CACHE_PATH                     | \* Depends on OS                        | Cache directory for component manager                                                                         |
+| IDF_COMPONENT_CACHE_PATH                     | \* Depends on OS                        | Cache directory for Component Manager                                                                         |
 | IDF_COMPONENT_VERSION_PROCESS_TIMEOUT        | 300                                     | Timeout in seconds to wait for component processing                                                           |
 | IDF_COMPONENT_OVERWRITE_MANAGED_COMPONENTS   | 0                                       | Overwrite files in the managed_component directory, even if they have been modified by the user               |
 | IDF_COMPONENT_SUPPRESS_UNKNOWN_FILE_WARNINGS | 0                                       | Ignore unknown files in managed_components directory                                                          |
 | IDF_COMPONENT_CHECK_NEW_VERSION              | 1                                       | Check for new versions of components                                                                          |
 | IDF_COMPONENT_VERIFY_SSL                     | 1                                       | Verify SSL certificates when making requests to the registry, set it 0 to disable or provide a CA bundle path |
-
-## Contributions Guide
-
-We welcome all contributions to the Component Manager project.
-
-You can contribute by fixing bugs, adding features, adding documentation, or reporting an [issue](https://github.com/espressif/idf-component-manager/issues). We accept contributions via [GitHub Pull Requests](https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests).
-
-Before reporting an issue, make sure you've searched for a similar one that was already created. If you are reporting a new issue, please follow the Issue Template.
-
-## Installing a development version of the component manager
-
-You can install the development version of the component manager from the main branch of this repository:
-
-**On Linux/macOS:**
-
-Go to the directory with your ESP-IDF installation and run:
-
-```bash
-# activate ESP-IDF environment
-source ./export.sh # or . ./export.fish, if you use fish shell
-# remove old version of the component manager
-python -m pip uninstall -y idf-component-manager
-# install the development version (from the main branch)
-python -m pip install git+https://github.com/espressif/idf-component-manager.git@main
-```
-
-**On Windows:**
-
-Run `ESP-IDF PowerShell Environment` or `ESP-IDF Command Prompt (cmd.exe)` from the Start menu and run the following command:
-
-```powershell
-# remove old version of the component manager
-python -m pip uninstall -y idf-component-manager
-# install the development version (from the main branch)
-python -m pip install git+https://github.com/espressif/idf-component-manager.git@main
-```
-
-## Resources
-
-- The Component manager [Documentation](https://docs.espressif.com/projects/idf-component-manager/en/latest/)
-- The Python Package Index project page https://pypi.org/project/idf-component-manager/
-- The Component Manager section in the [ESP-IDF Programming Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/tools/idf-component-manager.html)

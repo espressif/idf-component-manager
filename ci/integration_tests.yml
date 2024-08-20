@@ -17,10 +17,13 @@ integration_test:
     - build_wheel
   parallel:
     matrix:
+      # PYTEST_SPLIT_TEST_GROUP: Split integration tests into parallel jobs. The number of groups has to be reflected in the pytest invocation
       - IDF_BRANCH_TAG: [release-v5.0, release-v5.1]
         PYTHON_IMAGE_TAG: [3.7-bullseye, 3.12-bullseye]
+        PYTEST_SPLIT_TEST_GROUP: [1, 2, 3, 4, 5]
       - IDF_BRANCH_TAG: [release-v5.2, release-v5.3, master]
         PYTHON_IMAGE_TAG: [3.8-bullseye, 3.12-bullseye]
+        PYTEST_SPLIT_TEST_GROUP: [1, 2, 3, 4, 5]
   before_script:
     - IMAGE_TAG="${DOCKER_IMAGE}:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}"
 
@@ -57,4 +60,8 @@ integration_test:
     - pip install "${WHEEL}[test]"
   script:
     - ls dist
-    - pytest -s -c pytest_integration.ini --cov=. --cov-report=xml:coverage_integration.xml --log-cli-level=INFO
+    - |
+      pytest -c "pytest_integration.ini" \
+      --log-cli-level=INFO \
+      --splits 5 \
+      --group ${PYTEST_SPLIT_TEST_GROUP}
