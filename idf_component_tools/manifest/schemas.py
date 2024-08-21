@@ -12,6 +12,12 @@ from .models import Manifest
 
 # `if` is aliased
 MANIFEST_JSON_SCHEMA = Manifest.model_json_schema(by_alias=True)
+# we have one rename in the manifest model
+# dependencies-*-service_url-type:string -> dependencies-*-registry_url-type:string
+# manually add it in the json schema
+MANIFEST_JSON_SCHEMA['$defs']['DependencyItem']['properties']['service_url'] = MANIFEST_JSON_SCHEMA[
+    '$defs'
+]['DependencyItem']['properties']['registry_url']
 
 
 def _flatten_json_schema_keys(schema, stack=None):

@@ -97,7 +97,10 @@ def download_archive(url: str, download_dir: str, save_original_filename: bool =
 class WebServiceSource(BaseSource):
     registry_url: str = Field(
         default=IDF_COMPONENT_REGISTRY_URL,
-        validation_alias=AliasChoices('service_url', 'registry_url'),
+        validation_alias=AliasChoices(
+            'registry_url',
+            'service_url',
+        ),
     )  # type: ignore
     type: Literal['service'] = 'service'  # type: ignore
     pre_release: bool = None  # type: ignore
