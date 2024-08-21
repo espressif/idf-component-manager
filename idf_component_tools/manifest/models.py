@@ -135,7 +135,11 @@ class DependencyItem(BaseModel):
     path: str = None  # type: ignore
     git: str = None  # type: ignore
     registry_url: str = Field(
-        default=None, validation_alias=AliasChoices('service_url', 'registry_url')
+        default=None,
+        validation_alias=AliasChoices(
+            'registry_url',
+            'service_url',
+        ),
     )  # type: ignore
     rules: t.List[OptionalDependency] = None  # type: ignore
     matches: t.List[OptionalDependency] = None  # type: ignore
