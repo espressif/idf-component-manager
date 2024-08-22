@@ -53,7 +53,7 @@ def test_pack_component_version_from_CLI_and_not_in_manifest(tmp_path, release_c
     component_manager.pack_component('cmp', '2.3.4')
 
     tempdir = os.path.join(tempfile.tempdir, 'cmp')
-    unpack_archive(os.path.join(component_manager.dist_path, 'cmp_2.3.4.tgz'), tempdir)
+    unpack_archive(os.path.join(component_manager.default_dist_path, 'cmp_2.3.4.tgz'), tempdir)
     manifest = ManifestManager(tempdir, 'cmp').load()
     assert manifest.version == '2.3.4'
 
@@ -94,7 +94,7 @@ def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_comp
     component_manager.pack_component('pre', 'git')
 
     tempdir = os.path.join(tempfile.tempdir, 'cmp_pre')
-    unpack_archive(os.path.join(component_manager.dist_path, 'pre_3.0.0.tgz'), tempdir)
+    unpack_archive(os.path.join(component_manager.default_dist_path, 'pre_3.0.0.tgz'), tempdir)
     manifest = ManifestManager(tempdir, 'pre').load()
     assert manifest.version == '3.0.0'
     assert set(list_dir(tempdir)) == set(
@@ -135,6 +135,24 @@ def test_pack_component_with_dest_dir(version, expected_version, tmp_path, relea
     assert manifest.version == expected_version
 
 
+def test_repack_component_with_dest_dir(tmp_path, release_component_path):
+    component_path = tmp_path / 'cmp'
+    shutil.copytree(release_component_path, str(component_path))
+    component_manager = ComponentManager(path=str(component_path))
+    component_name = 'cmp'
+    version = '1.0.0'
+    dest_dir = 'other_dist'
+
+    component_manager.pack_component(component_name, version, dest_dir)
+    component_manager.pack_component(component_name, version, dest_dir)
+
+    unpack_archive(
+        str(Path(component_manager.path, dest_dir, 'cmp_1.0.0.tgz')), str(tmp_path / 'unpack')
+    )
+
+    assert not (tmp_path / 'unpack' / dest_dir).exists()
+
+
 def test_pack_component_with_replacing_manifest_params(tmp_path, release_component_path):
     copy_into(release_component_path, str(tmp_path))
     component_manager = ComponentManager(path=str(tmp_path))
@@ -147,7 +165,7 @@ def test_pack_component_with_replacing_manifest_params(tmp_path, release_compone
     )
 
     tempdir = os.path.join(tempfile.tempdir, 'cmp')
-    unpack_archive(os.path.join(component_manager.dist_path, 'cmp_2.3.5.tgz'), tempdir)
+    unpack_archive(os.path.join(component_manager.default_dist_path, 'cmp_2.3.5.tgz'), tempdir)
     manifest = ManifestManager(tempdir, 'cmp').load()
 
     assert manifest.version == '2.3.5'
@@ -163,7 +181,7 @@ def test_pack_component_with_examples(tmp_path, example_component_path):
     component_manager.pack_component('cmp', '2.3.4')
 
     unpack_archive(
-        str(Path(component_manager.dist_path, 'cmp_2.3.4.tgz')),
+        str(Path(component_manager.default_dist_path, 'cmp_2.3.4.tgz')),
         str(tmp_path / 'unpack'),
     )
 

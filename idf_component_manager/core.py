@@ -114,14 +114,10 @@ def general_error_handler(func):
 
 
 def _create_manifest_if_missing(manifest_dir: str) -> bool:
-    manifest_filepath = os.path.join(manifest_dir, MANIFEST_FILENAME)
-    if os.path.exists(manifest_filepath):
+    manifest_filepath = Path(manifest_dir) / MANIFEST_FILENAME
+    if manifest_filepath.exists():
         return False
-    example_path = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        'templates',
-        'idf_component_template.yml',
-    )
+    example_path = Path(__file__).resolve().parent / 'templates' / 'idf_component_template.yml'
     create_directory(manifest_dir)
     shutil.copyfile(example_path, manifest_filepath)
     print_info(f'Created "{manifest_filepath}"')
@@ -137,36 +133,33 @@ class ComponentManager:
         interface_version: int = 0,
     ) -> None:
         # Working directory
-        path = os.path.abspath(path)
-        self.path = path
+        self.path = Path(path).resolve()
 
         # Set path of the project's main component
-        self.main_component_path = os.path.normpath(os.path.join(path, 'main'))
+        self.main_component_path = self.path / 'main'
 
         # Set path of the manifest file for the project's main component
-        self.main_manifest_path = manifest_path or (
-            os.path.join(path, 'main', MANIFEST_FILENAME) if os.path.isdir(path) else path
-        )
+        if not manifest_path:
+            self.main_manifest_path = (
+                self.path / 'main' / MANIFEST_FILENAME if self.path.is_dir() else self.path
+            )
+        else:
+            self.main_manifest_path = Path(manifest_path)
 
         # Lock path
         if not lock_path:
-            if os.path.isfile(path):
-                self.lock_path = path
-            else:
-                self.lock_path = os.path.join(path, 'dependencies.lock')
+            self.lock_path = self.path if self.path.is_file() else self.path / 'dependencies.lock'
         elif os.path.isabs(lock_path):
-            self.lock_path = lock_path
+            self.lock_path = Path(lock_path)
         else:
-            self.lock_path = os.path.join(path, lock_path)
-
-        self.lock_path = os.path.abspath(self.lock_path)
+            self.lock_path = self.path / lock_path
 
         # Components directories
-        self.components_path = os.path.join(self.path, 'components')
-        self.managed_components_path = os.path.join(self.path, 'managed_components')
+        self.components_path = self.path / 'components'
+        self.managed_components_path = self.path / 'managed_components'
 
         # Dist directory
-        self.dist_path = os.path.join(self.path, 'dist')
+        self.default_dist_path = self.path / 'dist'
 
         self.interface_version = interface_version
 
@@ -178,48 +171,48 @@ class ComponentManager:
 
         # If path is specified
         if path is not None:
-            manifest_dir = os.path.abspath(path)
+            manifest_dir = Path(path).resolve()
         # If the current working directory is in the context of a component
-        elif is_component(Path(os.getcwd())):
-            manifest_dir = os.getcwd()
+        elif is_component(Path.cwd()):
+            manifest_dir = Path.cwd()
         else:
             # If the current working directory is in the context of a project
             base_dir = self.path if component == 'main' else self.components_path
-            manifest_dir = os.path.join(base_dir, component)
+            manifest_dir = base_dir / component
 
-        if not os.path.isdir(manifest_dir):
+        if not manifest_dir.is_dir():
             raise FatalError(
                 'Directory "{}" does not exist! '
                 'Please specify a valid component under {} or try to use --path'.format(
                     manifest_dir, self.path
                 )
             )
-        if not manifest_dir.startswith(self.path):
+        if not manifest_dir.as_posix().startswith(self.path.as_posix()):
             raise FatalError(
                 'Directory "{}" is not under project directory! '
                 'Please specify a valid component under {}'.format(manifest_dir, self.path)
             )
 
-        return manifest_dir
+        return manifest_dir.as_posix()
 
     @property
     @lru_cache(1)
     def root_managed_components_dir(self) -> str:
-        return root_managed_components_dir()  # type: ignore
+        return str(root_managed_components_dir())  # type: ignore
 
     @property
     @lru_cache(1)
     def root_managed_components_lock_path(self) -> str:
-        return os.path.join(self.root_managed_components_dir, 'dependencies.lock')  # type: ignore
+        return str(self.root_managed_components_dir / 'dependencies.lock')  # type: ignore
 
     def _get_manifest(
         self, component: str = 'main', path: t.Optional[str] = None
     ) -> t.Tuple[str, bool]:
         manifest_dir = self._get_manifest_dir(component=component, path=path)
-        manifest_filepath = os.path.join(manifest_dir, MANIFEST_FILENAME)
+        manifest_filepath = Path(manifest_dir) / MANIFEST_FILENAME
         # Create manifest file if it doesn't exist in work directory
         manifest_created = _create_manifest_if_missing(manifest_dir)
-        return manifest_filepath, manifest_created
+        return manifest_filepath.as_posix(), manifest_created
 
     @general_error_handler
     def create_manifest(self, component: str = 'main', path: t.Optional[str] = None) -> None:
@@ -238,18 +231,16 @@ class ComponentManager:
         component_name, version_spec, example_name = parse_example(
             example, client.default_namespace
         )
-        project_path = path or os.path.join(self.path, os.path.basename(example_name))
+        project_path = Path(path) if path else self.path / os.path.basename(example_name)
 
-        if os.path.isfile(project_path):
+        if project_path.is_file():
             raise FatalError(
                 'Your target path is not a directory. '
-                'Please remove the {} or use different target path.'.format(
-                    os.path.abspath(project_path)
-                ),
+                'Please remove the {} or use different target path.'.format(project_path.resolve()),
                 exit_code=4,
             )
 
-        if os.path.isdir(project_path) and os.listdir(project_path):
+        if project_path.is_dir() and any(project_path.iterdir()):
             raise FatalError(
                 f'The directory {project_path} is not empty. '
                 'To create an example you must empty the directory or '
@@ -277,7 +268,7 @@ class ComponentManager:
             tar.extractall(project_path)  # noqa: S202
         print_info(
             'Example "{}" successfully downloaded to {}'.format(
-                example_name, os.path.abspath(project_path)
+                example_name, project_path.resolve()
             )
         )
 
@@ -292,12 +283,12 @@ class ComponentManager:
         manifest_filepath, _ = self._get_manifest(component=component, path=path)
 
         if path is not None:
-            component_path = os.path.abspath(path)
+            component_path = Path(path).resolve()
             component = os.path.basename(component_path)
         # If the path refers to a component context
         # we need to use the components name as the component
-        elif is_component(Path(os.getcwd())):
-            component = os.path.basename(os.path.normpath(self.path))
+        elif is_component(Path.cwd()):
+            component = os.path.basename(self.path)
 
         match = re.match(WEB_DEPENDENCY_REGEX, dependency)
         if match:
@@ -385,7 +376,7 @@ class ComponentManager:
         commit_sha: t.Optional[str] = None,
         repository_path: t.Optional[str] = None,
     ) -> t.Tuple[str, Manifest]:
-        dest_path = os.path.join(self.path, dest_dir) if dest_dir else self.dist_path
+        dest_path = self.path / dest_dir if dest_dir else self.default_dist_path
 
         if version == 'git':
             version = str(GitClient().get_tag_version(cwd=self.path))
@@ -403,7 +394,7 @@ class ComponentManager:
                 )
 
         manifest_manager = ManifestManager(
-            self.path,
+            self.path.as_posix(),
             name,
             upload_mode=UploadMode.component,
             version=version,
@@ -412,12 +403,18 @@ class ComponentManager:
             repository_path=repository_path,
         )
         manifest = manifest_manager.load()
-        dest_temp_dir = Path(dest_path, dist_name(name, manifest.version))
+        dest_temp_dir = dest_path / dist_name(name, manifest.version)
+        exclude_set = manifest.exclude_set
+
+        # If a custom directory is defined, add it to the set of files to exclude
+        if dest_dir is not None:
+            exclude_set.add(os.path.relpath(dest_path, self.path) + '/**/*')
+
         copy_filtered_directory(
-            self.path,
-            str(dest_temp_dir),
+            self.path.as_posix(),
+            dest_temp_dir.as_posix(),
             include=manifest.include_set,
-            exclude=manifest.exclude_set,
+            exclude=exclude_set,
         )
 
         if manifest.examples:
@@ -693,7 +690,7 @@ class ComponentManager:
             print_info(f'Status: {status.status}. {status.message}')
 
     def update_dependencies(self, **kwargs):
-        if os.path.isfile(self.lock_path):
+        if self.lock_path.is_file():
             os.remove(self.lock_path)
 
     # Function executed from CMake
@@ -707,8 +704,8 @@ class ComponentManager:
     ):
         """Process all manifests and download all dependencies"""
         # root core components
-        root_manifest_filepath = os.path.join(root_managed_components_dir(), MANIFEST_FILENAME)
-        if os.path.isfile(root_manifest_filepath):
+        root_manifest_filepath = root_managed_components_dir() / MANIFEST_FILENAME
+        if root_manifest_filepath.is_file():
             root_managed_components = download_project_dependencies(
                 ProjectRequirements([
                     ManifestManager(
@@ -728,13 +725,13 @@ class ComponentManager:
         if local_components_list_file and os.path.isfile(local_components_list_file):
             local_components = parse_component_list(local_components_list_file)
         else:
-            local_components.append({'name': 'main', 'path': self.main_component_path})
+            local_components.append({'name': 'main', 'path': self.main_component_path.as_posix()})
 
             if os.path.isdir(self.components_path):
                 local_components.extend(
-                    {'name': item, 'path': os.path.join(self.components_path, item)}
-                    for item in os.listdir(self.components_path)
-                    if os.path.isdir(os.path.join(self.components_path, item))
+                    {'name': item, 'path': item.as_posix()}
+                    for item in self.components_path.iterdir()
+                    if item.is_dir()
                 )
 
         # Check that CMakeLists.txt and idf_component.yml exists for all component dirs
