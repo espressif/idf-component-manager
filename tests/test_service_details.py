@@ -62,7 +62,7 @@ def test_get_namespace_with_namespace():
 
 
 def test_get_namespace_default():
-    assert get_storage_client(namespace=None).default_namespace == DEFAULT_NAMESPACE
+    assert get_storage_client().default_namespace == DEFAULT_NAMESPACE
 
 
 def test_get_namespace_from_profile(

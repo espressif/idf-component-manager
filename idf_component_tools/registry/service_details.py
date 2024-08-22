@@ -74,6 +74,8 @@ def get_storage_urls(profile: t.Optional[ProfileItem] = None) -> t.List[str]:
 
 
 def get_api_client(
+    registry_url: t.Optional[str] = None,
+    *,
     namespace: t.Optional[str] = None,
     profile_name: t.Optional[str] = None,
     config_path: t.Optional[str] = None,
@@ -83,6 +85,11 @@ def get_api_client(
     Api Client should be used when you're "writing" to the registry,
 
     For example, when you need to upload, validate, or delete a component.
+
+    The priority of which internal client is using is:
+
+    - registry_url, if specified
+    - get_registry_url()
     """
     if profile is None:
         profile = get_profile(profile_name, config_path)
@@ -93,13 +100,17 @@ def get_api_client(
         )
 
     return APIClient(
-        registry_url=get_registry_url(profile),
+        registry_url=registry_url or get_registry_url(profile),
         api_token=ComponentManagerSettings().API_TOKEN or (profile.api_token if profile else None),
         default_namespace=namespace or (profile.default_namespace if profile else None),
     )
 
 
 def get_storage_client(
+    registry_url: t.Optional[str] = None,
+    *,
+    storage_urls: t.Optional[t.List[str]] = None,
+    local_storage_urls: t.Optional[t.List[str]] = None,
     namespace: t.Optional[str] = None,
     profile_name: t.Optional[str] = None,
     config_path: t.Optional[str] = None,
@@ -110,6 +121,13 @@ def get_storage_client(
     Client should be used when you're "reading" from the registry,
 
     For example, when you need to download a component or get its metadata.
+
+    The priority of which internal client is using is:
+
+    - registry_storage_url get from api of `registry_url`, if specified
+    - local_storage_urls defined in the profile
+    - get_storage_urls()
+    - get_registry_url()
     """
     if profile is None:
         profile = get_profile(profile_name, config_path)
@@ -119,10 +137,20 @@ def get_storage_client(
             f'Profile "{profile_name}" not found in the idf_component_manager.yml config file'
         )
 
+    _registry_url = registry_url or get_registry_url(profile)
+
+    _storage_urls = get_storage_urls(profile) if profile else []
+    if storage_urls:
+        _storage_urls += storage_urls
+
+    _local_storage_urls = (profile.local_storage_urls or []) if profile else []
+    if local_storage_urls:
+        _local_storage_urls += local_storage_urls
+
     return MultiStorageClient(
-        registry_url=get_registry_url(profile),
-        storage_urls=get_storage_urls(profile) if profile else [],
-        local_storage_urls=(profile.local_storage_urls or []) if profile else [],
+        registry_url=_registry_url,
+        storage_urls=_storage_urls,
+        local_storage_urls=_local_storage_urls,
         api_token=ComponentManagerSettings().API_TOKEN or (profile.api_token if profile else None),
         default_namespace=namespace or (profile.default_namespace if profile else None),
         local_first_mode=local_first_mode,

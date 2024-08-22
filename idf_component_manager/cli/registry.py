@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import os
 import typing as t
 import webbrowser
 from urllib.parse import urljoin
@@ -57,7 +56,7 @@ def init_registry():
     )
     @click.option(
         '--registry_url',
-        help="This argument has been deprecated by 'registry-url'",
+        help="This argument has been deprecated by '--registry-url'",
         hidden=True,
         callback=deprecated_option,
         expose_value=False,
@@ -66,10 +65,6 @@ def init_registry():
         """
         Login to the component registry
         """
-
-        if registry_url:
-            os.environ['IDF_COMPONENT_REGISTRY_URL'] = registry_url
-
         # Load config for dump later
         config = ConfigManager().load()
         if profile_name not in config.profiles:
@@ -86,6 +81,7 @@ def init_registry():
             )
 
         api_client = get_api_client(
+            registry_url,
             namespace=default_namespace,
             profile_name=profile_name,
             profile=profile,

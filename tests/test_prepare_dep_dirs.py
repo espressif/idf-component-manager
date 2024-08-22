@@ -26,7 +26,7 @@ def _generate_lock_file(project_dir: Path, yaml_str: str, build_dir: str = 'buil
         interface_version=2,
     ).prepare_dep_dirs(
         managed_components_list_file=str(managed_components_list_file),
-        component_list_file=_component_list_file('build'),
+        component_list_file=_component_list_file(project_dir / build_dir),
         local_components_list_file=str(local_components_list_file),
     )
 
@@ -40,7 +40,7 @@ def test_dependencies_with_registry_url(tmp_path, monkeypatch):
         tmp_path,
         """
         dependencies:
-            example/cmp:
+            jason-mao/esp_jpeg:  # this one does not exists on production
                 version: "*"
                 registry_url: "https://components-staging.espressif.com"
         """,
@@ -50,9 +50,9 @@ def test_dependencies_with_registry_url(tmp_path, monkeypatch):
     with open(tmp_path / 'dependencies.lock') as f:
         lock_data = yaml.safe_load(f)
 
-        assert lock_data['dependencies']['example/cmp']
-        assert (
-            lock_data['dependencies']['example/cmp']['source']['registry_url']
-            == 'https://components-staging.espressif.com'
-        )
-        assert lock_data['dependencies']['example/cmp']['source']['type'] == 'service'
+    assert lock_data['dependencies']['jason-mao/esp_jpeg']
+    assert (
+        lock_data['dependencies']['jason-mao/esp_jpeg']['source']['registry_url']
+        == 'https://components-staging.espressif.com'
+    )
+    assert lock_data['dependencies']['jason-mao/esp_jpeg']['source']['type'] == 'service'

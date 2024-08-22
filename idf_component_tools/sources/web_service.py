@@ -240,7 +240,7 @@ class WebServiceSource(BaseSource):
         tempdir = tempfile.mkdtemp()
 
         try:
-            url = get_storage_client(profile_name='default').component(
+            url = get_storage_client(self.registry_url).component(
                 component.name, component.version
             )['download_url']  # PACMAN-906
 

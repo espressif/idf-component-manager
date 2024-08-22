@@ -19,8 +19,11 @@ from idf_component_tools.utils import ComponentVersion
 
 
 class TestComponentWebServiceSource:
+    # pragma: allowlist nextline secret
     EXAMPLE_HASH = '73d986e009065f182c10bcb6a45db3d6eda9498f8930654af2653f8a938cd801'
+    # pragma: allowlist nextline secret
     LOCALHOST_HASH = '02d9269ed8690352e6bfc5f6a6c60e859fa6cbfc56efe75a1199b35bdd6c54c8'
+    # pragma: allowlist nextline secret
     CMP_HASH = '15a658f759a13f1767ca3810cd822e010aba1e36b3a980d140cc5e80e823f422'
 
     def test_cache_path(self):
@@ -38,12 +41,15 @@ class TestComponentWebServiceSource:
     # If you re-record this cassette, make sure the file downloaded only once
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_fetch_webservice.yaml')
     def test_download(self, monkeypatch, release_component_path, tmp_path):
-        monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
+        monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', 'http://example.com')
 
         cache_dir = str(tmp_path / 'cache')
         monkeypatch.setenv('IDF_COMPONENT_CACHE_PATH', cache_dir)
 
-        source = WebServiceSource(registry_url='https://example.com', system_cache_path=cache_dir)
+        source = WebServiceSource(
+            registry_url='http://localhost:5000',  # use a different registry_url for testing
+            system_cache_path=cache_dir,
+        )
         cmp = SolvedComponent(
             name='test/cmp',
             version=ComponentVersion('1.0.1'),
