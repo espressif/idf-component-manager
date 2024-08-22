@@ -22,8 +22,9 @@ def file_with_size():
 
 
 @pytest.fixture(autouse=True)
-def monkeypatch_idf_version(monkeypatch):
+def monkeypatch_idf_version_and_tools_path(monkeypatch, tmp_path):
     monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.3.0')
+    monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
 
 
 @pytest.fixture()
@@ -96,11 +97,13 @@ def tmp_managed_components(tmp_path):
     example_cmp_path = managed_components_path / 'example__cmp'
     example_cmp_path.mkdir()
     example_cmp_hash = example_cmp_path / HASH_FILENAME
+    # pragma: allowlist nextline secret
     example_cmp_hash.write_text('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
 
     mag3110_path = managed_components_path / 'mag3110'
     mag3110_path.mkdir()
     mag3110_hash = mag3110_path / HASH_FILENAME
+    # pragma: allowlist nextline secret
     mag3110_hash.write_text('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
 
     return str(managed_components_path)
@@ -163,7 +166,7 @@ def mock_registry_without_token(monkeypatch):
 def mock_registry(mock_registry_without_token, monkeypatch):
     monkeypatch.setenv(
         'IDF_COMPONENT_API_TOKEN',
-        'L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ',
+        'L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ',  # pragma: allowlist secret
     )
 
 
