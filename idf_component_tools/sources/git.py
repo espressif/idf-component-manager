@@ -163,8 +163,8 @@ class GitSource(BaseSource):
 
                     targets = manifest.targets
 
-                    include = manifest.include_set
-                    exclude = manifest.exclude_set
+                include = manifest.include_set
+                exclude = manifest.exclude_set
 
             component_hash = hash_dir(source_path, include=include, exclude=exclude)
         finally:
