@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.0.3 (2024-08-26)
+
+### Fix
+
+- get_storage_client includes component registry_url
+- wrong root_managed_components_lock_path
+- Fix applying include / exclude lists in GitSource versions method
+- Exclude custom dest_dir from component archive
+
+### Refactor
+
+- Refactor core.py, change os.path to pathlib.Path
+
 ## v2.0.2 (2024-08-21)
 
 ### Fix
