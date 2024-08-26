@@ -198,12 +198,12 @@ class ComponentManager:
     @property
     @lru_cache(1)
     def root_managed_components_dir(self) -> str:
-        return str(root_managed_components_dir())  # type: ignore
+        return str(root_managed_components_dir())
 
     @property
     @lru_cache(1)
     def root_managed_components_lock_path(self) -> str:
-        return str(self.root_managed_components_dir / 'dependencies.lock')  # type: ignore
+        return os.path.join(self.root_managed_components_dir, 'dependencies.lock')
 
     def _get_manifest(
         self, component: str = 'main', path: t.Optional[str] = None
@@ -227,7 +227,7 @@ class ComponentManager:
         path: t.Optional[str] = None,
         profile_name: t.Optional[str] = None,
     ) -> None:
-        client = get_storage_client(None, profile_name)
+        client = get_storage_client(profile_name=profile_name)
         component_name, version_spec, example_name = parse_example(
             example, client.default_namespace
         )
@@ -446,7 +446,7 @@ class ComponentManager:
         if not version:
             raise FatalError('Argument "version" is required')
 
-        api_client = get_api_client(namespace, profile_name)
+        api_client = get_api_client(namespace=namespace, profile_name=profile_name)
         component_name = '/'.join([api_client.default_namespace, name])
 
         # Checking if current version already uploaded
@@ -471,7 +471,7 @@ class ComponentManager:
         profile_name: t.Optional[str] = None,
         namespace: t.Optional[str] = None,
     ):
-        api_client = get_api_client(namespace, profile_name)
+        api_client = get_api_client(namespace=namespace, profile_name=profile_name)
         component_name = '/'.join([api_client.default_namespace, name])
 
         versions = api_client.versions(component_name=component_name).versions
@@ -542,7 +542,7 @@ class ComponentManager:
         """
         Uploads a component version to the registry.
         """
-        api_client = get_api_client(namespace, profile_name)
+        api_client = get_api_client(namespace=namespace, profile_name=profile_name)
 
         if archive:
             if not os.path.isfile(archive):
@@ -682,7 +682,7 @@ class ComponentManager:
 
     @general_error_handler
     def upload_component_status(self, job_id: str, profile_name: t.Optional[str] = None) -> None:
-        api_client = get_api_client(None, profile_name)
+        api_client = get_api_client(profile_name=profile_name)
         status = api_client.task_status(job_id=job_id)
         if status.status == 'failure':
             raise FatalError(f"Uploaded version wasn't processed successfully.\n{status.message}")
@@ -1002,7 +1002,7 @@ class ComponentManager:
         components: t.Optional[t.List[str]] = None,
         recursive: bool = True,
     ) -> None:
-        client = get_storage_client(None, profile_name)
+        client = get_storage_client(profile_name=profile_name)
         save_path = Path(save_path)
         if interval:
             while True:

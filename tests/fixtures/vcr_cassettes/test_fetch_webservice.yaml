@@ -130,7 +130,7 @@ interactions:
     uri: http://localhost:9000/test-public/303622c0-fb30-4b24-a86d-37dc7ecf3788.tgz
   response:
     body:
-      string: !!binary |
+      string: !!binary |  # pragma: allowlist secret
         H4sICF+1GWQC/zMwMzYyMmMwLWZiMzAtNGIyNC1hODZkLTM3ZGM3ZWNmMzc4OC50Z3oA7Z1rb+M2
         FobzdfUriMkCTYKaknjRxXvBzibpToDpdJDM9kvR9dASbXMriVqJzgVF/3tJ2c0knky6KWJlJjov
         gpEvlGJMeN6HhyKPsY/9f7wVl6+kyGWzsxUFK33qGASUfXjsXg8DEpIddLnTg5atEY399TvDFElQ

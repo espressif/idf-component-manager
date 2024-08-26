@@ -29,36 +29,43 @@ You may also set the environment variable ``IDF_TOOLS_PATH`` to specify a differ
 Each profile supports the following fields related to the URLs:
 
 .. list-table::
+   :stub-columns: 1
 
    -  -  Field
-      -  Type
-      -  Default
-      -  Upload
-      -  Download
-      -  Require Internet?
+      -  ``registry_url``
+      -  ``storage_url``
+      -  ``local_storage_url``
 
-   -  -  registry_url
+   -  -  Type
       -  URI
+      -  URI or a list of URIs
+      -  URI or a list of URIs
+
+   -  -  Default
       -  components.espressif.com
-      -  ✅
-      -  ✅
-      -  ✅
-
-   -  -  storage_url
-      -  URI or a list of URIs
       -  None
-      -  ❌
-      -  ✅
-      -  ✅
-
-   -  -  local_storage_url
-      -  URI or a list of URIs
       -  None
-      -  ❌
-      -  ✅
+
+   -  -  |  Override by
+         |  Environment Variable?
+      -  ``IDF_COMPONENT_REGISTRY_URL``
+      -  ``IDF_COMPONENT_STORAGE_URL``
       -  ❌
 
-While doing the version solving, the version solver will always start with the URLs defined in `local_storage_url`, then `storage_url`, and finally `registry_url`. If the versions found in the first URL could satisfy the requirements, the version solver will not try to find the versions in the next URLs. If the version solver could not find the versions in any of the URLs, it will return an error.
+   -  -  Support Upload
+      -  ✅
+      -  ❌
+      -  ❌
+
+   -  -  Support Download
+      -  ✅
+      -  ✅
+      -  ✅
+
+   -  -  Require Internet?
+      -  ✅
+      -  ✅
+      -  ❌
 
 Besides the URLs, each profile supports the following fields:
 
@@ -70,13 +77,13 @@ Besides the URLs, each profile supports the following fields:
       -  Description
       -  Required?
 
-   -  -  api_token
+   -  -  ``api_token``
       -  string
       -  None
-      -  The API token to authenticate with the `registry_url`.
+      -  The API token to authenticate with the ``registry_url``.
       -  Required when uploading the components.
 
-   -  -  default_namespace
+   -  -  ``default_namespace``
       -  string
       -  espressif
       -  The default namespace to use when uploading the components.
@@ -109,6 +116,35 @@ Besides, if you have a local storage server, you can also add the local storage 
          - file:///Users/username/storage/  # Unix path
          # - file://C:/storage/ # Windows path
          - http://localhost:9004
+
+***************************************
+ Urls Precedence While Version Solving
+***************************************
+
+While doing the version solving, the version solver will always start with the URLs defined in ``local_storage_url``, then ``storage_url``, and finally ``registry_url``. If the versions found in the first URL could satisfy the requirements, the version solver will not try to find the versions in the next URLs. If the version solver could not find the versions in any of the URLs, it will return an error.
+
+For example, if you have your default profile as follows:
+
+.. code:: yaml
+
+   profiles:
+     default:
+       registry_url: a.com
+       storage_url:
+         - b.com
+         - c.com
+       local_storage_url:
+         - http://localhost:9004
+         - http://localhost:9005
+
+While solving the versions, the version solver will try to find the versions in this order:
+
+-  ``registry_url`` defined in the manifest ``dependencies`` field
+-  http://localhost:9004
+-  http://localhost:9005
+-  b.com
+-  c.com
+-  a.com
 
 *******
  Usage
