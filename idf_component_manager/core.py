@@ -198,12 +198,12 @@ class ComponentManager:
     @property
     @lru_cache(1)
     def root_managed_components_dir(self) -> str:
-        return str(root_managed_components_dir())  # type: ignore
+        return str(root_managed_components_dir())
 
     @property
     @lru_cache(1)
     def root_managed_components_lock_path(self) -> str:
-        return str(self.root_managed_components_dir / 'dependencies.lock')  # type: ignore
+        return os.path.join(self.root_managed_components_dir, 'dependencies.lock')
 
     def _get_manifest(
         self, component: str = 'main', path: t.Optional[str] = None
