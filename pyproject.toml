@@ -103,6 +103,7 @@ ignore_errors = true
 
 [tool.deptry]
 extend_exclude = [
+    "ci",
     "docs",
     "integration_tests",
     "idf_component_tools/file_cache.py", # Tries a number of ways to detect paths on Windows
