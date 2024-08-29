@@ -89,5 +89,9 @@ repos:
     hooks:
       - id: detect-secrets
         args:
-          - --base64-limit=5 # Level of entropy for base64 type strings
-          - --hex-limit=3 # Level of entropy for hex strings
+          - --base64-limit
+          - "5" # Level of entropy for base64 type strings
+          - --hex-limit
+          - "3" # Level of entropy for hex strings
+          - --exclude-lines
+          - "commit_sha:"  # Exclude lines containing 'commit_sha:'
