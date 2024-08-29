@@ -157,39 +157,7 @@ Example:
 
 A list of files and directories excluded by default:
 
-.. code:: python
-
-   [
-         # Python files
-         '**/__pycache__',
-         '**/*.pyc',
-         '**/*.pyd',
-         '**/*.pyo',
-         # macOS files
-         '**/.DS_Store',
-         # Git
-         '**/.git/**/*',
-         # SVN
-         '**/.svn/**/*',
-         # dist and build artefacts
-         '**/dist/**/*',
-         '**/build/**/*',
-         # artifacts from example projects
-         '**/managed_components/**/*',
-         '**/dependencies.lock',
-         # CI files
-         '**/.github/**/*',
-         '**/.gitlab-ci.yml',
-         # IDE files
-         '**/.idea/**/*',
-         '**/.vscode/**/*',
-         # Configs
-         '**/.settings/**/*',
-         '**/sdkconfig',
-         '**/sdkconfig.old',
-         # Hash file
-         '**/.component_hash'
-   ]
+|DEFAULT_EXCLUDE|
 
 ``examples``
 ============
