@@ -141,9 +141,16 @@ This field is optional and can be omitted if the component contains all files in
 
 .. note::
 
-   The ``files`` field is used only during the creation of the archive before uploading to the registry.
+   The ``files`` field is used when:
 
-Example:
+      -  during the creation of the archive before the component uploaded to the registry.
+      -  the component is used as a `git dependency <GitDependencies>`_.
+
+A list of files and directories excluded by default:
+
+|DEFAULT_EXCLUDE|
+
+Here is an example on how to use the ``files`` field. Note that the ``include`` field could be used to override the default exclusion list.
 
 .. code:: yaml
 
@@ -154,10 +161,6 @@ Example:
        - "big_dir/**/*" # Exclude `big_dir` directory and its content
      include:
        - "**/.DS_Store" # Include files excluded by default
-
-A list of files and directories excluded by default:
-
-|DEFAULT_EXCLUDE|
 
 ``examples``
 ============
