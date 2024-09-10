@@ -1,10 +1,15 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+import os
+import shutil
 import typing as t
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 
+from idf_component_manager.core_utils import validate_examples_manifest
+from idf_component_tools.errors import ManifestError
 from idf_component_tools.manifest import ComponentRequirement, Manifest, OptionalDependency
 
 
@@ -20,7 +25,8 @@ def test_manifest_hash(valid_manifest):
     manifest = Manifest.fromdict(valid_manifest)
     # ONLY UPDATE MANIFEST HASH WHEN IT'S NECESSARY!!!
     assert (
-        manifest.manifest_hash == '8dd1abf83989a97bcd7590b795f5436169f3a2d74a99c832cb97a2d3e8b44205'
+        manifest.manifest_hash
+        == '8dd1abf83989a97bcd7590b795f5436169f3a2d74a99c832cb97a2d3e8b44205'  # pragma: allowlist secret
     )
 
 
@@ -82,7 +88,10 @@ def test_validator_valid_manifest(valid_manifest):
                         'version': '.1.0',
                         'override_path': '../esp_diagnostics/',
                     },
-                    'espressif/cbor': {'version': '~0.6', 'rules': [{'if': 'idf_version >=5.0'}]},
+                    'espressif/cbor': {
+                        'version': '~0.6',
+                        'rules': [{'if': 'idf_version >=5.0'}],
+                    },
                     'invalid_slug---': {
                         'version': '~0.6',
                     },
@@ -116,7 +125,7 @@ def test_validator_repo_info_and_repo(valid_manifest):
     original_valid_manifest = deepcopy(valid_manifest)
 
     valid_manifest['repository_info'] = {
-        'commit_sha': '252f10c83610ebca1a059c0bae8255eba2f95be4d1d7bcfa89d7248a82d9f111'
+        'commit_sha': '252f10c83610ebca1a059c0bae8255eba2f95be4d1d7bcfa89d7248a82d9f111'  # pragma: allowlist secret
     }
     del valid_manifest['repository']
     errors = Manifest.validate_manifest(valid_manifest)
@@ -178,3 +187,28 @@ def test_meet_optional_dependency_with_none_version_requirement(monkeypatch):
     assert req.meet_optional_dependencies
     assert req.version is None
     assert req.version_spec == '*'
+
+
+def test_validate_example_manifest(fixtures_path):
+    component_with_example_path = os.path.join(fixtures_path, 'components', 'cmp_with_example')
+    validate_examples_manifest(component_with_example_path)
+
+
+def test_validate_invalid_example_manifest(fixtures_path, tmp_path):
+    component_with_example_path = os.path.join(fixtures_path, 'components', 'cmp_with_example')
+
+    # Copy component with examples to a temporary directory for modification
+    shutil.copytree(component_with_example_path, os.path.join(tmp_path, 'cmp_with_example'))
+
+    # Create invalid example manifest
+    Path(
+        tmp_path,
+        'cmp_with_example',
+        'examples',
+        'cmp_ex',
+        'main',
+        'idf_component.yml',
+    ).write_text('...')
+
+    with pytest.raises(ManifestError):
+        validate_examples_manifest(os.path.join(tmp_path, 'cmp_with_example'))

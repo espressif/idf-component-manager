@@ -235,7 +235,7 @@ def test_pack_component_with_examples_errors(tmp_path, example_component_path, e
     component_manager = ComponentManager(path=str(project_path))
 
     # Add folder with the same name of the example
-    manifest_manager = ManifestManager(str(project_path), 'cmp')
+    manifest_manager = ManifestManager(project_path, 'cmp')
     manifest_manager.manifest.examples = examples
     manifest_manager.dump(str(project_path))
 

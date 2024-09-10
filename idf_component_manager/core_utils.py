@@ -2,16 +2,24 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 import re
+import shutil
 import typing as t
 from collections import namedtuple
 from pathlib import Path
 
 from tqdm import tqdm
 
-from idf_component_tools.constants import DEFAULT_NAMESPACE
+from idf_component_manager.utils import print_info
+from idf_component_tools.constants import DEFAULT_NAMESPACE, MANIFEST_FILENAME
 from idf_component_tools.errors import ComponentModifiedError, FatalError
-from idf_component_tools.file_tools import copy_directories, filtered_paths
+from idf_component_tools.file_tools import (
+    check_unexpected_component_files,
+    copy_directories,
+    filtered_paths,
+)
 from idf_component_tools.hash_tools.constants import HASH_FILENAME
+from idf_component_tools.manager import ManifestManager
+from idf_component_tools.manifest import Manifest
 from idf_component_tools.manifest.constants import SLUG_BODY_REGEX
 from idf_component_tools.semver import SimpleSpec
 
@@ -41,6 +49,54 @@ def dist_name(name: str, version: str) -> str:
 
 def archive_filename(name: str, version: str) -> str:
     return f'{dist_name(name, version)}.tgz'
+
+
+def _create_manifest_if_missing(manifest_dir: Path) -> bool:
+    manifest_filepath = Path(manifest_dir) / MANIFEST_FILENAME
+    if manifest_filepath.exists():
+        return False
+    example_path = Path(__file__).resolve().parent / 'templates' / 'idf_component_template.yml'
+    manifest_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(example_path, manifest_filepath)
+    print_info(f'Created "{manifest_filepath}"')
+    return True
+
+
+def get_validated_manifest(manifest_manager: ManifestManager, path: str) -> Manifest:
+    """
+    Get the validated manifest for the given path.
+
+    :param manifest_manager: The ManifestManager object used to load the manifest.
+    :param path: The path to the manifest file.
+    :return: The validated Manifest object.
+
+    :raises ManifestError: If the manifest file is invalid.
+    """
+    manifest = manifest_manager.load()
+    validate_examples_manifest(path)
+    check_unexpected_component_files(path)
+    return manifest
+
+
+def validate_examples_manifest(path: str) -> None:
+    """
+    Validates the manifest files in the examples directory.
+
+    :param path: The path to the component directory.
+    :type path: str
+
+    :raises ManifestError: If the manifest file is invalid.
+    """
+
+    examples_path = Path(path) / 'examples'
+
+    if not examples_path.exists():
+        return None
+
+    # Find all manifest files in examples directory
+    for manifest_path in examples_path.rglob(MANIFEST_FILENAME):
+        # Check if the manifest file is valid
+        ManifestManager(manifest_path, manifest_path.parent.parent.name).load()
 
 
 def raise_component_modified_error(managed_components_dir: str, components: t.List[str]) -> None:

@@ -519,7 +519,7 @@ def test_validate_manifest_file(tmp_path, manifest_obj, error):
         if manifest_obj:
             fw.write(manifest_obj)
 
-    manifest = ManifestManager(str(tmp_path), 'main').validate()
+    manifest = ManifestManager(tmp_path, 'main').validate()
     if error:
         assert error in manifest.validation_errors[0]
     else:

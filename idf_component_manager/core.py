@@ -33,9 +33,7 @@ from idf_component_tools.errors import (
     VersionNotFoundError,
 )
 from idf_component_tools.file_tools import (
-    check_unexpected_component_files,
     copy_filtered_directory,
-    create_directory,
 )
 from idf_component_tools.git_client import GitClient, clean_tag_version
 from idf_component_tools.hash_tools.errors import (
@@ -77,9 +75,11 @@ from .cmake_component_requirements import (
 )
 from .core_utils import (
     ProgressBar,
+    _create_manifest_if_missing,
     archive_filename,
     copy_examples_folders,
     dist_name,
+    get_validated_manifest,
     parse_example,
     raise_component_modified_error,
 )
@@ -111,17 +111,6 @@ def general_error_handler(func):
             raise FatalError('\n'.join([str(e)] + e.request_info()))
 
     return wrapper
-
-
-def _create_manifest_if_missing(manifest_dir: str) -> bool:
-    manifest_filepath = Path(manifest_dir) / MANIFEST_FILENAME
-    if manifest_filepath.exists():
-        return False
-    example_path = Path(__file__).resolve().parent / 'templates' / 'idf_component_template.yml'
-    create_directory(manifest_dir)
-    shutil.copyfile(example_path, manifest_filepath)
-    print_info(f'Created "{manifest_filepath}"')
-    return True
 
 
 class ComponentManager:
@@ -211,7 +200,7 @@ class ComponentManager:
         manifest_dir = self._get_manifest_dir(component=component, path=path)
         manifest_filepath = Path(manifest_dir) / MANIFEST_FILENAME
         # Create manifest file if it doesn't exist in work directory
-        manifest_created = _create_manifest_if_missing(manifest_dir)
+        manifest_created = _create_manifest_if_missing(Path(manifest_dir))
         return manifest_filepath.as_posix(), manifest_created
 
     @general_error_handler
@@ -428,7 +417,7 @@ class ComponentManager:
 
         manifest_manager.dump(str(dest_temp_dir))
 
-        check_unexpected_component_files(str(dest_temp_dir))
+        get_validated_manifest(manifest_manager, str(dest_temp_dir))
 
         archive_filepath = os.path.join(dest_path, archive_filename(name, manifest.version))
         print_info(f'Saving archive to "{archive_filepath}"')
@@ -556,14 +545,15 @@ class ComponentManager:
             tempdir = tempfile.mkdtemp()
             try:
                 unpack_archive(archive, tempdir)
-                manifest = ManifestManager(
+                manifest_manager = ManifestManager(
                     tempdir,
                     name,
                     upload_mode=UploadMode.component,
                     repository=repository,
                     commit_sha=commit_sha,
                     repository_path=repository_path,
-                ).load()
+                )
+                manifest = get_validated_manifest(manifest_manager, tempdir)
             finally:
                 shutil.rmtree(tempdir)
         else:

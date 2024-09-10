@@ -17,7 +17,7 @@ def validate_managed_component_by_hashdir(
     root: t.Union[str, Path],
     expected_component_hash: str,
 ) -> bool:
-    manifest_manager = ManifestManager(str(root), 'cmp')
+    manifest_manager = ManifestManager(root, 'cmp')
     manifest = manifest_manager.load()
 
     exclude_set = set(manifest.exclude_set)

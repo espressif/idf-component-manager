@@ -151,7 +151,7 @@ class LocalSource(BaseSource):
         name = self._path.name
 
         version_str = '*'
-        manifest = ManifestManager(str(self._path), name).load()
+        manifest = ManifestManager(self._path, name).load()
         if manifest.version:
             version_str = str(manifest.version)
 
