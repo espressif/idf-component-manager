@@ -157,11 +157,11 @@ def init_autocomplete():
 
         # the return code could be 1 even succeeded
         # use || true to swallow the return code
-        autocomplete_script_str = subprocess.check_output(
+        autocomplete_script_str = subprocess.check_output(  # noqa: S602
             '_{}_COMPLETE={} {} || true'.format(
                 CLI_NAME.upper(), _get_shell_completion(shell), CLI_NAME
             ),
-            shell=True,  # noqa: S602
+            shell=True,
         ).decode('utf8')
 
         if not install:  # print the autocomplete script only
@@ -177,7 +177,7 @@ def init_autocomplete():
         if dry_run:
             print_info(f'Completion file would be created at: {completion_filepath}')
         else:
-            with open(completion_filepath, 'w') as fw:
+            with open(completion_filepath, 'w', encoding='utf-8') as fw:
                 fw.write(autocomplete_script_str)
 
         # write sourcing autocomplete script statements
