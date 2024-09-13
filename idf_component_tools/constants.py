@@ -18,6 +18,7 @@ COMPILED_COMMIT_ID_RE = re.compile(COMMIT_ID_RE)
 DEFAULT_NAMESPACE = 'espressif'
 IDF_COMPONENT_REGISTRY_URL = 'https://components.espressif.com/'
 IDF_COMPONENT_STORAGE_URL = 'https://components-file.espressif.com/'
+IDF_COMPONENT_STAGING_REGISTRY_URL = 'https://components-staging.espressif.com'
 
 UPDATE_SUGGESTION = """
 SUGGESTION: This component may be using a newer version of the component manager.
