@@ -21,6 +21,7 @@ def main(base_folder: str, preview_folder: str, output_dir: str):
     preview_folder_html_rel_paths = set(
         glob.glob('**/*.html', root_dir=preview_folder, recursive=True)
     )
+    has_diff = False
     for item in sorted(base_folder_html_rel_paths | preview_folder_html_rel_paths):
         base_name = item if item in base_folder_html_rel_paths else ''
         preview_name = item if item in preview_folder_html_rel_paths else ''
@@ -49,8 +50,12 @@ def main(base_folder: str, preview_folder: str, output_dir: str):
                     fw.write(diff)
 
                 diff_url = f'{os.getenv("GITLAB_PAGE_HTTPS_URL")}/-/idf-component-manager/-/jobs/{os.getenv("CI_JOB_ID")}/artifacts/{output_file}'
+                has_diff = True
 
         table.add_row([base_name, preview_name, diff_url])
+
+    if not has_diff:
+        table = 'No differences found'
 
     print(table)
     if os.getenv('CI_JOB_ID'):
