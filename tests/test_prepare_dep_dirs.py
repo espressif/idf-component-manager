@@ -100,3 +100,31 @@ def test_dependencies_with_different_source(tmp_path, monkeypatch):
         lock_data = yaml.safe_load(f)
     assert lock_data['dependencies']['hfudev/test_comp']
     assert lock_data['dependencies']['hfudev/test_comp']['source']['type'] == 'git'
+
+
+def test_removing_dependency_with_env_var(tmp_path, monkeypatch):
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32')
+    monkeypatch.setenv('IDF_PATH', '/tmp')
+    monkeypatch.setenv('BUILD_BOARD', 'esp-box')
+    monkeypatch.setenv('IDF_TARGET', 'esp32s3')
+
+    _generate_lock_file(
+        tmp_path,
+        # Requires BUILD_BOARD env var to be set
+        """
+        dependencies:
+          hfudev/sdl:
+            version: '57987dd831bb1f7f022eb364f88886a115d053d8'  # pragma: allowlist secret
+            git: https://github.com/hfudev/esp-idf-component-SDL.git
+        """,
+    )
+
+    # remove this dependency, reconfigure, shall not require env var BUILD_BOARD anymore
+    monkeypatch.delenv('BUILD_BOARD')
+    _generate_lock_file(
+        tmp_path,
+        """
+        dependencies: {}
+        """,
+    )
