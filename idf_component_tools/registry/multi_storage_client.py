@@ -72,8 +72,18 @@ class MultiStorageClient:
 
     @property
     @lru_cache(1)
+    def local_storage_clients(self):
+        return [StorageClient(url) for url in self.local_storage_urls]
+
+    @property
+    @lru_cache(1)
+    def profile_storage_clients(self):
+        return [StorageClient(url) for url in self.storage_urls]
+
+    @property
+    @lru_cache(1)
     def storage_clients(self):
-        clients = [StorageClient(url) for url in [*self.local_storage_urls, *self.storage_urls]]
+        clients = [*self.local_storage_clients, *self.profile_storage_clients]
         if self.registry_storage_client:
             clients.append(self.registry_storage_client)
 
@@ -111,8 +121,20 @@ class MultiStorageClient:
         raise VersionNotFound(error_message)
 
     def get_component_info(self, component_name, spec):
+        """
+        Get component info from all storage clients.
+
+        .. note::
+
+            This function is only used for while partial mirror creation.
+        """
+        # local_storage_urls shall not be used when create partial mirror
+        _clients = self.profile_storage_clients.copy()
+        if self.registry_storage_client:
+            _clients.append(self.registry_storage_client)
+
         error_message = ''
-        for storage_client in self.storage_clients:
+        for storage_client in _clients:
             try:
                 info = storage_client.get_component_info(component_name=component_name, spec=spec)
                 return ComponentInfo(info, storage_client.storage_url)

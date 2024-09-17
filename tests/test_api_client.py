@@ -121,15 +121,15 @@ class TestAPIClient:
         )
 
     def test_no_registry_token_error(self, monkeypatch, tmp_path):
-        monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'http://localhost:9000/test-public')
+        monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:9000')
 
-        client = APIClient(registry_url=get_registry_url(), api_token='test')
+        client = APIClient(registry_url=get_registry_url())
 
         file_path = str(tmp_path / 'cmp.tgz')
         with open(file_path, 'w+') as f:
             f.write('a')
 
-        with pytest.raises(APIClientError, match='Token not found.'):
+        with pytest.raises(APIClientError, match='API token is required'):
             client.upload_version(component_name='example/cmp', file_path=file_path)
 
     def test_env_var_for_upload_empty(self, monkeypatch):
