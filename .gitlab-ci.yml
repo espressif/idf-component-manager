@@ -76,7 +76,7 @@ prepare_tests:
   tags:
     - internet
   script:
-    - git checkout $REF
+    - git checkout -f $REF
     - pip install '.[docs]'
     - sphinx-build docs/en ${OUTPUT_DIR}
   after_script:
