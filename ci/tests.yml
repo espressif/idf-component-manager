@@ -29,10 +29,6 @@ test:
       - PYTHON_IMAGE_TAG: [3.7-buster, 3.12-bookworm]
   image: python:${PYTHON_IMAGE_TAG}
   script:
-    # vcrpy requires setuptools.command.test, which is removed in 72.0.0
-    # for detail information, see https://github.com/kevin1024/vcrpy/issues/855
-    - echo "setuptools<72" > constraints.txt
-    - export PIP_CONSTRAINT=$(pwd)/constraints.txt
     - pip install '.[test]'
     - pytest --cov=. --cov-report=xml
   artifacts:

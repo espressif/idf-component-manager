@@ -19,6 +19,7 @@ from idf_component_tools.errors import (
     ComponentModifiedError,
     FetchingError,
     InvalidComponentHashError,
+    RunningEnvironmentError,
     SolverError,
 )
 from idf_component_tools.hash_tools.errors import ValidatingHashError
@@ -60,6 +61,8 @@ def get_unused_components(
             validate_managed_component_hash(os.path.join(managed_components_path, component))
             unused_components.add(component)
         except ValidatingHashError:
+            pass
+        except RunningEnvironmentError:
             pass
 
     return unused_components
@@ -309,7 +312,14 @@ def download_project_dependencies(
     """
     lock_manager = LockManager(lock_path)
 
-    solution = lock_manager.load()
+    try:
+        solution = lock_manager.load()
+    except RunningEnvironmentError as e:
+        warn(f'{e}, recreating lock file.')
+        solution = SolvedManifest.fromdict({})
+    except Exception as e:
+        warn(f'Unknown error: {e}, recreating lock file.')
+        solution = SolvedManifest.fromdict({})
 
     # replace the old solution with the current idf
     for dep in solution.dependencies:
