@@ -19,6 +19,11 @@ from .client_errors import (
     StorageFileNotFound,
 )
 
+DEFAULT_REQUEST_TIMEOUT = (
+    10.05,  # Connect timeout
+    60.1,  #  Read timeout
+)
+
 
 def join_url(*args) -> str:
     """
@@ -162,16 +167,20 @@ def base_request(
     json: t.Optional[t.Dict] = None,
     headers: t.Optional[t.Dict] = None,
     schema: t.Optional[ApiBaseModel] = None,
+    timeout: t.Optional[t.Union[float, t.Tuple[float, float]]] = None,
     use_storage: bool = False,
 ) -> t.Dict:
     endpoint = join_url(url, *path)
-    timeout: t.Union[float, t.Tuple[float, float]] = ComponentManagerSettings().API_TIMEOUT  # type: ignore
-    if timeout is None:
-        # Connect timeout, Read timeout
-        timeout = 6.05, 30.1
 
-    token_scope = get_token_scope(method, session, url, path, timeout)
-    response = make_request(method, session, endpoint, data, json, headers, timeout)
+    request_timeout: t.Optional[t.Union[float, t.Tuple[float, float]]] = (
+        ComponentManagerSettings().API_TIMEOUT or timeout
+    )
+
+    if request_timeout is None:
+        request_timeout = DEFAULT_REQUEST_TIMEOUT
+
+    token_scope = get_token_scope(method, session, url, path, request_timeout)
+    response = make_request(method, session, endpoint, data, json, headers, request_timeout)
     response_json = handle_response_errors(response, endpoint, use_storage, token_scope)
 
     if schema is None:
