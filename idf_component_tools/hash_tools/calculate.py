@@ -49,6 +49,7 @@ def hash_url(url_string: str) -> str:
 
 def hash_dir(
     root: t.Union[str, Path],
+    use_gitignore: bool = False,
     include: t.Optional[t.Iterable[str]] = None,
     exclude: t.Optional[t.Iterable[str]] = None,
     exclude_default: bool = True,
@@ -57,7 +58,13 @@ def hash_dir(
     sha = sha256()
 
     paths = sorted(
-        filtered_paths(root, include=include, exclude=exclude, exclude_default=exclude_default),
+        filtered_paths(
+            root,
+            use_gitignore=use_gitignore,
+            include=include,
+            exclude=exclude,
+            exclude_default=exclude_default,
+        ),
         key=lambda path: path.relative_to(root).as_posix(),
     )
     for file_path in paths:

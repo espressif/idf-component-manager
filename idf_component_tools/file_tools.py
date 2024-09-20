@@ -4,10 +4,12 @@
 
 import os
 import shutil
+import tempfile
 import typing as t
 from pathlib import Path
 from shutil import copytree, rmtree
 
+from idf_component_tools.git_client import GitClient
 from idf_component_tools.messages import warn
 
 DEFAULT_EXCLUDE = [
@@ -49,13 +51,48 @@ UNEXPECTED_FILES = {
 }
 
 
+def gitignore_ignored_files(path: t.Union[str, Path]) -> t.Set[Path]:
+    """Returns set of files ignored by .gitignore file"""
+
+    base_path = Path(path)
+    paths = set()
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_dir_path = Path(tmp_dir)
+
+        # Create git client instance
+        git_client = GitClient(
+            work_tree=str(base_path.resolve()), git_dir=str(tmp_dir_path.resolve())
+        )
+
+        # Create a new empty repository
+        git_client.init_empty_repository()
+        ignored_files = git_client.ignored_files()
+
+        for file in ignored_files:
+            paths.add(base_path / Path(file))
+
+    return paths
+
+
 def filtered_paths(
     path: t.Union[str, Path],
+    use_gitignore: bool = False,
     include: t.Optional[t.Iterable[str]] = None,
     exclude: t.Optional[t.Iterable[str]] = None,
     exclude_default: bool = True,
 ) -> t.Set[Path]:
-    """Returns set of paths that should be included in component archive"""
+    """Returns set of paths that should be included in component archive.
+
+    There are two ways to filter paths:
+
+    1. If `use_gitignore` is True, then `.gitignore` files will be used to exclude files.
+    If `exclude` is set, it will be used to exclude files by default before applying `.gitignore` patterns.
+    Option `exclude_default` is ignored in this case.
+
+    2. Overwise, `include` and `exclude` will be used to filter files.
+    If `exclude_default` is True, then default patterns will also be applied.
+    """
 
     if include is None:
         include = set()
@@ -72,26 +109,38 @@ def filtered_paths(
     def exclude_paths(pattern):
         paths.difference_update(base_path.glob(pattern))
 
+    def exclude_all_directories():
+        for path in list(paths):
+            if path.is_dir():
+                paths.remove(path)
+
     # First include everything
     include_paths('**/*')
 
-    # Exclude all defaults, including directories
-    if exclude_default:
-        for pattern in DEFAULT_EXCLUDE:
+    if use_gitignore:
+        # Exclude user patterns
+        for pattern in exclude:
             exclude_paths(pattern)
 
-    # Exclude user patterns
-    for pattern in exclude:
-        exclude_paths(pattern)
+        # Exclude .gitignore patterns
+        exclude_gitignore = gitignore_ignored_files(base_path)
+        paths.difference_update(exclude_gitignore)
+        exclude_all_directories()
+    else:
+        # Exclude all defaults, including directories
+        if exclude_default:
+            for pattern in DEFAULT_EXCLUDE:
+                exclude_paths(pattern)
 
-    # Exclude all the directories
-    for path in list(paths):
-        if path.is_dir():
-            paths.remove(path)
+        # Exclude user patterns
+        for pattern in exclude:
+            exclude_paths(pattern)
 
-    # Include everything that was explicitly added
-    for pattern in include:
-        include_paths(pattern)
+        exclude_all_directories()
+
+        # Include everything that was explicitly added
+        for pattern in include:
+            include_paths(pattern)
 
     return paths
 
@@ -137,10 +186,13 @@ def copy_directories(
 def copy_filtered_directory(
     source_directory: str,
     destination_directory: str,
+    use_gitignore: bool = False,
     include: t.Optional[t.Iterable[str]] = None,
     exclude: t.Optional[t.Iterable[str]] = None,
 ) -> None:
-    paths = filtered_paths(source_directory, include=include, exclude=exclude)
+    paths = filtered_paths(
+        source_directory, use_gitignore=use_gitignore, include=include, exclude=exclude
+    )
     prepare_empty_directory(destination_directory)
     copy_directories(source_directory, destination_directory, paths)
 

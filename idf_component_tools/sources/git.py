@@ -111,12 +111,20 @@ class GitSource(BaseSource):
 
             possible_manifest_filepath = os.path.join(source_path, MANIFEST_FILENAME)
             include, exclude = set(), set()
+            use_gitignore = False
             if os.path.isfile(possible_manifest_filepath):
                 manifest = ManifestManager(possible_manifest_filepath, component.name).load()
                 include.update(manifest.include_set)
                 exclude.update(manifest.exclude_set)
+                use_gitignore = manifest.use_gitignore
 
-            copy_filtered_directory(source_path, download_path, include=include, exclude=exclude)
+            copy_filtered_directory(
+                source_path,
+                download_path,
+                use_gitignore=use_gitignore,
+                include=include,
+                exclude=exclude,
+            )
         finally:
             shutil.rmtree(temp_dir)
 
@@ -149,10 +157,12 @@ class GitSource(BaseSource):
             dependencies = []
             include = set()
             exclude = set()
+            use_gitignore = False
 
             if os.path.isfile(manifest_path):
                 manifest = ManifestManager(manifest_path, name=name).load()
                 dependencies = manifest.raw_requirements
+                use_gitignore = manifest.use_gitignore
 
                 if manifest.targets:  # only check when exists
                     if target and target not in manifest.targets:
@@ -166,7 +176,9 @@ class GitSource(BaseSource):
                 include = manifest.include_set
                 exclude = manifest.exclude_set
 
-            component_hash = hash_dir(source_path, include=include, exclude=exclude)
+            component_hash = hash_dir(
+                source_path, use_gitignore=use_gitignore, include=include, exclude=exclude
+            )
         finally:
             shutil.rmtree(temp_dir)
 

@@ -402,6 +402,7 @@ class ComponentManager:
         copy_filtered_directory(
             self.path.as_posix(),
             dest_temp_dir.as_posix(),
+            use_gitignore=manifest.use_gitignore,
             include=manifest.include_set,
             exclude=exclude_set,
         )
@@ -411,6 +412,7 @@ class ComponentManager:
                 manifest.examples,
                 Path(self.path),
                 dest_temp_dir,
+                use_gitignore=manifest.use_gitignore,
                 include=manifest.include_set,
                 exclude=manifest.exclude_set,
             )

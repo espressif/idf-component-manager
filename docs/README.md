@@ -19,3 +19,9 @@ Preview in the browser:
 ```sh
 python -m webbrowser -t "file://$(pwd)/docs/html_output/index.html"
 ```
+
+If you are using WSL, simply start the web server:
+
+```sh
+python -m http.server --directory docs/html_output
+```

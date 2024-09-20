@@ -84,6 +84,7 @@ class TestComponentWebServiceSource:
             source=source,
             component_hash=hash_dir(
                 release_component_path,
+                use_gitignore=manifest.use_gitignore,
                 include=manifest.include_set,
                 exclude=manifest.exclude_set,
                 exclude_default=False,
