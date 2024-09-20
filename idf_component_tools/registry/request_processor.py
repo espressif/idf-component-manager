@@ -3,6 +3,7 @@
 import typing as t
 import warnings
 from copy import deepcopy
+from http import HTTPStatus
 
 import requests
 from pydantic import ValidationError
@@ -67,11 +68,11 @@ def handle_response_errors(
     use_storage: bool,
     token_scope: str,
 ) -> t.Dict:
-    if response.status_code == 204:  # NO CONTENT
+    if response.status_code == HTTPStatus.NO_CONTENT:
         return {}
     elif 400 <= response.status_code < 500:
         if use_storage:
-            if response.status_code == 404:
+            if response.status_code == HTTPStatus.NOT_FOUND:
                 raise StorageFileNotFound()
             raise APIClientError(
                 'Error during request',
@@ -90,7 +91,7 @@ def handle_response_errors(
 
 
 def handle_4xx_error(response: requests.Response, token_scope: str) -> None:
-    if response.status_code == 413:
+    if response.status_code == HTTPStatus.REQUEST_ENTITY_TOO_LARGE:
         raise ContentTooLargeError(
             'Error during request. The provided content is too large '
             'to process. Please reduce the size and try again.',
@@ -98,7 +99,7 @@ def handle_4xx_error(response: requests.Response, token_scope: str) -> None:
             status_code=response.status_code,
         )
 
-    if response.status_code == 403:
+    if response.status_code == HTTPStatus.FORBIDDEN:
         if 'write:components' not in token_scope.split():
             raise APIClientError(
                 f'Your token does not have permissions to perform this action. URL: {response.url}. '
@@ -152,7 +153,7 @@ def get_token_scope(
         response = make_request(
             'get', session, url + '/api/tokens/current', None, None, None, timeout
         )
-        scope = response.json()['scope'] if response.status_code == 200 else ''
+        scope = response.json()['scope'] if response.status_code == HTTPStatus.OK else ''
         handle_response_errors(response, url + '/api/tokens/current', False, scope)
         return scope
     return ''
