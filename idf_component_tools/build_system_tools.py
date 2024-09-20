@@ -107,7 +107,7 @@ def is_component(path: Path) -> bool:
     if (path / 'idf_component.yml').exists():
         return True
 
-    with open(str(cmakelists_path)) as f:
+    with open(str(cmakelists_path), encoding='utf-8') as f:
         for line in f:
             if CMAKE_PROJECT_LINE in line:
                 return False
