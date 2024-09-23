@@ -146,7 +146,7 @@ All components would be published under their namespace. If ``--namespace`` is n
 
          idf.py upload-component --namespace [YOUR_NAMESPACE] --name test_cmp
 
-Once uploaded, your component should be viewable on `<https://components.espressif.com/components/YOUR_NAMESPACE/test_cmp>`
+Once uploaded, your component should be viewable on `https://components.espressif.com/components/YOUR_NAMESPACE/test_cmp`
 
 *****************
  Advanced Usages
