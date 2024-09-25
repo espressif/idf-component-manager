@@ -105,6 +105,9 @@ class WebServiceSource(BaseSource):
     type: Literal['service'] = 'service'  # type: ignore
     pre_release: bool = None  # type: ignore
 
+    def __repr__(self) -> str:
+        return f'{self.type}({self.registry_url})'
+
     @field_validator('registry_url')
     @classmethod
     def validate_registry_url(cls, v):

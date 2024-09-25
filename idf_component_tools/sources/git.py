@@ -41,6 +41,9 @@ class GitSource(BaseSource):
 
         self._client = GitClient()
 
+    def __repr__(self) -> str:
+        return f'{self.type}({self.repo if self.path == "." else os.path.join(self.repo, self.repo_path)})'
+
     @property
     def repo(self) -> str:
         return subst_vars_in_str(self.git)
