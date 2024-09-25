@@ -27,8 +27,9 @@ class OptionalDependencyResponse(ApiBaseModel):
 class DependencyResponse(ApiBaseModel):
     spec: str
     source: str
-    name: t.Optional[str] = None  # type: ignore
-    namespace: t.Optional[str] = None  # type: ignore
+    registry_url: t.Optional[str] = None
+    name: t.Optional[str] = None
+    namespace: t.Optional[str] = None
     is_public: bool = False
     require: bool = False
     rules: t.List[OptionalDependencyResponse] = []
