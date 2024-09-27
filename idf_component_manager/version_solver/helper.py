@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-
+import logging
 import typing as t
 
 from idf_component_tools.semver import Range as SemverRange
@@ -13,6 +13,8 @@ from .mixology.package import Package
 from .mixology.package_source import PackageSource as BasePackageSource
 from .mixology.range import Range
 from .mixology.union import Union
+
+logger = logging.getLogger(__name__)
 
 
 def parse_constraint(spec: str) -> t.Union[Union, Range]:
@@ -127,6 +129,7 @@ class PackageSource(BasePackageSource):
         if package.source:
             spec = package.source.normalize_spec(spec)
 
+        logger.debug('Adding root dependency: %s %s', repr(package), spec)
         self._root_dependencies.append(Dependency(package, spec))
 
     def _versions_for(
