@@ -26,7 +26,6 @@ extensions = [
     'sphinx_collapse',
     'sphinx_copybutton',
     'sphinx_tabs.tabs',
-    'sphinx.ext.autosectionlabel',
     'sphinx_click',
 ]
 smartquotes = False

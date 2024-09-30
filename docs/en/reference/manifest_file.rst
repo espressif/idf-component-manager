@@ -57,7 +57,7 @@ The following metadata attributes are available:
 ``version``
 ===========
 
-The version of the component. Use the :ref:`versioning scheme <reference/versioning:Versioning Scheme>`.
+The version of the component. Use the :ref:`versioning scheme <versioning-scheme>`.
 
 This field is required when uploading the component to the ESP Component Registry. You may declare the version by:
 
@@ -304,6 +304,8 @@ Example:
 
    discussion: "https://chat.example.com"
 
+.. _component-dependencies:
+
 ************************
  Component Dependencies
 ************************
@@ -359,6 +361,8 @@ A list of `conditional dependencies`_ that should be applied to the dependency. 
 ---------
 
 A list of `conditional dependencies`_ that should be applied to the dependency. The dependency is only included when all of the if-clauses are true.
+
+.. _conditional-dependencies:
 
 Conditional Dependencies
 ========================
@@ -436,7 +440,7 @@ The dependency will only be included when the environment variable ``TESTING_COM
 ``version`` (if clause)
 -----------------------
 
-The ``version`` field is optional, and it could be either a :ref:`specific version <reference/versioning:Versioning Scheme>` or a :ref:`version range <reference/versioning:Range Specifications>`. The version specified here will override the ``version`` field of the dependency when the corresponding if clause is true.
+The ``version`` field is optional, and it could be either a :ref:`specific version <versioning-scheme>` or a :ref:`version range <version-range-specifications>`. The version specified here will override the ``version`` field of the dependency when the corresponding if clause is true.
 
 For example,
 
@@ -466,6 +470,8 @@ You can use environment variables for the attributes that support them. The comp
 
 If you need to use a literal dollar sign (``$``), escape it with another dollar sign: ``$$string``.
 
+.. _local-source:
+
 Local Directory Dependencies
 ============================
 
@@ -489,7 +495,7 @@ Example:
 ``override_path``
 -----------------
 
-Use this field to use the local component instead of downloading it from the component registry, for example to define :ref:`example projects inside components <guides/packaging_components:Add example projects>`.
+Use this field to use the local component instead of downloading it from the component registry, for example to define :ref:`example projects inside components <add-example-projects>`.
 
 This field supports `environment variables`_.
 
@@ -500,6 +506,8 @@ Example:
    dependencies:
      some_local_component:
        override_path: ../../projects/some_local_component
+
+.. _git-source:
 
 Git Dependencies
 ================
@@ -569,6 +577,8 @@ Example:
        # version: v1.0.0  # tag
        # version: 1234567890abcdef1234567890abcdef12345678  # commit hash
 
+.. _web-source:
+
 ESP Component Registry Dependencies
 ===================================
 
@@ -596,7 +606,7 @@ If neither ``path``, ``override_path``, nor ``git`` attributes are specified, th
 
 The version of the dependency.
 
-This field is required and could be either a :ref:`specific version <reference/versioning:Versioning Scheme>` or a :ref:`version range <reference/versioning:Range Specifications>`.
+This field is required and could be either a :ref:`specific version <versioning-scheme>` or a :ref:`version range <version-range-specifications>`.
 
 Example:
 
@@ -653,7 +663,7 @@ ESP-IDF Dependency
 
 Use the ``idf:version`` to specify the ESP-IDF version that the component is compatible with.
 
-Use a :ref:`specific version <reference/versioning:Versioning Scheme>` or a :ref:`version range <reference/versioning:Range Specifications>`.
+Use a :ref:`specific version <versioning-scheme>` or a :ref:`version range <version-range-specifications>`.
 
 .. code:: yaml
 
