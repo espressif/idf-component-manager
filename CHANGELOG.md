@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.0.4 (2024-10-01)
+
+### Fix
+
+- accept registry_url from api
+- increase HTTP timeouts, use custom timeout for uploads
+- recreate lock file when missing env var
+- drop current solution if requirement source is different
+- ignore local storage urls when generating partial mirror
+- Use utf-8 encoding for all text file operations
+
 ## v2.0.3 (2024-08-26)
 
 ### Fix
