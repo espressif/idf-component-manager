@@ -15,6 +15,7 @@ from idf_component_tools.errors import FatalError, WarningAsExceptionError
 from .autocompletion import init_autocomplete
 from .cache import init_cache
 from .component import init_component
+from .config import init_config
 from .manifest import init_manifest
 from .project import init_project
 from .registry import init_registry
@@ -56,6 +57,7 @@ def initialize_cli():
     cli.add_command(init_manifest())
     cli.add_command(init_project())
     cli.add_command(init_registry())
+    cli.add_command(init_config())
 
     return cli
 
