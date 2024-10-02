@@ -36,6 +36,9 @@ class LocalSource(BaseSource):
     path: t.Optional[str] = None
     override_path: t.Optional[str] = None
 
+    def __repr__(self) -> str:
+        return f'{self.type}({self.path or self.override_path})'
+
     def model_post_init(self, __context: t.Any) -> None:
         if not self.path and not self.override_path:
             raise SourceError('Either "path" or "override_path" must be specified for local source')

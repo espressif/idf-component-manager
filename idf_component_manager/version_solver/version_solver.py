@@ -4,6 +4,7 @@
 import logging
 import os
 import typing as t
+from copy import deepcopy
 
 from idf_component_manager.utils import print_info
 from idf_component_tools.errors import DependencySolveError, InternalError, SolverError
@@ -197,13 +198,19 @@ class VersionSolver:
         if requirement in self._solved_requirements:
             return
 
-        if cur_solution and requirement.name in cur_solution.solved_components:
+        solved_components = deepcopy(cur_solution.solved_components) if cur_solution else {}
+        # drop the current solution if the source is different from the current one
+        if cur_solution and requirement.name in solved_components:
+            if solved_components[requirement.name].source != requirement.source:
+                solved_components.pop(requirement.name)
+
+        if cur_solution and requirement.name in solved_components:
             # need to get again to get all info from the SolvedComponent
             # version 1.0 lock file does not include all the info
             # like `dependencies`, and `targets`
             cmp_with_versions = requirement.source.versions(
                 name=requirement.name,
-                spec=cur_solution.solved_components[requirement.name].version,
+                spec=solved_components[requirement.name].version,
                 target=cur_solution.target,
             )
         else:

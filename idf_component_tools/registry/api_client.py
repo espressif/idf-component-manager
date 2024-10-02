@@ -22,6 +22,11 @@ from .base_client import BaseClient, create_session
 from .client_errors import APIClientError, ContentTooLargeError, NoRegistrySet
 from .request_processor import base_request
 
+UPLOAD_COMPONENT_TIMEOUT = (
+    10.05,  # Connect timeout
+    600.1,  #  Read timeout
+)
+
 
 def auth_required(f: t.Callable) -> t.Callable:
     @wraps(f)
@@ -68,6 +73,7 @@ class APIClient(BaseClient):
                 json: t.Optional[t.Dict] = None,
                 headers: t.Optional[t.Dict] = None,
                 schema: t.Optional[ApiBaseModel] = None,
+                timeout: t.Optional[t.Union[float, t.Tuple[float, float]]] = None,
             ):
                 # always access '<registry_url>/api' while doing api calls
                 path = ['api', *path]
@@ -81,6 +87,7 @@ class APIClient(BaseClient):
                     json=json,
                     headers=headers,
                     schema=schema,
+                    timeout=timeout,
                 )
 
             return f(self, request=request, *args, **kwargs)
@@ -119,6 +126,7 @@ class APIClient(BaseClient):
                     data=data,
                     headers=headers,
                     schema=VersionUpload,
+                    timeout=UPLOAD_COMPONENT_TIMEOUT,
                 )['job_id']
             # Python 3.10+ can't process 413 error - https://github.com/urllib3/urllib3/issues/2733
             except (SSLEOFError, ContentTooLargeError):

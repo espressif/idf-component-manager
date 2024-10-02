@@ -10,7 +10,7 @@ include = [
 
 [project]
 name = "idf-component-manager"
-version = "2.0.3"
+version = "2.0.4"
 authors = [
     { name = "Sergei Silnov", email = "sergei.silnov@espressif.com" },
     { name = "Fu Hanxi", email = "fuhanxi@espressif.com" },
@@ -103,6 +103,7 @@ ignore_errors = true
 
 [tool.deptry]
 extend_exclude = [
+    "ci",
     "docs",
     "integration_tests",
     "idf_component_tools/file_cache.py", # Tries a number of ways to detect paths on Windows

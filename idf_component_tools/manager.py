@@ -73,7 +73,7 @@ class ManifestManager:
         # validate manifest
         else:
             try:
-                manifest_dict = yaml.safe_load(self.path.read_text()) or {}
+                manifest_dict = yaml.safe_load(self.path.read_text(encoding='utf-8')) or {}
             except yaml.YAMLError:
                 self._validation_errors = [
                     'Cannot parse the manifest file. Please check that\n'

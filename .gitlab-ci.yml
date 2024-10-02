@@ -71,21 +71,54 @@ prepare_tests:
     paths:
       - ci/tests.yml
 
-build-docs:
+.build-docs:
   stage: test
   tags:
     - internet
   script:
+    - git checkout -f $REF
     - pip install '.[docs]'
-    - sphinx-build docs/en html_output
+    - sphinx-build docs/en ${OUTPUT_DIR}
   after_script:
     - 'echo "preview link: ${GITLAB_PAGE_HTTPS_URL}/-/idf-component-manager/-/jobs/${CI_JOB_ID}/artifacts/html_output/index.html"'
   artifacts:
     paths:
-      - html_output/
+      - $OUTPUT_DIR/
     when: always
     expire_in: 4 days
-    expose_as: "docs preview"
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"' # Include this job in merge request pipelines, only
+
+build-preview-docs:
+  extends: .build-docs
+  variables:
+    OUTPUT_DIR: html_output_preview
+    REF: HEAD
+
+build-main-docs:
+  extends: .build-docs
+  variables:
+    OUTPUT_DIR: html_output_main
+    REF: HEAD~1  # merged result pipeline
+
+diff-docs:
+  stage: test
+  tags:
+    - internet
+  needs:
+    - build-preview-docs
+    - build-main-docs
+  script:
+    - pip install prettytable python-gitlab
+    - python ci/diff_docs.py html_output_main html_output_preview --output html_diff
+  artifacts:
+    paths:
+      - html_diff/
+    when: always
+    expire_in: 4 days
+    expose_as: docs_diff
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"' # Include this job in merge request pipelines, only
 
 tests:
   stage: test

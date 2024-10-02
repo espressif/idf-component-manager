@@ -43,7 +43,7 @@ def dump_metadata(metadata: t.Dict[str, ComponentStaticVersions], save_path: Pat
             if e.errno != errno.EEXIST:
                 raise e
 
-        with open(str(path / f'{name}.json'), 'w') as f:
+        with open(str(path / f'{name}.json'), 'w', encoding='utf-8') as f:
             json.dump(component_info.metadata, f)
 
 
@@ -199,7 +199,7 @@ def load_saved_metadata(path: Path) -> t.Dict[str, ComponentStaticVersions]:
         component_name = f'{json_filename.parent.name}/{json_filename.stem}'
         versions = []
         try:
-            with open(str(json_filename)) as f:
+            with open(str(json_filename), encoding='utf-8') as f:
                 loaded_component_metadata = json.load(f)
             for version in loaded_component_metadata['versions']:
                 versions.append(ComponentVersion(version['version'], version['url'], None))
