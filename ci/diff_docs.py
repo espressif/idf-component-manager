@@ -70,7 +70,7 @@ def post_mr_comment(table: PrettyTable):
     )
 
     # create comment or update existing one with COMMENT_HEADER
-    for comment in mr.notes.list():
+    for comment in mr.notes.list(get_all=True):
         if comment.body.startswith(COMMENT_HEADER):
             comment.body = f'{COMMENT_HEADER}\n\n{table}'
             comment.save()
