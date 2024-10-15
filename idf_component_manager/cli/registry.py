@@ -195,7 +195,7 @@ def init_registry():
         '--component',
         multiple=True,
         default=[],
-        help='Specify the components you want to upload to the mirror. '
+        help='Specify the components to sync from the registry. '
         'Use multiple --component options for multiple components. '
         'Format: namespace/name<version_spec>. Example: example/cmp==1.0.0',
     )
@@ -208,6 +208,9 @@ def init_registry():
         recursive: bool,
         path: str,
     ) -> None:
+        """
+        Sync components from the registry to local directory
+        """
         manager.sync_registry(
             profile_name,
             path,

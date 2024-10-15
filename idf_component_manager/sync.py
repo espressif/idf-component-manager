@@ -8,14 +8,14 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from idf_component_manager.core_utils import parse_component
+from idf_component_manager.core_utils import parse_component_name_spec
 from idf_component_manager.utils import print_info
 from idf_component_tools.build_system_tools import is_component
 from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.errors import SyncError
 from idf_component_tools.manager import ManifestManager
-from idf_component_tools.manifest import ComponentRequirement
 from idf_component_tools.messages import warn
+from idf_component_tools.registry.api_models import DependencyResponse
 from idf_component_tools.registry.client_errors import ComponentNotFound, VersionNotFound
 from idf_component_tools.registry.multi_storage_client import MultiStorageClient
 from idf_component_tools.registry.request_processor import join_url
@@ -119,29 +119,28 @@ def update_static_versions(
 
 def get_component_metadata(
     client: MultiStorageClient,
-    requirement: ComponentRequirement,
-    version_spec: t.Optional[str],
+    requirement: DependencyResponse,
+    version_spec: str,
     metadata: t.Dict,
     warnings: t.List[str],
     progress_bar: t.Optional[tqdm] = None,
 ) -> t.Tuple[t.Dict, t.List[str]]:
+    component_name = f'{requirement.namespace}/{requirement.name}'
     try:
-        component_info = client.get_component_info(
-            component_name=requirement.name, spec=version_spec
-        )
+        component_info = client.get_component_info(component_name=component_name, spec=version_spec)
         if not component_info.data['versions']:
             raise VersionNotFound()
     except (VersionNotFound, ComponentNotFound):
         warnings.append(
             'Component "{}" with selected spec "{}" was not found in selected storages. '
-            'Skip'.format(requirement.name, version_spec)
+            'Skip'.format(component_name, version_spec)
         )
         return metadata, warnings
 
     data = component_info.data
-    if requirement.name not in metadata:
-        metadata[requirement.name] = ComponentStaticVersions(data, [])
-    loaded_versions = metadata[requirement.name].versions
+    if component_name not in metadata:
+        metadata[component_name] = ComponentStaticVersions(data, [])
+    loaded_versions = metadata[component_name].versions
 
     for version in data['versions']:
         for loaded_version in loaded_versions:
@@ -155,17 +154,22 @@ def get_component_metadata(
             if progress_bar:
                 progress_bar.update(1)
 
-            deps = client.version_dependencies(version)
-            metadata, warnings = prepare_metadata(client, deps, progress_bar, metadata, warnings)
+            metadata, warnings = prepare_metadata(
+                client,
+                [DependencyResponse(**dependency) for dependency in version['dependencies']],
+                progress_bar,
+                metadata,
+                warnings,
+            )
 
-    metadata[requirement.name].versions = loaded_versions
+    metadata[component_name].versions = loaded_versions
 
     return metadata, warnings
 
 
 def prepare_metadata(
     client: MultiStorageClient,
-    dependencies: t.List[ComponentRequirement],
+    dependencies: t.List[DependencyResponse],
     progress_bar: t.Optional[tqdm] = None,
     metadata: t.Optional[t.Dict] = None,
     warnings: t.Optional[t.List] = None,
@@ -175,18 +179,16 @@ def prepare_metadata(
     if warnings is None:
         warnings = []
 
-    for requirement in dependencies:
-        if requirement.source.type == 'service':
-            version_specs = []
-            if requirement.optional_requirement and requirement.optional_requirement.matches:
-                version_specs = [elem.version for elem in requirement.optional_requirement.matches]
-
-            if not version_specs:
-                version_specs = [requirement.version_spec]
+    for dep in dependencies:
+        if dep.source == 'service':
+            version_specs = set([
+                elem.version for elem in [*dep.rules, *dep.matches] if elem.version
+            ])
+            version_specs.add(dep.spec)
 
             for version_spec in version_specs:
                 metadata, warnings = get_component_metadata(
-                    client, requirement, version_spec, metadata, warnings, progress_bar
+                    client, dep, version_spec, metadata, warnings, progress_bar
                 )
 
     return metadata, warnings
@@ -227,11 +229,15 @@ def collect_metadata(
     if components:
         dependencies = []
         for component_info in components:
-            component_name, spec = parse_component(component_info, client.default_namespace)
+            namespace, component, spec = parse_component_name_spec(
+                component_info, client.default_namespace
+            )
             dependencies.append(
-                ComponentRequirement(
-                    name=component_name,
-                    version=spec,
+                DependencyResponse(
+                    spec=spec,
+                    source='service',
+                    name=component,
+                    namespace=namespace,
                 )
             )
         metadata, warnings = prepare_metadata(
@@ -244,8 +250,13 @@ def collect_metadata(
         for path in paths:
             if path.is_dir() and is_component(path) and (path / MANIFEST_FILENAME).exists():
                 manifest = ManifestManager(path, '').load()
+                dependencies_responses: t.List[DependencyResponse] = []
+                for req in manifest.raw_requirements:
+                    dependencies_responses.append(
+                        req.to_dependency_response(client.default_namespace, req.version)
+                    )
                 metadata, warnings = prepare_metadata(
-                    client, manifest.requirements, progress_bar, metadata, warnings
+                    client, dependencies_responses, progress_bar, metadata, warnings
                 )
     progress_bar.close()
 

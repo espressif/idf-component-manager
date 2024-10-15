@@ -4,7 +4,6 @@ import os
 import re
 import shutil
 import typing as t
-from collections import namedtuple
 from pathlib import Path
 
 from tqdm import tqdm
@@ -30,9 +29,8 @@ CREATE_PROJECT_FROM_EXAMPLE_NAME_REGEX = (
     r'(?P<example>[/a-zA-Z\d_\-\.\+]+)$'
 ).format(slug=SLUG_BODY_REGEX)
 
-
-SYNC_REGISTRY_COMPONENT_NAME_REGEX = (
-    r'^((?P<namespace>{slug})\/)?' r'(?P<component>{slug})' r'(?P<version>[<=>!^~\*].+)?'
+COMPONENT_FULL_NAME_WITH_SPEC_REGEX = (
+    r'^((?P<namespace>{slug})\/)?(?P<component>{slug})(?P<version>[<=>!^~\*].+)?'
 ).format(slug=SLUG_BODY_REGEX)
 
 
@@ -152,28 +150,29 @@ def parse_example(example: str, namespace: str) -> t.Tuple[str, str, str]:
     return f'{namespace}/{component}', version_spec, example_name
 
 
-ComponentInfo = namedtuple('ComponentInfo', ['component_name', 'version_spec'])
-
-
-def parse_component(component_name: str, namespace: str) -> ComponentInfo:
-    match = re.match(SYNC_REGISTRY_COMPONENT_NAME_REGEX, component_name)
+def parse_component_name_spec(
+    component_name: str,
+    default_namespace=DEFAULT_NAMESPACE,
+    default_spec: str = '*',
+) -> t.Tuple[str, str, str]:
+    match = re.match(COMPONENT_FULL_NAME_WITH_SPEC_REGEX, component_name)
     if not match:
         raise FatalError(
             'Cannot parse COMPONENT argument. ' 'Please use format like: namespace/component=1.0.0'
         )
 
-    namespace = match.group('namespace') or namespace or DEFAULT_NAMESPACE
-    component = match.group('component')
-    version_spec = match.group('version') or '*'
+    namespace = match.group('namespace') or default_namespace or DEFAULT_NAMESPACE
+    name = match.group('component')
+    spec = match.group('version') or default_spec
 
     try:
-        SimpleSpec(version_spec)
+        SimpleSpec(spec)
     except ValueError:
         raise FatalError(
-            f'Invalid version specification: "{version_spec}". Please use format like ">=1" or "*".'
+            f'Invalid version specification: "{spec}". Please use format like ">=1" or "*".'
         )
 
-    return ComponentInfo(f'{namespace}/{component}', version_spec)
+    return namespace, name, spec
 
 
 def collect_directories(dir_path: Path) -> t.List[str]:
