@@ -30,7 +30,7 @@ def get_component_metadata_mock(req, spec, metadata):
     return metadata, []
 
 
-def test_sync_dependency_with_matches(monkeypatch, tmp_path):
+def test_sync_dependency_with_matches(tmp_path):
     monkeypatch.setattr(
         'idf_component_manager.sync.get_component_metadata',
         lambda _a, req, spec, metadata, _d, _e: get_component_metadata_mock(req, spec, metadata),
@@ -57,7 +57,7 @@ def test_sync_dependency_with_matches(monkeypatch, tmp_path):
     assert '^3.3.8' in metadata['example/cmp']
 
 
-def test_sync_dependency_with_rules(monkeypatch, tmp_path):
+def test_sync_dependency_with_rules(tmp_path):
     monkeypatch.setattr(
         'idf_component_manager.sync.get_component_metadata',
         lambda _a, req, spec, metadata, _d, _e: get_component_metadata_mock(req, spec, metadata),
@@ -83,7 +83,7 @@ def test_sync_dependency_with_rules(monkeypatch, tmp_path):
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_download_metadata.yaml')
-def test_download_metadata_all_versions(tmp_path):
+def test_download_metadata_all_versions():
     client = MultiStorageClient(storage_urls=['http://localhost:9000/test-public/'])
 
     req = ComponentRequirement(name='espressif/test', version='*')
@@ -96,7 +96,7 @@ def test_download_metadata_all_versions(tmp_path):
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_download_metadata.yaml')
-def test_download_metadata_version_with_dependency(tmp_path):
+def test_download_metadata_version_with_dependency():
     client = MultiStorageClient(storage_urls=['http://localhost:9000/test-public/'])
 
     req = ComponentRequirement(name='espressif/test', version='*')
@@ -109,7 +109,7 @@ def test_download_metadata_version_with_dependency(tmp_path):
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_download_metadata.yaml')
-def test_download_metadata_version_multiple_versions(tmp_path):
+def test_download_metadata_version_multiple_versions():
     client = MultiStorageClient(storage_urls=['http://localhost:9000/test-public/'])
 
     req = ComponentRequirement(name='espressif/test', version='*')
@@ -120,7 +120,7 @@ def test_download_metadata_version_multiple_versions(tmp_path):
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_download_metadata.yaml')
-def test_download_metadata_add_metadata(tmp_path):
+def test_download_metadata_add_metadata():
     client = MultiStorageClient(storage_urls=['http://localhost:9000/test-public/'])
 
     req = ComponentRequirement(name='espressif/test', version='==1.0.0')
@@ -134,7 +134,7 @@ def test_download_metadata_add_metadata(tmp_path):
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_download_metadata_unknown_component.yaml')
-def test_download_metadata_version_not_found(tmp_path):
+def test_download_metadata_version_not_found():
     client = MultiStorageClient(storage_urls=['http://localhost:9000/test-public/'])
 
     req = ComponentRequirement(name='unknown/component', version='*')

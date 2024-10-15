@@ -405,7 +405,7 @@ class Manifest(BaseModel):
 
     def model_dump(
         self,
-        **kwargs,
+        **kwargs,  # noqa: ARG002
     ) -> t.Dict[str, t.Any]:
         return super().model_dump(exclude=['name'], exclude_unset=True)
 

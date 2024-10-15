@@ -108,7 +108,7 @@ def update_static_versions(
             )
 
             for version in component_info.versions:
-                for i, loaded_version in enumerate(result[component_name].versions):
+                for loaded_version in result[component_name].versions:
                     if version.version == loaded_version.version:
                         break
                 else:
@@ -144,7 +144,7 @@ def get_component_metadata(
     loaded_versions = metadata[requirement.name].versions
 
     for version in data['versions']:
-        for i, loaded_version in enumerate(loaded_versions):
+        for loaded_version in loaded_versions:
             if version['version'] == loaded_version.version:
                 break
         else:
