@@ -193,6 +193,8 @@ Here is an example on how to use the ``files`` field. Note that the ``include`` 
      include:
        - "**/.DS_Store" # Include files excluded by default
 
+.. _manifest-examples:
+
 ``examples``
 ============
 
@@ -636,6 +638,15 @@ By default, the prerelease versions are ignored. You can include the prerelease 
    dependencies:
      espressif/led_strip:
        version: ">=2.0-beta.1"
+
+``registry_url``
+----------------
+
+The URL of the ESP Component Registry. By default, this URL is ``https://components.espressif.com``.
+
+If you are uploading to the :ref:`staging registry <staging-registry>`, you can set the URL to ``https://components-staging.espressif.com`` to indicate that dependencies should be resolved from the staging registry instead of the main registry.
+
+When uploading your component to the main registry, this URL should remain set to the default value: ``https://components.espressif.com``. This ensures that all dependencies are resolved from the main registry.
 
 ESP-IDF Dependency
 ==================
