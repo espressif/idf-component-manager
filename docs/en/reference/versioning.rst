@@ -4,6 +4,8 @@
 
 The IDF Component Manager enforces a strict versioning scheme on all components it manages. Component versioning allows ESP-IDF applications to have more fine-grained control on what features and bug fixes are included in a particular managed component. Furthermore, the IDF Component Manager implements a version solver that allows ESP-IDF applications to specify multiple versions based on a range of versions for a particular component dependency. The version solver will automatically select the most appropriate version of the component based on a predefined set of rules. This document describes the versioning scheme and the rules used by the version solver.
 
+.. _versioning-scheme:
+
 *******************
  Versioning Scheme
 *******************
@@ -133,6 +135,8 @@ When the version solver compares two different version numbers, the solver deter
 
    Build version is a special case. According to `semantic versioning <https://semver.org/#spec-item-10>`_, ``build`` must be ignored when determining version precedence. If two version numbers only differ in the ``build`` field, the comparison will yield an unexpected result.
 
+.. _version-range-specifications:
+
 **********************
  Range Specifications
 **********************
@@ -210,14 +214,3 @@ For example:
 -  ``^0.2.3`` is equal to ``>=0.2.3,==0.2.*``.
 -  ``^0.2`` is equal to ``>=0.2.0,==0.2.*``.
 -  ``^0`` is equal to ``>=0.0.0,==0.0.0*``.
-
-*****************
- Version Solving
-*****************
-
-An ESP-IDF project with component dependencies will specify those dependencies via one or more manifest files (i.e., ``idf_component.yml``), where each dependency will have a range representing the component version(s) of that dependency. Version solving is the process of collecting all component dependencies of an ESP-IDF project, and calculating the most appropriate component version of each dependency. The version solving process generally involves the following steps:
-
-#. Collect all the local manifest files from your main component and subcomponents.
-#. Collect all the root dependencies from the manifest files.
-#. Recursively collect all the available versions of each root dependency.
-#. Calculate the version solving solution.

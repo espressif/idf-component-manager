@@ -62,7 +62,7 @@ Here's the minimal ``idf_component.yml``:
 
    version: "0.0.1"
 
-The ESP Component Registry only requires the ``version`` of the component in the `idf_component.yml`. The ``version`` must follow :ref:`versioning scheme <reference/versioning:Versioning Scheme>`.
+The ESP Component Registry only requires the ``version`` of the component in the `idf_component.yml`. The ``version`` must follow :ref:`versioning scheme <versioning-scheme>`.
 
 However, we recommend adding ``url`` and ``description``. Otherwise, a warning will be printed.
 
@@ -219,7 +219,7 @@ Files and directories that are excluded by default can be found `here <https://g
 Add Dependencies
 ================
 
-When your component depends on another component, you need to specify this dependency relationship in your component's manifest file as well. Our :ref:`version solver <reference/versioning:Version Solving>` will collect all dependencies and calculate the final versioning solution. For example:
+When your component depends on another component, you need to specify this dependency relationship in your component's manifest file as well. Our :doc:`Version Solver <../guides/version_solver>` would collect all dependencies and calculate the final versioning solution. For example:
 
 .. code:: yaml
 
@@ -229,11 +229,13 @@ When your component depends on another component, you need to specify this depen
      example/cmp:
        version: "^3.0.0"
 
-Please refer to our :ref:`version range specification <reference/versioning:Range Specifications>` for detailed information on the ``version`` field.
+Please refer to our :ref:`version range specification <version-range-specifications>` for detailed information on the ``version`` field.
 
 .. note::
 
    Unlike the other dependencies, ``idf`` is a keyword that points to ESP-IDF itself, not a component.
+
+.. _add-example-projects:
 
 Add Example Projects
 ====================
