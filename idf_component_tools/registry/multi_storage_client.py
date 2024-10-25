@@ -120,7 +120,7 @@ class MultiStorageClient:
 
         raise VersionNotFound(error_message)
 
-    def get_component_info(self, component_name, spec):
+    def get_component_info(self, component_name: str, spec: str) -> ComponentInfo:
         """
         Get component info from all storage clients.
 
@@ -142,7 +142,3 @@ class MultiStorageClient:
                 error_message = str(err)
 
         raise VersionNotFound(error_message)
-
-    def version_dependencies(self, version):
-        client = self.storage_clients[0]
-        return client.version_dependencies(version)

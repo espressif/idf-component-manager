@@ -7,88 +7,70 @@ import vcr
 
 from idf_component_manager.sync import (
     ComponentStaticVersions,
+    collect_metadata,
     dump_metadata,
     get_component_metadata,
     load_saved_metadata,
     metadata_has_changes,
-    prepare_metadata,
     update_component_metadata,
 )
 from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.errors import SyncError
-from idf_component_tools.manager import ManifestManager
-from idf_component_tools.manifest import ComponentRequirement
+from idf_component_tools.registry.api_models import DependencyResponse
 from idf_component_tools.registry.multi_storage_client import MultiStorageClient
+from idf_component_tools.registry.service_details import get_storage_client
 
 
-def get_component_metadata_mock(req, spec, metadata):
-    print(metadata)
-    if req.name not in metadata:
-        metadata[req.name] = []
-    metadata[req.name].append(spec)
-
-    return metadata, []
-
-
-def test_sync_dependency_with_matches(monkeypatch, tmp_path):
-    monkeypatch.setattr(
-        'idf_component_manager.sync.get_component_metadata',
-        lambda _a, req, spec, metadata, _d, _e: get_component_metadata_mock(req, spec, metadata),
-    )
+def test_sync_dependency_with_matches(tmp_path):
     component_path = tmp_path / 'cmp'
     component_path.mkdir()
-
+    (component_path / 'CMakeLists.txt').touch()
     (component_path / MANIFEST_FILENAME).write_text(
         """
     dependencies:
       example/cmp:
+        version: "3.3.4"
         matches:
-          - if: "idf_version >=3.3"
+          - if: "idf_version >3.3"
             version: "3.3.3"
           - if: "idf_version <3.3"
-            version: "^3.3.8"
+            version: "3.3.8"
     """
     )
 
-    manifest = ManifestManager(component_path, '').load()
-    metadata, _ = prepare_metadata(None, manifest.raw_requirements, metadata={})
+    metadata = collect_metadata(get_storage_client(), component_path)
 
-    assert '3.3.3' in metadata['example/cmp']
-    assert '^3.3.8' in metadata['example/cmp']
+    assert ['3.3.3', '3.3.4', '3.3.8'] == sorted([
+        v.version for v in metadata['example/cmp'].versions
+    ])
 
 
-def test_sync_dependency_with_rules(monkeypatch, tmp_path):
-    monkeypatch.setattr(
-        'idf_component_manager.sync.get_component_metadata',
-        lambda _a, req, spec, metadata, _d, _e: get_component_metadata_mock(req, spec, metadata),
-    )
+def test_sync_dependency_with_rules(tmp_path):
     component_path = tmp_path / 'cmp'
     component_path.mkdir()
-
+    (component_path / 'CMakeLists.txt').touch()
     (component_path / MANIFEST_FILENAME).write_text(
         """
     dependencies:
       example/cmp:
-           version: "~1.0.0"
+           version: ">3.3.5,<3.3.7"
            rules:
-             - if: "idf_version >=3.3,<5.0"
+             - if: "idf_version <1.0"
+               version: "3.3.8"
              - if: "target in [esp32, esp32c3]"
     """
     )
 
-    manifest = ManifestManager(component_path, '').load()
-    metadata, _ = prepare_metadata(None, manifest.raw_requirements, tmp_path / 'test')
+    metadata = collect_metadata(get_storage_client(), component_path)
 
-    assert '~1.0.0' in metadata['example/cmp']
+    assert ['3.3.6', '3.3.8'] == sorted([v.version for v in metadata['example/cmp'].versions])
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_download_metadata.yaml')
-def test_download_metadata_all_versions(tmp_path):
+def test_download_metadata_all_versions():
     client = MultiStorageClient(storage_urls=['http://localhost:9000/test-public/'])
-
-    req = ComponentRequirement(name='espressif/test', version='*')
-
-    components, _ = get_component_metadata(client, req, '*', {}, [])
+    dep = DependencyResponse(source='service', name='test', namespace='espressif', spec='*')
+    components, _ = get_component_metadata(client, dep, '*', {}, [])
 
     assert len(list(components.keys())) == 2
     assert len(components['espressif/test'].versions) == 3
@@ -96,12 +78,10 @@ def test_download_metadata_all_versions(tmp_path):
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_download_metadata.yaml')
-def test_download_metadata_version_with_dependency(tmp_path):
+def test_download_metadata_version_with_dependency():
     client = MultiStorageClient(storage_urls=['http://localhost:9000/test-public/'])
-
-    req = ComponentRequirement(name='espressif/test', version='*')
-
-    components, _ = get_component_metadata(client, req, '==1.0.2', {}, [])
+    dep = DependencyResponse(source='service', name='test', namespace='espressif', spec='*')
+    components, _ = get_component_metadata(client, dep, '==1.0.2', {}, [])
 
     assert len(components) == 2
     assert len(components['espressif/test'].versions) == 1
@@ -109,37 +89,32 @@ def test_download_metadata_version_with_dependency(tmp_path):
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_download_metadata.yaml')
-def test_download_metadata_version_multiple_versions(tmp_path):
+def test_download_metadata_version_multiple_versions():
     client = MultiStorageClient(storage_urls=['http://localhost:9000/test-public/'])
-
-    req = ComponentRequirement(name='espressif/test', version='*')
-
-    components, _ = get_component_metadata(client, req, '<1.0.2', {}, [])
+    dep = DependencyResponse(source='service', name='test', namespace='espressif', spec='*')
+    components, _ = get_component_metadata(client, dep, '<1.0.2', {}, [])
 
     assert len(components) == 1
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_download_metadata.yaml')
-def test_download_metadata_add_metadata(tmp_path):
+def test_download_metadata_add_metadata():
     client = MultiStorageClient(storage_urls=['http://localhost:9000/test-public/'])
-
-    req = ComponentRequirement(name='espressif/test', version='==1.0.0')
-    metadata, _ = get_component_metadata(client, req, '==1.0.0', {}, [])
+    dep = DependencyResponse(source='service', name='test', namespace='espressif', spec='==1.0.0')
+    metadata, _ = get_component_metadata(client, dep, '==1.0.0', {}, [])
     assert len(metadata) == 1
     assert sum([len(data.versions) for data in metadata.values()]) == 1
 
-    metadata, _ = get_component_metadata(client, req, '==1.0.1', metadata, [])
+    metadata, _ = get_component_metadata(client, dep, '==1.0.1', metadata, [])
     assert len(metadata) == 1
     assert sum([len(data.versions) for data in metadata.values()]) == 2
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_download_metadata_unknown_component.yaml')
-def test_download_metadata_version_not_found(tmp_path):
+def test_download_metadata_version_not_found():
     client = MultiStorageClient(storage_urls=['http://localhost:9000/test-public/'])
-
-    req = ComponentRequirement(name='unknown/component', version='*')
-
-    components, warnings = get_component_metadata(client, req, '*', {}, [])
+    dep = DependencyResponse(source='service', name='component', namespace='unknown', spec='*')
+    components, warnings = get_component_metadata(client, dep, '*', {}, [])
     assert len(components) == 0
 
     assert 'Component "unknown/component" with selected spec' in warnings[0]

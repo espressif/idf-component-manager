@@ -137,6 +137,7 @@ target-version = "py37"
 extend-select = [
     "S", # flake8-bandit
     "I", # isort
+    'ARG',  # flake8-unused-arguments
     "ERA", # eradicate
     "ICN", # flake8-import-conventions
     "RUF100", # unused noqa

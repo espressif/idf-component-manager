@@ -52,6 +52,7 @@ from idf_component_tools.utils import (
 )
 
 from ..manager import UploadMode
+from ..registry.api_models import DependencyResponse, OptionalDependencyResponse
 from ..semver import Version
 from .constants import COMPILED_FULL_SLUG_REGEX, known_targets
 from .if_parser import IfClause, parse_if_clause
@@ -287,6 +288,28 @@ class ComponentRequirement(DependencyItem):
         notice('Skipping optional dependency: {}'.format(self.name))
         return False
 
+    def to_dependency_response(
+        self, default_namespace: str = DEFAULT_NAMESPACE, default_spec: str = '*'
+    ) -> DependencyResponse:
+        from idf_component_manager.core_utils import (
+            parse_component_name_spec,  # avoid circular import
+        )
+
+        namespace, name, spec = parse_component_name_spec(
+            self.name, default_namespace, default_spec
+        )
+        return DependencyResponse(
+            spec=spec,
+            source=self.source.type,
+            registry_url=self.registry_url,
+            name=name,
+            namespace=namespace,
+            is_public=self.is_public,
+            require=self.is_required,
+            rules=[OptionalDependencyResponse(**k.model_dump()) for k in (self.rules or [])],
+            matches=[OptionalDependencyResponse(**k.model_dump()) for k in (self.matches or [])],
+        )
+
 
 class FilesField(BaseModel):
     use_gitignore: bool = False
@@ -405,7 +428,7 @@ class Manifest(BaseModel):
 
     def model_dump(
         self,
-        **kwargs,
+        **kwargs,  # noqa: ARG002
     ) -> t.Dict[str, t.Any]:
         return super().model_dump(exclude=['name'], exclude_unset=True)
 
