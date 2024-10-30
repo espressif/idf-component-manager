@@ -3,6 +3,12 @@
 import sys
 import typing as t
 
+from idf_component_manager.cli.validations import (
+    validate_add_dependency,
+    validate_existing_dir,
+    validate_git_url,
+    validate_path_for_project,
+)
 from idf_component_manager.utils import (
     CLICK_SUPPORTS_SHOW_DEFAULT,
 )
@@ -42,6 +48,7 @@ GIT_OPTIONS = [
         'names': ['--git'],
         'help': 'Git URL of the component.',
         'required': False,
+        'callback': validate_git_url,
     },
     {
         'names': ['--git-path'],
@@ -67,6 +74,7 @@ LOCAL_MANIFEST_OPTIONS: t.List[t.Dict[str, t.Any]] = [
         'names': ['-p', '--path'],
         'help': 'Path to the component where the dependency will be added. The component name is ignored when path the is specified.',
         'default': None,
+        'callback': validate_existing_dir,
     },
 ]
 
@@ -110,6 +118,10 @@ def action_extensions(base_actions, project_path):  # noqa: ARG001
             error(str(e))
             sys.exit(e.exit_code)
 
+    def add_dependency_callback(subcommand_name, ctx, args, **kwargs):
+        validate_add_dependency(ctx, None, kwargs.get('dependency'))
+        callback(subcommand_name, ctx, args, **kwargs)
+
     def global_callback(ctx, global_args, tasks):  # noqa: ARG001
         copy_tasks = list(tasks)
         for index, task in enumerate(copy_tasks):
@@ -142,7 +154,7 @@ def action_extensions(base_actions, project_path):  # noqa: ARG001
                 'options': LOCAL_MANIFEST_OPTIONS,
             },
             'add-dependency': {
-                'callback': callback,
+                'callback': add_dependency_callback,
                 'help': (
                     'Add dependency to the manifest file.\n'
                     'By default:\n'
@@ -257,6 +269,7 @@ def action_extensions(base_actions, project_path):  # noqa: ARG001
                             'if it does not contain anything'
                         ),
                         'required': False,
+                        'callback': validate_path_for_project,
                     }
                 ],
             },

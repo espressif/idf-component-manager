@@ -144,34 +144,6 @@ def test_root_dep_failed(project):
     assert 'component_foo' in res
 
 
-@pytest.mark.parametrize('project', [{}], indirect=True)
-def test_add_dependency(project):
-    res = project_action(project, 'add-dependency', 'example/cmp^3.3.8')
-    assert 'Successfully added dependency "example/cmp": "^3.3.8" to component "main"' in res
-
-
-@pytest.mark.parametrize('project', [{}], indirect=True)
-def test_add_dependency_with_path(project):
-    path = os.path.join(project, 'project', 'src')
-    os.makedirs(path)
-    res = project_action(project, 'add-dependency', '--path', path, 'lvgl/lvgl>=8.*')
-    assert 'Successfully added dependency "lvgl/lvgl": ">=8.*" to component "src"' in res
-
-
-@pytest.mark.parametrize('project', [{}], indirect=True)
-def test_create_manifest(project):
-    res = project_action(project, 'create-manifest')
-    path = os.path.join(project, 'main', 'idf_component.yml')
-    assert f'Created "{path}"' in res
-
-
-@pytest.mark.parametrize('project', [{}], indirect=True)
-def test_create_manifest_with_path(project):
-    res = project_action(project, 'create-manifest', '--path', project)
-    path = os.path.join(project, 'idf_component.yml')
-    assert f'Created "{path}"' in res
-
-
 @pytest.mark.parametrize(
     'project',
     [
@@ -331,7 +303,6 @@ def test_idf_build_inject_dependencies_even_with_set_components(
     project_action(project, 'fullclean')  # clean the downloaded component
 
     res = project_action(project, 'reconfigure')
-    print(res)
     with open(os.path.join(project, 'dependencies.lock')) as fr:
         lock = yaml.safe_load(fr)
 

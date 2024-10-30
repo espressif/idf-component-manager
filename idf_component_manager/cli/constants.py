@@ -6,8 +6,12 @@ import typing as t
 import click
 from click.decorators import FC
 
+from idf_component_manager.cli.validations import (
+    combined_callback,
+    validate_existing_dir,
+    validate_name,
+)
 from idf_component_manager.core import ComponentManager
-from idf_component_manager.utils import validate_name
 
 
 def get_project_dir_option() -> t.List[FC]:
@@ -16,7 +20,10 @@ def get_project_dir_option() -> t.List[FC]:
             '--project-dir',
             'manager',
             default=os.getcwd(),
-            callback=lambda ctx, param, value: ComponentManager(value),  # noqa: ARG005
+            callback=combined_callback(
+                validate_existing_dir,
+                lambda ctx, param, value: ComponentManager(value),  # noqa: ARG005
+            ),
         ),
     ]
 
@@ -47,6 +54,7 @@ def get_namespace_option() -> t.List[FC]:
             '--namespace',
             envvar='IDF_COMPONENT_NAMESPACE',
             default=None,
+            callback=validate_name,
             help='Namespace for the component. Can be set in config file.',
         ),
     ]

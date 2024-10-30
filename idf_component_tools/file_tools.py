@@ -9,6 +9,7 @@ import typing as t
 from pathlib import Path
 from shutil import copytree, rmtree
 
+from idf_component_tools.errors import FatalError
 from idf_component_tools.git_client import GitClient
 from idf_component_tools.messages import warn
 
@@ -155,7 +156,12 @@ def prepare_empty_directory(directory: str) -> None:
         dir_exist = False
 
     if not dir_exist:
-        os.makedirs(directory)
+        try:
+            os.makedirs(directory)
+        except NotADirectoryError:
+            raise FatalError(f'Not a directory in the path. Cannot create directory: {directory}')
+        except PermissionError:
+            raise FatalError(f'Permission denied. Cannot create directory: {directory}')
 
 
 def copy_directory(source_directory: str, destination_directory: str) -> None:
