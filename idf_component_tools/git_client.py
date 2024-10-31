@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import re
 import subprocess  # noqa: S404
+import tempfile
 import time
 import typing as t
 from datetime import datetime
@@ -237,7 +238,7 @@ class GitClient:
             try:
                 self.run(['branch', '--contains', ref], cwd=bare_path)
             except GitCommandError:
-                raise GitError(f'Branch "{ref}" doesn\'t exist in repo "{repo}"')
+                raise GitError(f'Git reference "{ref}" doesn\'t exist in the repository "{repo}"')
 
         else:
             # Set to latest commit from remote's HEAD
@@ -337,6 +338,60 @@ class GitClient:
                 raise GitCommandError()
         except (IndexError, ValueError, GitCommandError):
             raise GitError('Cannot recognize git version')
+
+    @_git_cmd
+    def repo_exists(self, repo: str) -> None:
+        """
+        Check if a repository
+
+        Args:
+            repo (str): The repository URL.
+            bare_path (str): The path to the bare repository.
+
+        """
+
+        # Verify the repository exists
+        try:
+            self.run(['ls-remote', '--exit-code', repo])
+        except GitCommandError:
+            raise GitError(f'Repository "{repo}" does not exist')
+
+    @_git_cmd
+    @_bare_repo
+    def ref_and_path_exists(self, repo: str, bare_path: str, path: str, ref: str) -> None:
+        """
+        Check if a ref, and optional path exists.
+
+        Args:
+            repo (str): The repository URL.
+            bare_path (str): The path to the bare repository.
+            path (str): The path within the repository to check.
+            ref (str): The branch, tag, or commit hash. Defaults to HEAD if not provided.
+        """
+
+        # Verify if the ref exists
+        try:
+            commit_id = self.get_commit_id_by_ref(repo, bare_path, ref)
+        except GitError:
+            raise GitError(f'Git reference "{ref}" does not exist in repository "{repo}"')
+
+        # Verify if the path exists
+        try:
+            # Checkout required branch
+            checkout_command = [
+                '--work-tree',
+                tempfile.mkdtemp(),
+                '--git-dir',
+                bare_path,
+                'checkout',
+                '--force',
+                commit_id,
+                '--',
+                path,
+            ]
+            self.run(checkout_command)
+        except GitCommandError:
+            raise GitError(f'Path "{path}" does not exist in repository "{repo}"')
 
     @_git_cmd
     def get_tag_version(self, cwd: t.Optional[str] = None) -> Version:

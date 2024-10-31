@@ -64,7 +64,7 @@ from idf_component_tools.registry.service_details import (
     get_storage_client,
 )
 from idf_component_tools.semver import SimpleSpec, Version
-from idf_component_tools.sources import WebServiceSource
+from idf_component_tools.sources import GitSource, WebServiceSource
 from idf_component_tools.utils import ProjectRequirements
 
 from .cmake_component_requirements import (
@@ -269,6 +269,9 @@ class ComponentManager:
         component: str = 'main',
         path: t.Optional[str] = None,
         profile_name: t.Optional[str] = None,
+        git: t.Optional[str] = None,
+        git_path: str = '.',
+        git_ref: t.Optional[str] = None,
     ) -> None:
         manifest_filepath, _ = self._get_manifest(component=component, path=path)
 
@@ -280,34 +283,38 @@ class ComponentManager:
         elif is_component(Path.cwd()):
             component = os.path.basename(self.path)
 
-        match = re.match(WEB_DEPENDENCY_REGEX, dependency)
-        if match:
-            name, spec = match.groups()
+        if git:
+            name = dependency
+            GitSource(git=git, path=git_path).exists(git_ref)
         else:
-            raise FatalError(
-                f'Invalid dependency: "{dependency}". Please use format "namespace/name".'
-            )
+            match = re.match(WEB_DEPENDENCY_REGEX, dependency)
+            if match:
+                name, spec = match.groups()
+            else:
+                raise FatalError(
+                    f'Invalid dependency: "{dependency}". Please use format "namespace/name".'
+                )
 
-        if not spec:
-            spec = '*'
+            if not spec:
+                spec = '*'
 
-        try:
-            SimpleSpec(spec)
-        except ValueError:
-            raise FatalError(
-                'Invalid dependency version requirement: {}. '
-                'Please use format like ">=1" or "*".'.format(spec)
-            )
+            try:
+                SimpleSpec(spec)
+            except ValueError:
+                raise FatalError(
+                    'Invalid dependency version requirement: {}. '
+                    'Please use format like ">=1" or "*".'.format(spec)
+                )
 
-        name = WebServiceSource().normalized_name(name)
+            name = WebServiceSource().normalized_name(name)
 
-        # Check if dependency exists in the registry
-        # make sure it exists in the registry's storage url
-        client = get_storage_client(profile_name=profile_name).registry_storage_client
-        if not client:
-            raise InternalError()
+            # Check if dependency exists in the registry
+            # make sure it exists in the registry's storage url
+            client = get_storage_client(profile_name=profile_name).registry_storage_client
+            if not client:
+                raise InternalError()
 
-        client.component(component_name=name, version=spec)
+            client.component(component_name=name, version=spec)
 
         manifest_manager = ManifestManager(manifest_filepath, component)
         manifest = manifest_manager.load()
@@ -333,7 +340,17 @@ class ComponentManager:
             file_lines.append('\ndependencies:\n')
             index = len(file_lines) + 1
 
-        file_lines.insert(index, f'  {name}: "{spec}"\n')
+        if git:
+            file_lines.insert(index, f'  {name}:\n')
+            file_lines.insert(index + 1, f'    git: "{git}"\n')
+            index = index + 2
+            if git_path:
+                file_lines.insert(index, f'    path: "{git_path}"\n')
+                index = index + 1
+            if git_ref:
+                file_lines.insert(index, f'    version: "{git_ref}"\n')
+        else:
+            file_lines.insert(index, f'  {name}: "{spec}"\n')
 
         # Check result for correctness
         with tempfile.NamedTemporaryFile(delete=False) as temp_manifest_file:
@@ -350,11 +367,18 @@ class ComponentManager:
             )
 
         shutil.move(temp_manifest_file.name, manifest_filepath)
-        notice(
-            'Successfully added dependency "{}{}" to component "{}"'.format(
-                name, spec, manifest_manager.name
+        if git:
+            notice(
+                'Successfully added git dependency "{}" to component "{}"'.format(
+                    name, manifest_manager.name
+                )
             )
-        )
+        else:
+            notice(
+                'Successfully added dependency "{}{}" to component "{}"'.format(
+                    name, spec, manifest_manager.name
+                )
+            )
 
     @general_error_handler
     def pack_component(

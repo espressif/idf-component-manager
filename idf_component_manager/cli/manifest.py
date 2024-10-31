@@ -28,7 +28,7 @@ def init_manifest():
         """
         print(json.dumps(MANIFEST_JSON_SCHEMA, indent=2))
 
-    MANIFEST_OPTION = [
+    MANIFEST_OPTIONS = [
         click.option('--component', default='main', help='Component name in the project.'),
         click.option(
             '-p',
@@ -38,8 +38,20 @@ def init_manifest():
         ),
     ]
 
+    GIT_OPTIONS = [
+        click.option('--git', default=None, help='Git URL of the component.'),
+        click.option(
+            '--git-path', default='.', help='Path to the component in the git repository.'
+        ),
+        click.option(
+            '--git-ref',
+            default=None,
+            help='Git reference (branch, tag, commit SHA) of the component.',
+        ),
+    ]
+
     @manifest.command()
-    @add_options(PROJECT_DIR_OPTION + MANIFEST_OPTION)
+    @add_options(PROJECT_DIR_OPTION + MANIFEST_OPTIONS)
     def create(manager, component, path):
         """
         Create manifest file for the specified component.
@@ -57,9 +69,9 @@ def init_manifest():
         manager.create_manifest(component=component, path=path)
 
     @manifest.command()
-    @add_options(PROJECT_DIR_OPTION + PROFILE_OPTION + MANIFEST_OPTION)
+    @add_options(PROJECT_DIR_OPTION + PROFILE_OPTION + MANIFEST_OPTIONS + GIT_OPTIONS)
     @click.argument('dependency', required=True)
-    def add_dependency(manager, profile_name, component, path, dependency):
+    def add_dependency(manager, profile_name, component, path, dependency, git, git_path, git_ref):
         """
         Add a dependency to the manifest file.
 
@@ -81,7 +93,13 @@ def init_manifest():
           Will add a component `example/cmp` with constraint `<=3.3.3`
         """
         manager.add_dependency(
-            dependency, profile_name=profile_name, component=component, path=path
+            dependency,
+            profile_name=profile_name,
+            component=component,
+            path=path,
+            git=git,
+            git_path=git_path,
+            git_ref=git_ref,
         )
 
     return manifest

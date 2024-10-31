@@ -104,7 +104,7 @@ def test_git_branch_does_not_exist(git_repository_with_two_branches, tmpdir_fact
     git_repo = git_repository_with_two_branches['path']
     checkout_path = tmpdir_factory.mktemp('checkout_folder').strpath
     cache_path = tmpdir_factory.mktemp('cache_folder').strpath
-    with pytest.raises(GitError, match='Branch "branch_not_exists" doesn\'t exist *'):
+    with pytest.raises(GitError, match='Git reference "branch_not_exists" doesn\'t exist *'):
         client.prepare_ref(
             repo=git_repo,
             bare_path=cache_path,

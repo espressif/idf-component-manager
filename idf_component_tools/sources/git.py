@@ -209,3 +209,9 @@ class GitSource(BaseSource):
         ref = None if spec == '*' else spec
         commit_id = self._client.get_commit_id_by_ref(self.repo, self.cache_path(), ref)
         return commit_id
+
+    def exists(self, ref: t.Optional[str] = None) -> None:
+        self._client.repo_exists(self.repo)
+        self._client.ref_and_path_exists(
+            repo=self.repo, bare_path=self.cache_path(), path=self.repo_path, ref=ref
+        )
