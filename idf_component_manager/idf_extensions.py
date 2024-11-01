@@ -1,15 +1,12 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-
 import sys
 import typing as t
-import warnings
 
 from idf_component_manager.utils import (
     CLICK_SUPPORTS_SHOW_DEFAULT,
-    print_error,
-    showwarning,
 )
+from idf_component_tools import error, setup_logging
 from idf_component_tools.errors import FatalError
 
 from .core import ComponentManager
@@ -84,17 +81,18 @@ Namespace and version are optional in the EXAMPLE argument.
 """
 
 
-def action_extensions(base_actions, project_path):
-    def callback(subcommand_name, ctx, args, **kwargs):
+def action_extensions(base_actions, project_path):  # noqa: ARG001
+    setup_logging()
+
+    def callback(subcommand_name, ctx, args, **kwargs):  # noqa: ARG001
         try:
-            warnings.showwarning = showwarning
             manager = ComponentManager(args.project_dir)
             getattr(manager, str(subcommand_name).replace('-', '_'))(**kwargs)
         except FatalError as e:
-            print_error(e)
+            error(str(e))
             sys.exit(e.exit_code)
 
-    def global_callback(ctx, global_args, tasks):
+    def global_callback(ctx, global_args, tasks):  # noqa: ARG001
         copy_tasks = list(tasks)
         for index, task in enumerate(copy_tasks):
             if task.name == 'fullclean':

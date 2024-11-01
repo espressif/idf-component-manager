@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-
 import os
 import typing as t
 from pathlib import Path
@@ -8,7 +7,7 @@ from pathlib import Path
 import pytest
 import requests_mock
 
-from idf_component_tools import ComponentManagerSettings
+from idf_component_tools import HINT_LEVEL, ComponentManagerSettings, get_logger
 from idf_component_tools.hash_tools.constants import HASH_FILENAME
 
 
@@ -19,6 +18,16 @@ def file_with_size():
             f.write('x' * size)
 
     return file_builder
+
+
+@pytest.fixture(autouse=True)
+def reset_logger():
+    yield
+
+    logger = get_logger()
+    logger.setLevel(HINT_LEVEL)
+    logger.handlers.clear()
+    logger.propagate = True
 
 
 @pytest.fixture(autouse=True)
@@ -163,7 +172,7 @@ def mock_registry_without_token(monkeypatch):
 
 
 @pytest.fixture()
-def mock_registry(mock_registry_without_token, monkeypatch):
+def mock_registry(mock_registry_without_token, monkeypatch):  # noqa: ARG001
     monkeypatch.setenv(
         'IDF_COMPONENT_API_TOKEN',
         'L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ',  # pragma: allowlist secret

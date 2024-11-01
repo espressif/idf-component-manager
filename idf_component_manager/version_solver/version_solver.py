@@ -1,12 +1,11 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
-import logging
 import os
 import typing as t
 from copy import deepcopy
 
-from idf_component_manager.utils import print_info
+from idf_component_tools import debug, notice
 from idf_component_tools.errors import DependencySolveError, InternalError, SolverError
 from idf_component_tools.manifest import (
     ComponentRequirement,
@@ -21,8 +20,6 @@ from .helper import PackageSource
 from .mixology.failure import SolverFailure
 from .mixology.package import Package
 from .mixology.version_solver import VersionSolver as Solver
-
-logger = logging.getLogger(__name__)
 
 
 class VersionSolver:
@@ -154,7 +151,7 @@ class VersionSolver:
             try:
                 return self._solve(cur_solution=self.old_solution)
             except SolverFailure as e:
-                logger.debug(
+                debug(
                     'Solver failed to solve the requirements with the current solution. Error: %s.\n'
                     'Retrying without the current solution. ',
                     e,
@@ -276,7 +273,7 @@ class VersionSolver:
                     f'Local source is expected, got {self._local_root_requirements[matching_dep_name].source}'
                 )
 
-            print_info(
+            notice(
                 'Using component placed at {path} '
                 'for dependency "{dep}"{introduced_by}{specified_in}'.format(
                     # must be a local source here

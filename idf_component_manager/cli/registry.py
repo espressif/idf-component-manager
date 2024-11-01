@@ -8,11 +8,11 @@ import click
 import requests
 
 from idf_component_manager.core import ComponentManager
-from idf_component_manager.utils import print_error, print_info, print_warn
+from idf_component_tools import warn
 from idf_component_tools.config import ConfigManager, ProfileItem
 from idf_component_tools.errors import FatalError
 from idf_component_tools.registry.client_errors import APIClientError
-from idf_component_tools.registry.service_details import NoSuchProfile, get_api_client
+from idf_component_tools.registry.service_details import get_api_client, get_profile
 
 from .constants import get_profile_option, get_project_dir_option
 from .utils import add_options, deprecated_option
@@ -96,21 +96,15 @@ def init_registry():
         auth_request = requests.Request('GET', auth_url, params=auth_params).prepare()
 
         if no_browser:
-            print_info(
-                'Open this URL in your browser to login to the registry:\n\t{}'.format(
-                    auth_request.url
-                )
-            )
+            print(f'Open this URL in your browser to login to the registry:\n\t{auth_request.url}')
         else:
-            print_info(
-                'If browser did not open automatically please visit this URL:\n\t{}'.format(
-                    auth_request.url
-                )
+            print(
+                f'If browser did not open automatically please visit this URL:\n\t{auth_request.url}'
             )
             webbrowser.open(auth_request.url, new=2, autoraise=True)
 
         # Wait for token
-        print_info('Please create a token in the browser window and paste here')
+        print('Please create a token in the browser window and paste here')
         token_valid = False
         while not token_valid:
             token = input('Token:')
@@ -121,7 +115,7 @@ def init_registry():
                 token_valid = True
             except APIClientError as e:
                 # Handle 401 and 403 explicitly
-                print_error(f'Provided token does not seem to be working: {e}\nPlease try again.')
+                print(f'ERROR: Provided token does not seem to be working: {e}\nPlease try again.')
                 continue
 
         # Update config with token and default namespace, registry URL if they are provided
@@ -133,7 +127,7 @@ def init_registry():
 
         ConfigManager().dump(config)
 
-        print_info('Successfully logged in')
+        print('Successfully logged in')
 
     @registry.command()
     @add_options(get_profile_option())
@@ -146,19 +140,14 @@ def init_registry():
     def logout(profile_name, no_revoke):
         """
         Logout from the component registry.
-        Removes the token from the profile and revokes it on the registy.
+        Removes the token from the profile and revokes it on the registry.
         """
 
         # Load config to get
         config = ConfigManager().load()
 
         # Check if token is already in the profile
-        profile = config.profiles.get(profile_name)
-        if profile is None:
-            raise NoSuchProfile(
-                f'Profile "{profile_name}" not found in the idf_component_manager.yml config file'
-            )
-
+        profile = get_profile(profile_name)
         if profile.api_token is None:
             raise FatalError('You are not logged in')
 
@@ -167,14 +156,12 @@ def init_registry():
             try:
                 api_client.revoke_current_token()
             except APIClientError:
-                print_warn(
-                    'Failed to revoke token from the registry. Probably it was revoked before.'
-                )
+                warn('Failed to revoke token from the registry. Probably it was revoked before.')
 
         profile.api_token = None
         ConfigManager().dump(config)
 
-        print_info('Successfully logged out')
+        print('Successfully logged out')
 
     @registry.command()
     @add_options(get_profile_option() + get_project_dir_option())

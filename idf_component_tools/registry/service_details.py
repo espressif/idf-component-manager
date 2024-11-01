@@ -24,9 +24,10 @@ class NoSuchProfile(FatalError):
 def get_profile(
     profile_name: t.Optional[str] = None,
     config_path: t.Optional[str] = None,
-) -> t.Optional[ProfileItem]:
-    config = ConfigManager(path=config_path).load()
-    _profile_name = ComponentManagerSettings().PROFILE or profile_name
+) -> ProfileItem:
+    config_manager = ConfigManager(path=config_path)
+    config = config_manager.load()
+    _profile_name = ComponentManagerSettings().PROFILE or profile_name or 'default'
 
     if (
         _profile_name == 'default' and config.profiles.get(_profile_name) is None
@@ -36,7 +37,9 @@ def get_profile(
     if _profile_name in config.profiles:
         return config.profiles[_profile_name] or ProfileItem()
 
-    return None
+    raise NoSuchProfile(
+        f'Profile "{profile_name}" not found in config file: {config_manager.config_path}'
+    )
 
 
 def get_registry_url(profile: t.Optional[ProfileItem] = None) -> str:
@@ -94,11 +97,6 @@ def get_api_client(
     if profile is None:
         profile = get_profile(profile_name, config_path)
 
-    if profile_name and profile is None:
-        raise NoSuchProfile(
-            f'Profile "{profile_name}" not found in the idf_component_manager.yml config file'
-        )
-
     return APIClient(
         registry_url=registry_url or get_registry_url(profile),
         api_token=ComponentManagerSettings().API_TOKEN or (profile.api_token if profile else None),
@@ -131,11 +129,6 @@ def get_storage_client(
     """
     if profile is None:
         profile = get_profile(profile_name, config_path)
-
-    if profile_name and profile is None:
-        raise NoSuchProfile(
-            f'Profile "{profile_name}" not found in the idf_component_manager.yml config file'
-        )
 
     _registry_url = registry_url or get_registry_url(profile)
 

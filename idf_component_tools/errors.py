@@ -114,3 +114,7 @@ class SyncError(FatalError):
 
 class RunningEnvironmentError(FatalError):
     pass
+
+
+class WarningAsExceptionError(FatalError):
+    pass

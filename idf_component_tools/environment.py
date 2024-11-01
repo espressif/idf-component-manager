@@ -77,8 +77,13 @@ class ComponentManagerSettings(BaseSettings):
         env_prefix='IDF_COMPONENT_',
     )
 
+    # logging
+    # by default log-level is hint(15)
+    DEBUG_MODE: bool = False  # log-level: debug(10)
+    NO_HINTS: bool = False  # log-level: notice/info(20)
+    NO_COLORS: bool = False  # with colorama or not
+
     # general
-    DEBUG_MODE: bool = False
     CACHE_PATH: t.Optional[str] = None
     KNOWN_TARGETS: t.Optional[str] = Field(
         default=None,
@@ -170,11 +175,11 @@ class ComponentManagerSettings(BaseSettings):
     @classmethod
     def settings_customise_sources(
         cls,
-        settings_cls: t.Type[BaseSettings],
-        init_settings: PydanticBaseSettingsSource,
+        settings_cls: t.Type[BaseSettings],  # noqa: ARG003
+        init_settings: PydanticBaseSettingsSource,  # noqa: ARG003
         env_settings: PydanticBaseSettingsSource,
-        dotenv_settings: PydanticBaseSettingsSource,
-        file_secret_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,  # noqa: ARG003
+        file_secret_settings: PydanticBaseSettingsSource,  # noqa: ARG003
     ) -> t.Tuple[PydanticBaseSettingsSource, ...]:
         # we only want to use the env_settings
         return (env_settings,)

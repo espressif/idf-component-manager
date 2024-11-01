@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+import logging
 import os
 from ssl import SSLEOFError
 
@@ -8,6 +9,7 @@ import requests_mock
 import vcr
 from requests import Response
 
+from idf_component_tools import LOGGING_NAMESPACE
 from idf_component_tools.__version__ import __version__ as version
 from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL
 from idf_component_tools.registry.api_client import APIClient
@@ -101,7 +103,7 @@ class TestAPIClient:
         assert result['examples'][0]['url'].startswith(storage_url)
         assert result['license']['url'].startswith(storage_url)
 
-    def test_user_agent(self, registry_url):
+    def test_user_agent(self):
         ua = user_agent()
         assert str(version) in ua
 
@@ -152,11 +154,13 @@ class TestAPIClient:
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
     @pytest.mark.parametrize('version', ['=1.1.0', '1.1.0', '==1.1.0,==1.1.0'])
-    def test_only_yanked_version_warning(self, storage_url, version):
+    def test_only_yanked_version_warning(self, storage_url, version, caplog):
         client = StorageClient(storage_url=storage_url)
 
-        with pytest.warns(UserWarning, match='component you have selected has been yanked'):
+        with caplog.at_level(logging.WARNING, logger=LOGGING_NAMESPACE):
             client.component(component_name='example/cmp_yanked', version=version)
+            assert len(caplog.records) == 1
+            assert 'component you have selected has been yanked' in caplog.text
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
     @pytest.mark.parametrize(
@@ -192,7 +196,7 @@ class TestAPIClient:
         result = client.versions(component_name='example/cmp_yanked', spec=spec)
         assert result.versions[0].semver == Version('1.0.1')
 
-    def test_token_information(self, registry_url, mock_registry, mock_token_information):
+    def test_token_information(self, registry_url, mock_registry, mock_token_information):  # noqa: ARG002
         client = APIClient(registry_url=registry_url, api_token='test')
         response = client.token_information()
 

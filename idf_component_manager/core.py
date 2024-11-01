@@ -18,7 +18,7 @@ from pathlib import Path
 import requests
 from requests_toolbelt import MultipartEncoderMonitor
 
-from idf_component_manager.utils import ComponentSource, print_info, print_warn
+from idf_component_manager.utils import ComponentSource
 from idf_component_tools import ComponentManagerSettings
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name, is_component
@@ -52,6 +52,7 @@ from idf_component_tools.manifest import (
     WEB_DEPENDENCY_REGEX,
     Manifest,
 )
+from idf_component_tools.messages import notice, warn
 from idf_component_tools.registry.client_errors import (
     APIClientError,
     ComponentNotFound,
@@ -207,7 +208,7 @@ class ComponentManager:
     def create_manifest(self, component: str = 'main', path: t.Optional[str] = None) -> None:
         manifest_filepath, created = self._get_manifest(component=component, path=path)
         if not created:
-            print_info(f'"{manifest_filepath}" already exists, skipping...')
+            notice(f'"{manifest_filepath}" already exists, skipping...')
 
     @general_error_handler
     def create_project_from_example(
@@ -255,7 +256,7 @@ class ComponentManager:
         response = requests.get(example_url['url'], stream=True)  # noqa: S113
         with tarfile.open(fileobj=response.raw, mode='r|gz') as tar:
             tar.extractall(project_path)  # noqa: S202
-        print_info(
+        notice(
             'Example "{}" successfully downloaded to {}'.format(
                 example_name, project_path.resolve()
             )
@@ -349,7 +350,7 @@ class ComponentManager:
             )
 
         shutil.move(temp_manifest_file.name, manifest_filepath)
-        print_info(
+        notice(
             'Successfully added dependency "{}{}" to component "{}"'.format(
                 name, spec, manifest_manager.name
             )
@@ -422,7 +423,7 @@ class ComponentManager:
         get_validated_manifest(manifest_manager, str(dest_temp_dir))
 
         archive_filepath = os.path.join(dest_path, archive_filename(name, manifest.version))
-        print_info(f'Saving archive to "{archive_filepath}"')
+        notice(f'Saving archive to "{archive_filepath}"')
         pack_archive(str(dest_temp_dir), archive_filepath)
         return archive_filepath, manifest
 
@@ -451,7 +452,7 @@ class ComponentManager:
             )
 
         api_client.delete_version(component_name=component_name, component_version=version)
-        print_info(f'Deleted version {version} of the component {component_name}')
+        notice(f'Deleted version {version} of the component {component_name}')
 
     @general_error_handler
     def yank_version(
@@ -479,7 +480,7 @@ class ComponentManager:
             component_version=version,
             yank_message=message,
         )
-        print_info(
+        notice(
             'Version {} of the component {} was yanked due to reason "{}"'.format(
                 component_name, version, message
             )
@@ -595,7 +596,7 @@ class ComponentManager:
 
         # Uploading/validating the component
         info_message = 'Uploading' if not dry_run else 'Validating'
-        print_info(f'{info_message} archive {archive}')
+        notice(f'{info_message} archive {archive}')
 
         file_stat = os.stat(archive)  # type: ignore
         with ProgressBar(
@@ -622,7 +623,7 @@ class ComponentManager:
             if profile_name is None or profile_name == 'default'
             else f' --profile={profile_name}'
         )
-        print_info(
+        notice(
             'Wait for processing, it is safe to press CTRL+C and exit\n'
             'You can check the state of processing by running CLI command '
             '"compote component upload-status --job={} {}"'.format(job_id, profile_text)
@@ -645,7 +646,7 @@ class ComponentManager:
                     if status.status == 'failure' or status.status == 'success':
                         progress_bar.close()
                         for warning in warnings:
-                            print_warn(warning)
+                            warn(warning)
 
                     if status.status == 'failure':
                         if dry_run:
@@ -659,7 +660,7 @@ class ComponentManager:
                                 % status.message
                             )
                     elif status.status == 'success':
-                        print_info(status.message)
+                        notice(status.message)
                         return
 
                     progress_bar.set_description(status.message)
@@ -679,7 +680,7 @@ class ComponentManager:
         if status.status == 'failure':
             raise FatalError(f"Uploaded version wasn't processed successfully.\n{status.message}")
         else:
-            print_info(f'Status: {status.status}. {status.message}')
+            notice(f'Status: {status.status}. {status.message}')
 
     def update_dependencies(self, **kwargs):
         if self.lock_path.is_file():
@@ -973,9 +974,9 @@ class ComponentManager:
                             props['__COMPONENT_SOURCE'],
                         )
                     )
-                # Give user a info when same name components got overriden
+                # Give user an info when same name components got overriden
                 else:
-                    print_info(
+                    notice(
                         '{} overrides {} since {} type got higher priority than {}'.format(
                             name_matched_before.name,
                             comp_name.name,

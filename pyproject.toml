@@ -156,6 +156,9 @@ banned-from = ["typing"]
 [tool.ruff.lint.flake8-import-conventions.extend-aliases]
 "typing" = "t"
 
+[tool.ruff.lint.flake8-unused-arguments]
+ignore-variadic-names = true
+
 [tool.ruff.lint.per-file-ignores]
 "ci/*" = [
     "S",

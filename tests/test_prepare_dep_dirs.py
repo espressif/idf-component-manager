@@ -4,12 +4,10 @@ import os
 import textwrap
 from pathlib import Path
 
-import pytest
 import yaml
 
 from idf_component_manager.core import ComponentManager
 from idf_component_manager.prepare_components.prepare import _component_list_file
-from idf_component_tools.messages import UserNotice
 
 
 def _generate_lock_file(project_dir: Path, yaml_str: str, build_dir: str = 'build'):
@@ -79,21 +77,20 @@ def test_dependencies_with_different_source(tmp_path, monkeypatch):
         lock_data = yaml.safe_load(f)
     assert lock_data['dependencies']['hfudev/test_comp']
     assert lock_data['dependencies']['hfudev/test_comp']['source']['type'] == 'service'
+    touch_timestamp = os.path.getmtime(tmp_path / 'dependencies.lock')
 
     # use git source instead
-    with pytest.warns(
-        UserNotice,
-        match='Updating lock file',
-    ):
-        _generate_lock_file(
-            tmp_path,
-            """
-            dependencies:
-                hfudev/test_comp:  # this one does not exists on production
-                    version: "f1c676d941c560655117382c914adc49f3fe3935"  # pragma: allowlist secret
-                    git: "https://github.com/hfudev/test_proj.git"
-        """,
-        )
+    _generate_lock_file(
+        tmp_path,
+        """
+        dependencies:
+            hfudev/test_comp:  # this one does not exists on production
+                version: "f1c676d941c560655117382c914adc49f3fe3935"  # pragma: allowlist secret
+                git: "https://github.com/hfudev/test_proj.git"
+    """,
+    )
+    # modified
+    assert os.path.getmtime(tmp_path / 'dependencies.lock') > touch_timestamp
 
     assert (tmp_path / 'dependencies.lock').exists()
     with open(tmp_path / 'dependencies.lock') as f:

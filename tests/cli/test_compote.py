@@ -22,10 +22,7 @@ from idf_component_tools.file_tools import directory_size
 from idf_component_tools.manager import ManifestManager
 
 
-def test_raise_exception_on_warnings(monkeypatch):
-    # Raises warning in api_client.py in env_cache_time()
-    monkeypatch.setenv('IDF_COMPONENT_SERVICE_PROFILE', 'test')
-
+def test_raise_exception_on_warnings():
     process = subprocess.Popen(
         [
             'compote',
@@ -42,12 +39,12 @@ def test_raise_exception_on_warnings(monkeypatch):
 
     assert process.returncode == 1
     assert (
-        'ERROR: IDF_COMPONENT_SERVICE_PROFILE environment variable is deprecated. '
-        'Please use IDF_COMPONENT_PROFILE instead' in decoded
+        'ERROR: The version "3.3.8" of the "example/cmp" component you have selected has been '
+        'yanked from the repository' in decoded
     )
 
 
-def test_login_to_registry(tmp_path, mock_registry, mock_token_information):
+def test_login_to_registry(tmp_path, mock_registry, mock_token_information):  # noqa: ARG001
     runner = CliRunner()
     cli = initialize_cli()
     output = runner.invoke(
@@ -67,7 +64,10 @@ def test_login_to_registry(tmp_path, mock_registry, mock_token_information):
 
 
 def test_login_with_non_existing_service_profile(
-    monkeypatch, tmp_path, mock_registry, mock_token_information
+    monkeypatch,
+    tmp_path,
+    mock_registry,  # noqa: ARG001
+    mock_token_information,  # noqa: ARG001
 ):
     monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
 
@@ -87,7 +87,7 @@ def test_login_with_non_existing_service_profile(
     assert 'non-existing' in config_content
 
 
-def test_login_deprecated_arguments(monkeypatch, tmp_path, mock_token_information):
+def test_login_deprecated_arguments(monkeypatch, tmp_path, mock_token_information):  # noqa: ARG001
     monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
 
     runner = CliRunner()
@@ -115,7 +115,7 @@ def test_login_deprecated_arguments(monkeypatch, tmp_path, mock_token_informatio
     assert 'http://localhost:5000' in config_content
 
 
-def test_login_updated_arguments(monkeypatch, tmp_path, mock_token_information):
+def test_login_updated_arguments(monkeypatch, tmp_path, mock_token_information):  # noqa: ARG001
     monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
 
     runner = CliRunner()
@@ -276,7 +276,7 @@ def test_upload_component_with_invalid_name():
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_manifest_create_add_dependency.yaml')
-def test_manifest_create_add_dependency(mock_registry):
+def test_manifest_create_add_dependency(mock_registry):  # noqa: ARG001
     runner = CliRunner()
     with runner.isolated_filesystem() as tempdir:
         os.makedirs(os.path.join(tempdir, 'main'))
@@ -420,7 +420,7 @@ def test_registry_sync_component_flag(tmp_path, monkeypatch):
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_download_metadata_and_component.yaml')
-def test_registry_sync_recursive(tmp_path, mock_registry):
+def test_registry_sync_recursive(tmp_path, mock_registry):  # noqa: ARG001
     component_path = tmp_path / 'cmp'
     component_path.mkdir()
     (component_path / 'main').mkdir()

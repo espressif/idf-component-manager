@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-
+import logging
 import os
 import shutil
 import typing as t
@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from idf_component_tools import LOGGING_NAMESPACE
 from idf_component_tools.file_tools import (
     check_unexpected_component_files,
     copy_filtered_directory,
@@ -224,16 +225,18 @@ def test_no_default_exclude_with_gitignore(assets_path):
     }
 
 
-def test_check_suspisious_component_files(release_component_path, tmp_path):
+def test_check_suspicious_component_files(release_component_path, tmp_path, caplog):
     sub = str(tmp_path / 'sub')
     shutil.copytree(release_component_path, sub)
     (Path(sub) / 'dev' / 'CMakeCache.txt').touch()
 
-    with pytest.warns(
-        UserWarning,
-        match='Unexpected files "CMakeCache.txt" found in the component directory "dev"',
-    ):
+    with caplog.at_level(logging.WARNING, logger=LOGGING_NAMESPACE):
         check_unexpected_component_files(sub)
+        assert len(caplog.records) == 1
+        assert (
+            'Unexpected files "CMakeCache.txt" found in the component directory "dev"'
+            in caplog.records[0].message
+        )
 
 
 def test_directory_size(tmp_path, file_with_size):

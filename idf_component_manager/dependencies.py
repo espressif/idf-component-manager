@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import logging
 import os
 import shutil
 import typing as t
@@ -8,7 +7,6 @@ from functools import total_ordering
 from pathlib import Path
 
 from idf_component_manager.core_utils import raise_component_modified_error
-from idf_component_manager.utils import print_info
 from idf_component_manager.version_solver.helper import parse_root_dep_conflict_constraints
 from idf_component_manager.version_solver.mixology.failure import SolverFailure
 from idf_component_manager.version_solver.mixology.package import Package
@@ -28,14 +26,12 @@ from idf_component_tools.hash_tools.validate_managed_component import (
 )
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import SolvedComponent, SolvedManifest
-from idf_component_tools.messages import hint, notice, warn
+from idf_component_tools.messages import debug, hint, notice, warn
 from idf_component_tools.registry.client_errors import NetworkConnectionError
 from idf_component_tools.semver import SimpleSpec, Version
 from idf_component_tools.sources import IDFSource
 from idf_component_tools.sources.fetcher import ComponentFetcher
 from idf_component_tools.utils import ProjectRequirements
-
-logger = logging.getLogger(__name__)
 
 
 def check_manifests_targets(project_requirements: ProjectRequirements) -> None:
@@ -78,9 +74,9 @@ def detect_unused_components(
     unused_components = get_unused_components(unused_files_with_components, managed_components_path)
     unused_files = unused_files_with_components - unused_components
     if unused_components:
-        print_info(f'Deleting {len(unused_components)} unused components')
+        notice(f'Deleting {len(unused_components)} unused components')
         for unused_component_name in unused_components:
-            print_info(f' {unused_component_name}')
+            notice(f' {unused_component_name}')
             shutil.rmtree(os.path.join(managed_components_path, unused_component_name))
     if unused_files and not ComponentManagerSettings().SUPPRESS_UNKNOWN_FILE_WARNINGS:
         warning = (
@@ -102,11 +98,11 @@ def detect_unused_components(
 
 def is_solve_required(project_requirements: ProjectRequirements, solution: SolvedManifest) -> bool:
     if not solution.manifest_hash:
-        print_info("Dependencies lock doesn't exist, solving dependencies.")
+        notice("Dependencies lock doesn't exist, solving dependencies.")
         return True
 
     if project_requirements.manifest_hash != solution.manifest_hash:
-        print_info('Manifest files have changed, solving dependencies.')
+        notice('Manifest files have changed, solving dependencies.')
         return True
 
     # check if the target has changed
@@ -114,7 +110,7 @@ def is_solve_required(project_requirements: ProjectRequirements, solution: Solve
     if solution.target and project_requirements.target != solution.target:
         for comp in solution.solved_components.values():
             if comp.targets and project_requirements.target not in comp.targets:
-                print_info(
+                notice(
                     '{} is not compatible with the current target {}, solving dependencies.'.format(
                         comp, project_requirements.target
                     )
@@ -132,7 +128,7 @@ def is_solve_required(project_requirements: ProjectRequirements, solution: Solve
 
             for dep in comp.dependencies:
                 if dep.meet_optional_dependencies and dep.name not in solution.solved_components:
-                    print_info(
+                    notice(
                         f'Optional dependency "{dep.name}" of "{comp}" is not present in the lock file, '
                         f'solving dependencies.'
                     )
@@ -140,7 +136,7 @@ def is_solve_required(project_requirements: ProjectRequirements, solution: Solve
 
                 if dep.name == IDFSource().type:
                     if not SimpleSpec(dep.version_spec).match(idf_sem_ver):
-                        print_info(
+                        notice(
                             '{} is not compatible with the current idf version {}, '
                             'solving dependencies.'.format(comp, cur_idf_version)
                         )
@@ -148,7 +144,7 @@ def is_solve_required(project_requirements: ProjectRequirements, solution: Solve
 
     # check the dependencies are the same
     if set(project_requirements.direct_dep_names) != set(solution.direct_dependencies or []):
-        print_info('Direct dependencies have changed, solving dependencies.')
+        notice('Direct dependencies have changed, solving dependencies.')
         return True
 
     for component in solution.dependencies:
@@ -188,7 +184,7 @@ def is_solve_required(project_requirements: ProjectRequirements, solution: Solve
             # Handle meta components, like ESP-IDF, and volatile components, like local
             if component.source.meta or component.source.volatile:
                 if component_version.version != component.version:
-                    print_info(
+                    notice(
                         'Dependency "{}" version has changed from {} to {}, '
                         'solving dependencies.'.format(
                             component, component.version, component_version
@@ -199,7 +195,7 @@ def is_solve_required(project_requirements: ProjectRequirements, solution: Solve
             # Should check for all types of source, but after version checking
             if component_version.component_hash != component.component_hash:
                 if component.source.volatile:
-                    print_info(f'Dependency "{component}" has changed, solving dependencies.')
+                    notice(f'Dependency "{component}" has changed, solving dependencies.')
                     return True
                 else:
                     raise InvalidComponentHashError(
@@ -214,14 +210,14 @@ def is_solve_required(project_requirements: ProjectRequirements, solution: Solve
                     )
 
         except IndexError:
-            print_info(f'Dependency "{component}" version changed, solving dependencies.')
+            notice(f'Dependency "{component}" version changed, solving dependencies.')
             return True
 
     return False
 
 
 def print_dot():
-    print_info('.', nl=False)
+    print('.', end='', flush=True)
 
 
 @total_ordering
@@ -325,7 +321,7 @@ def download_project_dependencies(
     for dep in solution.dependencies:
         if dep.name == IDFSource().type:
             cur_idf_version = get_idf_version()
-            logger.debug(
+            debug(
                 f'replacing {dep.name} version {dep.version} with current idf version {cur_idf_version}'
             )
             dep.version = cur_idf_version
@@ -393,10 +389,10 @@ def download_project_dependencies(
     if requirement_dependencies:
         number_of_components = len(requirement_dependencies)
         changed_components = []
-        print_info(f'Processing {number_of_components} dependencies:')
+        notice(f'Processing {number_of_components} dependencies:')
 
         for index, component in enumerate(requirement_dependencies):
-            print_info(f'[{index + 1}/{number_of_components}] {str(component)}')
+            notice(f'[{index + 1}/{number_of_components}] {str(component)}')
             fetcher = ComponentFetcher(component, managed_components_path)
             try:
                 download_path = fetcher.download()

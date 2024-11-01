@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# SPDX-FileCopyrightText: 2019-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2019-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 #
 # 'prepare.py' is a tool to be used by CMake build system to prepare components
@@ -9,10 +9,9 @@
 import argparse
 import os
 import sys
-import warnings
 
 from idf_component_manager.core import ComponentManager
-from idf_component_manager.utils import print_error, showwarning
+from idf_component_tools import error, setup_logging
 from idf_component_tools.errors import FatalError
 
 
@@ -45,6 +44,8 @@ def inject_requirements(args):
 
 
 def main():
+    setup_logging()
+
     parser = argparse.ArgumentParser(
         description='Tool to be used by CMake build system to '
         'prepare components from package manager.'
@@ -126,9 +127,7 @@ def main():
     args = parser.parse_args()
 
     try:
-        warnings.showwarning = showwarning
         args.func(args)
-
     except FatalError as e:
-        print_error(e)
+        error(str(e))
         sys.exit(e.exit_code)

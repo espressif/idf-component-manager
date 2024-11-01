@@ -9,12 +9,11 @@ from pathlib import Path
 from tqdm import tqdm
 
 from idf_component_manager.core_utils import parse_component_name_spec
-from idf_component_manager.utils import print_info
 from idf_component_tools.build_system_tools import is_component
 from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.errors import SyncError
 from idf_component_tools.manager import ManifestManager
-from idf_component_tools.messages import warn
+from idf_component_tools.messages import notice, warn
 from idf_component_tools.registry.api_models import DependencyResponse
 from idf_component_tools.registry.client_errors import ComponentNotFound, VersionNotFound
 from idf_component_tools.registry.multi_storage_client import MultiStorageClient
@@ -287,10 +286,10 @@ def sync_components(
     recursive: bool = False,
 ) -> None:
     save_path = Path(save_path)
-    print_info(f'Collecting metadata files into the folder "{save_path.absolute()}"')
+    notice(f'Collecting metadata files into the folder "{save_path.absolute()}"')
 
     metadata = load_saved_metadata(Path(save_path))
-    print_info(f'{len(metadata)} metadata loaded from "{save_path}" folder')
+    notice(f'{len(metadata)} metadata loaded from "{save_path}" folder')
 
     new_metadata = collect_metadata(client, path, components, recursive)
     if not len(new_metadata):
@@ -303,12 +302,12 @@ def sync_components(
             ):
                 break
         else:
-            print_info('The new metadata is identical to the loaded one. Nothing to update')
+            notice('The new metadata is identical to the loaded one. Nothing to update')
             return
 
-    print_info('Updating metadata')
+    notice('Updating metadata')
     metadata = update_static_versions(metadata, new_metadata)
-    print_info(f'Collected {len(metadata)} components. Downloading archives')
+    notice(f'Collected {len(metadata)} components. Downloading archives')
 
     loading_data = download_components_archives(metadata, save_path)
 
@@ -316,13 +315,13 @@ def sync_components(
 
     total_versions = sum(list(loading_data.values()))
     if total_versions:
-        print_info(
+        notice(
             'Successfully downloaded {} versions of {} components to the "{}" folder'.format(
                 total_versions, len(list(loading_data.keys())), str(save_path)
             )
         )
     else:
-        print_info(
+        notice(
             'Metadata was updated, but components had already been downloaded '
             'to the "{}" folder'.format(save_path)
         )
