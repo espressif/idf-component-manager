@@ -69,9 +69,17 @@ def init_manifest():
         manager.create_manifest(component=component, path=path)
 
     @manifest.command()
-    @add_options(PROJECT_DIR_OPTION + PROFILE_OPTION + MANIFEST_OPTIONS + GIT_OPTIONS)
+    @add_options(
+        PROJECT_DIR_OPTION
+        + PROFILE_OPTION
+        + MANIFEST_OPTIONS
+        + GIT_OPTIONS
+        + [click.option('--registry-url', default=None, help='URL of the registry.')]
+    )
     @click.argument('dependency', required=True)
-    def add_dependency(manager, profile_name, component, path, dependency, git, git_path, git_ref):
+    def add_dependency(
+        manager, profile_name, component, path, dependency, registry_url, git, git_path, git_ref
+    ):
         """
         Add a dependency to the manifest file.
 
@@ -97,6 +105,7 @@ def init_manifest():
             profile_name=profile_name,
             component=component,
             path=path,
+            registry_url=registry_url,
             git=git,
             git_path=git_path,
             git_ref=git_ref,

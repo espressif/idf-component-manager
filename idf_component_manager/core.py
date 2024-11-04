@@ -269,6 +269,7 @@ class ComponentManager:
         component: str = 'main',
         path: t.Optional[str] = None,
         profile_name: t.Optional[str] = None,
+        registry_url: t.Optional[str] = None,
         git: t.Optional[str] = None,
         git_path: str = '.',
         git_ref: t.Optional[str] = None,
@@ -307,13 +308,13 @@ class ComponentManager:
                 )
 
             name = WebServiceSource().normalized_name(name)
-
             # Check if dependency exists in the registry
             # make sure it exists in the registry's storage url
-            client = get_storage_client(profile_name=profile_name).registry_storage_client
+            client = get_storage_client(
+                profile_name=profile_name, registry_url=registry_url
+            ).registry_storage_client
             if not client:
                 raise InternalError()
-
             client.component(component_name=name, version=spec)
 
         manifest_manager = ManifestManager(manifest_filepath, component)
@@ -343,14 +344,18 @@ class ComponentManager:
         if git:
             file_lines.insert(index, f'  {name}:\n')
             file_lines.insert(index + 1, f'    git: "{git}"\n')
-            index = index + 2
             if git_path:
-                file_lines.insert(index, f'    path: "{git_path}"\n')
+                file_lines.insert(index + 2, f'    path: "{git_path}"\n')
                 index = index + 1
             if git_ref:
-                file_lines.insert(index, f'    version: "{git_ref}"\n')
+                file_lines.insert(index + 2, f'    version: "{git_ref}"\n')
         else:
-            file_lines.insert(index, f'  {name}: "{spec}"\n')
+            if registry_url:
+                file_lines.insert(index + 2, f'    registry_url: "{registry_url}"\n')
+                file_lines.insert(index, f'  {name}:\n')
+                file_lines.insert(index + 1, f'    version: "{spec}"\n')
+            else:
+                file_lines.insert(index, f'  {name}: "{spec}"\n')
 
         # Check result for correctness
         with tempfile.NamedTemporaryFile(delete=False) as temp_manifest_file:

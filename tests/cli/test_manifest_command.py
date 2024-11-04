@@ -104,7 +104,7 @@ def test_manifest_schema(tmp_path, valid_manifest):
             jsonschema.validate(invalid_manifest, schema_dict)
 
 
-@vcr.use_cassette('tests/fixtures/vcr_cassettes/add_dependency_with_registry_url.yaml')
+@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_add_dependency_with_registry_url.yaml')
 def test_add_dependency_with_registry_url():
     runner = CliRunner()
     with runner.isolated_filesystem() as tempdir:
@@ -120,7 +120,7 @@ def test_add_dependency_with_registry_url():
                 [
                     'manifest',
                     'add-dependency',
-                    'example/cmp==7.0.0',
+                    'espressif/cmp==8.0.0',
                     '--registry-url',
                     'http://localhost:5000',
                 ],
