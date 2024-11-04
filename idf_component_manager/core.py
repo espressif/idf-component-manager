@@ -172,15 +172,13 @@ class ComponentManager:
 
         if not manifest_dir.is_dir():
             raise FatalError(
-                'Directory "{}" does not exist! '
-                'Please specify a valid component under {} or try to use --path'.format(
-                    manifest_dir, self.path
-                )
+                f'Directory "{manifest_dir}" does not exist! '
+                f'Please specify a valid component under {self.path} or try to use --path'
             )
         if not manifest_dir.as_posix().startswith(self.path.as_posix()):
             raise FatalError(
-                'Directory "{}" is not under project directory! '
-                'Please specify a valid component under {}'.format(manifest_dir, self.path)
+                f'Directory "{manifest_dir}" is not under project directory! '
+                f'Please specify a valid component under {self.path}'
             )
 
         return manifest_dir.as_posix()
@@ -226,7 +224,7 @@ class ComponentManager:
         if project_path.is_file():
             raise FatalError(
                 'Your target path is not a directory. '
-                'Please remove the {} or use different target path.'.format(project_path.resolve()),
+                f'Please remove the {project_path.resolve()} or use different target path.',
                 exit_code=4,
             )
 
@@ -303,8 +301,8 @@ class ComponentManager:
                 SimpleSpec(spec)
             except ValueError:
                 raise FatalError(
-                    'Invalid dependency version requirement: {}. '
-                    'Please use format like ">=1" or "*".'.format(spec)
+                    f'Invalid dependency version requirement: {spec}. '
+                    'Please use format like ">=1" or "*".'
                 )
 
             name = WebServiceSource().normalized_name(name)
@@ -323,9 +321,7 @@ class ComponentManager:
         for dep in manifest.raw_requirements:
             if dep.name == name:
                 raise FatalError(
-                    'Dependency "{}" already exists for in manifest "{}"'.format(
-                        name, manifest_filepath
-                    )
+                    f'Dependency "{name}" already exists for in manifest "{manifest_filepath}"'
                 )
 
         with open(manifest_filepath, encoding='utf-8') as file:
@@ -368,22 +364,21 @@ class ComponentManager:
                 'Cannot update manifest file. '
                 "It's likely due to the 4 spaces used for "
                 'indentation we recommend using 2 spaces indent. '
-                'Please check the manifest file:\n{}'.format(manifest_filepath)
+                f'Please check the manifest file:\n{manifest_filepath}'
             )
 
         shutil.move(temp_manifest_file.name, manifest_filepath)
-        if git:
-            notice(
-                'Successfully added git dependency "{}" to component "{}"'.format(
-                    name, manifest_manager.name
-                )
-            )
-        else:
-            notice(
-                'Successfully added dependency "{}{}" to component "{}"'.format(
-                    name, spec, manifest_manager.name
-                )
-            )
+
+        dependency_type = 'git' if git else 'dependency'
+        dependency_spec = f'"{name}"' if git else f'"{name}": "{spec}"'
+        notice(
+            f'Successfully added {dependency_type} {dependency_spec} to component "{manifest_manager.name}"'
+        )
+        notice(
+            f'If you want to make additional changes to the manifest file at path {manifest_filepath} manually, '
+            'please refer to the documentation: '
+            'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/manifest_file.html'
+        )
 
     @general_error_handler
     def pack_component(
@@ -407,9 +402,9 @@ class ComponentManager:
             except ValueError:
                 raise FatalError(
                     'Version parameter must be either "git" or a valid version.\n'
-                    'Received: "{}"\n'
+                    f'Received: "{version}"\n'
                     'Documentation: https://docs.espressif.com/projects/idf-component-manager/en/'
-                    'latest/reference/versioning.html#versioning-scheme'.format(version)
+                    'latest/reference/versioning.html#versioning-scheme'
                 )
 
         manifest_manager = ManifestManager(
@@ -475,9 +470,7 @@ class ComponentManager:
 
         if version not in versions:
             raise VersionNotFoundError(
-                'Version {} of the component "{}" is not on the registry'.format(
-                    version, component_name
-                )
+                f'Version {version} of the component "{component_name}" is not on the registry'
             )
 
         api_client.delete_version(component_name=component_name, component_version=version)
@@ -499,9 +492,7 @@ class ComponentManager:
 
         if version not in versions:
             raise VersionNotFoundError(
-                'Version {} of the component "{}" is not on the registry'.format(
-                    version, component_name
-                )
+                f'Version {version} of the component "{component_name}" is not on the registry'
             )
 
         api_client.yank_version(
@@ -611,9 +602,7 @@ class ComponentManager:
                     return
 
                 raise VersionAlreadyExistsError(
-                    'Version {} of the component "{}" is already on the registry'.format(
-                        manifest.version, component_name
-                    )
+                    f'Version {manifest.version} of the component "{component_name}" is already on the registry'
                 )
         except (ComponentNotFound, VersionNotFound):
             # It's ok if component doesn't exist yet
@@ -655,7 +644,7 @@ class ComponentManager:
         notice(
             'Wait for processing, it is safe to press CTRL+C and exit\n'
             'You can check the state of processing by running CLI command '
-            '"compote component upload-status --job={} {}"'.format(job_id, profile_text)
+            f'"compote component upload-status --job={job_id} {profile_text}"'
         )
         upload_timeout = ComponentManagerSettings().VERSION_PROCESS_TIMEOUT
         timeout_at = datetime.now() + timedelta(seconds=upload_timeout)
@@ -800,11 +789,7 @@ class ComponentManager:
             for requirement in manifests:
                 if requirement.version:
                     file.write(
-                        'idf_component_set_property({} {} "{}")\n'.format(
-                            requirement.name,
-                            'COMPONENT_VERSION',
-                            requirement.version,
-                        )
+                        f'idf_component_set_property({requirement.name} COMPONENT_VERSION "{requirement.version}")\n'
                     )
 
             for is_root, group in enumerate([downloaded_components, root_managed_components]):
@@ -816,11 +801,7 @@ class ComponentManager:
                         )
                     )
                     file.write(
-                        'idf_component_set_property({} {} "{}")\n'.format(
-                            downloaded_component.name,
-                            'COMPONENT_VERSION',
-                            downloaded_component.version,
-                        )
+                        f'idf_component_set_property({downloaded_component.name} COMPONENT_VERSION "{downloaded_component.version}")\n'
                     )
 
                     if downloaded_component.targets:

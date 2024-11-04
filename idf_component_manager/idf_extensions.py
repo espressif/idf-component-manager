@@ -61,11 +61,11 @@ LOCAL_MANIFEST_OPTIONS: t.List[t.Dict[str, t.Any]] = [
     {
         'names': ['--component'],
         'default': 'main',
-        'help': 'Name of the component in the project.',
+        'help': 'Name of the component in the project where the dependency will be added.',
     },
     {
         'names': ['-p', '--path'],
-        'help': 'Path to the component. The component name is ignored when path the is specified.',
+        'help': 'Path to the component where the dependency will be added. The component name is ignored when path the is specified.',
         'default': None,
     },
 ]

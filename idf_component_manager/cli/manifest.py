@@ -29,12 +29,16 @@ def init_manifest():
         print(json.dumps(MANIFEST_JSON_SCHEMA, indent=2))
 
     MANIFEST_OPTIONS = [
-        click.option('--component', default='main', help='Component name in the project.'),
+        click.option(
+            '--component',
+            default='main',
+            help='Name of the component in the project where the dependency will be added.',
+        ),
         click.option(
             '-p',
             '--path',
             default=None,
-            help='Path to the component. The component name is ignored when the path is specified.',
+            help='Path to the component where the dependency will be added. The component name is ignored when the path is specified.',
         ),
     ]
 
@@ -99,6 +103,10 @@ def init_manifest():
           Will add a component `example/cmp` with constraint `*`
         - $ compote manifest add-dependency example/cmp<=3.3.3
           Will add a component `example/cmp` with constraint `<=3.3.3`
+        - $ compote manifest add-dependency example/cmp --registry-url https://components-staging.espressif.com
+          Will add a component `example/cmp` from the staging registry with constraint `*`
+        - $ compote manifest add-dependency cmp --git https://github.com/espressif/example_components.git --git-path cmp
+          Will add a component `cmp` from the git repository with path `cmp`
         """
         manager.add_dependency(
             dependency,
