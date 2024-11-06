@@ -47,7 +47,7 @@ def test_git_folder_does_not_exists(project):
 
 @pytest.mark.skipif(
     (os.getenv('IDF_BRANCH', 'master') or 'master') != 'master',
-    reason='only test it in master branch',
+    reason='only test it for the master branch',
 )
 def test_known_targets():
     idf_path = os.environ['IDF_PATH']
@@ -216,7 +216,7 @@ def test_check_remove_managed_component(project):
     ],
     indirect=True,
 )
-def test_update_dependencies_outdated(project, monkeypatch):
+def test_update_dependencies_outdated(project):
     shutil.copytree(fixtures_path('components', 'cmp'), os.path.join(project, 'cmp'))
     project_action(project, 'reconfigure')
 
@@ -249,7 +249,7 @@ def test_update_dependencies_outdated(project, monkeypatch):
     ],
     indirect=True,
 )
-def test_update_dependencies_without_lock(project, monkeypatch):
+def test_update_dependencies_without_lock(project):
     shutil.copytree(fixtures_path('components', 'cmp'), os.path.join(project, 'cmp'))
     lock = LockManager(os.path.join(project, 'dependencies.lock'))
 
@@ -307,7 +307,7 @@ def test_idf_reconfigure_dependency_doesnt_exist(project):
     ],
 )
 @pytest.mark.skipif(
-    Version(get_idf_version()) < Version('5.3.0'), reason='only master branch support it'
+    Version(get_idf_version()) < Version('5.3.0'), reason='only 5.3 and later support this'
 )
 def test_idf_build_inject_dependencies_even_with_set_components(
     project, component_name, namespace_name
