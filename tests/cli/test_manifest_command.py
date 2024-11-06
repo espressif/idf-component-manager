@@ -128,7 +128,7 @@ def test_add_dependency_with_registry_url():
         )
 
         assert (
-            'registry_url: "http://localhost:5000"'
+            'registry_url: http://localhost:5000'
             in Path(tempdir, 'main', 'idf_component.yml').read_text()
         )
 
@@ -156,7 +156,7 @@ def test_add_git_dependency():
         assert 'Successfully' in result
 
         assert (
-            'git: "https://github.com/espressif/example_components.git"'
+            'git: https://github.com/espressif/example_components.git'
             in Path(tempdir, 'main', 'idf_component.yml').read_text()
         )
 
@@ -175,7 +175,7 @@ def test_add_git_dependency():
 
         assert 'Successfully' in result
 
-        assert 'path: "cmp"' in Path(tempdir, 'main', 'idf_component.yml').read_text()
+        assert 'path: cmp' in Path(tempdir, 'main', 'idf_component.yml').read_text()
 
         assert (
             'Successfully'
@@ -196,7 +196,7 @@ def test_add_git_dependency():
 
         assert (
             # pragma: allowlist nextline secret
-            'version: "6a7f7591fa4bf663f44fe27c1515c03f86012021"'
+            'version: 6a7f7591fa4bf663f44fe27c1515c03f86012021'
             in Path(tempdir, 'main', 'idf_component.yml').read_text()
         )
 
@@ -217,7 +217,7 @@ def test_add_git_dependency():
         )
 
         assert (
-            'version: "feature/add_git_component"'
+            'version: feature/add_git_component'
             in Path(tempdir, 'main', 'idf_component.yml').read_text()
         )
 
@@ -273,3 +273,34 @@ def test_add_git_dependency_invalid():
             ],
         ).exception
         assert 'Git reference "trest" does not exist' in str(exception)
+
+
+def test_manifest_keeps_comments():
+    runner = CliRunner()
+    with runner.isolated_filesystem() as tempdir:
+        main_path = Path(tempdir) / 'main'
+        main_path.mkdir(parents=True, exist_ok=True)
+        manifest_path = main_path / MANIFEST_FILENAME
+        previous_content = (
+            "# Comment 1\ndependencies:\n    # Comment 2\n    espressif/cmp: '*'\n# Comment 3\n"
+        )
+        manifest_path.write_text(previous_content)
+
+        output = runner.invoke(
+            initialize_cli(),
+            [
+                'manifest',
+                'add-dependency',
+                'jozef',
+                '--git',
+                'https://github.com/espressif/example_components.git',
+            ],
+        )
+
+        # Check that the command was successful (manifest modified)
+        assert output.exit_code == 0
+
+        updated_content = manifest_path.read_text()
+        assert all(
+            comment in updated_content for comment in ['# Comment 1', '# Comment 2', '# Comment 3']
+        )

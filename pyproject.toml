@@ -37,6 +37,7 @@ dependencies = [
     "colorama",
     "pyparsing",
     "pyyaml",
+    "ruamel.yaml",
     "requests",
     "requests-file",
     "requests-toolbelt",

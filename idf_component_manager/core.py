@@ -17,6 +17,7 @@ from pathlib import Path
 
 import requests
 from requests_toolbelt import MultipartEncoderMonitor
+from ruamel.yaml import YAML, CommentedMap
 
 from idf_component_manager.utils import ComponentSource
 from idf_component_tools import ComponentManagerSettings
@@ -27,7 +28,6 @@ from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.errors import (
     FatalError,
     InternalError,
-    ManifestError,
     NothingToDoError,
     VersionAlreadyExistsError,
     VersionNotFoundError,
@@ -324,50 +324,32 @@ class ComponentManager:
                     f'Dependency "{name}" already exists for in manifest "{manifest_filepath}"'
                 )
 
-        with open(manifest_filepath, encoding='utf-8') as file:
-            file_lines = file.readlines()
+        yaml = YAML()
+        with open(manifest_filepath, 'r', encoding='utf-8') as file:
+            manifest_data = yaml.load(file) or CommentedMap()
 
-        index = 0
-        if 'dependencies' in manifest_manager.manifest_tree.keys():
-            for i, line in enumerate(file_lines):
-                if line.startswith('dependencies:'):
-                    index = i + 1
-                    break
-        else:
-            file_lines.append('\ndependencies:\n')
-            index = len(file_lines) + 1
+        if 'dependencies' not in manifest_data:
+            manifest_data['dependencies'] = {}
 
+        dependency_data = {}
         if git:
-            file_lines.insert(index, f'  {name}:\n')
-            file_lines.insert(index + 1, f'    git: "{git}"\n')
-            if git_path:
-                file_lines.insert(index + 2, f'    path: "{git_path}"\n')
-                index = index + 1
+            dependency_data['git'] = git
+            if git_path != '.':
+                dependency_data['path'] = git_path
             if git_ref:
-                file_lines.insert(index + 2, f'    version: "{git_ref}"\n')
+                dependency_data['version'] = git_ref
+        elif registry_url:
+            dependency_data['version'] = spec
+            dependency_data['registry_url'] = registry_url
         else:
-            if registry_url:
-                file_lines.insert(index + 2, f'    registry_url: "{registry_url}"\n')
-                file_lines.insert(index, f'  {name}:\n')
-                file_lines.insert(index + 1, f'    version: "{spec}"\n')
-            else:
-                file_lines.insert(index, f'  {name}: "{spec}"\n')
+            # `spec` is a string for a simple dependency
+            dependency_data = spec  # type: ignore
 
-        # Check result for correctness
-        with tempfile.NamedTemporaryFile(delete=False) as temp_manifest_file:
-            temp_manifest_file.writelines(line.encode('utf-8') for line in file_lines)
+        # Add or update the dependency in the 'dependencies' section
+        manifest_data['dependencies'][name] = dependency_data
 
-        try:
-            ManifestManager(temp_manifest_file.name, name).load()
-        except ManifestError:
-            raise ManifestError(
-                'Cannot update manifest file. '
-                "It's likely due to the 4 spaces used for "
-                'indentation we recommend using 2 spaces indent. '
-                f'Please check the manifest file:\n{manifest_filepath}'
-            )
-
-        shutil.move(temp_manifest_file.name, manifest_filepath)
+        with open(manifest_filepath, 'w', encoding='utf-8') as file:
+            yaml.dump(manifest_data, file)
 
         dependency_type = 'git' if git else 'dependency'
         dependency_spec = f'"{name}"' if git else f'"{name}": "{spec}"'
