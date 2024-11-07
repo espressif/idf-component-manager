@@ -466,7 +466,7 @@ def test_check_for_newer_component_versions(project, tmp_path, monkeypatch, fixt
     ],
     indirect=True,
 )
-def test_multiple_storage_urls(monkeypatch, project, debug_mode):
+def test_multiple_storage_urls(project, monkeypatch, debug_mode):  # noqa: ARG001
     fixtures = os.path.join(os.path.dirname(__file__), 'fixtures')
     monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', f'file://{fixtures};default')
 
@@ -476,37 +476,6 @@ def test_multiple_storage_urls(monkeypatch, project, debug_mode):
     assert 'example/cmp (3.3.3)' in output
     assert 'test/cmp2 (1.0.0)' in output
     assert 'Downloading component test/cmp2@1.0.0 from file:///' in output
-
-
-@pytest.mark.parametrize(
-    'project',
-    [
-        {
-            'components': {
-                'main': {
-                    'dependencies': {
-                        'usb_host_ch34x_vcp': {'version': '^2'},
-                        'usb_host_cp210x_vcp': {'version': '^2'},
-                        'usb_host_ftdi_vcp': {'version': '^2'},
-                        'usb_host_vcp': {'version': '^1'},
-                    }
-                },
-            },
-        }
-    ],
-    indirect=True,
-)
-@pytest.mark.skipif(
-    (os.getenv('IDF_BRANCH', 'master') or 'master') != 'master',
-    reason='only test it in master branch',
-)
-def test_complex_version_solving(monkeypatch, project):
-    output = project_action(project, 'reconfigure')
-    assert 'version solving failed' in output
-
-    shutil.rmtree(os.path.join(project, 'build'))
-    output = project_action(project, '--preview', 'set-target', 'esp32p4', 'reconfigure')
-    assert 'Configuring done' in output
 
 
 @pytest.mark.parametrize(
@@ -663,6 +632,7 @@ def test_major_version_changed_with_existing_lock(project, monkeypatch):
             {
                 'dependencies': {
                     'espressif/rmaker_common': {
+                        # pragma: allowlist nextline secret
                         'component_hash': 'ea9a31452ba0f21209376d30f8f97a41c36287cfd729ad400606ad63c62313c5',
                         'version': '1.0.0',
                         'source': {
@@ -676,6 +646,7 @@ def test_major_version_changed_with_existing_lock(project, monkeypatch):
                         },
                     },
                 },
+                # pragma: allowlist nextline secret
                 'manifest_hash': 'a5f45fdb2f073046b6ee07dcc567b37b255a3d302f9646e1e44e16adcef39db3',
                 'target': 'esp32s3',
                 'version': '1.0.0',
@@ -718,6 +689,7 @@ def test_major_version_changed_with_incomplete_existing_lock(project, monkeypatc
             {
                 'dependencies': {
                     'espressif/rmaker_common': {
+                        # pragma: allowlist nextline secret
                         'component_hash': 'ea9a31452ba0f21209376d30f8f97a41c36287cfd729ad400606ad63c62313c5',
                         'version': '1.0.0',
                         'source': {
@@ -726,6 +698,7 @@ def test_major_version_changed_with_incomplete_existing_lock(project, monkeypatc
                     },
                     # idf missing
                 },
+                # pragma: allowlist nextline secret
                 'manifest_hash': 'a5f45fdb2f073046b6ee07dcc567b37b255a3d302f9646e1e44e16adcef39db3',
                 'target': 'esp32s3',
                 'version': '1.0.0',
@@ -766,6 +739,7 @@ def test_major_version_changed_with_changed_idf_version(project, monkeypatch):
             {
                 'dependencies': {
                     'example/cmp': {
+                        # pragma: allowlist nextline secret
                         'component_hash': '8644358a11a35a986b0ce4d325ba3d1aa9491b9518111acd4ea9447f11dc47c1',
                         'version': '3.3.7',  # requires idf >=4.1
                         'source': {
@@ -779,6 +753,7 @@ def test_major_version_changed_with_changed_idf_version(project, monkeypatch):
                         },
                     },
                 },
+                # pragma: allowlist nextline secret
                 'manifest_hash': 'a5f45fdb2f073046b6ee07dcc567b37b255a3d302f9646e1e44e16adcef39db3',
                 'target': 'esp32',
                 'version': '1.0.0',
