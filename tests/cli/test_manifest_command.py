@@ -17,7 +17,7 @@ from idf_component_tools.manager import ManifestManager
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_manifest_create_add_dependency.yaml')
-def test_manifest_create_add_dependency(mock_registry):
+def test_manifest_create_add_dependency(mock_registry):  # noqa: ARG001
     runner = CliRunner()
     with runner.isolated_filesystem() as tempdir:
         Path(tempdir, 'main').mkdir(parents=True, exist_ok=True)

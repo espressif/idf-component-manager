@@ -205,7 +205,7 @@ class GitClient:
         ]
         if selected_paths:
             if '.gitmodules' not in selected_paths and self.has_gitmodules_by_ref(
-                repo, bare_path, commit_id
+                bare_path, commit_id
             ):
                 # avoid submodule update failed
                 selected_paths += ['.gitmodules']
@@ -248,7 +248,7 @@ class GitClient:
 
     @_git_cmd
     @_bare_repo
-    def has_gitmodules_by_ref(self, repo: str, bare_path: str, ref: str) -> bool:
+    def has_gitmodules_by_ref(self, bare_path: str, ref: str) -> bool:
         return (
             '.gitmodules' in self.run(['ls-tree', '--name-only', ref], cwd=bare_path).splitlines()
         )

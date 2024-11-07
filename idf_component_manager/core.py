@@ -490,7 +490,8 @@ class ComponentManager:
 
     @general_error_handler
     def remove_managed_components(
-        self, **kwargs
+        self,
+        **kwargs,
     ):  # kwargs here to keep idf_extension.py compatibility
         managed_components_dir = Path(self.path, 'managed_components')
 

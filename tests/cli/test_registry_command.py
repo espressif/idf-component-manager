@@ -9,7 +9,7 @@ from idf_component_manager.core import ComponentManager
 from idf_component_tools.config import Config, ConfigManager
 
 
-def test_login_to_registry(tmp_path, mock_registry, mock_token_information, invoke_cli):
+def test_login_to_registry(tmp_path, mock_registry, mock_token_information, invoke_cli):  # noqa: ARG001
     output = invoke_cli(
         'registry',
         'login',
@@ -28,7 +28,11 @@ def test_login_to_registry(tmp_path, mock_registry, mock_token_information, invo
 
 
 def test_login_with_non_existing_service_profile(
-    monkeypatch, tmp_path, mock_registry, mock_token_information, invoke_cli
+    monkeypatch,
+    tmp_path,
+    mock_registry,  # noqa: ARG001
+    mock_token_information,  # noqa: ARG001
+    invoke_cli,
 ):
     monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
 
@@ -49,7 +53,7 @@ def test_login_with_non_existing_service_profile(
     assert 'non-existing' in config_content
 
 
-def test_login_deprecated_arguments(monkeypatch, tmp_path, mock_token_information, invoke_cli):
+def test_login_deprecated_arguments(monkeypatch, tmp_path, mock_token_information, invoke_cli):  # noqa: ARG001
     monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
 
     output = invoke_cli(
@@ -72,7 +76,7 @@ def test_login_deprecated_arguments(monkeypatch, tmp_path, mock_token_informatio
     assert 'http://localhost:5000' in config_content
 
 
-def test_login_updated_arguments(monkeypatch, tmp_path, mock_token_information, invoke_cli):
+def test_login_updated_arguments(monkeypatch, tmp_path, mock_token_information, invoke_cli):  # noqa: ARG001
     monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
 
     output = invoke_cli(
@@ -187,7 +191,7 @@ def test_registry_sync_component_flag(tmp_path, monkeypatch):
 
 
 @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_download_metadata_and_component.yaml')
-def test_registry_sync_recursive(tmp_path, mock_registry):
+def test_registry_sync_recursive(tmp_path, mock_registry):  # noqa: ARG001
     component_path = tmp_path / 'cmp'
     component_path.mkdir()
     (component_path / 'main').mkdir()
