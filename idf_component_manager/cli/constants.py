@@ -4,23 +4,24 @@ import os
 import typing as t
 
 import click
+from click.decorators import FC
 
 from idf_component_manager.core import ComponentManager
 from idf_component_manager.utils import validate_name
 
 
-def get_project_dir_option() -> t.List[click.Option]:
+def get_project_dir_option() -> t.List[FC]:
     return [
         click.option(
             '--project-dir',
             'manager',
             default=os.getcwd(),
-            callback=lambda ctx, param, value: ComponentManager(value),
+            callback=lambda ctx, param, value: ComponentManager(value),  # noqa: ARG005
         ),
     ]
 
 
-def get_profile_option() -> t.List[click.Option]:
+def get_profile_option() -> t.List[FC]:
     return [
         click.option(
             '--profile',
@@ -36,11 +37,11 @@ def get_profile_option() -> t.List[click.Option]:
     ]
 
 
-def get_project_options() -> t.List[click.Option]:
+def get_project_options() -> t.List[FC]:
     return get_project_dir_option() + get_profile_option()
 
 
-def get_namespace_option() -> t.List[click.Option]:
+def get_namespace_option() -> t.List[FC]:
     return [
         click.option(
             '--namespace',
@@ -51,17 +52,17 @@ def get_namespace_option() -> t.List[click.Option]:
     ]
 
 
-def get_name_option() -> t.List[click.Option]:
+def get_name_option() -> t.List[FC]:
     return [click.option('--name', required=True, callback=validate_name, help='Component name')]
 
 
-def get_namespace_name_options() -> t.List[click.Option]:
+def get_namespace_name_options() -> t.List[FC]:
     NAMESPACE_NAME_OPTIONS = get_namespace_option() + get_name_option()
 
     return NAMESPACE_NAME_OPTIONS
 
 
-def get_dest_dir_option() -> t.List[click.Option]:
+def get_dest_dir_option() -> t.List[FC]:
     return [
         click.option(
             '--dest-dir',
