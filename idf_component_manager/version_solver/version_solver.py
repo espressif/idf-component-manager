@@ -6,6 +6,7 @@ import typing as t
 from copy import deepcopy
 
 from idf_component_tools import debug, notice
+from idf_component_tools.debugger import DEBUG_INFO_COLLECTOR
 from idf_component_tools.errors import DependencySolveError, InternalError, SolverError
 from idf_component_tools.manifest import (
     ComponentRequirement,
@@ -163,11 +164,14 @@ class VersionSolver:
     def solve_manifest(
         self, manifest: Manifest, cur_solution: t.Optional[SolvedManifest] = None
     ) -> None:
+        debugger = DEBUG_INFO_COLLECTOR.get()
         for dep in self._dependencies_with_local_precedence(
             manifest.requirements, manifest_path=manifest.path
         ):
             if not dep.meet_optional_dependencies:
                 continue
+
+            debugger.declare_dep(dep.name, introduced_by=manifest.path)
 
             self._source.root_dep(Package(dep.name, dep.source), dep.version_spec)
             try:

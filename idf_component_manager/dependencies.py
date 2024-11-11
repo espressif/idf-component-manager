@@ -13,6 +13,7 @@ from idf_component_manager.version_solver.mixology.package import Package
 from idf_component_manager.version_solver.version_solver import VersionSolver
 from idf_component_tools import ComponentManagerSettings
 from idf_component_tools.build_system_tools import build_name, get_idf_version
+from idf_component_tools.debugger import DEBUG_INFO_COLLECTOR
 from idf_component_tools.errors import (
     ComponentModifiedError,
     FetchingError,
@@ -338,6 +339,11 @@ def download_project_dependencies(
         try:
             solution = solver.solve()
         except SolverFailure as e:
+            debug_info = DEBUG_INFO_COLLECTOR.get()
+            if debug_info.msgs:
+                msg = '\n'.join(debug_info.msgs)
+                hint(f'Failed to solve dependencies. Here are some possible reasons:\n' f'{msg}')
+
             conflict_constraints = parse_root_dep_conflict_constraints(e)
             components_introduce_conflict = []
             for conflict_constraint in conflict_constraints:
