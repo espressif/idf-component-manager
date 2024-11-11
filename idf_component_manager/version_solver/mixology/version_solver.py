@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: MIT License
 # SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
 
-import logging
 import time
 import typing as t
+
+from idf_component_tools import debug
 
 from .constraint import Constraint
 from .failure import SolverFailure
@@ -17,8 +18,6 @@ from .range import Range
 from .result import SolverResult
 from .set_relation import SetRelation
 from .term import Term
-
-logger = logging.getLogger(__name__)
 
 _conflict = object()
 
@@ -65,8 +64,8 @@ class VersionSolver:
             if not self._run():
                 break
 
-        logger.info('Version solving took {:.3f} seconds.\n'.format(time.time() - start))
-        logger.info(f'Tried {self._solution.attempted_solutions} solutions.')
+        debug('Version solving took {:.3f} seconds.\n'.format(time.time() - start))
+        debug(f'Tried {self._solution.attempted_solutions} solutions.')
 
         return SolverResult(self._solution.decisions, self._solution.attempted_solutions)
 
@@ -160,7 +159,7 @@ class VersionSolver:
         if unsatisfied is None:
             return _conflict
 
-        logger.info(f'derived: {unsatisfied.inverse}')
+        debug(f'derived: {unsatisfied.inverse}')
 
         self._solution.derive(
             unsatisfied.constraint, not unsatisfied.is_positive(), incompatibility
@@ -180,7 +179,7 @@ class VersionSolver:
         .. _conflict resolution:
         https://github.com/dart-lang/pub/tree/master/doc/solver.md#conflict-resolution
         """
-        logger.info(f'conflict: {incompatibility}')
+        debug(f'conflict: {incompatibility}')
 
         new_incompatibility = False
         while not incompatibility.is_failure():
@@ -291,13 +290,13 @@ class VersionSolver:
 
             partially = '' if difference is None else ' partially'
             bang = '!'
-            logger.info(
+            debug(
                 '{} {} is{} satisfied by {}'.format(
                     bang, most_recent_term, partially, most_recent_satisfier
                 )
             )
-            logger.info(f'{bang} which is caused by "{most_recent_satisfier.cause}"')
-            logger.info(f'{bang} thus: {incompatibility}')
+            debug(f'{bang} which is caused by "{most_recent_satisfier.cause}"')
+            debug(f'{bang} thus: {incompatibility}')
 
         raise SolverFailure(incompatibility)
 
@@ -355,12 +354,12 @@ class VersionSolver:
 
         if not conflict:
             self._solution.decide(term.package, version)
-            logger.info(f'selecting {term.package} ({str(version)})')
+            debug(f'selecting {term.package} ({str(version)})')
 
         return term.package
 
     def _add_incompatibility(self, incompatibility: Incompatibility) -> None:
-        logger.info(f'fact: {incompatibility}')
+        debug(f'fact: {incompatibility}')
 
         for term in incompatibility.terms:
             if term.package not in self._incompatibilities:

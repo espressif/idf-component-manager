@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Component source that downloads components from web service"""
 
-import logging
 import os
 import re
 import shutil
@@ -12,6 +11,7 @@ import typing as t
 import requests
 from pydantic import AliasChoices, Field, field_validator
 
+from idf_component_tools import debug
 from idf_component_tools.archive_tools import (
     ArchiveError,
     get_format_from_path,
@@ -22,26 +22,23 @@ from idf_component_tools.constants import (
     IDF_COMPONENT_REGISTRY_URL,
     UPDATE_SUGGESTION,
 )
+from idf_component_tools.debugger import DEBUG_INFO_COLLECTOR
 from idf_component_tools.errors import FetchingError
 from idf_component_tools.file_tools import copy_directory
 from idf_component_tools.hash_tools.calculate import hash_url
-from idf_component_tools.messages import hint
-from idf_component_tools.semver import SimpleSpec
-
-from ..hash_tools.validate_managed_component import (
+from idf_component_tools.hash_tools.validate_managed_component import (
     validate_managed_component_by_hashdir,
 )
+from idf_component_tools.semver import SimpleSpec
+from idf_component_tools.utils import Literal
+
 from .base import BaseSource
 
 if t.TYPE_CHECKING:
     from idf_component_tools.manifest import SolvedComponent
 
-from idf_component_tools.utils import Literal
 
 CANONICAL_IDF_COMPONENT_REGISTRY_API_URL = 'https://api.components.espressif.com/'
-
-
-logger = logging.getLogger(__name__)
 
 
 def download_archive(url: str, download_dir: str, save_original_filename: bool = False) -> str:
@@ -173,34 +170,46 @@ class WebServiceSource(BaseSource):
 
         cmp_with_versions.versions = versions
         if not versions:
-            current_target = f'"{target}"' if target else ''
-
+            debugger = DEBUG_INFO_COLLECTOR.get()
             if pre_release_versions:
-                hint(
-                    'Component "{}" has some pre-release versions: "{}" '
+                debugger.add_msg(
+                    'Component "{}" (requires in {}) '
+                    'has some pre-release versions: "{}" '
                     'satisfies your requirements. '
                     'To allow pre-release versions add "pre_release: true" '
                     'to the dependency in the manifest.'.format(
-                        name, '", "'.join(pre_release_versions)
+                        name,
+                        ', '.join(debugger.dep_introduced_by[name]),
+                        '", "'.join(pre_release_versions),
                     )
                 )
 
             if other_targets_versions:
-                targets = {t for v in other_targets_versions for t in v.targets}
-                hint(
-                    'Component "{}" has suitable versions for other targets: "{}". '
+                version_t_list = ''
+                for v in other_targets_versions:
+                    version_t_list += f'- {v.version}: {", ".join(v.targets)}\n'
+
+                debugger.add_msg(
+                    'Component "{}" (requires in {}) '
+                    'has suitable versions for other targets:\n'
+                    '{}'
                     'Is your current target {} set correctly?'.format(
-                        name, '", "'.join(targets), current_target
+                        name,
+                        ', '.join(debugger.dep_introduced_by[name]),
+                        version_t_list,
+                        target or '',
                     )
                 )
 
             if newer_component_manager_versions:
-                hint(
-                    'Component "{}" has versions "{}" '
+                debugger.add_msg(
+                    'Component "{}" (requires in {}) '
+                    'has versions "{}" '
                     'that support only newer version of idf-component-manager '
                     'that satisfy your requirements.\n'
                     '{}'.format(
                         name,
+                        ', '.join(debugger.dep_introduced_by[name]),
                         '", "'.join(newer_component_manager_versions),
                         UPDATE_SUGGESTION,
                     )
@@ -247,7 +256,7 @@ class WebServiceSource(BaseSource):
                 component.name, component.version
             )['download_url']  # PACMAN-906
 
-            logger.debug(
+            debug(
                 'Downloading component %s@%s from %s',
                 component.name,
                 component.version,

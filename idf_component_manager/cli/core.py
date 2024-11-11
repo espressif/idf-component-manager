@@ -2,18 +2,15 @@
 # SPDX-License-Identifier: Apache-2.0
 import sys
 import typing as t
-import warnings
 
 import click
 
 from idf_component_manager.utils import (
     CLICK_SUPPORTS_SHOW_DEFAULT,
-    print_error,
-    print_info,
-    showwarning,
 )
+from idf_component_tools import error, setup_logging
 from idf_component_tools.__version__ import __version__ as idf_component_manager_version
-from idf_component_tools.errors import FatalError
+from idf_component_tools.errors import FatalError, WarningAsExceptionError
 
 from .autocompletion import init_autocomplete
 from .cache import init_cache
@@ -44,15 +41,14 @@ def initialize_cli():
         help='Treat warnings as errors.',
     )
     def cli(warnings_as_errors):
-        if warnings_as_errors:
-            warnings.filterwarnings('error', category=UserWarning)
+        setup_logging(warnings_as_errors)
 
     @cli.command()
     def version():
         """
         Print version of the IDF Component Manager.
         """
-        print_info(idf_component_manager_version)
+        print(idf_component_manager_version)
 
     cli.add_command(init_autocomplete())
     cli.add_command(init_cache())
@@ -69,12 +65,11 @@ def safe_cli():
     CLI entrypoint with error handling.
     """
     try:
-        warnings.showwarning = showwarning
         cli = initialize_cli()
         cli()
-    except UserWarning as e:
-        print_error(e)
+    except WarningAsExceptionError as e:
+        error(str(e))
         sys.exit(1)
     except FatalError as e:
-        print_error(e)
+        error(str(e))
         sys.exit(e.exit_code)

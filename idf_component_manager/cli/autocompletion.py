@@ -6,7 +6,6 @@ import typing as t
 
 import click
 
-from idf_component_manager.utils import print_info
 from idf_component_tools.errors import FatalError
 from idf_component_tools.semver import Version
 
@@ -49,7 +48,7 @@ def _append_text_line(
             write_string = strings[-1]
 
         if dry_run:
-            print_info(f'"{write_string}" would be appended to {filepath}')
+            print(f'Would append the following line to {filepath}: {write_string}')
         else:
             with open(filepath, 'ab+') as fw:
                 fw.write(f'\n{write_string}\n'.encode())
@@ -175,7 +174,7 @@ def init_autocomplete():
                 os.makedirs(os.path.dirname(completion_filepath))
 
         if dry_run:
-            print_info(f'Completion file would be created at: {completion_filepath}')
+            print(f'Would create the completion file at: {completion_filepath}')
         else:
             with open(completion_filepath, 'w', encoding='utf-8') as fw:
                 fw.write(autocomplete_script_str)

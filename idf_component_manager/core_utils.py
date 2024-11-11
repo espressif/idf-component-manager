@@ -8,7 +8,7 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from idf_component_manager.utils import print_info
+from idf_component_tools import notice
 from idf_component_tools.constants import DEFAULT_NAMESPACE, MANIFEST_FILENAME
 from idf_component_tools.errors import ComponentModifiedError, FatalError
 from idf_component_tools.file_tools import (
@@ -56,7 +56,7 @@ def _create_manifest_if_missing(manifest_dir: Path) -> bool:
     example_path = Path(__file__).resolve().parent / 'templates' / 'idf_component_template.yml'
     manifest_dir.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(example_path, manifest_filepath)
-    print_info(f'Created "{manifest_filepath}"')
+    notice(f'Created "{manifest_filepath}"')
     return True
 
 

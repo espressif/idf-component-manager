@@ -1,12 +1,13 @@
 # SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+import logging
 import os
 import re
-import warnings
 
 import pytest
 
 from idf_component_manager.dependencies import detect_unused_components
+from idf_component_tools import LOGGING_NAMESPACE
 from idf_component_tools.manager import ManifestManager, UploadMode
 from idf_component_tools.manifest import SLUG_REGEX, OptionalRequirement, SolvedComponent
 from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS, known_targets
@@ -17,7 +18,7 @@ from idf_component_tools.utils import ComponentVersion
 
 
 class TestManifestValidator:
-    def test_validate_unknown_root_key(self, valid_manifest, recwarn):
+    def test_validate_unknown_root_key(self, valid_manifest, caplog):
         # unknown root keys
         valid_manifest['unknown'] = 'test'
         valid_manifest['test'] = 3.1415926
@@ -26,15 +27,16 @@ class TestManifestValidator:
         valid_manifest['repository_info'] = {}
         valid_manifest['repository_info']['foo'] = 'bar'
 
-        errors = Manifest.validate_manifest(valid_manifest)
-        assert not errors
+        with caplog.at_level(logging.DEBUG, logger=LOGGING_NAMESPACE):
+            errors = Manifest.validate_manifest(valid_manifest)
+            assert not errors
 
-        assert len(recwarn) == 3
-        assert set(warning.message.args[0] for warning in recwarn) == {
-            'Dropping unknown key: foo=bar',
-            'Dropping unknown key: unknown=test',
-            'Dropping unknown key: test=3.1415926',
-        }
+            assert len(caplog.records) == 3
+            assert set([rec.message for rec in caplog.records]) == {
+                'Dropping unknown key: foo=bar',
+                'Dropping unknown key: unknown=test',
+                'Dropping unknown key: test=3.1415926',
+            }
 
     def test_validate_unknown_root_values(self, valid_manifest):
         valid_manifest['version'] = '1!.3.3'
@@ -279,7 +281,7 @@ class TestManifestValidator:
 
         assert not os.listdir(tmp_managed_components)
 
-    def test_unused_files_message(self, tmp_path):
+    def test_unused_files_message(self, tmp_path, caplog):
         managed_components_path = tmp_path / 'managed_components'
         managed_components_path.mkdir()
 
@@ -287,15 +289,15 @@ class TestManifestValidator:
         unused_file.write_text('test')
 
         project_requirements = []
-        with warnings.catch_warnings(record=True) as w:
+
+        with caplog.at_level(logging.WARNING, logger=LOGGING_NAMESPACE):
             detect_unused_components(project_requirements, str(managed_components_path))
-            assert len(w) == 1
-            assert issubclass(w[-1].category, UserWarning)
+            assert len(caplog.records) == 1
             assert 'Content of the managed components directory is managed automatically' in str(
-                w[-1].message
+                caplog.records[0].message
             )
 
-    def test_env_ignore_unknown_files_empty(self, monkeypatch, tmp_path):
+    def test_env_ignore_unknown_files_empty(self, monkeypatch, tmp_path, caplog):
         monkeypatch.setenv('IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS', '')
         managed_components_path = tmp_path / 'managed_components'
         managed_components_path.mkdir()
@@ -303,8 +305,13 @@ class TestManifestValidator:
         unused_file = managed_components_path / 'unused_file'
         unused_file.write_text('test')
 
-        with pytest.warns(UserWarning, match='1 unexpected files and directories were found*'):
+        with caplog.at_level(logging.WARNING, logger=LOGGING_NAMESPACE):
             detect_unused_components([], str(managed_components_path))
+            assert len(caplog.records) == 1
+            assert (
+                'Content of the managed components directory is managed automatically'
+                in caplog.records[0].message
+            )
 
     @pytest.mark.parametrize(
         'if_clause, bool_value',
@@ -382,7 +389,10 @@ class TestManifestValidator:
             'Invalid field "repository": Invalid git URL: nogit@github.com:test_project/test.git'
         ]
 
-    def test_validate_rules_without_idf(self, valid_optional_dependency_manifest, monkeypatch):
+    def test_validate_rules_without_idf(
+        self,
+        valid_optional_dependency_manifest,
+    ):
         errors = Manifest.validate_manifest(valid_optional_dependency_manifest)
 
         assert not errors

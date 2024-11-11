@@ -3,64 +3,16 @@
 
 import enum
 import re
-import typing as t
 
 import click
 
 from idf_component_tools.manifest.constants import SLUG_REGEX
-from idf_component_tools.messages import UserHint, UserNotice
 from idf_component_tools.semver import Version
 
 CLICK_SUPPORTS_SHOW_DEFAULT = Version(click.__version__) >= Version('7.1.0')
 
 
-def print_prefixed(prefix: str, color: str, message: t.Union[Exception, str], stderr: bool) -> None:
-    styled_prefix = click.style(f'{prefix}: ', fg=color)
-    click.echo(styled_prefix + str(message), err=stderr)
-
-
-def print_stderr_prefixed(prefix: str, color: str, message: t.Union[Exception, str]) -> None:
-    print_prefixed(prefix, color, message, stderr=True)
-
-
-def print_error(message: t.Union[Exception, str]) -> None:
-    print_stderr_prefixed('ERROR', 'red', message)
-
-
-def print_warn(message: t.Union[Exception, str]) -> None:
-    print_stderr_prefixed('WARNING', 'yellow', message)
-
-
-def print_hint(message: t.Union[Exception, str]) -> None:
-    print_prefixed('HINT', 'yellow', message, stderr=False)
-
-
-def print_notice(message: t.Union[Exception, str]) -> None:
-    print_prefixed('NOTICE', 'green', message, stderr=False)
-
-
-def showwarning(message, category, filename, lineno, file=None, line=None):
-    if category is UserHint:
-        print_hint(message)
-    elif category is UserNotice:
-        print_notice(message)
-    else:
-        print_warn(message)
-
-
-def print_info(
-    message: str,
-    fg: t.Optional[str] = None,
-    bg: t.Optional[str] = None,
-    bold: t.Optional[str] = None,
-    underline: t.Optional[str] = None,
-    blink: t.Optional[str] = None,
-    **kwargs,
-) -> None:
-    click.secho(message, fg=fg, bg=bg, bold=bold, underline=underline, blink=blink, **kwargs)
-
-
-def validate_name(ctx, param, value):
+def validate_name(ctx, param, value):  # noqa: ARG001
     name = value.lower()
 
     if not re.match(SLUG_REGEX, name):

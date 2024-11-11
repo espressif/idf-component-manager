@@ -23,7 +23,7 @@ from idf_component_tools.registry.service_details import (
 
 
 @fixture()
-def service_config(tmp_path):
+def service_config():
     return Config().profiles.get('default', {})
 
 
@@ -83,7 +83,11 @@ class TestGetProfile:
         assert get_profile(None, config_path=config_path).default_namespace == 'test3'
 
     def test_get_profile_not_exist(self, config_path):
-        assert get_profile('not_exists', config_path) is None
+        with raises(
+            NoSuchProfile,
+            match='Profile "not_exists" not found in config file:.+idf_component_manager.yml',
+        ):
+            assert get_profile('not_exists', config_path)
 
     def test_get_profile_with_default_name(self, config_path):
         profile = get_profile('default', config_path)
@@ -109,11 +113,11 @@ class TestApiClient:
         monkeypatch.setenv('IDF_COMPONENT_PROFILE', '')
         with raises(
             NoSuchProfile,
-            match='Profile "not_exists" not found in the idf_component_manager.yml config file',
+            match='Profile "not_exists" not found in config file:.+idf_component_manager.yml',
         ):
             get_api_client(profile_name='not_exists')
 
-    def test_get_token_profile(self, config_path, monkeypatch):
+    def test_get_token_profile(self, config_path):
         api_client = get_api_client(profile_name='test', config_path=config_path)
         assert api_client.api_token == 'token'
 

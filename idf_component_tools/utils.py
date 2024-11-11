@@ -23,12 +23,12 @@ from pydantic import (
 from pydantic import BaseModel as _BaseModel
 from pydantic_core import CoreSchema, ErrorDetails, PydanticCustomError, core_schema
 
+from . import debug
 from .build_system_tools import get_env_idf_target
 from .constants import COMPILED_COMMIT_ID_RE
 from .errors import ManifestError, RunningEnvironmentError
 from .hash_tools.calculate import hash_object
 from .manager import ManifestManager
-from .messages import warn
 from .semver import Version
 
 if t.TYPE_CHECKING:
@@ -58,7 +58,6 @@ if sys.version_info < (3, 12):
     from typing_extensions import TypedDict
 else:
     from typing import TypedDict  # noqa
-
 
 ###############################################################
 # pydantic models, union discriminators, and helper functions #
@@ -202,7 +201,7 @@ class BaseModel(_BaseModel):
 
         if cls.ALLOW_EXTRA_FIELDS:
             for k in unknown_fields:
-                warn(f'Dropping unknown key: {k}={v.pop(k)}')
+                debug(f'Dropping unknown key: {k}={v.pop(k)}')
 
             return v
 

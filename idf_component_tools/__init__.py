@@ -1,16 +1,40 @@
 # SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import logging
-import sys
+import logging as lib_logging
 
-from idf_component_tools.environment import ComponentManagerSettings
+LOGGING_NAMESPACE = __package__
+HINT_LEVEL = 15
 
-logger = logging.getLogger(__package__)
-if ComponentManagerSettings().DEBUG_MODE:
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(logging.StreamHandler(sys.stdout))
 
+def get_logger() -> lib_logging.Logger:
+    """
+    Get logger for the component manager.
+
+    Use this instead of `logging.getLogger(__package__)` to get the universal logger for both
+    component_manager and component_tools
+    """
+    return lib_logging.getLogger(LOGGING_NAMESPACE)
+
+
+from idf_component_tools.environment import ComponentManagerSettings  # noqa: E402
+from idf_component_tools.logging import setup_logging  # noqa: E402
+from idf_component_tools.messages import (  # noqa: E402
+    debug,
+    error,
+    hint,
+    notice,
+    warn,
+)
 
 __all__ = [
     'ComponentManagerSettings',
+    'debug',
+    'error',
+    'get_logger',
+    'hint',
+    'notice',
+    'setup_logging',
+    'warn',
+    'debug',
+    'error',
 ]

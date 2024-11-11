@@ -12,7 +12,6 @@ from idf_component_tools.errors import FetchingError
 from idf_component_tools.hash_tools.calculate import hash_dir
 from idf_component_tools.manager import ManifestManager
 from idf_component_tools.manifest import SolvedComponent
-from idf_component_tools.messages import UserHint
 from idf_component_tools.sources import WebServiceSource
 from idf_component_tools.sources.web_service import download_archive
 from idf_component_tools.utils import ComponentVersion
@@ -113,24 +112,7 @@ class TestComponentWebServiceSource:
             download_archive(f'file://{source_file}', tmp_path)
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_pre_release.yaml')
-    def test_pre_release_exists(self, capsys):
-        source = WebServiceSource(registry_url='http://localhost:5000/')
-
-        with pytest.warns(UserHint) as record:
-            versions = source.versions('example/cmp')
-
-            prerelease_hint_str = (
-                'Component "example/cmp" has some pre-release versions: "0.0.5-alpha1" '
-                'satisfies your requirements. '
-                'To allow pre-release versions add "pre_release: true" '
-                'to the dependency in the manifest.'
-            )
-
-            assert prerelease_hint_str in record.list[0].message.args
-            assert versions.versions == []
-
-    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_pre_release.yaml')
-    def test_pre_release_exists_with_pre_release_spec(self, monkeypatch):
+    def test_pre_release_exists_with_pre_release_spec(self):
         source = WebServiceSource(registry_url='http://localhost:5000/')
 
         source.versions('example/cmp', spec='^0.0.5-alpha1')
@@ -144,18 +126,3 @@ class TestComponentWebServiceSource:
     def test_select_pre_release(self):
         source = WebServiceSource(registry_url='http://localhost:5000/', pre_release=True)
         assert len(source.versions('example/cmp').versions) == 2
-
-    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_target.yaml')
-    def test_target_exists(self, monkeypatch):
-        source = WebServiceSource(registry_url='http://localhost:5000/')
-
-        with pytest.warns(UserHint) as record:
-            versions = source.versions('example/cmp', target='esp32s2')
-
-            other_targets_hint_str = (
-                'Component "example/cmp" has suitable versions for other targets: "esp32". '
-                'Is your current target "esp32s2" set correctly?'
-            )
-
-            assert other_targets_hint_str in record[0].message.args
-            assert versions.versions == []
