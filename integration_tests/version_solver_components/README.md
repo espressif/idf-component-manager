@@ -22,7 +22,7 @@ graph LR
   B1 -- a: ^1.0.0 --> A1
 ```
 
-a <1.0.0>
+a \<1.0.0>
 
 ### Diamond Dependency
 
@@ -49,7 +49,7 @@ graph LR
   B2 -- c: ^3.0.0 --> C3
 ```
 
-a <1.0.0> b <2.0.0> c <3.0.0>
+a \<1.0.0> b \<2.0.0> c \<3.0.0>
 
 ### Jump Back After Partially Satisfied
 
@@ -82,7 +82,7 @@ graph LR
   X1 -- y: ^1.0.0 --> Y1
 ```
 
-c <1.0.0> y <2.0.0>
+c \<1.0.0> y \<2.0.0>
 
 ### Roll Back the Further the Earlier
 
@@ -109,4 +109,19 @@ graph LR
   B2 -- c: ^1.0.0 --> C1
 ```
 
-a <2.0.0> b <1.0.0> c <2.0.0>
+a \<2.0.0> b \<1.0.0> c \<2.0.0>
+
+### Nested Dependency doesn't support current target
+
+```mermaid
+graph LR
+  R[root]
+  A1[a <1.0.0>]
+  B1[b <1.0.0> ESP32S3]
+
+  R -- a: * --> A1
+  A1 -- b: * --> B1
+```
+
+If the target is ESP32S3, then a \<1.0.0> b \<1.0.0>,
+otherwise, the dependency B1 would not be satisfied.

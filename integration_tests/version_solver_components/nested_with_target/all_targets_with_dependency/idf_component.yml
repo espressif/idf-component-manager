@@ -1,0 +1,6 @@
+version: "1.0.0"
+description: Test component with one dependency
+url: https://github.com/espressif/idf-component-manager/tree/main/integration_tests/version_solver_components/nested_with_target/all_targets_with_dependency
+dependencies:
+  test/single_target:
+    version: "*"

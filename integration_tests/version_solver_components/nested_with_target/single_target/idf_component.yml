@@ -1,0 +1,5 @@
+version: "1.0.0"
+description: Test component that supports only one target
+url: https://github.com/espressif/idf-component-manager/tree/main/integration_tests/version_solver_components/nested_with_target/single_target
+targets:
+  - esp32s3
