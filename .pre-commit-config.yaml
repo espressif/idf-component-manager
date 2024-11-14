@@ -4,7 +4,7 @@ default_install_hook_types: [pre-commit, commit-msg]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: check-yaml
         exclude: tests
@@ -18,7 +18,7 @@ repos:
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.6.1
+    rev: v0.7.3
     hooks:
       # Run the linter.
       - id: ruff
@@ -28,7 +28,7 @@ repos:
         args: ['--preview']
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.1
+    rev: v1.13.0
     hooks:
       - id: mypy
         additional_dependencies:
@@ -50,7 +50,7 @@ repos:
           ]
 
   - repo: https://github.com/fpgmaas/deptry.git
-    rev: "0.19.1"
+    rev: "0.21.0"
     hooks:
       - id: deptry
 
@@ -75,7 +75,7 @@ repos:
         ]
 
   - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.17
+    rev: 0.7.18
     hooks:
       - id: mdformat
         args: [--number] # Keep numbering for ordered lists

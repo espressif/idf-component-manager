@@ -141,6 +141,7 @@ extend-select = [
     "ERA", # eradicate
     "ICN", # flake8-import-conventions
     "RUF100", # unused noqa
+    "PLW1514",  # unspecified-encoding
 ]
 typing-modules = [
     "idf_component_tools.utils",
@@ -161,17 +162,20 @@ ignore-variadic-names = true
 
 [tool.ruff.lint.per-file-ignores]
 "ci/*" = [
-    "S",
+    "S", # flake8-bandit
+    "PLW1514",  # unspecified-encoding
 ]
 
 "integration_tests/*" = [
-    "S",
+    "S", # flake8-bandit
     "E712", # comparison to False/True
+    "PLW1514",  # unspecified-encoding
 ]
 
 "tests/*" = [
-    "S",
+    "S", # flake8-bandit
     "E712", # comparison to False/True
+    "PLW1514",  # unspecified-encoding
 ]
 
 "idf_component_tools/semver/base.py" = [
