@@ -49,17 +49,18 @@ def dump_metadata(metadata: t.Dict[str, ComponentStaticVersions], save_path: Pat
 def download_dependency(version: ComponentVersion, path: Path) -> bool:
     if version.storage_url is None:  # Local component
         return False
-    filename = Path(version.file_path)
-    url = join_url(version.storage_url, str(filename))
 
+    url = join_url(version.storage_url, version.file_path)
+    # keep the same structure as in the registry
+    output_dir = (path / version.file_path).parent
     try:
-        path.mkdir(parents=True)
+        output_dir.mkdir(parents=True)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise e
 
-    if not (path / filename).is_file():
-        download_archive(url, str(path), save_original_filename=True)
+    if not (path / version.file_path).is_file():
+        download_archive(url, str(output_dir), save_original_filename=True)
         return True
     return False
 
