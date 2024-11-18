@@ -185,7 +185,7 @@ class VersionSolver:
                 )
             except SolverError as e:
                 raise SolverError(
-                    'Solver failed processing manifest file "{path}".' '\n{original_error}'.format(
+                    'Solver failed processing manifest file "{path}".\n{original_error}'.format(
                         path=manifest.path, original_error=str(e)
                     )
                 )
@@ -221,6 +221,8 @@ class VersionSolver:
                 target=self.requirements.target,
             )
 
+        self._solved_requirements.add(requirement)
+
         if not cmp_with_versions or not cmp_with_versions.versions:
             return
 
@@ -242,8 +244,6 @@ class VersionSolver:
                 for dep in version.dependencies:
                     if dep.meet_optional_dependencies:
                         self.solve_component(dep)
-
-        self._solved_requirements.add(requirement)
 
         if self.component_solved_callback:
             self.component_solved_callback()
