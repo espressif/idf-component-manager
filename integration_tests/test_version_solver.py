@@ -779,3 +779,28 @@ def test_major_version_changed_with_changed_idf_version(project, monkeypatch):
 
     assert_dependency_version(project, 'example/cmp', '3.0.3')  # >=4.0
     assert_dependency_version(project, 'idf', '4.0.0')
+
+
+@pytest.mark.parametrize(
+    'project',
+    [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'test/all_targets_with_dependency': {'version': '*'},
+                    }
+                },
+            },
+        }
+    ],
+    indirect=True,
+)
+def test_complex_version_solving(project):
+    output = project_action(project, 'reconfigure')
+    assert 'version solving failed' in output
+
+    shutil.rmtree(os.path.join(project, 'build'))
+
+    output = project_action(project, 'set-target', 'esp32s3', 'reconfigure')
+    assert 'Configuring done' in output
