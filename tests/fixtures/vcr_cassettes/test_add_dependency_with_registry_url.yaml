@@ -1,0 +1,121 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/2.0.3 (Darwin/24.1.0 arm64; python/3.11.9)
+    method: GET
+    uri: http://localhost:5000/api
+  response:
+    body:
+      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",\n
+        \ \"info\": \"ESP Component Registry API\",\n  \"status\": \"ok\",\n  \"version\":
+        \"1.5.0\"\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '145'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 07 Nov 2024 12:51:45 GMT
+      Server:
+      - Werkzeug/3.0.4 Python/3.11.9
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/2.0.3 (Darwin/24.1.0 arm64; python/3.11.9)
+    method: GET
+    uri: http://localhost:9000/test-public/components/espressif/cmp.json
+  response:
+    body:
+      string: '{"name": "cmp", "namespace": "espressif", "created_at": "2024-11-05T15:24:34.782533+00:00",
+        "featured": false, "versions": [{"id": "15449241-633c-4fc7-965e-77e019e62970",
+        "version": "8.0.0", "created_at": "2024-11-05T15:24:32.463549+00:00", "description":
+        "This component is an example, to be used with the IDF component manager.",
+        "component_hash": "ee368021413aa65b614266b633e81df3164eaa6ec5d6507c6f02a2d33ffd68c4",
+        "url": "components/espressif/cmp/8.0.0/espressif__cmp-v8.0.0.zip", "targets":
+        ["esp32", "esp32s2", "esp32s3", "esp32c2", "esp32c3", "esp32c6", "esp32h2",
+        "esp32p4"], "maintainers": [], "docs": {"readme": "components/espressif/cmp/8.0.0/readme.md",
+        "changelog": "components/espressif/cmp/8.0.0/changelog.md"}, "dependencies":
+        [{"spec": ">=4.1", "source": "idf", "registry_url": null, "is_public": false,
+        "require": true, "name": null, "namespace": null, "rules": [], "matches":
+        []}], "license": {"name": "MIT", "url": "components/espressif/cmp/8.0.0/license.txt"},
+        "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
+        "documentation": null, "repository": "https://github.com/espressif/example_components.git",
+        "issues": "https://github.com/espressif/example_components/issues", "discussion":
+        null, "examples": [{"id": "a3b46a5e-8e56-4216-b395-bb225e66b4a1", "name":
+        "cmp_ex", "url": "8336e540-a798-400a-9740-0fc17a63b7f9/examples/a3b46a5e-8e56-4216-b395-bb225e66b4a1.tgz",
+        "docs": {}}, {"id": "195c32ba-791c-4079-83ca-d0a01e00d682", "name": "cmp_ex1",
+        "url": "8336e540-a798-400a-9740-0fc17a63b7f9/examples/195c32ba-791c-4079-83ca-d0a01e00d682.tgz",
+        "docs": {"readme": "components/espressif/cmp/8.0.0/examples/cmp_ex1/readme.md",
+        "changelog": "components/espressif/cmp/8.0.0/examples/cmp_ex1/changelog.md"}}],
+        "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__", "**/*.pyc",
+        "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*", "**/dist/**/*",
+        "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*", "**/dependencies.lock",
+        "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*", "**/.vscode/**/*",
+        "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old", "**/.component_hash"],
+        "yanked_at": null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-type:string",
+        "targets-type:array-type:string", "version-type:string"], "info_metadata_keys":
+        ["description-type:string", "issues-type:string", "license-type:string", "repository-type:string",
+        "url-type:string"]}]}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Cache-Control:
+      - max-age=300
+      Content-Length:
+      - '2464'
+      Content-Type:
+      - binary/octet-stream
+      Date:
+      - Thu, 07 Nov 2024 12:51:45 GMT
+      ETag:
+      - '"4c91e9399ba221fd2d49354df0e446e8"'
+      Last-Modified:
+      - Wed, 06 Nov 2024 14:43:42 GMT
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      - Accept-Encoding
+      X-Amz-Id-2:
+      - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
+      X-Amz-Request-Id:
+      - 1805B0B0F7B9DDAA
+      X-Content-Type-Options:
+      - nosniff
+      X-Xss-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

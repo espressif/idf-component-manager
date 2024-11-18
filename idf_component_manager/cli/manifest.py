@@ -28,18 +28,34 @@ def init_manifest():
         """
         print(json.dumps(MANIFEST_JSON_SCHEMA, indent=2))
 
-    MANIFEST_OPTION = [
-        click.option('--component', default='main', help='Component name in the project.'),
+    MANIFEST_OPTIONS = [
+        click.option(
+            '--component',
+            default='main',
+            help='Name of the component in the project where the dependency will be added.',
+        ),
         click.option(
             '-p',
             '--path',
             default=None,
-            help='Path to the component. The component name is ignored when the path is specified.',
+            help='Path to the component where the dependency will be added. The component name is ignored when the path is specified.',
+        ),
+    ]
+
+    GIT_OPTIONS = [
+        click.option('--git', default=None, help='Git URL of the component.'),
+        click.option(
+            '--git-path', default='.', help='Path to the component in the git repository.'
+        ),
+        click.option(
+            '--git-ref',
+            default=None,
+            help='Git reference (branch, tag, commit SHA) of the component.',
         ),
     ]
 
     @manifest.command()
-    @add_options(PROJECT_DIR_OPTION + MANIFEST_OPTION)
+    @add_options(PROJECT_DIR_OPTION + MANIFEST_OPTIONS)
     def create(manager, component, path):
         """
         Create manifest file for the specified component.
@@ -57,9 +73,17 @@ def init_manifest():
         manager.create_manifest(component=component, path=path)
 
     @manifest.command()
-    @add_options(PROJECT_DIR_OPTION + PROFILE_OPTION + MANIFEST_OPTION)
+    @add_options(
+        PROJECT_DIR_OPTION
+        + PROFILE_OPTION
+        + MANIFEST_OPTIONS
+        + GIT_OPTIONS
+        + [click.option('--registry-url', default=None, help='URL of the registry.')]
+    )
     @click.argument('dependency', required=True)
-    def add_dependency(manager, profile_name, component, path, dependency):
+    def add_dependency(
+        manager, profile_name, component, path, dependency, registry_url, git, git_path, git_ref
+    ):
         """
         Add a dependency to the manifest file.
 
@@ -79,9 +103,20 @@ def init_manifest():
           Will add a component `example/cmp` with constraint `*`
         - $ compote manifest add-dependency example/cmp<=3.3.3
           Will add a component `example/cmp` with constraint `<=3.3.3`
+        - $ compote manifest add-dependency example/cmp --registry-url https://components-staging.espressif.com
+          Will add a component `example/cmp` from the staging registry with constraint `*`
+        - $ compote manifest add-dependency cmp --git https://github.com/espressif/example_components.git --git-path cmp
+          Will add a component `cmp` from the git repository with path `cmp`
         """
         manager.add_dependency(
-            dependency, profile_name=profile_name, component=component, path=path
+            dependency,
+            profile_name=profile_name,
+            component=component,
+            path=path,
+            registry_url=registry_url,
+            git=git,
+            git_path=git_path,
+            git_ref=git_ref,
         )
 
     return manifest

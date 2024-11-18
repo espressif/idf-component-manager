@@ -17,6 +17,7 @@ from pathlib import Path
 
 import requests
 from requests_toolbelt import MultipartEncoderMonitor
+from ruamel.yaml import YAML, CommentedMap
 
 from idf_component_manager.utils import ComponentSource
 from idf_component_tools import ComponentManagerSettings
@@ -27,7 +28,6 @@ from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.errors import (
     FatalError,
     InternalError,
-    ManifestError,
     NothingToDoError,
     VersionAlreadyExistsError,
     VersionNotFoundError,
@@ -64,7 +64,7 @@ from idf_component_tools.registry.service_details import (
     get_storage_client,
 )
 from idf_component_tools.semver import SimpleSpec, Version
-from idf_component_tools.sources import WebServiceSource
+from idf_component_tools.sources import GitSource, WebServiceSource
 from idf_component_tools.utils import ProjectRequirements
 
 from .cmake_component_requirements import (
@@ -172,15 +172,13 @@ class ComponentManager:
 
         if not manifest_dir.is_dir():
             raise FatalError(
-                'Directory "{}" does not exist! '
-                'Please specify a valid component under {} or try to use --path'.format(
-                    manifest_dir, self.path
-                )
+                f'Directory "{manifest_dir}" does not exist! '
+                f'Please specify a valid component under {self.path} or try to use --path'
             )
         if not manifest_dir.as_posix().startswith(self.path.as_posix()):
             raise FatalError(
-                'Directory "{}" is not under project directory! '
-                'Please specify a valid component under {}'.format(manifest_dir, self.path)
+                f'Directory "{manifest_dir}" is not under project directory! '
+                f'Please specify a valid component under {self.path}'
             )
 
         return manifest_dir.as_posix()
@@ -226,7 +224,7 @@ class ComponentManager:
         if project_path.is_file():
             raise FatalError(
                 'Your target path is not a directory. '
-                'Please remove the {} or use different target path.'.format(project_path.resolve()),
+                f'Please remove the {project_path.resolve()} or use different target path.',
                 exit_code=4,
             )
 
@@ -269,6 +267,10 @@ class ComponentManager:
         component: str = 'main',
         path: t.Optional[str] = None,
         profile_name: t.Optional[str] = None,
+        registry_url: t.Optional[str] = None,
+        git: t.Optional[str] = None,
+        git_path: str = '.',
+        git_ref: t.Optional[str] = None,
     ) -> None:
         manifest_filepath, _ = self._get_manifest(component=component, path=path)
 
@@ -280,34 +282,38 @@ class ComponentManager:
         elif is_component(Path.cwd()):
             component = os.path.basename(self.path)
 
-        match = re.match(WEB_DEPENDENCY_REGEX, dependency)
-        if match:
-            name, spec = match.groups()
+        if git:
+            name = dependency
+            GitSource(git=git, path=git_path).exists(git_ref)
         else:
-            raise FatalError(
-                f'Invalid dependency: "{dependency}". Please use format "namespace/name".'
-            )
+            match = re.match(WEB_DEPENDENCY_REGEX, dependency)
+            if match:
+                name, spec = match.groups()
+            else:
+                raise FatalError(
+                    f'Invalid dependency: "{dependency}". Please use format "namespace/name".'
+                )
 
-        if not spec:
-            spec = '*'
+            if not spec:
+                spec = '*'
 
-        try:
-            SimpleSpec(spec)
-        except ValueError:
-            raise FatalError(
-                'Invalid dependency version requirement: {}. '
-                'Please use format like ">=1" or "*".'.format(spec)
-            )
+            try:
+                SimpleSpec(spec)
+            except ValueError:
+                raise FatalError(
+                    f'Invalid dependency version requirement: {spec}. '
+                    'Please use format like ">=1" or "*".'
+                )
 
-        name = WebServiceSource().normalized_name(name)
-
-        # Check if dependency exists in the registry
-        # make sure it exists in the registry's storage url
-        client = get_storage_client(profile_name=profile_name).registry_storage_client
-        if not client:
-            raise InternalError()
-
-        client.component(component_name=name, version=spec)
+            name = WebServiceSource().normalized_name(name)
+            # Check if dependency exists in the registry
+            # make sure it exists in the registry's storage url
+            client = get_storage_client(
+                profile_name=profile_name, registry_url=registry_url
+            ).registry_storage_client
+            if not client:
+                raise InternalError()
+            client.component(component_name=name, version=spec)
 
         manifest_manager = ManifestManager(manifest_filepath, component)
         manifest = manifest_manager.load()
@@ -315,45 +321,45 @@ class ComponentManager:
         for dep in manifest.raw_requirements:
             if dep.name == name:
                 raise FatalError(
-                    'Dependency "{}" already exists for in manifest "{}"'.format(
-                        name, manifest_filepath
-                    )
+                    f'Dependency "{name}" already exists for in manifest "{manifest_filepath}"'
                 )
 
-        with open(manifest_filepath, encoding='utf-8') as file:
-            file_lines = file.readlines()
+        yaml = YAML()
+        with open(manifest_filepath, 'r', encoding='utf-8') as file:
+            manifest_data = yaml.load(file) or CommentedMap()
 
-        index = 0
-        if 'dependencies' in manifest_manager.manifest_tree.keys():
-            for i, line in enumerate(file_lines):
-                if line.startswith('dependencies:'):
-                    index = i + 1
-                    break
+        if 'dependencies' not in manifest_data:
+            manifest_data['dependencies'] = {}
+
+        dependency_data = {}
+        if git:
+            dependency_data['git'] = git
+            if git_path != '.':
+                dependency_data['path'] = git_path
+            if git_ref:
+                dependency_data['version'] = git_ref
+        elif registry_url:
+            dependency_data['version'] = spec
+            dependency_data['registry_url'] = registry_url
         else:
-            file_lines.append('\ndependencies:\n')
-            index = len(file_lines) + 1
+            # `spec` is a string for a simple dependency
+            dependency_data = spec  # type: ignore
 
-        file_lines.insert(index, f'  {name}: "{spec}"\n')
+        # Add or update the dependency in the 'dependencies' section
+        manifest_data['dependencies'][name] = dependency_data
 
-        # Check result for correctness
-        with tempfile.NamedTemporaryFile(delete=False) as temp_manifest_file:
-            temp_manifest_file.writelines(line.encode('utf-8') for line in file_lines)
+        with open(manifest_filepath, 'w', encoding='utf-8') as file:
+            yaml.dump(manifest_data, file)
 
-        try:
-            ManifestManager(temp_manifest_file.name, name).load()
-        except ManifestError:
-            raise ManifestError(
-                'Cannot update manifest file. '
-                "It's likely due to the 4 spaces used for "
-                'indentation we recommend using 2 spaces indent. '
-                'Please check the manifest file:\n{}'.format(manifest_filepath)
-            )
-
-        shutil.move(temp_manifest_file.name, manifest_filepath)
+        dependency_type = 'git' if git else 'dependency'
+        dependency_spec = f'"{name}"' if git else f'"{name}": "{spec}"'
         notice(
-            'Successfully added dependency "{}{}" to component "{}"'.format(
-                name, spec, manifest_manager.name
-            )
+            f'Successfully added {dependency_type} {dependency_spec} to component "{manifest_manager.name}"'
+        )
+        notice(
+            f'If you want to make additional changes to the manifest file at path {manifest_filepath} manually, '
+            'please refer to the documentation: '
+            'https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/manifest_file.html'
         )
 
     @general_error_handler
@@ -378,9 +384,9 @@ class ComponentManager:
             except ValueError:
                 raise FatalError(
                     'Version parameter must be either "git" or a valid version.\n'
-                    'Received: "{}"\n'
+                    f'Received: "{version}"\n'
                     'Documentation: https://docs.espressif.com/projects/idf-component-manager/en/'
-                    'latest/reference/versioning.html#versioning-scheme'.format(version)
+                    'latest/reference/versioning.html#versioning-scheme'
                 )
 
         manifest_manager = ManifestManager(
@@ -446,9 +452,7 @@ class ComponentManager:
 
         if version not in versions:
             raise VersionNotFoundError(
-                'Version {} of the component "{}" is not on the registry'.format(
-                    version, component_name
-                )
+                f'Version {version} of the component "{component_name}" is not on the registry'
             )
 
         api_client.delete_version(component_name=component_name, component_version=version)
@@ -470,9 +474,7 @@ class ComponentManager:
 
         if version not in versions:
             raise VersionNotFoundError(
-                'Version {} of the component "{}" is not on the registry'.format(
-                    version, component_name
-                )
+                f'Version {version} of the component "{component_name}" is not on the registry'
             )
 
         api_client.yank_version(
@@ -488,7 +490,8 @@ class ComponentManager:
 
     @general_error_handler
     def remove_managed_components(
-        self, **kwargs
+        self,
+        **kwargs,
     ):  # kwargs here to keep idf_extension.py compatibility
         managed_components_dir = Path(self.path, 'managed_components')
 
@@ -582,9 +585,7 @@ class ComponentManager:
                     return
 
                 raise VersionAlreadyExistsError(
-                    'Version {} of the component "{}" is already on the registry'.format(
-                        manifest.version, component_name
-                    )
+                    f'Version {manifest.version} of the component "{component_name}" is already on the registry'
                 )
         except (ComponentNotFound, VersionNotFound):
             # It's ok if component doesn't exist yet
@@ -626,7 +627,7 @@ class ComponentManager:
         notice(
             'Wait for processing, it is safe to press CTRL+C and exit\n'
             'You can check the state of processing by running CLI command '
-            '"compote component upload-status --job={} {}"'.format(job_id, profile_text)
+            f'"compote component upload-status --job={job_id} {profile_text}"'
         )
         upload_timeout = ComponentManagerSettings().VERSION_PROCESS_TIMEOUT
         timeout_at = datetime.now() + timedelta(seconds=upload_timeout)
@@ -771,11 +772,7 @@ class ComponentManager:
             for requirement in manifests:
                 if requirement.version:
                     file.write(
-                        'idf_component_set_property({} {} "{}")\n'.format(
-                            requirement.name,
-                            'COMPONENT_VERSION',
-                            requirement.version,
-                        )
+                        f'idf_component_set_property({requirement.name} COMPONENT_VERSION "{requirement.version}")\n'
                     )
 
             for is_root, group in enumerate([downloaded_components, root_managed_components]):
@@ -787,11 +784,7 @@ class ComponentManager:
                         )
                     )
                     file.write(
-                        'idf_component_set_property({} {} "{}")\n'.format(
-                            downloaded_component.name,
-                            'COMPONENT_VERSION',
-                            downloaded_component.version,
-                        )
+                        f'idf_component_set_property({downloaded_component.name} COMPONENT_VERSION "{downloaded_component.version}")\n'
                     )
 
                     if downloaded_component.targets:

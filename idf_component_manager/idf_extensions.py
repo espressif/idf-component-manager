@@ -37,17 +37,35 @@ NAME: t.List[t.Dict[str, t.Any]] = [
     },
 ]
 
+GIT_OPTIONS = [
+    {
+        'names': ['--git'],
+        'help': 'Git URL of the component.',
+        'required': False,
+    },
+    {
+        'names': ['--git-path'],
+        'help': 'Path to the component in the git repository.',
+        'default': '.',
+    },
+    {
+        'names': ['--git-ref'],
+        'help': 'Git reference (branch, tag, commit SHA) of the component.',
+        'required': False,
+    },
+]
+
 REGISTRY_OPTIONS = PROFILE_NAME + NAMESPACE + NAME
 
 LOCAL_MANIFEST_OPTIONS: t.List[t.Dict[str, t.Any]] = [
     {
         'names': ['--component'],
         'default': 'main',
-        'help': 'Name of the component in the project.',
+        'help': 'Name of the component in the project where the dependency will be added.',
     },
     {
         'names': ['-p', '--path'],
-        'help': 'Path to the component. The component name is ignored when path the is specified.',
+        'help': 'Path to the component where the dependency will be added. The component name is ignored when path the is specified.',
         'default': None,
     },
 ]
@@ -140,7 +158,7 @@ def action_extensions(base_actions, project_path):  # noqa: ARG001
                         'required': True,
                     },
                 ],
-                'options': LOCAL_MANIFEST_OPTIONS + PROFILE_NAME,
+                'options': LOCAL_MANIFEST_OPTIONS + PROFILE_NAME + GIT_OPTIONS,
             },
             'remove_managed_components': {'callback': callback, 'hidden': True},
             'upload-component': {
