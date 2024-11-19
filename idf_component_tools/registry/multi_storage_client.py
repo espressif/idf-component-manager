@@ -54,10 +54,11 @@ class MultiStorageClient:
     @property
     @lru_cache(1)
     def registry_storage_url(self) -> t.Optional[str]:
-        if self.registry_url:
-            if self.registry_url == IDF_COMPONENT_REGISTRY_URL:
-                return IDF_COMPONENT_STORAGE_URL
-
+        if self.registry_url and self.registry_url.rstrip('/') == IDF_COMPONENT_REGISTRY_URL.rstrip(
+            '/'
+        ):
+            return IDF_COMPONENT_STORAGE_URL
+        elif self.registry_url:
             return APIClient(self.registry_url).api_information()['components_base_url']
 
         return None
