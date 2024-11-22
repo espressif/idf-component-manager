@@ -50,19 +50,13 @@ integration_test:
       grep -v "^idf-component-manager" \
       > ~/.espressif/${CI_PYTHON_CONSTRAINT_FILE}
 
-    - REQ_FILE="/esp-idf/tools/requirements/requirements.core.txt"
-    - ORIGINAL_REQ=$(grep idf-component-manager ${REQ_FILE})
-    # Replace component manager in the requirements file with local copy
-    - sed -i "\+${ORIGINAL_REQ}+c${WHEEL}" ${REQ_FILE}
     - /esp-idf/install.sh
-    # And replace it back to avoid export.sh check dependencies error
-    - sed -i "\+${WHEEL}+c${ORIGINAL_REQ}" ${REQ_FILE}
     - . /esp-idf/export.sh
 
     # Install the test dependencies
+    - pip uninstall -y idf-component-manager
     - pip install "${WHEEL}[test]"
   script:
-    - ls dist
     - |
       pytest -c "pytest_integration.ini" \
       --log-cli-level=INFO \
