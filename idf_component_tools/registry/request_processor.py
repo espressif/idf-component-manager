@@ -9,7 +9,7 @@ import requests
 from pydantic import ValidationError
 from requests import Response
 
-from idf_component_tools import ComponentManagerSettings
+from idf_component_tools import ComponentManagerSettings, debug
 
 from .api_models import ApiBaseModel, ErrorResponse
 from .client_errors import (
@@ -44,6 +44,7 @@ def make_request(
     timeout: t.Union[float, t.Tuple[float, float]],
 ) -> Response:
     try:
+        debug(f'HTTP request: {method.upper()} {endpoint}')
         response = session.request(
             method,
             endpoint,
@@ -59,6 +60,7 @@ def make_request(
     except requests.exceptions.RequestException as e:
         raise APIClientError(f'HTTP request error {e}', endpoint=endpoint)
 
+    debug(f'HTTP response: {response.status_code} total: {response.elapsed.total_seconds()}s')
     return response
 
 
