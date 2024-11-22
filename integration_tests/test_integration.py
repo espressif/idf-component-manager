@@ -147,7 +147,7 @@ def test_root_dep_failed(project):
 @pytest.mark.parametrize('project', [{}], indirect=True)
 def test_add_dependency(project):
     res = project_action(project, 'add-dependency', 'example/cmp^3.3.8')
-    assert 'Successfully added dependency "example/cmp^3.3.8" to component "main"' in res
+    assert 'Successfully added dependency "example/cmp": "^3.3.8" to component "main"' in res
 
 
 @pytest.mark.parametrize('project', [{}], indirect=True)
@@ -155,7 +155,7 @@ def test_add_dependency_with_path(project):
     path = os.path.join(project, 'project', 'src')
     os.makedirs(path)
     res = project_action(project, 'add-dependency', '--path', path, 'lvgl/lvgl>=8.*')
-    assert 'Successfully added dependency "lvgl/lvgl>=8.*" to component "src"' in res
+    assert 'Successfully added dependency "lvgl/lvgl": ">=8.*" to component "src"' in res
 
 
 @pytest.mark.parametrize('project', [{}], indirect=True)
