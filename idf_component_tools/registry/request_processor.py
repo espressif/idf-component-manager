@@ -25,6 +25,9 @@ DEFAULT_REQUEST_TIMEOUT = (
     60.1,  #  Read timeout
 )
 
+# Storage for caching requests
+_request_cache: t.Dict[t.Tuple[t.Any], Response] = {}
+
 
 def join_url(*args) -> str:
     """
@@ -34,6 +37,23 @@ def join_url(*args) -> str:
     return '/'.join(parts)
 
 
+def cache_request(func):
+    """Decorator to conditionally cache function output based on CACHE_HTTP_REQUESTS"""
+
+    def wrapper(*args, **kwargs):
+        if ComponentManagerSettings().CACHE_HTTP_REQUESTS:
+            cache_key = (args, frozenset(kwargs.items()))
+            if cache_key in _request_cache:
+                return _request_cache[cache_key]
+            result = func(*args, **kwargs)
+            _request_cache[cache_key] = result
+            return result
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+@cache_request
 def make_request(
     method: str,
     session: requests.Session,

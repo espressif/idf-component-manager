@@ -109,6 +109,7 @@ class ComponentManagerSettings(BaseSettings):
     )
     API_TOKEN: t.Optional[str] = None
     VERIFY_SSL: t.Union[bool, str] = True
+    CACHE_HTTP_REQUESTS: bool = True
     PROFILE: t.Optional[str] = Field(
         default=None,
         validation_alias=AliasChoices(
