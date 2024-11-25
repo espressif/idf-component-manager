@@ -110,7 +110,7 @@ For Chinese users, we recommend using the following storage URL to experience fa
        storage_url:
          - "https://components-file.espressif.cn"
 
-Additionally, if you have a local storage server, you can also add the local storage URL to the configuration file:
+Additionally, if you have a :doc:`local mirror set <../guides/partial_mirror>`, you can also add the local storage URL to the configuration file:
 
 .. code:: yaml
 
@@ -120,6 +120,8 @@ Additionally, if you have a local storage server, you can also add the local sto
          - file:///Users/username/storage/  # Unix path
          # - file://C:/storage/ # Windows path
          - http://localhost:9004
+
+.. _url_precedence:
 
 ***************************************
  URLs Precedence While Version Solving
