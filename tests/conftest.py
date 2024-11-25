@@ -36,6 +36,11 @@ def monkeypatch_idf_version_and_tools_path(monkeypatch, tmp_path):
     monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
 
 
+@pytest.fixture(autouse=True)
+def monkeypatch_disable_request_cache(monkeypatch):
+    monkeypatch.setenv('IDF_COMPONENT_CACHE_HTTP_REQUESTS', '0')
+
+
 @pytest.fixture()
 def valid_manifest():
     return {

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import platform
 import typing as t
+from functools import lru_cache
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -24,6 +25,7 @@ from .api_models import ComponentResponse
 MAX_RETRIES = 3
 
 
+@lru_cache(maxsize=None)
 def create_session(
     token: t.Optional[str] = None,
 ) -> requests.Session:

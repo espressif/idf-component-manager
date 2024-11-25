@@ -1,14 +1,17 @@
 # IDF Component Manager
 
 The IDF Component Manager is a tool that ensures the correct versions of all components required for a successful build are present in your [ESP-IDF](https://www.espressif.com/en/products/sdks/esp-idf) project.
+
 - The Component Manager downloads the dependencies for your project automatically during a `CMake` run.
 - The components can be sourced either from [the ESP Component Registry](https://components.espressif.com/) or from a Git repository.
 - A list of components can be found at https://components.espressif.com/
 
 ## Contributing to the project
+
 See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Resources
+
 - [Offical Documentation at docs.espressif.com](https://docs.espressif.com/projects/idf-component-manager/en/latest/)
 - The Python Package Index project page https://pypi.org/project/idf-component-manager/
 - The Component Manager section in the [ESP-IDF Programming Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/tools/idf-component-manager.html)
@@ -42,7 +45,6 @@ python -m pip uninstall -y idf-component-manager
 # install the development version (from the main branch)
 python -m pip install git+https://github.com/espressif/idf-component-manager.git@main
 ```
-
 
 ## Disabling the Component Manager
 
@@ -164,3 +166,4 @@ examples:
 | IDF_COMPONENT_SUPPRESS_UNKNOWN_FILE_WARNINGS | 0                                       | Ignore unknown files in managed_components directory                                                          |
 | IDF_COMPONENT_CHECK_NEW_VERSION              | 1                                       | Check for new versions of components                                                                          |
 | IDF_COMPONENT_VERIFY_SSL                     | 1                                       | Verify SSL certificates when making requests to the registry, set it 0 to disable or provide a CA bundle path |
+| IDF_COMPONENT_CACHE_HTTP_REQUESTS            | 1                                       | Cache HTTP requests to the registry during runtime, set it 0 to disable                                       |
