@@ -37,17 +37,37 @@ def join_url(*args) -> str:
     return '/'.join(parts)
 
 
+def make_hashable(input_object):
+    """Convert input_object to a hashable object"""
+    if isinstance(input_object, (tuple, list)):
+        return tuple(make_hashable(e) for e in input_object)
+    elif isinstance(input_object, dict):
+        return tuple(sorted((k, make_hashable(v)) for k, v in input_object.items()))
+    elif isinstance(input_object, set):
+        return frozenset(make_hashable(e) for e in input_object)
+    else:
+        return input_object
+
+
+def cache_to_dict(cache_dict: t.Dict[t.Any, t.Any], func: t.Callable, *args, **kwargs) -> t.Any:
+    """Cache the result of a function call in a dictionary"""
+    cache_key = (make_hashable(args), make_hashable(kwargs))
+    if cache_key in cache_dict:
+        return cache_dict[cache_key]
+    result = func(*args, **kwargs)
+    cache_dict[cache_key] = result
+    return result
+
+
 def cache_request(func):
-    """Decorator to conditionally cache function output based on CACHE_HTTP_REQUESTS"""
+    """Decorator to conditionally cache GET and HEAD requests based on CACHE_HTTP_REQUESTS"""
 
     def wrapper(*args, **kwargs):
-        if ComponentManagerSettings().CACHE_HTTP_REQUESTS:
-            cache_key = (args, frozenset(kwargs.items()))
-            if cache_key in _request_cache:
-                return _request_cache[cache_key]
-            result = func(*args, **kwargs)
-            _request_cache[cache_key] = result
-            return result
+        if ComponentManagerSettings().CACHE_HTTP_REQUESTS and kwargs.get('method', '').lower() in [
+            'get',
+            'head',
+        ]:
+            return cache_to_dict(_request_cache, func, *args, **kwargs)
         return func(*args, **kwargs)
 
     return wrapper
@@ -55,13 +75,13 @@ def cache_request(func):
 
 @cache_request
 def make_request(
-    method: str,
     session: requests.Session,
     endpoint: str,
     data: t.Optional[t.Dict],
     json: t.Optional[t.Dict],
     headers: t.Optional[t.Dict],
     timeout: t.Union[float, t.Tuple[float, float]],
+    method: str = 'GET',
 ) -> Response:
     try:
         debug(f'HTTP request: {method.upper()} {endpoint}')
@@ -172,9 +192,7 @@ def get_token_scope(
     # Check if user is uploading a component
     if path[-1] == 'versions' and method == 'post':
         # Check if the token has write permissions
-        response = make_request(
-            'get', session, url + '/api/tokens/current', None, None, None, timeout
-        )
+        response = make_request(session, url + '/api/tokens/current', None, None, None, timeout)
         scope = response.json()['scope'] if response.status_code == HTTPStatus.OK else ''
         handle_response_errors(response, url + '/api/tokens/current', False, scope)
         return scope
@@ -203,7 +221,7 @@ def base_request(
         request_timeout = DEFAULT_REQUEST_TIMEOUT
 
     token_scope = get_token_scope(method, session, url, path, request_timeout)
-    response = make_request(method, session, endpoint, data, json, headers, request_timeout)
+    response = make_request(session, endpoint, data, json, headers, request_timeout, method=method)
     response_json = handle_response_errors(response, endpoint, use_storage, token_scope)
 
     if schema is None:

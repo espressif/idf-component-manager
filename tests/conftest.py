@@ -37,7 +37,9 @@ def monkeypatch_idf_version_and_tools_path(monkeypatch, tmp_path):
 
 
 @pytest.fixture(autouse=True)
-def monkeypatch_disable_request_cache(monkeypatch):
+def monkeypatch_disable_request_cache(request, monkeypatch):
+    if 'enable_request_cache' in request.keywords:
+        return
     monkeypatch.setenv('IDF_COMPONENT_CACHE_HTTP_REQUESTS', '0')
 
 
