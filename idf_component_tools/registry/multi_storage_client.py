@@ -11,7 +11,7 @@ from idf_component_tools.constants import (
     IDF_COMPONENT_REGISTRY_URL,
     IDF_COMPONENT_STORAGE_URL,
 )
-from idf_component_tools.messages import warn
+from idf_component_tools.messages import debug, warn
 from idf_component_tools.utils import ComponentWithVersions
 
 from ..manifest import ComponentRequirement
@@ -95,15 +95,28 @@ class MultiStorageClient:
 
         for storage_client in self.storage_clients:
             try:
+                debug(
+                    'Fetching versions of component "%s" with spec "%s" from %s',
+                    component_name,
+                    spec,
+                    storage_client.storage_url,
+                )
                 _cmp_with_versions = storage_client.versions(
                     component_name=component_name,
                     spec=spec,
                 )
+                debug(
+                    'Fetched versions: %s',
+                    ', '.join(str(version) for version in _cmp_with_versions.versions),
+                )
+
                 cmp_with_versions.merge(_cmp_with_versions)
             except ComponentNotFound:
+                debug('Nothing found')
                 pass
 
             if self.local_first_mode and cmp_with_versions.versions:
+                debug('local_first_mode is enabled, skipping checking other storage clients')
                 return cmp_with_versions
 
         if not cmp_with_versions.versions:
