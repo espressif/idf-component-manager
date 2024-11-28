@@ -3,6 +3,7 @@
 
 import enum
 import re
+from enum import Enum
 
 import click
 
@@ -83,3 +84,8 @@ class ComponentSource(str, enum.Enum):
             return NotImplemented
 
         return not self < other
+
+
+class VersionSolverResolution(str, Enum):
+    ALL = 'all'
+    LATEST = 'latest'

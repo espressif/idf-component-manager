@@ -12,6 +12,7 @@ from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
 
 from idf_component_manager.core_utils import parse_component_name_spec
+from idf_component_manager.utils import VersionSolverResolution
 from idf_component_tools import get_logger
 from idf_component_tools.build_system_tools import is_component
 from idf_component_tools.constants import MANIFEST_FILENAME
@@ -159,6 +160,7 @@ def prepare_component_versions(
     requirements: t.List[ComponentRequirement],
     *,
     progress_bar: t.Optional[tqdm] = None,
+    resolution: VersionSolverResolution = VersionSolverResolution.ALL,
 ) -> PartialMirror:
     # closure to avoid mutable default argument
     solved_requirements_cache: t.Set[ComponentRequirement] = set()
@@ -179,7 +181,9 @@ def prepare_component_versions(
             solved_requirements_cache.add(req)
 
             try:
-                component_with_versions, storage_url = client.get_component_versions(req)
+                component_with_versions, storage_url = client.get_component_versions(
+                    req, resolution=resolution
+                )
                 if not component_with_versions.versions:
                     raise VersionNotFound()
             except (VersionNotFound, ComponentNotFound):
@@ -240,6 +244,7 @@ def collect_component_versions(
     path: t.Union[str, Path],
     component_specs: t.Optional[t.List[str]] = None,
     recursive: bool = False,
+    resolution: VersionSolverResolution = VersionSolverResolution.ALL,
 ) -> PartialMirror:
     path = Path(path)
 
@@ -265,6 +270,7 @@ def collect_component_versions(
                     client,
                     dependencies,
                     progress_bar=progress_bar,
+                    resolution=resolution,
                 )
     else:
         paths = [path]
@@ -281,6 +287,7 @@ def collect_component_versions(
                             client,
                             manifest.raw_requirements,
                             progress_bar=progress_bar,
+                            resolution=resolution,
                         )
                     )
 
@@ -295,6 +302,7 @@ def sync_components(
     output_dir: Path,
     components: t.Optional[t.List[str]] = None,
     recursive: bool = False,
+    resolution: VersionSolverResolution = VersionSolverResolution.ALL,
 ) -> None:
     output_dir = Path(output_dir)
     notice(f'Collecting local storage from folder "{output_dir.absolute()}"')
@@ -306,6 +314,7 @@ def sync_components(
         work_dir,
         component_specs=components,
         recursive=recursive,
+        resolution=resolution,
     )
     if not len(new_component_versions.data):
         raise SyncError('No component need to be downloaded with the specified requirements')

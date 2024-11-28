@@ -5,6 +5,7 @@
 import typing as t
 from functools import lru_cache
 
+from idf_component_manager.utils import VersionSolverResolution
 from idf_component_tools.constants import (
     DEFAULT_NAMESPACE,
     IDF_COMPONENT_REGISTRY_URL,
@@ -14,6 +15,7 @@ from idf_component_tools.messages import warn
 from idf_component_tools.utils import ComponentWithVersions
 
 from ..manifest import ComponentRequirement
+from ..semver import Version
 from .api_client import APIClient
 from .client_errors import ComponentNotFound, VersionNotFound
 from .storage_client import StorageClient
@@ -127,7 +129,10 @@ class MultiStorageClient:
         raise VersionNotFound(error_message)
 
     def get_component_versions(
-        self, requirement: ComponentRequirement
+        self,
+        requirement: ComponentRequirement,
+        *,
+        resolution: VersionSolverResolution = VersionSolverResolution.ALL,
     ) -> t.Tuple[ComponentWithVersions, str]:
         """
         Get all versions of the component from all storage clients (local storages are ignored)
@@ -135,6 +140,7 @@ class MultiStorageClient:
         Include all versions even the optional ones
 
         :param requirement: ComponentRequirement instance
+        :param resolution: The resolution of the version solver
         :return: (ComponentWithVersions, storage_url)
         """
         # local_storage_urls shall not be used when create partial mirror
@@ -154,12 +160,29 @@ class MultiStorageClient:
         for storage_client in _clients:
             try:
                 for spec in specs:
-                    res.merge(
-                        storage_client.versions(
-                            component_name=requirement.name,
-                            spec=spec,
-                        )
-                    )
+                    new_res = storage_client.versions(component_name=requirement.name, spec=spec)
+
+                    # solve resolution here. for resolution=latest we need to keep one for each spec
+                    # to make sure the spec is solvable
+                    prerelease_versions, stable_versions = [], []
+                    for version in new_res.versions:
+                        if Version(version.version).prerelease:
+                            prerelease_versions.append(version)
+                        else:
+                            stable_versions.append(version)
+
+                    if prerelease_versions and not stable_versions:
+                        warn('No stable versions found. Using pre-release versions.')
+                        version_group = prerelease_versions
+                    else:
+                        version_group = stable_versions
+
+                    if resolution == VersionSolverResolution.LATEST:
+                        new_res.versions = [version_group[0]] if version_group else []
+                    else:
+                        new_res.versions = version_group
+
+                    res.merge(new_res)
             except (
                 VersionNotFound,
                 ComponentNotFound,

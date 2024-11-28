@@ -95,3 +95,5 @@ repos:
           - "3" # Level of entropy for hex strings
           - --exclude-lines
           - "commit_sha:"  # Exclude lines containing 'commit_sha:'
+          - --exclude-lines
+          - "\\s+string: !!binary |"
