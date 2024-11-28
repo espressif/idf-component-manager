@@ -108,7 +108,6 @@ def handle_response_errors(
     response: requests.Response,
     endpoint: str,
     use_storage: bool,
-    token_scope: str,
 ) -> t.Dict:
     if response.status_code == HTTPStatus.NO_CONTENT:
         return {}
@@ -121,7 +120,7 @@ def handle_response_errors(
                 endpoint=endpoint,
                 status_code=response.status_code,
             )
-        handle_4xx_error(response, token_scope)
+        handle_4xx_error(response)
     elif 500 <= response.status_code < 600:
         raise APIClientError(
             'Internal server error happened while processing request.',
@@ -132,7 +131,7 @@ def handle_response_errors(
     return response.json()
 
 
-def handle_4xx_error(response: requests.Response, token_scope: str) -> None:
+def handle_4xx_error(response: requests.Response) -> None:
     if response.status_code == HTTPStatus.REQUEST_ENTITY_TOO_LARGE:
         raise ContentTooLargeError(
             'Error during request. The provided content is too large '
@@ -142,17 +141,7 @@ def handle_4xx_error(response: requests.Response, token_scope: str) -> None:
         )
 
     if response.status_code == HTTPStatus.FORBIDDEN:
-        if 'write:components' not in token_scope.split():
-            raise APIClientError(
-                f'Your token does not have permissions to perform this action. URL: {response.url}. '
-                f'Token scope: {token_scope}'
-            )
-        else:
-            raise APIClientError(
-                'You do not have namespace/component role to perform this action. '
-                'Contact the namespace/component owner/maintainer to add your ESP Component Registry '
-                f'account to the namespace/component. URL: {response.url}',
-            )
+        raise APIClientError(' '.join(response.json()['messages']) + f'\nURL: {response.url}')
 
     try:
         error = ErrorResponse.model_validate(response.json())
@@ -182,23 +171,6 @@ def handle_4xx_error(response: requests.Response, token_scope: str) -> None:
         )
 
 
-def get_token_scope(
-    method: str,
-    session: requests.Session,
-    url: str,
-    path: t.List[str],
-    timeout: t.Union[float, t.Tuple[float, float]],
-) -> str:
-    # Check if user is uploading a component
-    if path[-1] == 'versions' and method == 'post':
-        # Check if the token has write permissions
-        response = make_request(session, url + '/api/tokens/current', None, None, None, timeout)
-        scope = response.json()['scope'] if response.status_code == HTTPStatus.OK else ''
-        handle_response_errors(response, url + '/api/tokens/current', False, scope)
-        return scope
-    return ''
-
-
 def base_request(
     url: str,
     session: requests.Session,
@@ -220,9 +192,8 @@ def base_request(
     if request_timeout is None:
         request_timeout = DEFAULT_REQUEST_TIMEOUT
 
-    token_scope = get_token_scope(method, session, url, path, request_timeout)
     response = make_request(session, endpoint, data, json, headers, request_timeout, method=method)
-    response_json = handle_response_errors(response, endpoint, use_storage, token_scope)
+    response_json = handle_response_errors(response, endpoint, use_storage)
 
     if schema is None:
         return response_json
