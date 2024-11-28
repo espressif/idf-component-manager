@@ -159,17 +159,21 @@ def prepare_component_versions(
     client: MultiStorageClient,
     requirements: t.List[ComponentRequirement],
     *,
+    # not required
     progress_bar: t.Optional[tqdm] = None,
     resolution: VersionSolverResolution = VersionSolverResolution.ALL,
+    # caches
+    solved_requirements_cache: t.Set[ComponentRequirement] = None,  # type: ignore
+    recorded_versions_cache: t.Dict[str, t.Set[Version]] = None,  # type: ignore
 ) -> PartialMirror:
-    # closure to avoid mutable default argument
-    solved_requirements_cache: t.Set[ComponentRequirement] = set()
-    recorded_versions: t.Dict[str, t.Set[Version]] = defaultdict(set)  # comp: versions
+    if solved_requirements_cache is None:
+        solved_requirements_cache = set()
+    if recorded_versions_cache is None:
+        recorded_versions_cache = defaultdict(set)
 
-    def _prepare_component_versions(_reqs: t.List[ComponentRequirement]) -> PartialMirror:
-        nonlocal solved_requirements_cache
-        nonlocal recorded_versions
-
+    def _prepare_component_versions(
+        _reqs: t.List[ComponentRequirement],
+    ) -> PartialMirror:
         _partial_mirror = PartialMirror()
         for req in _reqs:
             if req.source.type != 'service':
@@ -203,8 +207,8 @@ def prepare_component_versions(
                 )
 
                 if progress_bar is not None:
-                    if version.version.semver not in recorded_versions.get(req.name, set()):
-                        recorded_versions[req.name].add(version.version.semver)
+                    if version.version.semver not in recorded_versions_cache.get(req.name, set()):
+                        recorded_versions_cache[req.name].add(version.version.semver)
                         progress_bar.update(1)
 
                 _partial_mirror.merge(
@@ -247,11 +251,13 @@ def collect_component_versions(
     resolution: VersionSolverResolution = VersionSolverResolution.ALL,
 ) -> PartialMirror:
     path = Path(path)
-
     progress_bar = tqdm(
         desc='Collecting required components',
         bar_format='{desc}: {n_fmt}',
     )
+    solved_requirements_cache: t.Set[ComponentRequirement] = set()
+    recorded_versions_cache: t.Dict[str, t.Set[Version]] = defaultdict(set)
+
     if component_specs:
         dependencies = []
         for component_requirements in component_specs:
@@ -271,6 +277,8 @@ def collect_component_versions(
                     dependencies,
                     progress_bar=progress_bar,
                     resolution=resolution,
+                    solved_requirements_cache=solved_requirements_cache,
+                    recorded_versions_cache=recorded_versions_cache,
                 )
     else:
         paths = [path]
@@ -288,6 +296,8 @@ def collect_component_versions(
                             manifest.raw_requirements,
                             progress_bar=progress_bar,
                             resolution=resolution,
+                            solved_requirements_cache=solved_requirements_cache,
+                            recorded_versions_cache=recorded_versions_cache,
                         )
                     )
 
