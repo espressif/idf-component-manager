@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 import sys
+from contextlib import contextmanager
 
 from colorama import Fore
 
@@ -83,6 +84,19 @@ class ComponentManagerFormatter(logging.Formatter):
         else:
             record.msg = f'{self.PREFIX[record.levelno]}: {record.msg}'
         return super().format(record)
+
+
+@contextmanager
+def suppress_logging(level: int = logging.CRITICAL):
+    """Suppress logging temporarily"""
+    previous = get_logger().getEffectiveLevel()
+
+    logging.disable(level)
+
+    try:
+        yield
+    finally:
+        logging.disable(previous)
 
 
 def setup_logging(warnings_as_errors: bool = False) -> None:

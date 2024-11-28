@@ -34,7 +34,11 @@ from idf_component_tools.errors import (
     MetadataKeyError,
 )
 from idf_component_tools.hash_tools.calculate import hash_object
+from idf_component_tools.logging import suppress_logging
+from idf_component_tools.manager import UploadMode
 from idf_component_tools.messages import notice
+from idf_component_tools.registry.api_models import DependencyResponse
+from idf_component_tools.semver import Version
 from idf_component_tools.sources import BaseSource, LocalSource, Source
 from idf_component_tools.utils import (
     BOOL_MARKER,
@@ -52,9 +56,6 @@ from idf_component_tools.utils import (
     validation_error_to_str,
 )
 
-from ..manager import UploadMode
-from ..registry.api_models import DependencyResponse
-from ..semver import Version
 from .constants import COMPILED_FULL_SLUG_REGEX, known_targets
 from .if_parser import IfClause, parse_if_clause
 
@@ -73,7 +74,8 @@ class OptionalDependency(BaseModel):
         # trade off for better error messages
         try:
             obj = parse_if_clause(v)
-            obj.get_value()
+            with suppress_logging():
+                obj.get_value()
         except ParseException:
             raise ValueError('Invalid syntax: "{}"'.format(v))
 
