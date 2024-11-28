@@ -26,6 +26,10 @@ You may also set the environment variable ``IDF_TOOLS_PATH`` to specify a differ
  Configuration File
 ********************
 
+.. versionadded:: 2.1
+
+   Support local storage mirror and ``local_storage_url`` field.
+
 Each profile supports the following fields related to the URLs:
 
 .. list-table::
