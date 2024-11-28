@@ -18,6 +18,7 @@ from pydantic import (
     HttpUrl,
     PrivateAttr,
     TypeAdapter,
+    ValidationError,
     model_validator,
 )
 from pydantic import BaseModel as _BaseModel
@@ -101,16 +102,21 @@ UniqueTagListField = Annotated[
 ]
 
 STR_MARKER = '__str__'
-MODEL_MARKER = '__model__'
+DICT_MARKER = '__dict__'
 BOOL_MARKER = '__bool__'
+DEFAULT_MARKER = '__default__'
+NONE_MARKER = '__none__'
+LIST_MARKER = '__list__'
+
+ALL_MARKERS = [STR_MARKER, DICT_MARKER, BOOL_MARKER, DEFAULT_MARKER, NONE_MARKER, LIST_MARKER]
 
 
-def str_model_discriminator(v: t.Any) -> t.Optional[str]:
+def str_dict_discriminator(v: t.Any) -> t.Optional[str]:
     if isinstance(v, str):
         return STR_MARKER
 
     if isinstance(v, dict):
-        return MODEL_MARKER
+        return DICT_MARKER
 
     return None
 
@@ -121,6 +127,48 @@ def bool_str_discriminator(v: t.Any) -> t.Optional[str]:
 
     if isinstance(v, bool):
         return BOOL_MARKER
+
+    return None
+
+
+def default_or_str_or_none_discriminator(v: t.Any) -> t.Optional[str]:
+    if v is None:
+        return NONE_MARKER
+
+    if isinstance(v, str):
+        if v == 'default':
+            return DEFAULT_MARKER
+
+        return STR_MARKER
+
+    return None
+
+
+def default_or_str_or_list_or_none_discriminator(v: t.Any) -> t.Optional[str]:
+    if v is None:
+        return NONE_MARKER
+
+    if isinstance(v, str):
+        if v == 'default':
+            return DEFAULT_MARKER
+
+        return STR_MARKER
+
+    if isinstance(v, list):
+        return LIST_MARKER
+
+    return None
+
+
+def str_or_list_or_none_discriminator(v: t.Any) -> t.Optional[str]:
+    if v is None:
+        return NONE_MARKER
+
+    if isinstance(v, str):
+        return STR_MARKER
+
+    if isinstance(v, list):
+        return LIST_MARKER
 
     return None
 
@@ -419,8 +467,12 @@ def validation_error_to_str(error: ErrorDetails) -> str:
     for _l in loc:
         if isinstance(_l, str):
             # these are just markers
-            if _l not in [STR_MARKER, MODEL_MARKER, BOOL_MARKER]:
-                fields.append(_l)
+            if _l in ALL_MARKERS:
+                continue
+            # lambdas...
+            if 'lambda' in _l:
+                continue
+            fields.append(_l)
         elif isinstance(_l, int):
             fields.append(f'[{_l}]')  # index
 
@@ -437,6 +489,16 @@ def validation_error_to_str(error: ErrorDetails) -> str:
         field_msg = ''
 
     return field_msg + msg
+
+
+def polish_validation_error(err: ValidationError):
+    error_msgs = []
+    for e in err.errors(include_url=False):
+        new_msg = validation_error_to_str(e)
+        if new_msg not in error_msgs:
+            error_msgs.append(new_msg)
+
+    return '\n'.join(error_msgs)
 
 
 def subst_vars_in_str(s: str, env: t.Dict[str, t.Any] = None) -> str:  # type: ignore

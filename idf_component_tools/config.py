@@ -9,6 +9,8 @@ from pathlib import Path
 
 import yaml
 from pydantic import (
+    Discriminator,
+    Tag,
     ValidationError,
     field_validator,
 )
@@ -18,30 +20,50 @@ from idf_component_tools.constants import (
 )
 from idf_component_tools.errors import FatalError
 from idf_component_tools.utils import (
+    Annotated,
     BaseModel,
     Literal,
     UrlField,
     UrlOrFileField,
-    validation_error_to_str,
+    default_or_str_or_list_or_none_discriminator,
+    default_or_str_or_none_discriminator,
+    polish_validation_error,
+    str_or_list_or_none_discriminator,
 )
 
 from .build_system_tools import get_idf_version
 
-RegistryUrlField = t.Union[
-    Literal['default'],
-    UrlField,
-    None,
+RegistryUrlField = Annotated[
+    t.Union[
+        Annotated[Literal['default'], Tag('__default__')],
+        Annotated[UrlField, Tag('__str__')],
+        Annotated[None, Tag('__none__')],
+    ],
+    Discriminator(
+        default_or_str_or_none_discriminator,
+    ),
 ]
-StorageUrlField = t.Union[
-    Literal['default'],
-    UrlOrFileField,
-    t.List[UrlOrFileField],
-    None,
+
+StorageUrlField = Annotated[
+    t.Union[
+        Annotated[Literal['default'], Tag('__default__')],
+        Annotated[UrlOrFileField, Tag('__str__')],
+        Annotated[t.List[UrlOrFileField], Tag('__list__')],
+        Annotated[None, Tag('__none__')],
+    ],
+    Discriminator(
+        default_or_str_or_list_or_none_discriminator,
+    ),
 ]
-LocalStorageUrlField = t.Union[
-    UrlOrFileField,
-    t.List[UrlOrFileField],
-    None,
+LocalStorageUrlField = Annotated[
+    t.Union[
+        Annotated[UrlOrFileField, Tag('__str__')],
+        Annotated[t.List[UrlOrFileField], Tag('__list__')],
+        Annotated[None, Tag('__none__')],
+    ],
+    Discriminator(
+        str_or_list_or_none_discriminator,
+    ),
 ]
 
 
@@ -106,16 +128,18 @@ class ConfigManager:
                 return self.validate(yaml.safe_load(f.read()))
             except yaml.YAMLError:
                 raise ConfigError(
-                    'Cannot parse config file. '
-                    'Please check that\n\t{}\nis valid YAML file\n'.format(self.config_path)
+                    f'Invalid config file: {self.config_path}\n'
+                    f'Please check if the file is in valid YAML format'
                 )
+            except ConfigError as e:
+                raise ConfigError(f'Invalid config file: {self.config_path}\n{e}')
 
     @classmethod
     def validate(cls, data: t.Any) -> Config:
         try:
             return Config.model_validate(data)
         except ValidationError as e:
-            raise ConfigError('\n'.join([validation_error_to_str(err) for err in e.errors()]))
+            raise ConfigError(polish_validation_error(e))
 
     def dump(self, config: Config) -> None:
         """Writes config to disk"""

@@ -42,7 +42,7 @@ from idf_component_tools.semver import Version
 from idf_component_tools.sources import BaseSource, LocalSource, Source
 from idf_component_tools.utils import (
     BOOL_MARKER,
-    MODEL_MARKER,
+    DICT_MARKER,
     STR_MARKER,
     Annotated,
     BaseModel,
@@ -52,7 +52,8 @@ from idf_component_tools.utils import (
     UniqueTagListField,
     UrlField,
     bool_str_discriminator,
-    str_model_discriminator,
+    polish_validation_error,
+    str_dict_discriminator,
     validation_error_to_str,
 )
 
@@ -387,10 +388,10 @@ class Manifest(BaseModel):
         Annotated[
             t.Union[
                 Annotated[str, Tag(STR_MARKER)],
-                Annotated[DependencyItem, Tag(MODEL_MARKER)],
+                Annotated[DependencyItem, Tag(DICT_MARKER)],
             ],
             Discriminator(
-                str_model_discriminator,
+                str_dict_discriminator,
                 custom_error_type='invalid_union_member',
                 custom_error_message='Supported types for "dependency" field: "str,dict"',
             ),
@@ -491,9 +492,7 @@ class Manifest(BaseModel):
                 else:
                     normalized_dict[full_name] = v
             except ValidationError as e:
-                error_msgs.extend([
-                    validation_error_to_str(err) for err in e.errors(include_url=False)
-                ])
+                error_msgs.append(polish_validation_error(e))
                 continue
 
         if error_msgs:
@@ -557,10 +556,7 @@ class Manifest(BaseModel):
                     context=context,
                 )
         except ValidationError as e:
-            errors = e.errors(include_url=False)
-
-            error_msgs = [validation_error_to_str(err) for err in errors]
-
+            error_msgs = [validation_error_to_str(err) for err in e.errors(include_url=False)]
             return (error_msgs, None) if return_with_object else error_msgs
 
         return ([], res) if return_with_object else []
