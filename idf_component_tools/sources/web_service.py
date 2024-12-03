@@ -59,7 +59,7 @@ def download_archive(url: str, download_dir: str, save_original_filename: bool =
                 extension = None
 
             if r.status_code != 200:
-                raise FetchingError(f'Server returned HTTP code {r.status_code}')
+                raise FetchingError(f'Server returned HTTP code {r.status_code} with request {url}')
 
             # If didn't find anything useful, trying content disposition
             content_disposition = r.headers.get('content-disposition')

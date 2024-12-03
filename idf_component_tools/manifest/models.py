@@ -27,6 +27,7 @@ from idf_component_tools.constants import (
     COMMIT_ID_RE,
     COMPILED_GIT_URL_RE,
     DEFAULT_NAMESPACE,
+    IDF_COMPONENT_REGISTRY_URL,
 )
 from idf_component_tools.errors import (
     InternalError,
@@ -52,7 +53,7 @@ from idf_component_tools.utils import (
 )
 
 from ..manager import UploadMode
-from ..registry.api_models import DependencyResponse, OptionalDependencyResponse
+from ..registry.api_models import DependencyResponse
 from ..semver import Version
 from .constants import COMPILED_FULL_SLUG_REGEX, known_targets
 from .if_parser import IfClause, parse_if_clause
@@ -288,26 +289,32 @@ class ComponentRequirement(DependencyItem):
         notice('Skipping optional dependency: {}'.format(self.name))
         return False
 
-    def to_dependency_response(
-        self, default_namespace: str = DEFAULT_NAMESPACE, default_spec: str = '*'
-    ) -> DependencyResponse:
-        from idf_component_manager.core_utils import (
-            parse_component_name_spec,  # avoid circular import
-        )
+    @classmethod
+    def from_dependency_response(cls, dep_resp: DependencyResponse) -> 'ComponentRequirement':
+        if dep_resp.source == 'idf':
+            additional_kwargs = {
+                'name': 'idf',
+            }
+        elif dep_resp.source == 'service':
+            additional_kwargs = {
+                'name': f'{dep_resp.namespace}/{dep_resp.name}',
+                'registry_url': dep_resp.registry_url or IDF_COMPONENT_REGISTRY_URL,
+            }
+        else:
+            raise InternalError(f'Unknown source: {dep_resp.source}')
 
-        namespace, name, spec = parse_component_name_spec(
-            self.name, default_namespace, default_spec
-        )
-        return DependencyResponse(
-            spec=spec,
-            source=self.source.type,
-            registry_url=self.registry_url,
-            name=name,
-            namespace=namespace,
-            is_public=self.is_public,
-            require=self.is_required,
-            rules=[OptionalDependencyResponse(**k.model_dump()) for k in (self.rules or [])],
-            matches=[OptionalDependencyResponse(**k.model_dump()) for k in (self.matches or [])],
+        kwargs = {
+            'version': dep_resp.spec,
+            'require': 'public'
+            if dep_resp.is_public
+            else ('private' if dep_resp.require else 'no'),
+            'matches': [OptionalDependency.fromdict(k.model_dump()) for k in dep_resp.matches],
+            'rules': [OptionalDependency.fromdict(k.model_dump()) for k in dep_resp.rules],
+        }
+
+        return ComponentRequirement(
+            **kwargs,
+            **additional_kwargs,
         )
 
 
@@ -426,10 +433,7 @@ class Manifest(BaseModel):
         if self._upload_mode != UploadMode.false:
             self._validate_while_uploading()
 
-    def model_dump(
-        self,
-        **kwargs,  # noqa: ARG002
-    ) -> t.Dict[str, t.Any]:
+    def model_dump(self, **kwargs) -> t.Dict[str, t.Any]:
         return super().model_dump(exclude=['name'], exclude_unset=True)
 
     @field_validator('version')

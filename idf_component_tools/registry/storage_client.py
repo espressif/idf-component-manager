@@ -3,11 +3,6 @@
 import typing as t
 from functools import wraps
 
-from idf_component_tools.semver import SimpleSpec, Version
-from idf_component_tools.utils import (
-    ComponentWithVersions,
-)
-
 from .api_models import ApiBaseModel, ComponentResponse
 from .base_client import BaseClient, create_session, filter_versions
 from .client_errors import ComponentNotFound, StorageFileNotFound, VersionNotFound
@@ -50,42 +45,22 @@ class StorageClient(BaseClient):
 
         return wrapper
 
-    @_request
-    def versions(
-        self, request: t.Callable, component_name: str, spec: str = '*', **kwargs
-    ) -> ComponentWithVersions:
-        """List of versions for given component with required spec"""
-        try:
-            cmp_with_versions = super().versions(
-                request=request,
-                component_name=component_name,
-                spec=spec,
-                **kwargs,
-            )
-        except StorageFileNotFound:
-            raise ComponentNotFound(f'Component "{component_name}" not found')
-
-        return cmp_with_versions
-
     def component(self, component_name: str, version: t.Optional[str] = None) -> t.Dict[str, t.Any]:
         """
         Manifest for given version of component, if version is None highest version is returned
+        Rewrites all urls to storage urls
         """
         component_name = component_name.lower()
-        info = self.get_component_info(component_name=component_name)
+        version = version or '*'
 
-        versions = info['versions']
-        filtered_versions = filter_versions(versions, version, component_name)
-
+        component_response = self.get_component_response(component_name=component_name)
+        filtered_versions = filter_versions(component_response.versions, version, component_name)
         if not filtered_versions:
             raise VersionNotFound(
-                'Version of the component "{}" satisfying the spec "{}" was not found.'.format(
-                    component_name, str(version)
-                )
+                f'Version of the component "{component_name}" satisfying the spec "{version}" was not found.'
             )
 
-        best_version = max(filtered_versions, key=lambda v: Version(v['version']))
-
+        best_version = filtered_versions[0].model_dump()
         best_version['name'] = component_name
 
         best_version['download_url'] = join_url(self.storage_url, best_version['url'])
@@ -105,23 +80,16 @@ class StorageClient(BaseClient):
         return best_version
 
     @_request
-    def get_component_info(
+    def get_component_json(self, request: t.Callable, component_name: str) -> t.Dict:
+        return request('get', ['components', component_name])
+
+    @_request
+    def get_component_response(
         self, request: t.Callable, component_name: str, spec: str = '*'
-    ) -> t.Dict:
+    ) -> ComponentResponse:
         try:
-            response = request(
-                'get', ['components', component_name.lower()], schema=ComponentResponse
+            return super().get_component_response(
+                request=request, component_name=component_name, spec=spec
             )
         except StorageFileNotFound:
             raise ComponentNotFound(f'Component "{component_name}" not found')
-
-        if spec != '*':
-            versions = []
-            for version in response['versions']:
-                if not SimpleSpec(spec).match(Version(version['version'])):
-                    continue
-                versions.append(version)
-
-            response['versions'] = versions
-
-        return response

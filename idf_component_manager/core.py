@@ -489,10 +489,7 @@ class ComponentManager:
         )
 
     @general_error_handler
-    def remove_managed_components(
-        self,
-        **kwargs,
-    ):  # kwargs here to keep idf_extension.py compatibility
+    def remove_managed_components(self, **kwargs):  # keep idf_extension.py compatibility
         managed_components_dir = Path(self.path, 'managed_components')
 
         if not managed_components_dir.is_dir():
@@ -989,6 +986,9 @@ class ComponentManager:
         recursive: bool = True,
     ) -> None:
         client = get_storage_client(profile_name=profile_name)
+        # ignore local ones while syncing with the registry
+        client.local_storage_urls = []
+
         save_path = Path(save_path)
         if interval:
             while True:

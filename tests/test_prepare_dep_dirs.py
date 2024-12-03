@@ -4,10 +4,14 @@ import os
 import textwrap
 from pathlib import Path
 
+import pytest
 import yaml
 
 from idf_component_manager.core import ComponentManager
 from idf_component_manager.prepare_components.prepare import _component_list_file
+from idf_component_tools.config import Config, ConfigManager, ProfileItem
+from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL
+from idf_component_tools.errors import FatalError
 
 
 def _generate_lock_file(project_dir: Path, yaml_str: str, build_dir: str = 'build'):
@@ -125,3 +129,90 @@ def test_removing_dependency_with_env_var(tmp_path, monkeypatch):
         dependencies: {}
         """,
     )
+
+
+def test_dependencies_with_partial_mirror(tmp_path, monkeypatch):
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32')
+    monkeypatch.setenv('IDF_PATH', '/tmp')
+
+    ComponentManager('.').sync_registry('default', '/tmp/cache', components=['example/cmp==3.0.3'])
+
+    ConfigManager().dump(
+        Config(
+            profiles={
+                'tmp_profile': ProfileItem(
+                    registry_url='https://notexist.me',
+                    storage_url='https://notexist.me',
+                    local_storage_url='file:///tmp/cache',
+                )
+            }
+        )
+    )
+
+    monkeypatch.setenv('IDF_COMPONENT_PROFILE', 'tmp_profile')
+
+    _generate_lock_file(
+        tmp_path,
+        # Requires BUILD_BOARD env var to be set
+        """
+        dependencies:
+          example/cmp:
+            version: '*'
+        """,
+    )
+
+    assert (tmp_path / 'dependencies.lock').exists()
+    with open(tmp_path / 'dependencies.lock') as f:
+        lock_data = yaml.safe_load(f)
+    assert lock_data['dependencies']['example/cmp']
+    assert lock_data['dependencies']['example/cmp']['source']['type'] == 'service'
+    assert (
+        lock_data['dependencies']['example/cmp']['source']['registry_url']
+        == IDF_COMPONENT_REGISTRY_URL
+    )
+    assert lock_data['dependencies']['example/cmp']['version'] == '3.0.3'
+
+    # what if depends on a version not in the mirror?
+    # registry url still point to a non-existing domain
+    with pytest.raises(FatalError, match='Are you connected to the internet?'):
+        _generate_lock_file(
+            tmp_path,
+            # Requires BUILD_BOARD env var to be set
+            """
+            dependencies:
+              example/cmp:
+                version: '3.3.7'
+            """,
+        )
+
+    # back to normal
+    ConfigManager().dump(
+        Config(
+            profiles={
+                'tmp_profile': ProfileItem(
+                    local_storage_url='file:///tmp/cache',
+                )
+            }
+        )
+    )
+    _generate_lock_file(
+        tmp_path,
+        # Requires BUILD_BOARD env var to be set
+        """
+        dependencies:
+          example/cmp:
+            version: '3.3.7'
+        """,
+    )
+
+    assert (tmp_path / 'dependencies.lock').exists()
+    with open(tmp_path / 'dependencies.lock') as f:
+        lock_data = yaml.safe_load(f)
+    assert lock_data['dependencies']['example/cmp']
+    assert lock_data['dependencies']['example/cmp']['source']['type'] == 'service'
+    assert (
+        lock_data['dependencies']['example/cmp']['source']['registry_url']
+        == IDF_COMPONENT_REGISTRY_URL
+    )
+    assert lock_data['dependencies']['example/cmp']['version'] == '3.3.7'

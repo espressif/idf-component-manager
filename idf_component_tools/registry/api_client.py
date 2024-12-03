@@ -9,12 +9,11 @@ from ssl import SSLEOFError
 
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 
-from idf_component_tools.utils import ComponentWithVersions
-
 from .api_models import (
     ApiBaseModel,
     ApiInformation,
     ApiToken,
+    ComponentResponse,
     TaskStatus,
     VersionUpload,
 )
@@ -137,11 +136,12 @@ class APIClient(BaseClient):
                 )
 
     @_request
-    def versions(
+    def get_component_response(
         self, request: t.Callable, component_name: str, spec: str = '*'
-    ) -> ComponentWithVersions:
-        """List of versions for given component with required spec"""
-        return super().versions(request=request, component_name=component_name, spec=spec)
+    ) -> ComponentResponse:
+        return super().get_component_response(
+            request=request, component_name=component_name, spec=spec
+        )
 
     @auth_required
     @_request

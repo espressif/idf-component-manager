@@ -10,7 +10,7 @@ from requests.auth import AuthBase
 from requests_file import FileAdapter
 
 from idf_component_tools.__version__ import __version__
-from idf_component_tools.constants import DEFAULT_NAMESPACE, IDF_COMPONENT_REGISTRY_URL
+from idf_component_tools.constants import DEFAULT_NAMESPACE
 from idf_component_tools.environment import detect_ci
 from idf_component_tools.manifest import BUILD_METADATA_KEYS, ComponentRequirement
 from idf_component_tools.messages import warn
@@ -20,7 +20,7 @@ from idf_component_tools.utils import (
     HashedComponentVersion,
 )
 
-from .api_models import ComponentResponse
+from .api_models import ComponentResponse, VersionResponse
 
 MAX_RETRIES = 3
 
@@ -68,108 +68,118 @@ class BaseClient:
     def __init__(self, default_namespace: t.Optional[str]) -> None:
         self.default_namespace = default_namespace or DEFAULT_NAMESPACE
 
-    def version_dependencies(self, version: t.Dict[str, t.Any]) -> t.List[ComponentRequirement]:
-        deps: t.List[ComponentRequirement] = []
-        for dependency in version.get('dependencies', []):
-            # make it compatible with the old format
-            dependency['name'] = f'{dependency.pop("namespace")}/{dependency.pop("name")}'
-
-            is_public = dependency.pop('is_public', False)
-            require = dependency.pop('require', True)
-            dependency['require'] = 'public' if is_public else ('private' if require else 'no')
-
-            dependency['version'] = dependency.pop('spec')
-
-            source_str = dependency.pop('source')
-            if source_str == 'idf':
-                dependency['name'] = 'idf'
-            elif source_str == 'service':
-                if dependency.get('registry_url', None) is None:
-                    dependency['registry_url'] = IDF_COMPONENT_REGISTRY_URL
-            else:
-                raise ValueError('Unknown source type, Internal error')
-
-            dep = ComponentRequirement.fromdict(dependency)
-            deps.append(dep)
-        return [dep for dep in deps if dep.meet_optional_dependencies]
-
-    def versions(
-        self,
-        request: t.Callable,
-        component_name: str,
-        spec: str = '*',
-        **kwargs,
-    ) -> ComponentWithVersions:
+    def versions(self, component_name: str, spec: str = '*') -> ComponentWithVersions:
         """List of versions for given component with required spec"""
         component_name = component_name.lower()
-        semantic_spec = SimpleSpec(spec or '*')
-        body = request('get', ['components', component_name.lower()], schema=ComponentResponse)
+        spec = spec or '*'
 
-        versions = []
-        filtered_versions = filter_versions(body['versions'], spec, component_name)
+        component_response = self.get_component_response(  # type: ignore
+            # request is passed in subclasses
+            component_name=component_name,
+        )
+
+        versions: t.List[t.Tuple[VersionResponse, bool]] = []
+        filtered_versions = filter_versions(component_response.versions, spec, component_name)
 
         for version in filtered_versions:
-            if not semantic_spec.match(Version(version['version'])):
-                continue
-
             all_build_keys_known = True
-            if version.get('build_metadata_keys', None) is not None:
-                for build_key in version['build_metadata_keys']:
+            if version.build_metadata_keys is not None:
+                for build_key in version.build_metadata_keys:
                     if build_key not in BUILD_METADATA_KEYS:
                         all_build_keys_known = False
                         break
 
-            if all_build_keys_known:
-                versions.append((version, all_build_keys_known))
+            versions.append((version, all_build_keys_known))
 
         return ComponentWithVersions(
             name=component_name,
             versions=[
                 HashedComponentVersion(
-                    version_string=version['version'],
-                    component_hash=version['component_hash'],
-                    dependencies=self.version_dependencies(version),
-                    targets=version['targets'],
+                    version_string=version.version,
+                    component_hash=version.component_hash,
+                    dependencies=[
+                        ComponentRequirement.from_dependency_response(dep)
+                        for dep in version.dependencies
+                    ],
+                    targets=version.targets or [],
                     all_build_keys_known=all_build_keys_known,
-                    **kwargs,
                 )
                 for version, all_build_keys_known in versions
             ],
         )
 
+    def get_component_response(
+        self, request: t.Callable, component_name: str, spec: str = '*'
+    ) -> ComponentResponse:
+        """
+        Get component response for given component name and spec.
+        Versions are sorted by semver, descending.
+        """
+        component_name = component_name.lower()
+        spec = spec or '*'
+
+        component_response = ComponentResponse(**request('get', ['components', component_name]))
+
+        # here we don't use filter_versions because we don't need to
+        # filter by target
+        # filter yanked versions
+        if spec != '*':
+            versions = []
+            required_spec = SimpleSpec(spec)
+            for version in component_response.versions:
+                if not required_spec.match(Version(version.version)):
+                    continue
+                versions.append(version)
+
+            component_response.versions = versions
+
+        component_response.versions = sorted(
+            component_response.versions, key=lambda v: Version(v.version), reverse=True
+        )
+
+        return component_response
+
 
 def filter_versions(
-    versions: t.List[t.Dict], spec: t.Optional[str], component_name: str
-) -> t.List[t.Dict]:
-    if spec and spec != '*':
-        requested_version = SimpleSpec(str(spec))
-        filtered_versions = [v for v in versions if requested_version.match(Version(v['version']))]
+    versions: t.List[VersionResponse],
+    spec: t.Optional[str],
+    component_name: str,
+) -> t.List[VersionResponse]:
+    filtered_versions = []
+    yanked_versions = []
 
-        if not filtered_versions or not any([bool(v.get('yanked_at')) for v in filtered_versions]):
-            return filtered_versions
+    # filter by spec
+    required_spec = SimpleSpec(str(spec or '*'))
+    versions = [version for version in versions if required_spec.match(Version(version.version))]
 
-        clause = requested_version.clause.simplify()
-        # Some clauses don't have an operator attribute, need to check
-        if (
-            hasattr(clause, 'operator')
-            and clause.operator == '=='
-            and filtered_versions[0]['yanked_at']
-        ):
-            warn(
-                'The version "{}" of the "{}" component you have selected has '
-                'been yanked from the repository due to the following reason: "{}". '
-                'We recommend that you update to a different version. '
-                'Please note that continuing to use a yanked version can '
-                'result in unexpected behavior and issues with your project.'.format(
-                    clause.target,
-                    component_name.lower(),
-                    filtered_versions[0]['yanked_message'],
-                )
-            )
+    # divide versions into yanked and not yanked
+    for version in versions:
+        if version.yanked_at:
+            yanked_versions.append(version)
         else:
-            filtered_versions = [v for v in filtered_versions if not v.get('yanked_at')]
-    else:
-        filtered_versions = [v for v in versions if not v.get('yanked_at')]
+            filtered_versions.append(version)
+
+    if filtered_versions:
+        return filtered_versions
+
+    # special case: use "==" and only selected yanked versions
+    simplified_clause = required_spec.clause.simplify()
+    if (
+        hasattr(simplified_clause, 'operator')
+        and simplified_clause.operator == '=='
+        and len(yanked_versions) > 0
+        and not filtered_versions
+    ):
+        warn_str = f'The following versions of the "{component_name}" component have been yanked:\n'
+        for yanked_version in yanked_versions:
+            warn_str += f'- {yanked_version.version} (reason: "{yanked_version.yanked_message}")\n'
+        warn_str += (
+            'We recommend that you update to a different version. '
+            'Please note that continuing to use a yanked version can '
+            'result in unexpected behavior and issues with your project.'
+        )
+        warn(warn_str)
+        return yanked_versions
 
     return filtered_versions
 

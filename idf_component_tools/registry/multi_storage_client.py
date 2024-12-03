@@ -3,7 +3,6 @@
 """Classes to work with ESP Component Registry"""
 
 import typing as t
-from collections import namedtuple
 from functools import lru_cache
 
 from idf_component_tools.constants import (
@@ -14,11 +13,10 @@ from idf_component_tools.constants import (
 from idf_component_tools.messages import warn
 from idf_component_tools.utils import ComponentWithVersions
 
+from ..manifest import ComponentRequirement
 from .api_client import APIClient
 from .client_errors import ComponentNotFound, VersionNotFound
 from .storage_client import StorageClient
-
-ComponentInfo = namedtuple('ComponentInfo', ['data', 'storage_url'])
 
 
 class MultiStorageClient:
@@ -112,6 +110,13 @@ class MultiStorageClient:
         return cmp_with_versions
 
     def component(self, component_name: str, version: t.Optional[str] = None) -> t.Dict[str, t.Any]:
+        """
+        Get component manifest for given component name and spec. All urls are rewritten to storage urls.
+
+        :param component_name: The name of the component
+        :param version: The version spec of the component
+        :return: The component manifest. shall use download_url to download the component
+        """
         error_message = ''
         for storage_client in self.storage_clients:
             try:
@@ -121,13 +126,16 @@ class MultiStorageClient:
 
         raise VersionNotFound(error_message)
 
-    def get_component_info(self, component_name: str, spec: str) -> ComponentInfo:
+    def get_component_versions(
+        self, requirement: ComponentRequirement
+    ) -> t.Tuple[ComponentWithVersions, str]:
         """
-        Get component info from all storage clients.
+        Get all versions of the component from all storage clients (local storages are ignored)
 
-        .. note::
+        Include all versions even the optional ones
 
-            This function is only used for while partial mirror creation.
+        :param requirement: ComponentRequirement instance
+        :return: (ComponentWithVersions, storage_url)
         """
         # local_storage_urls shall not be used when create partial mirror
         _clients = self.profile_storage_clients.copy()
@@ -135,11 +143,30 @@ class MultiStorageClient:
             _clients.append(self.registry_storage_client)
 
         error_message = ''
+
+        specs = [requirement.version]  # base one
+        # optional ones
+        for opt_dep in [*(requirement.matches or []), *(requirement.rules or [])]:
+            if opt_dep.version:
+                specs.append(opt_dep.version)
+
+        res = ComponentWithVersions(requirement.name, [])
         for storage_client in _clients:
             try:
-                info = storage_client.get_component_info(component_name=component_name, spec=spec)
-                return ComponentInfo(info, storage_client.storage_url)
-            except (VersionNotFound, ComponentNotFound) as err:
-                error_message = str(err)
+                for spec in specs:
+                    res.merge(
+                        storage_client.versions(
+                            component_name=requirement.name,
+                            spec=spec,
+                        )
+                    )
+            except (
+                VersionNotFound,
+                ComponentNotFound,
+            ) as err:
+                error_message += str(err)
+            else:
+                if res.versions:
+                    return res, storage_client.storage_url
 
         raise VersionNotFound(error_message)
