@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import logging
 import os
+import typing as t
 from ssl import SSLEOFError
 
 import pytest
@@ -41,18 +42,11 @@ def response_413(*_, **__):
     return response
 
 
-def response_403(*_, **__):
+def response_403(messages: t.List[str], *_, **__):
     response = Response()
     response.status_code = 403
+    response.json = lambda: {'messages': messages}  # type: ignore
     return response
-
-
-def get_token_scope_user(*_, **__):
-    return 'user'
-
-
-def get_token_scope_write(*_, **__):
-    return 'write:components'
 
 
 def raise_SSLEOFError(*_, **__):
@@ -271,31 +265,25 @@ class TestAPIClient:
         assert str(e.value).startswith('The component archive exceeds the maximum allowed size')
 
     def test_upload_component_token_forbidden(self, tmp_path, registry_url, monkeypatch):
+        messages = ['Your token does not have the required scope: write:components']
         monkeypatch.setattr(
-            'idf_component_tools.registry.request_processor.make_request', response_403
+            'idf_component_tools.registry.request_processor.make_request',
+            lambda *_, **__: response_403(messages),
         )
-        monkeypatch.setattr(
-            'idf_component_tools.registry.request_processor.get_token_scope',
-            get_token_scope_user,
-        )
+
         client = APIClient(
             registry_url=registry_url,
             api_token='test',
         )
 
-        file_path = str(tmp_path / 'cmp.tgz')
-        with open(file_path, 'w+') as f:
-            f.write('a')
+        (tmp_path / 'cmp.tgz').touch()
 
         with pytest.raises(APIClientError) as e:
             client.upload_version(
                 component_name='kumekay/cmp',
-                file_path=file_path,
+                file_path=tmp_path / 'cmp.tgz',
             )
-        assert str(e.value).startswith(
-            'Your token does not have permissions to perform this action.'
-        )
-        assert 'Token scope: user' in str(e.value)
+        assert str(e.value).startswith(messages[0])
 
     def test_upload_component_role_forbidden(
         self,
@@ -303,30 +291,25 @@ class TestAPIClient:
         registry_url,
         monkeypatch,
     ):
+        messages = ['You do not have a required role, to access a']
         monkeypatch.setattr(
-            'idf_component_tools.registry.request_processor.make_request', response_403
+            'idf_component_tools.registry.request_processor.make_request',
+            lambda *_, **__: response_403(messages),
         )
-        monkeypatch.setattr(
-            'idf_component_tools.registry.request_processor.get_token_scope',
-            get_token_scope_write,
-        )
+
         client = APIClient(
             registry_url=registry_url,
             api_token='test',
         )
 
-        file_path = str(tmp_path / 'cmp.tgz')
-        with open(file_path, 'w+') as f:
-            f.write('a')
+        (tmp_path / 'cmp.tgz').touch()
 
         with pytest.raises(APIClientError) as e:
             client.upload_version(
                 component_name='kumekay/cmp',
-                file_path=file_path,
+                file_path=tmp_path / 'cmp.tgz',
             )
-        assert str(e.value).startswith(
-            'You do not have namespace/component role to perform this action.'
-        )
+        assert str(e.value).startswith(messages[0])
 
     def test_upload_component_SSLEOFError(self, tmp_path, registry_url, monkeypatch):
         monkeypatch.setattr(
@@ -338,13 +321,11 @@ class TestAPIClient:
             api_token='test',
         )
 
-        file_path = str(tmp_path / 'cmp.tgz')
-        with open(file_path, 'w+') as f:
-            f.write('a')
+        (tmp_path / 'cmp.tgz').touch()
 
         with pytest.raises(APIClientError) as e:
             client.upload_version(
                 component_name='kumekay/cmp',
-                file_path=file_path,
+                file_path=tmp_path / 'cmp.tgz',
             )
         assert str(e.value).startswith('The component archive exceeds the maximum allowed size')
