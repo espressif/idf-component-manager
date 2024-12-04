@@ -11,7 +11,7 @@ import typing as t
 import requests
 from pydantic import AliasChoices, Field, field_validator
 
-from idf_component_tools import debug
+from idf_component_tools import debug, hint
 from idf_component_tools.archive_tools import (
     ArchiveError,
     get_format_from_path,
@@ -59,7 +59,7 @@ def download_archive(url: str, download_dir: str, save_original_filename: bool =
                 extension = None
 
             if r.status_code != 200:
-                raise FetchingError(f'Server returned HTTP code {r.status_code}')
+                raise FetchingError(f'Server returned HTTP code {r.status_code} with request {url}')
 
             # If didn't find anything useful, trying content disposition
             content_disposition = r.headers.get('content-disposition')
@@ -251,11 +251,10 @@ class WebServiceSource(BaseSource):
 
         tempdir = tempfile.mkdtemp()
 
+        url = get_storage_client(self.registry_url).component(component.name, component.version)[
+            'download_url'
+        ]  # PACMAN-906
         try:
-            url = get_storage_client(self.registry_url).component(
-                component.name, component.version
-            )['download_url']  # PACMAN-906
-
             debug(
                 'Downloading component %s@%s from %s',
                 component.name,
@@ -267,6 +266,9 @@ class WebServiceSource(BaseSource):
             unpack_archive(file_path, self.component_cache_path(component))
             copy_directory(self.component_cache_path(component), download_path)
         except (KeyError, FetchingError) as e:
+            hint(
+                'The download failure may be caused by corrupted local storage. Please check manually.'
+            )
             raise FetchingError(
                 'Cannot download component {}@{}. {}'.format(
                     component.name, component.version, str(e)

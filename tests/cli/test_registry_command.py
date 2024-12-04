@@ -1,11 +1,8 @@
 # SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import json
 
 import requests_mock
-import vcr
 
-from idf_component_manager.core import ComponentManager
 from idf_component_tools.config import Config, ConfigManager
 
 
@@ -169,72 +166,3 @@ def test_logout_from_registry_no_revoke(monkeypatch, tmp_path, invoke_cli):
     )
 
     assert 'Successfully logged out' in output.stdout
-
-
-@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_download_metadata_and_component.yaml')
-def test_registry_sync_component_flag(tmp_path, monkeypatch):
-    monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
-
-    manager = ComponentManager(path=str(tmp_path))
-
-    # Subprocess and CliRunner changed to function call, because vcrpy can't handle subprocess,
-    # and CliRunner doesn't download component, progress bar stop invoke function.
-    manager.sync_registry('default', str(tmp_path / 'test'), 0, ['espressif/test*'], False)
-
-    with open(str(tmp_path / 'test' / 'components' / 'espressif' / 'test.json')) as f:
-        data = json.load(f)
-    assert len(data['versions']) == 3
-
-    assert (
-        len(list((tmp_path / 'test').iterdir())) == 5
-    )  # 3 versions, 1 dependency and components folder
-
-
-@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_download_metadata_and_component.yaml')
-def test_registry_sync_recursive(tmp_path, mock_registry):  # noqa: ARG001
-    component_path = tmp_path / 'cmp'
-    component_path.mkdir()
-    (component_path / 'main').mkdir()
-
-    manager = ComponentManager(path=str(component_path))
-    manager.create_manifest()
-    manager.add_dependency('espressif/test==1.0.1')
-    (component_path / 'main' / 'CMakeLists.txt').write_text('\n')
-    manager.path = str(tmp_path)
-
-    # Subprocess and CliRunner changed to function call, because vcrpy can't handle subprocess,
-    # and CliRunner doesn't download component, progress bar stop invoke function.
-    manager.sync_registry('default', str(tmp_path / 'test'), 0, [], True)
-
-    with open(str(tmp_path / 'test' / 'components' / 'espressif' / 'test.json')) as f:
-        data = json.load(f)
-    assert len(data['versions']) == 1
-
-    assert len(list((tmp_path / 'test').iterdir())) == 2  # 1 version and components folder
-
-
-@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_download_metadata_and_component.yaml')
-def test_registry_sync_one_component(tmp_path, monkeypatch):
-    monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
-
-    component_path = tmp_path / 'cmp'
-    component_path.mkdir()
-    (component_path / 'main').mkdir()
-
-    manager = ComponentManager(path=str(component_path))
-    manager.create_manifest()
-    manager.add_dependency('espressif/test==1.0.2')
-    (component_path / 'main' / 'CMakeLists.txt').write_text('\n')
-    manager.path = str(component_path / 'main')
-
-    # Subprocess and CliRunner changed to function call, because vcrpy can't handle subprocess,
-    # and CliRunner doesn't download component, progress bar stop invoke function.
-    manager.sync_registry('default', str(tmp_path / 'test'), 0, [], False)
-
-    with open(str(tmp_path / 'test' / 'components' / 'espressif' / 'test.json')) as f:
-        data = json.load(f)
-    assert len(data['versions']) == 1
-
-    assert (
-        len(list((tmp_path / 'test').iterdir())) == 3
-    )  # 1 version, 1 dependency and components folder

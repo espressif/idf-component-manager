@@ -8,6 +8,7 @@ import click
 import requests
 
 from idf_component_manager.core import ComponentManager
+from idf_component_manager.utils import VersionSolverResolution
 from idf_component_tools import warn
 from idf_component_tools.config import ConfigManager, ProfileItem
 from idf_component_tools.errors import FatalError
@@ -186,6 +187,13 @@ def init_registry():
         'Use multiple --component options for multiple components. '
         'Format: namespace/name<version_spec>. Example: example/cmp==1.0.0',
     )
+    @click.option(
+        '--resolution',
+        type=click.Choice([r.value for r in VersionSolverResolution]),
+        default=VersionSolverResolution.ALL.value,
+        help='Resolution strategy for syncing components. By default, all versions are synced. '
+        'If set to "latest", only the latest version of the components will be synced.',
+    )
     @click.argument('path', required=True)
     def sync(
         manager: ComponentManager,
@@ -193,6 +201,7 @@ def init_registry():
         interval: int,
         component: t.List[str],
         recursive: bool,
+        resolution: VersionSolverResolution,
         path: str,
     ) -> None:
         """
@@ -204,6 +213,7 @@ def init_registry():
             interval=interval,
             components=component,
             recursive=recursive,
+            resolution=resolution,
         )
 
     return registry

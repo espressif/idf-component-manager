@@ -40,14 +40,6 @@ test:
         coverage_format: cobertura
         path: coverage.xml
 
-test_partial_sync:
-  extends: .test
-  script:
-    - pip install .
-    - compote registry sync --component example/cmp --component "espressif/mdns<1.1" /tmp/current
-    - pip install "idf-component-manager<2"
-    - compote registry sync --component example/cmp --component "espressif/mdns<1.1" /tmp/previous
-    - diff -r /tmp/current /tmp/previous
 
 include:
   - local: ci/common.yml

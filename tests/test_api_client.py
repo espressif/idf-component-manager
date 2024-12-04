@@ -10,7 +10,7 @@ import vcr
 from requests import Response
 
 from idf_component_tools import LOGGING_NAMESPACE
-from idf_component_tools.__version__ import __version__ as version
+from idf_component_tools.__version__ import __version__
 from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL
 from idf_component_tools.registry.api_client import APIClient
 from idf_component_tools.registry.base_client import user_agent
@@ -105,7 +105,7 @@ class TestAPIClient:
 
     def test_user_agent(self):
         ua = user_agent()
-        assert str(version) in ua
+        assert str(__version__) in ua
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_api_information.yaml')
     def test_api_information(self, registry_url):
@@ -160,11 +160,14 @@ class TestAPIClient:
         with caplog.at_level(logging.WARNING, logger=LOGGING_NAMESPACE):
             client.component(component_name='example/cmp_yanked', version=version)
             assert len(caplog.records) == 1
-            assert 'component you have selected has been yanked' in caplog.text
+            assert (
+                'The following versions of the "example/cmp_yanked" component have been yanked:'
+                in caplog.text
+            )
 
     @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
     @pytest.mark.parametrize(
-        'spec',
+        'version',
         [
             '>1.0.0',
             '^1.0.0',
@@ -173,9 +176,9 @@ class TestAPIClient:
             None,
         ],
     )
-    def test_filter_yanked_version_for_component(self, storage_url, spec):
+    def test_filter_yanked_version_for_component(self, storage_url, version):
         client = StorageClient(storage_url=storage_url)
-        result = client.component(component_name='example/cmp_yanked', version=spec)
+        result = client.component(component_name='example/cmp_yanked', version=version)
 
         assert result['version'] == '1.0.1'
 
@@ -196,7 +199,12 @@ class TestAPIClient:
         result = client.versions(component_name='example/cmp_yanked', spec=spec)
         assert result.versions[0].semver == Version('1.0.1')
 
-    def test_token_information(self, registry_url, mock_registry, mock_token_information):  # noqa: ARG002
+    def test_token_information(
+        self,
+        registry_url,
+        mock_registry,  # noqa: ARG002
+        mock_token_information,  # noqa: ARG002
+    ):
         client = APIClient(registry_url=registry_url, api_token='test')
         response = client.token_information()
 

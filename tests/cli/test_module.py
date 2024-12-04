@@ -20,6 +20,7 @@ def test_raise_exception_on_warnings(invoke_cli):
 
     assert output.exit_code == 1
     assert (
-        'The version "3.3.8" of the "example/cmp" component you have selected has been '
-        'yanked from the repository' in str(output.exception)
+        'The following versions of the "example/cmp" component have been yanked:\n'
+        '- 3.3.8 (reason: "Broken manifest of the example project")\n'
+        'We recommend that you update to a different version.' in str(output.exception)
     )

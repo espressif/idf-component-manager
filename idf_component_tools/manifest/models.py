@@ -27,17 +27,22 @@ from idf_component_tools.constants import (
     COMMIT_ID_RE,
     COMPILED_GIT_URL_RE,
     DEFAULT_NAMESPACE,
+    IDF_COMPONENT_REGISTRY_URL,
 )
 from idf_component_tools.errors import (
     InternalError,
     MetadataKeyError,
 )
 from idf_component_tools.hash_tools.calculate import hash_object
+from idf_component_tools.logging import suppress_logging
+from idf_component_tools.manager import UploadMode
 from idf_component_tools.messages import notice
+from idf_component_tools.registry.api_models import DependencyResponse
+from idf_component_tools.semver import Version
 from idf_component_tools.sources import BaseSource, LocalSource, Source
 from idf_component_tools.utils import (
     BOOL_MARKER,
-    MODEL_MARKER,
+    DICT_MARKER,
     STR_MARKER,
     Annotated,
     BaseModel,
@@ -47,13 +52,11 @@ from idf_component_tools.utils import (
     UniqueTagListField,
     UrlField,
     bool_str_discriminator,
-    str_model_discriminator,
+    polish_validation_error,
+    str_dict_discriminator,
     validation_error_to_str,
 )
 
-from ..manager import UploadMode
-from ..registry.api_models import DependencyResponse, OptionalDependencyResponse
-from ..semver import Version
 from .constants import COMPILED_FULL_SLUG_REGEX, known_targets
 from .if_parser import IfClause, parse_if_clause
 
@@ -72,7 +75,8 @@ class OptionalDependency(BaseModel):
         # trade off for better error messages
         try:
             obj = parse_if_clause(v)
-            obj.get_value()
+            with suppress_logging():
+                obj.get_value()
         except ParseException:
             raise ValueError('Invalid syntax: "{}"'.format(v))
 
@@ -213,6 +217,16 @@ class ComponentRequirement(DependencyItem):
 
         self.validate_post_init()
 
+    def __hash__(self):
+        d = self.serialize()
+        if self.source.type == 'service':
+            if self.registry_url in [
+                None,
+                IDF_COMPONENT_REGISTRY_URL.rstrip('/'),
+            ]:
+                d['registry_url'] = IDF_COMPONENT_REGISTRY_URL
+        return hash(hash_object(d))
+
     def validate_post_init(self) -> None:
         # validate version by source
         if not self.source.validate_version_spec(self.version):
@@ -288,26 +302,32 @@ class ComponentRequirement(DependencyItem):
         notice('Skipping optional dependency: {}'.format(self.name))
         return False
 
-    def to_dependency_response(
-        self, default_namespace: str = DEFAULT_NAMESPACE, default_spec: str = '*'
-    ) -> DependencyResponse:
-        from idf_component_manager.core_utils import (
-            parse_component_name_spec,  # avoid circular import
-        )
+    @classmethod
+    def from_dependency_response(cls, dep_resp: DependencyResponse) -> 'ComponentRequirement':
+        if dep_resp.source == 'idf':
+            additional_kwargs = {
+                'name': 'idf',
+            }
+        elif dep_resp.source == 'service':
+            additional_kwargs = {
+                'name': f'{dep_resp.namespace}/{dep_resp.name}',
+                'registry_url': dep_resp.registry_url or IDF_COMPONENT_REGISTRY_URL,
+            }
+        else:
+            raise InternalError(f'Unknown source: {dep_resp.source}')
 
-        namespace, name, spec = parse_component_name_spec(
-            self.name, default_namespace, default_spec
-        )
-        return DependencyResponse(
-            spec=spec,
-            source=self.source.type,
-            registry_url=self.registry_url,
-            name=name,
-            namespace=namespace,
-            is_public=self.is_public,
-            require=self.is_required,
-            rules=[OptionalDependencyResponse(**k.model_dump()) for k in (self.rules or [])],
-            matches=[OptionalDependencyResponse(**k.model_dump()) for k in (self.matches or [])],
+        kwargs = {
+            'version': dep_resp.spec,
+            'require': 'public'
+            if dep_resp.is_public
+            else ('private' if dep_resp.require else 'no'),
+            'matches': [OptionalDependency.fromdict(k.model_dump()) for k in dep_resp.matches],
+            'rules': [OptionalDependency.fromdict(k.model_dump()) for k in dep_resp.rules],
+        }
+
+        return ComponentRequirement(
+            **kwargs,
+            **additional_kwargs,
         )
 
 
@@ -368,10 +388,10 @@ class Manifest(BaseModel):
         Annotated[
             t.Union[
                 Annotated[str, Tag(STR_MARKER)],
-                Annotated[DependencyItem, Tag(MODEL_MARKER)],
+                Annotated[DependencyItem, Tag(DICT_MARKER)],
             ],
             Discriminator(
-                str_model_discriminator,
+                str_dict_discriminator,
                 custom_error_type='invalid_union_member',
                 custom_error_message='Supported types for "dependency" field: "str,dict"',
             ),
@@ -426,10 +446,7 @@ class Manifest(BaseModel):
         if self._upload_mode != UploadMode.false:
             self._validate_while_uploading()
 
-    def model_dump(
-        self,
-        **kwargs,  # noqa: ARG002
-    ) -> t.Dict[str, t.Any]:
+    def model_dump(self, **kwargs) -> t.Dict[str, t.Any]:
         return super().model_dump(exclude=['name'], exclude_unset=True)
 
     @field_validator('version')
@@ -475,9 +492,7 @@ class Manifest(BaseModel):
                 else:
                     normalized_dict[full_name] = v
             except ValidationError as e:
-                error_msgs.extend([
-                    validation_error_to_str(err) for err in e.errors(include_url=False)
-                ])
+                error_msgs.append(polish_validation_error(e))
                 continue
 
         if error_msgs:
@@ -541,10 +556,7 @@ class Manifest(BaseModel):
                     context=context,
                 )
         except ValidationError as e:
-            errors = e.errors(include_url=False)
-
-            error_msgs = [validation_error_to_str(err) for err in errors]
-
+            error_msgs = [validation_error_to_str(err) for err in e.errors(include_url=False)]
             return (error_msgs, None) if return_with_object else error_msgs
 
         return ([], res) if return_with_object else []

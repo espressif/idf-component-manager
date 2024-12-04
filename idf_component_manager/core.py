@@ -19,7 +19,7 @@ import requests
 from requests_toolbelt import MultipartEncoderMonitor
 from ruamel.yaml import YAML, CommentedMap
 
-from idf_component_manager.utils import ComponentSource
+from idf_component_manager.utils import ComponentSource, VersionSolverResolution
 from idf_component_tools import ComponentManagerSettings
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name, is_component
@@ -489,10 +489,7 @@ class ComponentManager:
         )
 
     @general_error_handler
-    def remove_managed_components(
-        self,
-        **kwargs,
-    ):  # kwargs here to keep idf_extension.py compatibility
+    def remove_managed_components(self, **kwargs):  # keep idf_extension.py compatibility
         managed_components_dir = Path(self.path, 'managed_components')
 
         if not managed_components_dir.is_dir():
@@ -987,12 +984,30 @@ class ComponentManager:
         interval: int = 0,
         components: t.Optional[t.List[str]] = None,
         recursive: bool = True,
+        resolution: VersionSolverResolution = VersionSolverResolution.ALL,
     ) -> None:
         client = get_storage_client(profile_name=profile_name)
+        # ignore local ones while syncing with the registry
+        client.local_storage_urls = []
+
         save_path = Path(save_path)
         if interval:
             while True:
-                sync_components(client, self.path, save_path, components, recursive)
+                sync_components(
+                    client,
+                    self.path,
+                    save_path,
+                    components=components,
+                    recursive=recursive,
+                    resolution=resolution,
+                )
                 time.sleep(interval)
         else:
-            sync_components(client, self.path, save_path, components, recursive)
+            sync_components(
+                client,
+                self.path,
+                save_path,
+                components=components,
+                recursive=recursive,
+                resolution=resolution,
+            )

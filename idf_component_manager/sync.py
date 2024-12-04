@@ -3,325 +3,334 @@
 import errno
 import json
 import typing as t
-from collections import namedtuple
+from collections import defaultdict
+from copy import deepcopy
+from dataclasses import dataclass
 from pathlib import Path
 
 from tqdm import tqdm
+from tqdm.contrib.logging import logging_redirect_tqdm
 
 from idf_component_manager.core_utils import parse_component_name_spec
+from idf_component_manager.utils import VersionSolverResolution
+from idf_component_tools import get_logger
 from idf_component_tools.build_system_tools import is_component
 from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.errors import SyncError
 from idf_component_tools.manager import ManifestManager
-from idf_component_tools.messages import notice, warn
-from idf_component_tools.registry.api_models import DependencyResponse
+from idf_component_tools.manifest import ComponentRequirement
+from idf_component_tools.messages import error, notice, warn
 from idf_component_tools.registry.client_errors import ComponentNotFound, VersionNotFound
 from idf_component_tools.registry.multi_storage_client import MultiStorageClient
 from idf_component_tools.registry.request_processor import join_url
+from idf_component_tools.registry.storage_client import StorageClient
+from idf_component_tools.semver import Version
 from idf_component_tools.sources.web_service import download_archive
 
-ComponentVersion = namedtuple('ComponentVersion', ['version', 'file_path', 'storage_url'])
+LOGGER = get_logger()
 
 
-class ComponentStaticVersions:  # Should be mutable for updating metadata
-    metadata: t.Dict[str, str] = {}
-    versions: t.List[ComponentVersion] = []
+@dataclass
+class DownloadComponentVersion:
+    version: Version
+    storage_url: t.Optional[str] = None
 
-    def __init__(self, metadata, versions):
-        self.metadata = metadata
-        self.versions = versions
+    def __hash__(self) -> int:
+        return hash(self.version)
 
 
-def dump_metadata(metadata: t.Dict[str, ComponentStaticVersions], save_path: Path) -> None:
-    for component_name, component_info in metadata.items():
-        namespace, name = component_name.split('/')
-        path = save_path / 'components' / namespace
+class PartialMirror:
+    """This class holds all the required versions of a component"""
+
+    def __init__(self):
+        self.data: t.Dict[str, t.Set[DownloadComponentVersion]] = defaultdict(set)
+
+    def update(self, component_name: str, version: DownloadComponentVersion) -> None:
+        self.data[component_name].add(version)
+
+    def merge(self, other: 'PartialMirror') -> None:
+        for component_name, comp_versions in other.data.items():
+            self.data[component_name].update(comp_versions)
+
+    def diff(self, other: 'PartialMirror') -> 'PartialMirror':
+        """self.versions - other.versions"""
+        diff = PartialMirror()
+        for component_name, comp_versions in self.data.items():
+            for version in comp_versions:
+                if version.version not in [
+                    v.version for v in other.data.get(component_name, set())
+                ]:
+                    diff.update(component_name, version)
+        return diff
+
+
+def download_versions_from_storage(
+    storage_url: str,
+    component_name: str,
+    versions: t.Set[DownloadComponentVersion],
+    output_dir: Path,
+    progress_bar: t.Optional[tqdm] = None,
+) -> None:
+    component_json = StorageClient(storage_url).get_component_json(
+        component_name=component_name
+    )  # full component json
+    component_json_version_urls = {
+        Version(ver['version']): ver['url'] for ver in component_json['versions']
+    }
+
+    for version in versions:
+        if version.version not in component_json_version_urls:
+            error(f'Version {version.version} of component {component_name} not found in storage')
+            continue
+
+        if progress_bar is not None:
+            progress_bar.set_description(f'Downloading {component_name}({version.version})')
+            progress_bar.update(1)
+
+        download_url = join_url(storage_url, component_json_version_urls[version.version])
+        ver_output = (output_dir / component_json_version_urls[version.version]).parent
         try:
-            path.mkdir(parents=True)
+            ver_output.mkdir(parents=True)
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise e
 
-        with open(str(path / f'{name}.json'), 'w', encoding='utf-8') as f:
-            json.dump(component_info.metadata, f)
+        download_archive(download_url, str(ver_output), save_original_filename=True)
 
+    # trim component json
+    trimmed_component_json = deepcopy(component_json)
+    trimmed_component_json['versions'] = [
+        ver
+        for ver in component_json['versions']
+        if Version(ver['version']) in {v.version for v in versions}
+    ]
 
-def download_dependency(version: ComponentVersion, path: Path) -> bool:
-    if version.storage_url is None:  # Local component
-        return False
-    filename = Path(version.file_path)
-    url = join_url(version.storage_url, str(filename))
+    comp_json_filepath = output_dir / 'components' / f'{component_name}.json'
+    if comp_json_filepath.exists():
+        # merging local cmp.json
+        with open(str(comp_json_filepath), encoding='utf-8') as fr:
+            old_json_dict = json.load(fr)
+            old_json_dict['versions'].extend(trimmed_component_json['versions'])
 
-    try:
-        path.mkdir(parents=True)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise e
+        with open(str(comp_json_filepath), 'w', encoding='utf-8') as fw:
+            json.dump(old_json_dict, fw)
+    else:
+        comp_json_filepath.parent.mkdir(parents=True, exist_ok=True)
 
-    if not (path / filename).is_file():
-        download_archive(url, str(path), save_original_filename=True)
-        return True
-    return False
+        with open(str(comp_json_filepath), 'w', encoding='utf-8') as fw:
+            json.dump(trimmed_component_json, fw)
 
 
 def download_components_archives(
-    metadata: t.Dict[str, ComponentStaticVersions], save_path: Path
-) -> t.Dict[str, int]:
-    progress_bar = tqdm(total=sum([len(x.versions) for x in metadata.values()]))
-    loading_data: t.Dict[str, int] = {}
-    for component_name, component_info in metadata.items():
-        for version in component_info.versions:
-            progress_bar.set_description(f'Downloading {component_name}({version.version})')
-            status = download_dependency(version, Path(save_path))
-            progress_bar.update(1)
-            if status:
-                loading_data[component_name] = loading_data.get(component_name, 0) + 1
-    progress_bar.close()
+    new_partial_mirror: PartialMirror, old_partial_mirror: PartialMirror, output_dir: Path
+) -> int:
+    diff = new_partial_mirror.diff(old_partial_mirror)
+    total_downloads = sum(len(versions) for versions in diff.data.values())
+    progress_bar = tqdm(total=total_downloads)
 
-    return loading_data
-
-
-def update_component_metadata(component_metadata: t.Dict, api_metadata: t.Dict) -> t.Dict:
-    for api_version in api_metadata['versions']:
-        for i, component_version in enumerate(component_metadata['versions']):
-            if component_version['version'] == api_version['version']:
-                component_metadata['versions'][i] = api_version  # Update old metadata
-                break
-        else:
-            component_metadata['versions'].append(api_version)
-
-    api_metadata['versions'] = component_metadata['versions']  # Update header
-    return api_metadata
-
-
-def update_static_versions(
-    old: t.Dict[str, ComponentStaticVersions], new: t.Dict[str, ComponentStaticVersions]
-) -> t.Dict:
-    result = old.copy()
-    for component_name, component_info in new.items():
-        if component_name not in result:
-            result[component_name] = component_info
-        elif result[component_name].metadata != component_info.metadata:
-            result[component_name].metadata = update_component_metadata(
-                result[component_name].metadata, component_info.metadata
-            )
-
-            for version in component_info.versions:
-                for loaded_version in result[component_name].versions:
-                    if version.version == loaded_version.version:
-                        break
-                else:
-                    result[component_name].versions.append(version)
-
-    return result
-
-
-def get_component_metadata(
-    client: MultiStorageClient,
-    requirement: DependencyResponse,
-    version_spec: str,
-    metadata: t.Dict,
-    warnings: t.List[str],
-    progress_bar: t.Optional[tqdm] = None,
-) -> t.Tuple[t.Dict, t.List[str]]:
-    component_name = f'{requirement.namespace}/{requirement.name}'
-    try:
-        component_info = client.get_component_info(component_name=component_name, spec=version_spec)
-        if not component_info.data['versions']:
-            raise VersionNotFound()
-    except (VersionNotFound, ComponentNotFound):
-        warnings.append(
-            'Component "{}" with selected spec "{}" was not found in selected storages. '
-            'Skip'.format(component_name, version_spec)
+    for component_name, component_versions in diff.data.items():
+        # group by storage_url
+        component_versions_by_storage: t.Dict[str, t.Set[DownloadComponentVersion]] = defaultdict(
+            set
         )
-        return metadata, warnings
+        for v in component_versions:
+            if not v.storage_url:
+                warn(
+                    f'No storage url for component {component_name} version {v.version}. Skipping download...'
+                )
+                continue
+            component_versions_by_storage[v.storage_url].add(v)
 
-    data = component_info.data
-    if component_name not in metadata:
-        metadata[component_name] = ComponentStaticVersions(data, [])
-    loaded_versions = metadata[component_name].versions
-
-    for version in data['versions']:
-        for loaded_version in loaded_versions:
-            if version['version'] == loaded_version.version:
-                break
-        else:
-            loaded_versions.append(
-                ComponentVersion(version['version'], version['url'], component_info.storage_url)
-            )
-
-            if progress_bar:
-                progress_bar.update(1)
-
-            metadata, warnings = prepare_metadata(
-                client,
-                [DependencyResponse(**dependency) for dependency in version['dependencies']],
-                progress_bar,
-                metadata,
-                warnings,
-            )
-
-    metadata[component_name].versions = loaded_versions
-
-    return metadata, warnings
-
-
-def prepare_metadata(
-    client: MultiStorageClient,
-    dependencies: t.List[DependencyResponse],
-    progress_bar: t.Optional[tqdm] = None,
-    metadata: t.Optional[t.Dict] = None,
-    warnings: t.Optional[t.List] = None,
-) -> t.Tuple[t.Dict, t.List[str]]:
-    if metadata is None:
-        metadata = {}
-    if warnings is None:
-        warnings = []
-
-    for dep in dependencies:
-        if dep.source == 'service':
-            version_specs = set([
-                elem.version for elem in [*dep.rules, *dep.matches] if elem.version
-            ])
-            version_specs.add(dep.spec)
-
-            for version_spec in version_specs:
-                metadata, warnings = get_component_metadata(
-                    client, dep, version_spec, metadata, warnings, progress_bar
+        for storage_url, versions in component_versions_by_storage.items():
+            with logging_redirect_tqdm(loggers=[LOGGER]):
+                download_versions_from_storage(
+                    storage_url,
+                    component_name,
+                    versions,
+                    output_dir,
+                    progress_bar=progress_bar,
                 )
 
-    return metadata, warnings
+    progress_bar.close()
+    return total_downloads
 
 
-def load_saved_metadata(path: Path) -> t.Dict[str, ComponentStaticVersions]:
-    components_json_path = path / 'components'
-    metadata = {}
-    for json_filename in components_json_path.rglob('*.json'):
+def prepare_component_versions(
+    client: MultiStorageClient,
+    requirements: t.List[ComponentRequirement],
+    *,
+    # not required
+    progress_bar: t.Optional[tqdm] = None,
+    resolution: VersionSolverResolution = VersionSolverResolution.ALL,
+    # caches
+    solved_requirements_cache: t.Set[ComponentRequirement] = None,  # type: ignore
+    recorded_versions_cache: t.Dict[str, t.Set[Version]] = None,  # type: ignore
+) -> PartialMirror:
+    if solved_requirements_cache is None:
+        solved_requirements_cache = set()
+    if recorded_versions_cache is None:
+        recorded_versions_cache = defaultdict(set)
+
+    def _prepare_component_versions(
+        _reqs: t.List[ComponentRequirement],
+    ) -> PartialMirror:
+        _partial_mirror = PartialMirror()
+        for req in _reqs:
+            if req.source.type != 'service':
+                continue
+
+            if req in solved_requirements_cache:
+                continue
+
+            solved_requirements_cache.add(req)
+
+            try:
+                component_with_versions, storage_url = client.get_component_versions(
+                    req, resolution=resolution
+                )
+                if not component_with_versions.versions:
+                    raise VersionNotFound()
+            except (VersionNotFound, ComponentNotFound):
+                warn(
+                    f'Component "{req.name}" with selected version "{req.version}" '
+                    f'was not found in selected storages. Skipping...'
+                )
+                return _partial_mirror
+
+            for version in component_with_versions.versions:
+                _partial_mirror.update(
+                    req.name,
+                    DownloadComponentVersion(
+                        version=Version(version.version),
+                        storage_url=storage_url,
+                    ),
+                )
+
+                if progress_bar is not None:
+                    if version.version.semver not in recorded_versions_cache.get(req.name, set()):
+                        recorded_versions_cache[req.name].add(version.version.semver)
+                        progress_bar.update(1)
+
+                _partial_mirror.merge(
+                    _prepare_component_versions(
+                        version.dependencies,
+                    )
+                )
+
+        return _partial_mirror
+
+    return _prepare_component_versions(requirements)
+
+
+def load_local_mirror(path: Path) -> PartialMirror:
+    res = PartialMirror()
+
+    for json_filename in (path / 'components').rglob('*.json'):
         component_name = f'{json_filename.parent.name}/{json_filename.stem}'
-        versions = []
+
         try:
             with open(str(json_filename), encoding='utf-8') as f:
-                loaded_component_metadata = json.load(f)
-            for version in loaded_component_metadata['versions']:
-                versions.append(ComponentVersion(version['version'], version['url'], None))
+                response = json.load(f)
         except (ValueError, KeyError):
-            raise SyncError('Metadata file is not valid')
+            error(f'Ignoring invalid metadata file: {json_filename}')
+            continue
 
-        metadata[component_name] = ComponentStaticVersions(loaded_component_metadata, versions)
-    return metadata
+        for version in response['versions']:
+            res.update(
+                component_name, DownloadComponentVersion(version=Version(version['version']))
+            )
+
+    return res
 
 
-def collect_metadata(
+def collect_component_versions(
     client: MultiStorageClient,
     path: t.Union[str, Path],
-    components: t.Optional[t.List[str]] = None,
+    component_specs: t.Optional[t.List[str]] = None,
     recursive: bool = False,
-) -> t.Dict[str, ComponentStaticVersions]:
-    metadata: t.Dict[str, ComponentStaticVersions] = {}
+    resolution: VersionSolverResolution = VersionSolverResolution.ALL,
+) -> PartialMirror:
     path = Path(path)
-    warnings: t.List[str] = []
     progress_bar = tqdm(
-        total=10000,
-        desc='Metadata downloaded from the registry',
+        desc='Collecting required components',
         bar_format='{desc}: {n_fmt}',
-    )  # We don't show total, so we can set total as any big number
-    if components:
+    )
+    solved_requirements_cache: t.Set[ComponentRequirement] = set()
+    recorded_versions_cache: t.Dict[str, t.Set[Version]] = defaultdict(set)
+
+    if component_specs:
         dependencies = []
-        for component_info in components:
+        for component_requirements in component_specs:
             namespace, component, spec = parse_component_name_spec(
-                component_info, client.default_namespace
+                component_requirements, client.default_namespace
             )
             dependencies.append(
-                DependencyResponse(
-                    spec=spec,
-                    source='service',
-                    name=component,
-                    namespace=namespace,
+                # only service source supported
+                ComponentRequirement(
+                    name=f'{namespace}/{component}',
+                    version=spec,
                 )
             )
-        metadata, warnings = prepare_metadata(
-            client, dependencies, progress_bar, metadata, warnings
-        )
+            with logging_redirect_tqdm(loggers=[LOGGER]):
+                res = prepare_component_versions(
+                    client,
+                    dependencies,
+                    progress_bar=progress_bar,
+                    resolution=resolution,
+                    solved_requirements_cache=solved_requirements_cache,
+                    recorded_versions_cache=recorded_versions_cache,
+                )
     else:
         paths = [path]
         if recursive:
             paths = list(path.glob('**'))
+
+        res = PartialMirror()
         for path in paths:
             if path.is_dir() and is_component(path) and (path / MANIFEST_FILENAME).exists():
                 manifest = ManifestManager(path, '').load()
-                dependencies_responses: t.List[DependencyResponse] = []
-                for req in manifest.raw_requirements:
-                    dependencies_responses.append(
-                        req.to_dependency_response(client.default_namespace, req.version)
+                with logging_redirect_tqdm(loggers=[LOGGER]):
+                    res.merge(
+                        prepare_component_versions(
+                            client,
+                            manifest.raw_requirements,
+                            progress_bar=progress_bar,
+                            resolution=resolution,
+                            solved_requirements_cache=solved_requirements_cache,
+                            recorded_versions_cache=recorded_versions_cache,
+                        )
                     )
-                metadata, warnings = prepare_metadata(
-                    client, dependencies_responses, progress_bar, metadata, warnings
-                )
+
     progress_bar.close()
 
-    for warning in warnings:
-        warn(warning)
-
-    return metadata
-
-
-def metadata_has_changes(old: t.Dict, new: t.Dict) -> bool:
-    if not all(
-        x in old['versions'] for x in new['versions']
-    ):  # In old metadata may be more versions than in new
-        return True
-
-    old_without_version = {k: v for k, v in old.items() if k != 'versions'}
-    new_without_version = {k: v for k, v in new.items() if k != 'versions'}
-    if old_without_version != new_without_version:
-        return True
-    return False
+    return res
 
 
 def sync_components(
     client: MultiStorageClient,
-    path: t.Union[str, Path],
-    save_path: Path,
+    work_dir: t.Union[str, Path],
+    output_dir: Path,
     components: t.Optional[t.List[str]] = None,
     recursive: bool = False,
+    resolution: VersionSolverResolution = VersionSolverResolution.ALL,
 ) -> None:
-    save_path = Path(save_path)
-    notice(f'Collecting metadata files into the folder "{save_path.absolute()}"')
+    output_dir = Path(output_dir)
+    notice(f'Collecting local storage from folder "{output_dir.absolute()}"')
+    local_component_versions = load_local_mirror(Path(output_dir))
+    notice(f'{len(local_component_versions.data)} components loaded from "{output_dir}" folder')
 
-    metadata = load_saved_metadata(Path(save_path))
-    notice(f'{len(metadata)} metadata loaded from "{save_path}" folder')
+    new_component_versions = collect_component_versions(
+        client,
+        work_dir,
+        component_specs=components,
+        recursive=recursive,
+        resolution=resolution,
+    )
+    if not len(new_component_versions.data):
+        raise SyncError('No component need to be downloaded with the specified requirements')
 
-    new_metadata = collect_metadata(client, path, components, recursive)
-    if not len(new_metadata):
-        raise SyncError('No components found for those requirements')
-
-    if metadata.keys() == new_metadata.keys():
-        for component_name in metadata.keys():
-            if metadata_has_changes(
-                metadata[component_name].metadata, new_metadata[component_name].metadata
-            ):
-                break
-        else:
-            notice('The new metadata is identical to the loaded one. Nothing to update')
-            return
-
-    notice('Updating metadata')
-    metadata = update_static_versions(metadata, new_metadata)
-    notice(f'Collected {len(metadata)} components. Downloading archives')
-
-    loading_data = download_components_archives(metadata, save_path)
-
-    dump_metadata(metadata, save_path)
-
-    total_versions = sum(list(loading_data.values()))
-    if total_versions:
-        notice(
-            'Successfully downloaded {} versions of {} components to the "{}" folder'.format(
-                total_versions, len(list(loading_data.keys())), str(save_path)
-            )
-        )
-    else:
-        notice(
-            'Metadata was updated, but components had already been downloaded '
-            'to the "{}" folder'.format(save_path)
-        )
+    # download & copy cmp.jsons
+    newly_downloads = download_components_archives(
+        new_component_versions, local_component_versions, output_dir
+    )
+    notice(f'{newly_downloads} new files downloaded')

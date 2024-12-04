@@ -4,10 +4,11 @@
 import json
 import os
 
+import pytest
 from jsonref import requests
 from pytest import fixture, raises, warns
 
-from idf_component_tools.config import Config
+from idf_component_tools.config import Config, ConfigError
 from idf_component_tools.constants import (
     DEFAULT_NAMESPACE,
     IDF_COMPONENT_STAGING_REGISTRY_URL,
@@ -94,6 +95,31 @@ class TestGetProfile:
         assert profile.registry_url == 'https://default.com/'
         assert profile.default_namespace == 'default_ns'
         assert profile.api_token is None
+
+    def test_invalid_field_error_message(self, tmp_path):
+        config_path = os.path.join(str(tmp_path), 'idf_component_manager.yml')
+        with open(config_path, 'w+') as f:
+            f.write(
+                json.dumps({
+                    'profiles': {
+                        'default': {
+                            'registry_url': 'foo',
+                            'storage_url': [
+                                'http://test.me',
+                                'bar',
+                            ],
+                            'local_storage_url': 'foo',
+                        }
+                    }
+                })
+            )
+
+        with pytest.raises(ConfigError) as e:
+            get_profile('default', config_path)
+            msgs = str(e).split('\n')
+            assert 'Invalid field "profiles:default:registry_url":' in msgs[0]
+            assert 'Invalid field "profiles:default:storage_url:[1]":' in msgs[1]
+            assert 'Invalid field "profiles:default:local_storage_url":' in msgs[2]
 
 
 class TestApiClient:
