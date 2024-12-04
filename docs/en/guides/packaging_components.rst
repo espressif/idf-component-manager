@@ -212,9 +212,11 @@ In this case, your ``idf_component.yml`` manifest may have ``include`` and ``exc
 
 Files and directories that are excluded by default can be found `here <https://github.com/espressif/idf-component-manager/blob/main/idf_component_tools/file_tools.py#L16>`_.
 
-.. note::
+.. warning::
 
-   The ``files`` field is only taken into account during the preparation of the archive before uploading to the registry.
+   When including or excluding an entire directory and its contents, avoid using the ``some_path/**`` pattern. Instead, use ``some_path/**/*``.
+
+   The IDF Component Manager relies on Python's `pathlib.Path.glob <https://docs.python.org/3/library/pathlib.html#pathlib.Path.glob>`_ function for file inclusion and exclusion. In Python versions prior to 3.13, the ``**`` pattern matches directories but does not match files. This limitation was corrected in Python 3.13. For additional details, refer to the `glob` `pattern language documentation <https://docs.python.org/3/library/pathlib.html#pattern-language>`_.
 
 Add Dependencies
 ================
