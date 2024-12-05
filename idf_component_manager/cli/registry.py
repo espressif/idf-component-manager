@@ -7,6 +7,12 @@ from urllib.parse import urljoin
 import click
 import requests
 
+from idf_component_manager.cli.validations import (
+    combined_callback,
+    validate_name,
+    validate_registry_component,
+    validate_url,
+)
 from idf_component_manager.core import ComponentManager
 from idf_component_manager.utils import VersionSolverResolution
 from idf_component_tools import warn
@@ -43,23 +49,25 @@ def init_registry():
     @click.option(
         '--default-namespace',
         help='Default namespace to use for the components',
+        callback=validate_name,
     )
     @click.option(
         '--default_namespace',
         help="This argument has been deprecated by 'default-namespace'",
         hidden=True,
-        callback=deprecated_option,
+        callback=combined_callback(deprecated_option, validate_name),
         expose_value=False,
     )
     @click.option(
         '--registry-url',
         help='URL of the registry to use',
+        callback=validate_url,
     )
     @click.option(
         '--registry_url',
         help="This argument has been deprecated by '--registry-url'",
         hidden=True,
-        callback=deprecated_option,
+        callback=combined_callback(deprecated_option, validate_url),
         expose_value=False,
     )
     def login(profile_name, no_browser, description, default_namespace, registry_url):
@@ -77,8 +85,8 @@ def init_registry():
         # Check if token is already in the profile
         if profile.api_token:
             raise FatalError(
-                'You are already logged in with profile "{}", '
-                'please either logout or use different profile'.format(profile_name)
+                f'You are already logged in with profile "{profile_name}", '
+                'please either logout or use a different profile'
             )
 
         api_client = get_api_client(
@@ -186,6 +194,7 @@ def init_registry():
         help='Specify the components to sync from the registry. '
         'Use multiple --component options for multiple components. '
         'Format: namespace/name<version_spec>. Example: example/cmp==1.0.0',
+        callback=validate_registry_component,
     )
     @click.option(
         '--resolution',

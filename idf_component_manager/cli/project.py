@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 import click
 
+from idf_component_manager.cli.validations import validate_path_for_project
+
 from .constants import get_project_dir_option, get_project_options
 from .utils import add_options
 
@@ -25,6 +27,7 @@ def init_project():
         default=None,
         help='Path of the new project. '
         'The project will be created directly in the given folder if it is empty.',
+        callback=validate_path_for_project,
     )
     @click.argument('example', required=True)
     def create_from_example(manager, example, path, profile_name):

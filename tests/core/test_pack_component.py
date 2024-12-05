@@ -7,7 +7,9 @@ from pathlib import Path
 
 import pytest
 import yaml
+from click.testing import CliRunner
 
+from idf_component_manager.cli.core import initialize_cli
 from idf_component_manager.core import ComponentManager
 from idf_component_tools.archive_tools import unpack_archive
 from idf_component_tools.constants import MANIFEST_FILENAME
@@ -80,20 +82,44 @@ def test_pack_component_no_version_provided_nor_manifest(tmp_path, release_compo
 
 
 def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_component_path):
+    monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
     copy_into(pre_release_component_path, str(tmp_path))
     component_manager = ComponentManager(path=str(tmp_path))
 
     # remove the first version line
     remove_version_line(tmp_path)
 
-    def mock_git_tag(self, cwd=None):
+    def mock_git_tag(self, cwd=None):  # noqa: ARG001
         return Version('3.0.0')
 
     monkeypatch.setattr(GitClient, 'get_tag_version', mock_git_tag)
 
-    component_manager.pack_component('pre', 'git')
+    # Define a destination directory within tmp_path
+    dist_dir = tmp_path / 'dist'
+    dist_dir.mkdir(parents=True, exist_ok=True)
+
+    runner = CliRunner()
+    cli = initialize_cli()
+    result = runner.invoke(
+        cli,
+        [
+            'component',
+            'pack',
+            '--version',
+            'git',
+            '--name',
+            'pre',
+            '--dest-dir',
+            str(dist_dir),
+            '--project-dir',
+            str(tmp_path),
+        ],
+    )
+
+    assert result.exit_code == 0
 
     tempdir = os.path.join(tempfile.tempdir, 'cmp_pre')
+
     unpack_archive(os.path.join(component_manager.default_dist_path, 'pre_3.0.0.tgz'), tempdir)
     manifest = ManifestManager(tempdir, 'pre').load()
     assert manifest.version == '3.0.0'
@@ -117,9 +143,11 @@ def test_pack_component_version_from_git(monkeypatch, tmp_path, pre_release_comp
         ('2.3.4~1', '2.3.4~1'),
     ],
 )
-def test_pack_component_with_dest_dir(version, expected_version, tmp_path, release_component_path):
+def test_pack_component_with_dest_dir(
+    monkeypatch, version, expected_version, tmp_path, release_component_path
+):
+    monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
     copy_into(release_component_path, str(tmp_path))
-    component_manager = ComponentManager(path=str(tmp_path))
 
     dest_path = tmp_path / 'dest_dir'
     os.mkdir(str(dest_path))
@@ -127,7 +155,25 @@ def test_pack_component_with_dest_dir(version, expected_version, tmp_path, relea
     # remove the first version line
     remove_version_line(tmp_path)
 
-    component_manager.pack_component('cmp', version, 'dest_dir')
+    runner = CliRunner()
+    cli = initialize_cli()
+    result = runner.invoke(
+        cli,
+        [
+            'component',
+            'pack',
+            '--version',
+            version,
+            '--name',
+            'cmp',
+            '--dest-dir',
+            str(dest_path),
+            '--project-dir',
+            str(tmp_path),
+        ],
+    )
+
+    assert result.exit_code == 0
 
     tempdir = os.path.join(tempfile.tempdir, 'cmp')
     unpack_archive(os.path.join(str(dest_path), 'cmp_{}.tgz'.format(expected_version)), tempdir)

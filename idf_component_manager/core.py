@@ -63,7 +63,7 @@ from idf_component_tools.registry.service_details import (
     get_api_client,
     get_storage_client,
 )
-from idf_component_tools.semver import SimpleSpec, Version
+from idf_component_tools.semver.base import Version
 from idf_component_tools.sources import GitSource, WebServiceSource
 from idf_component_tools.utils import ProjectRequirements
 
@@ -158,7 +158,6 @@ class ComponentManager:
             raise FatalError(
                 'Cannot determine manifest directory. Please specify either component or path.'
             )
-
         # If path is specified
         if path is not None:
             manifest_dir = Path(path).resolve()
@@ -221,21 +220,6 @@ class ComponentManager:
         )
         project_path = Path(path) if path else self.path / os.path.basename(example_name)
 
-        if project_path.is_file():
-            raise FatalError(
-                'Your target path is not a directory. '
-                f'Please remove the {project_path.resolve()} or use different target path.',
-                exit_code=4,
-            )
-
-        if project_path.is_dir() and any(project_path.iterdir()):
-            raise FatalError(
-                f'The directory {project_path} is not empty. '
-                'To create an example you must empty the directory or '
-                'choose a different path.',
-                exit_code=3,
-            )
-
         component_details = client.component(component_name=component_name, version=version_spec)
 
         try:
@@ -287,25 +271,13 @@ class ComponentManager:
             GitSource(git=git, path=git_path).exists(git_ref)
         else:
             match = re.match(WEB_DEPENDENCY_REGEX, dependency)
-            if match:
-                name, spec = match.groups()
-            else:
-                raise FatalError(
-                    f'Invalid dependency: "{dependency}". Please use format "namespace/name".'
-                )
+            name, spec = match.groups()  # type: ignore
 
             if not spec:
                 spec = '*'
 
-            try:
-                SimpleSpec(spec)
-            except ValueError:
-                raise FatalError(
-                    f'Invalid dependency version requirement: {spec}. '
-                    'Please use format like ">=1" or "*".'
-                )
-
             name = WebServiceSource().normalized_name(name)
+
             # Check if dependency exists in the registry
             # make sure it exists in the registry's storage url
             client = get_storage_client(
@@ -537,9 +509,6 @@ class ComponentManager:
         api_client = get_api_client(namespace=namespace, profile_name=profile_name)
 
         if archive:
-            if not os.path.isfile(archive):
-                raise FatalError(f'Cannot find archive to upload: {archive}')
-
             if version:
                 raise FatalError(
                     'Parameters "version" and "archive" are not supported at the same time'
@@ -775,22 +744,16 @@ class ComponentManager:
             for is_root, group in enumerate([downloaded_components, root_managed_components]):
                 for downloaded_component in group:
                     file.write(
-                        'idf_build_component("{}" "{}")\n'.format(
-                            downloaded_component.abs_posix_path,
-                            ('idf_components' if is_root == 1 else 'project_managed_components'),
-                        )
+                        f'idf_build_component("{downloaded_component.abs_posix_path}" "{"idf_components" if is_root == 1 else "project_managed_components"}")\n'
                     )
+
                     file.write(
                         f'idf_component_set_property({downloaded_component.name} COMPONENT_VERSION "{downloaded_component.version}")\n'
                     )
 
                     if downloaded_component.targets:
                         file.write(
-                            'idf_component_set_property({} {} "{}")\n'.format(
-                                downloaded_component.name,
-                                'REQUIRED_IDF_TARGETS',
-                                ' '.join(downloaded_component.targets),
-                            )
+                            f'idf_component_set_property({downloaded_component.name} REQUIRED_IDF_TARGETS "{" ".join(downloaded_component.targets)}")\n'
                         )
 
             file.write(
@@ -956,13 +919,9 @@ class ComponentManager:
                     == props['__COMPONENT_SOURCE']
                 ):
                     raise RequirementsProcessingError(
-                        'Cannot process component requirements. '
-                        'Requirement {} and requirement {} are both added as {}.'
-                        "Can't decide which one to pick.".format(
-                            name_matched_before.name,
-                            comp_name.name,
-                            props['__COMPONENT_SOURCE'],
-                        )
+                        f'Cannot process component requirements. '
+                        f'Requirement {name_matched_before.name} and requirement {comp_name.name} are both added as {props["__COMPONENT_SOURCE"]}. '
+                        "Can't decide which one to pick."
                     )
                 # Give user an info when same name components got overriden
                 else:

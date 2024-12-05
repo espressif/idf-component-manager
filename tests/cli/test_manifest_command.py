@@ -152,7 +152,6 @@ def test_add_git_dependency():
                 'https://github.com/espressif/example_components.git',
             ],
         ).output
-
         assert 'Successfully' in result
 
         assert (
@@ -231,7 +230,7 @@ def test_add_git_dependency_invalid():
         manager = ComponentManager(path=str(tempdir))
         manager.create_manifest()
 
-        exception = runner.invoke(
+        output = runner.invoke(
             cli,
             [
                 'manifest',
@@ -241,12 +240,13 @@ def test_add_git_dependency_invalid():
                 'https://github.com/espressif/example_compnents.git',
             ],
         ).exception
+
         assert (
             'Repository "https://github.com/espressif/example_compnents.git" does not exist'
-            in str(exception)
+            in str(output)
         )
 
-        exception = runner.invoke(
+        output = runner.invoke(
             cli,
             [
                 'manifest',
@@ -258,9 +258,9 @@ def test_add_git_dependency_invalid():
                 'ciempi',
             ],
         ).exception
-        assert 'Path "ciempi" does not exist' in str(exception)
+        assert 'Path "ciempi" does not exist' in str(output)
 
-        exception = runner.invoke(
+        output = runner.invoke(
             cli,
             [
                 'manifest',
@@ -272,7 +272,7 @@ def test_add_git_dependency_invalid():
                 'trest',
             ],
         ).exception
-        assert 'Git reference "trest" does not exist' in str(exception)
+        assert 'Git reference "trest" does not exist' in str(output)
 
 
 def test_manifest_keeps_comments():

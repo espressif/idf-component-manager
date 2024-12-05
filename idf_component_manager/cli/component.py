@@ -3,6 +3,13 @@
 
 import click
 
+from idf_component_manager.cli.validations import (
+    validate_git_url,
+    validate_if_archive,
+    validate_sha,
+    validate_version,
+)
+
 from .constants import (
     get_dest_dir_option,
     get_name_option,
@@ -41,11 +48,13 @@ def init_component():
             '--repository',
             default=None,
             help='The URL of the component repository. This option overwrites the value in the idf_component.yml',
+            callback=validate_git_url,
         ),
         click.option(
             '--commit-sha',
             default=None,
             help='Git commit SHA of the the component version. This option overwrites the value in the idf_component.yml',
+            callback=validate_sha,
         ),
         click.option(
             '--repository-path',
@@ -95,6 +104,7 @@ def init_component():
         '--archive',
         help='Path of the archive with a component to upload. '
         'When not provided the component will be packed automatically.',
+        callback=validate_if_archive,
     )
     @click.option(
         '--skip-pre-release',
@@ -168,7 +178,9 @@ def init_component():
 
     @component.command()
     @add_options(PROJECT_OPTIONS + NAMESPACE_NAME_OPTIONS)
-    @click.option('--version', required=True, help='Component version to delete.')
+    @click.option(
+        '--version', required=True, help='Component version to delete.', callback=validate_version
+    )
     def delete(manager, profile_name, namespace, name, version):
         """
         Delete specified version of the component from the component registry.
@@ -178,7 +190,12 @@ def init_component():
 
     @component.command()
     @add_options(PROJECT_OPTIONS + NAMESPACE_NAME_OPTIONS)
-    @click.option('--version', required=True, help='Component version to yank version.')
+    @click.option(
+        '--version',
+        required=True,
+        help='Component version to yank version.',
+        callback=validate_version,
+    )
     @click.option(
         '--message',
         required=True,

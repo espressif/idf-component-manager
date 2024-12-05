@@ -4,6 +4,12 @@ import json
 
 import click
 
+from idf_component_manager.cli.validations import (
+    validate_add_dependency,
+    validate_existing_dir,
+    validate_git_url,
+    validate_url,
+)
 from idf_component_tools.manifest import MANIFEST_JSON_SCHEMA
 
 from .constants import get_profile_option, get_project_dir_option
@@ -39,11 +45,14 @@ def init_manifest():
             '--path',
             default=None,
             help='Path to the component where the dependency will be added. The component name is ignored when the path is specified.',
+            callback=validate_existing_dir,
         ),
     ]
 
     GIT_OPTIONS = [
-        click.option('--git', default=None, help='Git URL of the component.'),
+        click.option(
+            '--git', default=None, help='Git URL of the component.', callback=validate_git_url
+        ),
         click.option(
             '--git-path', default='.', help='Path to the component in the git repository.'
         ),
@@ -78,9 +87,13 @@ def init_manifest():
         + PROFILE_OPTION
         + MANIFEST_OPTIONS
         + GIT_OPTIONS
-        + [click.option('--registry-url', default=None, help='URL of the registry.')]
+        + [
+            click.option(
+                '--registry-url', default=None, help='URL of the registry.', callback=validate_url
+            )
+        ]
     )
-    @click.argument('dependency', required=True)
+    @click.argument('dependency', required=True, callback=validate_add_dependency)
     def add_dependency(
         manager, profile_name, component, path, dependency, registry_url, git, git_path, git_ref
     ):
