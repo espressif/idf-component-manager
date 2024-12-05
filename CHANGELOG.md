@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.1.0 (2024-12-05)
+
+### Feat
+
+- **cli**: add validations for CLI options
+- Get all information about Forbidden error from the server
+- set local_storage_url as breaking change from 1.x to 2.x
+- support `compote registry sync --resolution [all,latest]`
+- Add in-memory cache for API and storage requests
+- add debug logging for HTTP requests
+- add esp32h21 to known target list
+- Add ruamel.yaml dependency
+- Improve add-dependency output and help
+- Add an option to specify registry url when using add-dependency
+- Add git source to add-dependency command
+- increase HTTP timeouts, use custom timeout for uploads
+- Add support of `.gitignore` file while uploading / packaging component
+- Add `use_gitignore` option to the manifest
+- validate manifest of examples when uploading a component
+
+### Fix
+
+- hash value of ComponentRequirement for register_url
+- compote registry sync keep same folder structure as the registry
+- Fix caching during uploading of components
+- default storage url without fetching from registry
+- only show debug hints when version solver failed
+- unify 1.x 2.x generated parital sync metatdata file
+- accept registry_url from api
+- Use utf-8 encoding for all text file operations
+- recreate lock file when missing env var
+- drop current solution if requirement source is different
+- ignore local storage urls when generating partial mirror
+
+### Refactor
+
+- rewrite partial mirror sync
+- use logging module instead of warnings
+
 ## v2.0.4 (2024-10-01)
 
 ### Fix
