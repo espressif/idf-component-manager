@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import typing as t
 import warnings
+from contextvars import ContextVar
 from copy import deepcopy
 
 from pydantic import (
@@ -32,6 +33,7 @@ from idf_component_tools.constants import (
 from idf_component_tools.errors import (
     InternalError,
     MetadataKeyError,
+    RunningEnvironmentError,
 )
 from idf_component_tools.hash_tools.calculate import hash_object
 from idf_component_tools.logging import suppress_logging
@@ -60,6 +62,17 @@ from idf_component_tools.utils import (
 from .constants import COMPILED_FULL_SLUG_REGEX, known_targets
 from .if_parser import IfClause, parse_if_clause
 
+# Context for model validation
+_manifest_validation_context: ContextVar = ContextVar('manifest_validation_context', default={})
+
+
+def set_validation_context(context: t.Dict[str, t.Any]):
+    _manifest_validation_context.set(context)
+
+
+def get_validation_context() -> t.Dict[str, t.Any]:
+    return _manifest_validation_context.get()
+
 
 class OptionalDependency(BaseModel):
     # use alias since `if` is a keyword
@@ -79,6 +92,12 @@ class OptionalDependency(BaseModel):
                 obj.get_value()
         except ParseException:
             raise ValueError('Invalid syntax: "{}"'.format(v))
+        except RunningEnvironmentError as e:
+            if get_validation_context().get('upload_mode') not in [
+                UploadMode.example,
+                UploadMode.false,
+            ]:
+                raise e
 
         return v
 
@@ -443,7 +462,7 @@ class Manifest(BaseModel):
         if not self.repository and self.repository_info:
             raise ValueError('Invalid field "repository". Must set when "repository_info" is set')
 
-        if self._upload_mode != UploadMode.false:
+        if self._upload_mode == UploadMode.component:
             self._validate_while_uploading()
 
     def model_dump(self, **kwargs) -> t.Dict[str, t.Any]:

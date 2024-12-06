@@ -17,7 +17,7 @@ from idf_component_tools.file_tools import (
     filtered_paths,
 )
 from idf_component_tools.hash_tools.constants import HASH_FILENAME
-from idf_component_tools.manager import ManifestManager
+from idf_component_tools.manager import ManifestManager, UploadMode
 from idf_component_tools.manifest import Manifest
 from idf_component_tools.manifest.constants import SLUG_BODY_REGEX
 from idf_component_tools.semver import SimpleSpec
@@ -94,7 +94,9 @@ def validate_examples_manifest(path: str) -> None:
     # Find all manifest files in examples directory
     for manifest_path in examples_path.rglob(MANIFEST_FILENAME):
         # Check if the manifest file is valid
-        ManifestManager(manifest_path, manifest_path.parent.parent.name).load()
+        ManifestManager(
+            manifest_path, manifest_path.parent.parent.name, upload_mode=UploadMode.example
+        ).load()
 
 
 def raise_component_modified_error(managed_components_dir: str, components: t.List[str]) -> None:
@@ -158,7 +160,7 @@ def parse_component_name_spec(
     match = re.match(COMPONENT_FULL_NAME_WITH_SPEC_REGEX, component_name)
     if not match:
         raise FatalError(
-            'Cannot parse COMPONENT argument. ' 'Please use format like: namespace/component=1.0.0'
+            'Cannot parse COMPONENT argument. Please use format like: namespace/component=1.0.0'
         )
 
     namespace = match.group('namespace') or default_namespace or DEFAULT_NAMESPACE
