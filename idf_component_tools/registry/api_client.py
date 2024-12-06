@@ -73,6 +73,7 @@ class APIClient(BaseClient):
                 headers: t.Optional[t.Dict] = None,
                 schema: t.Optional[ApiBaseModel] = None,
                 timeout: t.Optional[t.Union[float, t.Tuple[float, float]]] = None,
+                do_not_cache=False,
             ):
                 # always access '<registry_url>/api' while doing api calls
                 path = ['api', *path]
@@ -87,6 +88,7 @@ class APIClient(BaseClient):
                     headers=headers,
                     schema=schema,
                     timeout=timeout,
+                    do_not_cache=do_not_cache,
                 )
 
             return f(self, request=request, *args, **kwargs)
@@ -186,4 +188,10 @@ class APIClient(BaseClient):
 
     @_request
     def task_status(self, request: t.Callable, job_id: str) -> TaskStatus:
-        return TaskStatus.model_validate(request('get', ['tasks', job_id]))
+        return TaskStatus.model_validate(
+            request(
+                'get',
+                ['tasks', job_id],
+                do_not_cache=True,
+            )
+        )

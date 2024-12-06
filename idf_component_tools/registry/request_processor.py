@@ -63,10 +63,15 @@ def cache_request(func):
     """Decorator to conditionally cache GET and HEAD requests based on CACHE_HTTP_REQUESTS"""
 
     def wrapper(*args, **kwargs):
-        if ComponentManagerSettings().CACHE_HTTP_REQUESTS and kwargs.get('method', '').lower() in [
-            'get',
-            'head',
-        ]:
+        do_not_cache = kwargs.pop('do_not_cache', False)
+
+        cache_conditions = [
+            ComponentManagerSettings().CACHE_HTTP_REQUESTS,
+            kwargs.get('method', '').lower() in ['get', 'head'],
+            do_not_cache is False,
+        ]
+
+        if all(cache_conditions):
             return cache_to_dict(_request_cache, func, *args, **kwargs)
         return func(*args, **kwargs)
 
@@ -182,6 +187,7 @@ def base_request(
     schema: t.Optional[ApiBaseModel] = None,
     timeout: t.Optional[t.Union[float, t.Tuple[float, float]]] = None,
     use_storage: bool = False,
+    do_not_cache=False,
 ) -> t.Dict:
     endpoint = join_url(url, *path)
 
@@ -192,7 +198,16 @@ def base_request(
     if request_timeout is None:
         request_timeout = DEFAULT_REQUEST_TIMEOUT
 
-    response = make_request(session, endpoint, data, json, headers, request_timeout, method=method)
+    response = make_request(
+        session,
+        endpoint,
+        data,
+        json,
+        headers,
+        request_timeout,
+        method=method,
+        do_not_cache=do_not_cache,
+    )
     response_json = handle_response_errors(response, endpoint, use_storage)
 
     if schema is None:

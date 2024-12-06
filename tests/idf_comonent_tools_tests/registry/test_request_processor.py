@@ -126,3 +126,22 @@ def test_cache_request_caches_only_get_and_head(mocker):
     ]
     assert mock_func.call_args_list == expected_calls
     assert len(_request_cache) == 2  # Cache should have entries for GET and HEAD
+
+
+@pytest.mark.enable_request_cache
+def test_cache_request_with_do_not_cache(mocker):
+    # Mock function to be decorated
+    mock_func = mocker.Mock(return_value='response')
+    decorated_func = cache_request(mock_func)
+
+    # Clear the cache before testing
+    _request_cache.clear()
+
+    # Call the function with do_not_cache set to True
+    result1 = decorated_func(method='GET', url='http://example.com', do_not_cache=True)
+    result2 = decorated_func(method='GET', url='http://example.com', do_not_cache=True)
+
+    assert result1 == 'response'
+    assert result2 == 'response'
+    assert mock_func.call_count == 2  # Should be called twice since caching is disabled
+    assert len(_request_cache) == 0  # Cache should remain empty
