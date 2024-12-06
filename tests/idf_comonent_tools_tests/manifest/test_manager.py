@@ -10,8 +10,8 @@ import yaml
 
 from idf_component_manager.core import get_validated_manifest
 from idf_component_tools import LOGGING_NAMESPACE
-from idf_component_tools.errors import ManifestError
-from idf_component_tools.manager import ManifestManager
+from idf_component_tools.errors import ManifestError, RunningEnvironmentError
+from idf_component_tools.manager import ManifestManager, UploadMode
 
 
 def test_check_filename(tmp_path):
@@ -143,3 +143,15 @@ def test_get_validated_manifest_invalid_component_manifest(valid_manifest, tmp_p
 
     with pytest.raises(ManifestError, match='Manifest is not valid'):
         get_validated_manifest(manager, tmp_path)
+
+
+def test_env_not_expanded_with_example_manifest(valid_manifest, tmp_path):
+    valid_manifest['dependencies']['test']['rules'] = [{'if': '$MY_IDF_VAR == 1'}]
+    manifest_path = os.path.join(str(tmp_path), 'idf_component.yml')
+    with open(manifest_path, 'w') as fw:
+        yaml.dump(valid_manifest, fw)
+
+    with pytest.raises(RunningEnvironmentError):
+        ManifestManager(manifest_path, name='test', upload_mode=UploadMode.component).load()
+
+    ManifestManager(manifest_path, name='test', upload_mode=UploadMode.example).load()

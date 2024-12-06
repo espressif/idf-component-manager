@@ -60,6 +60,7 @@ class ManifestManager:
         from .manifest.models import (
             Manifest,
             RepositoryInfoField,
+            set_validation_context,
         )
 
         # avoid circular dependency
@@ -97,6 +98,8 @@ class ManifestManager:
             manifest_dict['version'] = self._version
 
         manifest_dict['manifest_manager'] = self
+
+        set_validation_context({'upload_mode': self.upload_mode})
 
         self._validation_errors, self._manifest = Manifest.validate_manifest(  # type: ignore
             manifest_dict,
