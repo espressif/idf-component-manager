@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.1.1 (2024-12-06)
+
+### Fix
+
+- Do not expand environment variables when validating example manifests
+- Disable caching of task status endpoint
+
 ## v2.1.0 (2024-12-05)
 
 ### Feat
