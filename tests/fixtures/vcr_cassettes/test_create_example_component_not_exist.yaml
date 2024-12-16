@@ -9,29 +9,30 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
+      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
+        python/3.11.10)
     method: GET
     uri: https://components-file.espressif.com/components/test_component_manager/non-existent.json
   response:
     body:
       string: '<?xml version="1.0" encoding="UTF-8"?>
 
-        <Error><Code>NoSuchKey</Code><Message>The specified key does not exist.</Message><Key>components/test_component_manager/non-existent.json</Key><RequestId>2Q9Q7TDYV3N4P1EM</RequestId><HostId>BCkay/naKEMCvrHCuElDZ/izfXb9cECGXqgYL1TbWj529jiIGEYH2QMV5xRoZWyIQehV2/+6YKbqqKlbNHIzBA==</HostId></Error>'
+        <Error><Code>NoSuchKey</Code><Message>The specified key does not exist.</Message><Key>components/test_component_manager/non-existent.json</Key><RequestId>P2V0WAN9V327SX57</RequestId><HostId>4/ZbnVvZp4pHiymwT7M7yuFiPYLfdyXsGmymbZASEiAfHdI4P9q5UOu8k2hYZbuEHVxXpWROvQRM0UWfmcBiAz5XXhpVMB3e</HostId></Error>'
     headers:
       Connection:
       - keep-alive
       Content-Type:
       - application/xml
       Date:
-      - Wed, 15 Jan 2025 16:53:21 GMT
+      - Fri, 21 Mar 2025 14:16:16 GMT
       Server:
       - AmazonS3
       Transfer-Encoding:
       - chunked
       Via:
-      - 1.1 6ec6c63eb2f7ec00507af95b1621674c.cloudfront.net (CloudFront)
+      - 1.1 91afcef6d5c7e90d0a4bb2c3a456c690.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - pivfzFU7-8tBf8QtjOUn6_EB09B_k3Zl0eFXvVwEd1fAOtZH2OWQyw==
+      - owNQXCvK7FIK53C70_2PDI4aEw8dD3HxrzD9stpTIEaYMevb3W2_Kw==
       X-Amz-Cf-Pop:
       - PRG50-C1
       X-Cache:

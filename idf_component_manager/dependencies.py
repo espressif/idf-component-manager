@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import shutil
@@ -18,12 +18,22 @@ from idf_component_tools.errors import (
     ComponentModifiedError,
     FetchingError,
     InvalidComponentHashError,
+    ModifiedComponent,
     RunningEnvironmentError,
     SolverError,
 )
-from idf_component_tools.hash_tools.errors import ValidatingHashError
-from idf_component_tools.hash_tools.validate_managed_component import (
-    validate_managed_component_hash,
+from idf_component_tools.hash_tools.constants import CHECKSUMS_FILENAME, HASH_FILENAME
+from idf_component_tools.hash_tools.errors import (
+    HashNotEqualError,
+    HashNotFoundError,
+    HashNotSHA256Error,
+    ValidatingHashError,
+)
+from idf_component_tools.hash_tools.validate import (
+    validate_checksums_eq_hashdir,
+    validate_hash_eq_hashdir,
+    validate_hash_eq_hashfile,
+    validate_hashfile_eq_hashdir,
 )
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import SolvedComponent, SolvedManifest
@@ -55,7 +65,7 @@ def get_unused_components(
 
     for component in unused_files_with_components:
         try:
-            validate_managed_component_hash(os.path.join(managed_components_path, component))
+            validate_hashfile_eq_hashdir(os.path.join(managed_components_path, component))
             unused_components.add(component)
         except ValidatingHashError:
             pass
@@ -292,6 +302,108 @@ def check_for_new_component_versions(project_requirements, old_solution):
             pass
 
 
+def dependency_pre_download_check(
+    component: SolvedComponent, managed_components_path: str
+) -> t.Optional[str]:
+    """Check component before download.
+
+    :param component: solved component
+    :param managed_components_path: path to the managed_components directory
+    :raises InvalidComponentHashError: if the component hash is invalid or missing
+    :return: path to the component if it is already downloaded and valid, None otherwise
+    """
+
+    component_path = Path(managed_components_path) / build_name(component.name)
+
+    # If the component is not downloadable or if does not exist,
+    # we need to download it without integrity checks.
+    if not component.source.downloadable or not component_path.exists():
+        return None
+
+    # If OVERWRITE_MANAGED_COMPONENTS is set,
+    # we also need to download the component without any checks.
+    if ComponentManagerSettings().OVERWRITE_MANAGED_COMPONENTS:
+        return None
+
+    try:
+        # Check local changes
+        dependency_local_changed(component_path)
+
+        # Check if the dependency is up to date
+        if not dependency_up_to_date(component, component_path):
+            return None
+
+    except (HashNotFoundError, HashNotSHA256Error):
+        raise InvalidComponentHashError(
+            f'File {HASH_FILENAME} or {CHECKSUMS_FILENAME} for component "{component.name}" '
+            'in the managed components directory does not exist or cannot be parsed. '
+            'These files are used by the component manager for component integrity checks. '
+            'If they exist in the component source, please ask the component '
+            'maintainer to remove them.'
+        )
+
+    return component_path.as_posix()
+
+
+def dependency_local_changed(component_path: Path) -> None:
+    """Check if the component has local changes.
+
+    :param component_path: path to the component directory
+    :raises ComponentModifiedError: if the component has local changes
+    """
+
+    # If STRICT_CHECKSUM is not set, we do not check for local changes
+    if not ComponentManagerSettings().STRICT_CHECKSUM:
+        return
+
+    try:
+        validate_hashfile_eq_hashdir(component_path)
+    except HashNotEqualError as e:
+        raise ComponentModifiedError(str(e))
+
+
+def dependency_up_to_date(component: SolvedComponent, component_path: Path) -> bool:
+    """Check if the component is up to date.
+
+    :param component: solved component
+    :param component_path: path to the component directory
+    :raises FetchingError: if the component hash is unknown
+    :return: True if the component is up to date, False otherwise
+    """
+
+    if not component.component_hash:
+        raise FetchingError('Cannot install component with unknown hash')
+
+    try:
+        if ComponentManagerSettings().STRICT_CHECKSUM:
+            checksums = component.source.version_checksums(component)
+
+            if checksums:
+                validate_checksums_eq_hashdir(component_path, checksums)
+            else:
+                validate_hash_eq_hashdir(component_path, component.component_hash)
+        else:
+            validate_hash_eq_hashfile(component_path, component.component_hash)
+
+        return True
+    except HashNotEqualError:
+        return False
+
+
+def dependency_validate(component: SolvedComponent, download_path: t.Optional[str]) -> None:
+    """Validates the component after download."""
+
+    if not component.source.downloadable or download_path is None:
+        return
+
+    try:
+        validate_hashfile_eq_hashdir(download_path)
+    except ValidatingHashError:
+        raise FetchingError(
+            f'The downloaded component "{component.name}" is corrupted. Please try running the command again.'
+        )
+
+
 def download_project_dependencies(
     project_requirements: ProjectRequirements,
     lock_path: str,
@@ -342,7 +454,7 @@ def download_project_dependencies(
             debug_info = DEBUG_INFO_COLLECTOR.get()
             if debug_info.msgs:
                 msg = '\n'.join(debug_info.msgs)
-                hint(f'Failed to solve dependencies. Here are some possible reasons:\n' f'{msg}')
+                hint(f'Failed to solve dependencies. Here are some possible reasons:\n{msg}')
 
             conflict_constraints = parse_root_dep_conflict_constraints(e)
             components_introduce_conflict = []
@@ -394,23 +506,34 @@ def download_project_dependencies(
 
     if requirement_dependencies:
         number_of_components = len(requirement_dependencies)
-        changed_components = []
+        changed_components: t.List[ModifiedComponent] = []
         notice(f'Processing {number_of_components} dependencies:')
 
         for index, component in enumerate(requirement_dependencies):
             notice(f'[{index + 1}/{number_of_components}] {str(component)}')
-            fetcher = ComponentFetcher(component, managed_components_path)
+            download_path = None
+
             try:
+                download_path = dependency_pre_download_check(component, managed_components_path)
+            except ComponentModifiedError as e:
+                changed_components.append(ModifiedComponent(component.name, str(e)))
+                continue
+
+            # Download component if it's not downloaded
+            if download_path is None:
+                fetcher = ComponentFetcher(component, managed_components_path)
                 download_path = fetcher.download()
-                if download_path:
-                    fetcher.create_hash(download_path, component.component_hash)
-                    downloaded_components.add(
-                        DownloadedComponent(
-                            download_path, component.targets, str(component.version)
-                        )
-                    )
-            except ComponentModifiedError:
-                changed_components.append(component.name)
+
+                # Validate the component after download
+                dependency_validate(component, download_path)
+
+            # If download path is still None, skip this component (for example - idf)
+            if download_path is None:
+                continue
+
+            downloaded_components.add(
+                DownloadedComponent(download_path, component.targets, str(component.version))
+            )
 
         if changed_components:
             raise_component_modified_error(managed_components_path, changed_components)

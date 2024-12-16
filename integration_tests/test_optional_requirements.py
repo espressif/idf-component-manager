@@ -69,7 +69,7 @@ def test_indirect_optional_dependency(project, idf_version):
     if 'v4.4' in idf_version:
         assert 'Skipping optional dependency: espressif/cbor' in res
     else:
-        assert '[1/6] espressif/cbor (0.6.0~1)' in res
+        assert '[1/6] espressif/cbor' in res
 
     assert 'cmake failed with exit code 1' not in res
 

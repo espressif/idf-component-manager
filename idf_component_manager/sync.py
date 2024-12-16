@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import errno
 import json
@@ -17,6 +17,7 @@ from idf_component_tools import get_logger
 from idf_component_tools.build_system_tools import is_component
 from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.errors import SyncError
+from idf_component_tools.hash_tools.constants import CHECKSUMS_FILENAME
 from idf_component_tools.manager import ManifestManager
 from idf_component_tools.manifest import ComponentRequirement
 from idf_component_tools.messages import error, notice, warn
@@ -25,7 +26,7 @@ from idf_component_tools.registry.multi_storage_client import MultiStorageClient
 from idf_component_tools.registry.request_processor import join_url
 from idf_component_tools.registry.storage_client import StorageClient
 from idf_component_tools.semver import Version
-from idf_component_tools.sources.web_service import download_archive
+from idf_component_tools.sources.web_service import download_archive, download_file
 
 LOGGER = get_logger()
 
@@ -75,7 +76,11 @@ def download_versions_from_storage(
         component_name=component_name
     )  # full component json
     component_json_version_urls = {
-        Version(ver['version']): ver['url'] for ver in component_json['versions']
+        Version(ver['version']): {
+            'url': ver['url'],
+            'checksums_url': ver['checksums'],
+        }
+        for ver in component_json['versions']
     }
 
     for version in versions:
@@ -87,8 +92,11 @@ def download_versions_from_storage(
             progress_bar.set_description(f'Downloading {component_name}({version.version})')
             progress_bar.update(1)
 
-        download_url = join_url(storage_url, component_json_version_urls[version.version])
-        ver_output = (output_dir / component_json_version_urls[version.version]).parent
+        download_url = join_url(storage_url, component_json_version_urls[version.version]['url'])
+        checksums_url = join_url(
+            storage_url, component_json_version_urls[version.version]['checksums_url']
+        )
+        ver_output = (output_dir / component_json_version_urls[version.version]['url']).parent
         try:
             ver_output.mkdir(parents=True)
         except OSError as e:
@@ -96,6 +104,7 @@ def download_versions_from_storage(
                 raise e
 
         download_archive(download_url, str(ver_output), save_original_filename=True)
+        download_file(checksums_url, str(ver_output))
 
     # trim component json
     trimmed_component_json = deepcopy(component_json)
@@ -226,6 +235,10 @@ def load_local_mirror(path: Path) -> PartialMirror:
     res = PartialMirror()
 
     for json_filename in (path / 'components').rglob('*.json'):
+        # Skip files with checksums
+        if json_filename.name == CHECKSUMS_FILENAME:
+            continue
+
         component_name = f'{json_filename.parent.name}/{json_filename.stem}'
 
         try:

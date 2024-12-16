@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import typing as t
 from functools import wraps
@@ -64,6 +64,7 @@ class StorageClient(BaseClient):
         best_version['name'] = component_name
 
         best_version['download_url'] = join_url(self.storage_url, best_version['url'])
+        best_version['checksums_url'] = join_url(self.storage_url, best_version['checksums'])
 
         documents = best_version['docs']
         for document, url in documents.items():

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import shutil
@@ -427,6 +427,12 @@ def test_check_for_newer_component_versions(project, tmp_path, monkeypatch, fixt
     # Move the archive to the tmp_path
     shutil.copy(
         str(fixtures_path / 'archives' / 'cmp_1.0.0.tar.gz'), str(tmp_path / 'cmp_1.0.0.tar.gz')
+    )
+
+    # Move checksums to the tmp_path
+    shutil.copy(
+        str(fixtures_path / 'archives' / 'cmp_1.0.0_checksums.json'),
+        str(tmp_path / 'CHECKSUMS.json'),
     )
 
     # Copy registry json to tmp

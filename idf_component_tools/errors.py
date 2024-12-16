@@ -3,6 +3,7 @@
 
 
 import typing as t
+from dataclasses import dataclass
 
 
 class FatalError(RuntimeError):
@@ -90,6 +91,12 @@ class LockError(ProcessingError):
 
 class GitError(ProcessingError):
     pass
+
+
+@dataclass
+class ModifiedComponent:
+    name: str
+    msg: str
 
 
 class ComponentModifiedError(ProcessingError):
