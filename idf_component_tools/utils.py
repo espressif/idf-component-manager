@@ -287,6 +287,7 @@ class ComponentVersion(str):
         if not (self.is_any or self.is_commit_id):
             self._semver = Version(self._version_string)
             self.is_semver = True
+            self._version_string = str(self._semver)
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, str):
