@@ -1,5 +1,6 @@
 .vscode
 .idea
+.tool-versions
 
 # Virtual environment
 .venv

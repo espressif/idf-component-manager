@@ -30,6 +30,7 @@ classifiers = [
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
     'Programming Language :: Python :: Implementation :: CPython',
 ]
 dependencies = [
@@ -69,6 +70,7 @@ test = [
     "pytest-split",
     "requests-mock",
     "vcrpy",
+    "urllib3<2.3", # While is not merged and released https://github.com/kevin1024/vcrpy/pull/889
 ]
 
 # for dev please use python >3.8
@@ -102,6 +104,13 @@ plugins = [
 module = "idf_component_manager.version_solver.mixology.*"
 ignore_errors = true
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers"
+markers = [
+    "enable_request_cache: Enable in-memory cache for HTTP requests",
+]
+
 [tool.deptry]
 extend_exclude = [
     "ci",
@@ -117,6 +126,7 @@ DEP002 = ["colorama"]
 
 [tool.deptry.package_module_name_map]
 pyyaml = ["yaml"]
+"ruamel.yaml" = ["ruamel"]
 
 [tool.commitizen]
 name = "cz_conventional_commits"
