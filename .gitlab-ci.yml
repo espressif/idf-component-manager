@@ -47,7 +47,6 @@ check_tests:
 pre-commit-mr:
   stage: check
   extends: .check
-  # needs: [] # does not make sense as the job runs in "check" stage and jobs in stages run in parallel
   before_script:
     - pip install '.[dev]'
   script:
