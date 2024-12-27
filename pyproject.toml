@@ -102,6 +102,13 @@ plugins = [
 module = "idf_component_manager.version_solver.mixology.*"
 ignore_errors = true
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers"
+markers = [
+    "enable_request_cache: Enable in-memory cache for HTTP requests",
+]
+
 [tool.deptry]
 extend_exclude = [
     "ci",
