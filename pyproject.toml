@@ -69,6 +69,7 @@ test = [
     "pytest-split",
     "requests-mock",
     "vcrpy",
+    "urllib3<2.3", # While is not merged and released https://github.com/kevin1024/vcrpy/pull/889
 ]
 
 # for dev please use python >3.8
