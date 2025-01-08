@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 from __future__ import annotations
@@ -7,13 +7,13 @@ import os
 import typing as t
 from pathlib import Path
 
-import yaml
 from pydantic import (
     Discriminator,
     Tag,
     ValidationError,
     field_validator,
 )
+from ruamel.yaml import YAML, CommentedMap, YAMLError
 
 from idf_component_tools.constants import (
     IDF_COMPONENT_REGISTRY_URL,
@@ -117,16 +117,27 @@ class ConfigError(FatalError):
 class ConfigManager:
     def __init__(self, path=None):
         self.config_path = Path(path) if path else (config_dir() / 'idf_component_manager.yml')
+        self._yaml = YAML()
+        self._raw_data: CommentedMap = None  # Storage for CommentedMap from the config file
+
+    # Lazy-load property
+    @property
+    def data(self) -> CommentedMap:
+        if self._raw_data is None:
+            self.load()
+        return self._raw_data
 
     def load(self) -> Config:
         """Loads config from disk"""
         if not self.config_path.is_file():
+            self._raw_data = CommentedMap()
             return Config()
 
         with open(self.config_path, encoding='utf-8') as f:
             try:
-                return self.validate(yaml.safe_load(f.read()))
-            except yaml.YAMLError:
+                self._raw_data = self._yaml.load(f) or CommentedMap()
+                return self.validate(self._raw_data)
+            except YAMLError:
                 raise ConfigError(
                     f'Invalid config file: {self.config_path}\n'
                     f'Please check if the file is in valid YAML format'
@@ -144,8 +155,39 @@ class ConfigManager:
     def dump(self, config: Config) -> None:
         """Writes config to disk"""
 
-        # Make sure that directory exists
-        self.config_path.parent.mkdir(parents=True, exist_ok=True)
+        # Update the original data with values from the config model
+        self._update_data(config)
 
+        # Ensure the directory exists
+        self.config_path.parent.mkdir(parents=True, exist_ok=True)
         with open(self.config_path, mode='w', encoding='utf-8') as f:
-            yaml.dump(data=config.model_dump(), stream=f, encoding='utf-8', allow_unicode=True)
+            self._yaml.dump(self.data, f)
+
+    def _update_data(self, config: Config) -> None:
+        """Update the CommentedMap with values from the Config model"""
+        # Include None values to unset fields in the profile
+        model_data = config.model_dump(exclude_none=False)
+        profiles = self.data.get('profiles', CommentedMap())
+
+        for profile_name, profile_values in model_data['profiles'].items():
+            if profile_name in profiles:
+                if profile_values is None:
+                    profiles[profile_name] = None
+                # Update existing profile
+                else:
+                    if profiles[profile_name] is None:
+                        profiles[profile_name] = {}
+                    for field_name, field_value in profile_values.items():
+                        # Update values
+                        profiles[profile_name][field_name] = field_value
+            else:
+                # Add new profile
+                profiles[profile_name] = profile_values
+
+        # Remove subkeys with None values
+        for profile_name, profile_values in profiles.items():
+            if profile_values is not None:
+                for field_name in [k for k, v in profile_values.items() if v is None]:
+                    del profile_values[field_name]
+
+        self._raw_data['profiles'] = profiles
