@@ -196,3 +196,41 @@ def test_component_registry_url_profile(profile, registry_url, storage_urls):
 
     assert get_registry_url(profile) == registry_url
     assert get_storage_urls(profile) == storage_urls
+
+
+def test_config_dump_keeping_comments(tmp_path):
+    # Create a temporary YAML file with comments
+    yaml_content = """
+    # Start
+    profiles:
+      # Comment for default
+      default:
+        default_namespace: namespace  # Inline comment for namespace
+        registry_url: http://localhost:5000/ # Comment to be removed
+        api_token: token
+    # End
+    """
+    config_file = tmp_path / 'idf_component_manager.yml'
+    with config_file.open('w', encoding='utf-8') as f:
+        f.write(yaml_content)
+
+    # Load the file with ConfigManager
+    manager = ConfigManager(path=config_file)
+    config = manager.load()
+
+    # Modify the lines with comments
+    config.profiles['default'] = ProfileItem.fromdict({
+        'default_namespace': 'new_namespace',
+        'api_token': 'new_token',
+        'registry_url': None,
+    })
+    manager.dump(config)
+
+    with config_file.open('r', encoding='utf-8') as f:
+        modified_data = f.read()
+
+    assert '# Start' in modified_data
+    assert '# Comment for default' in modified_data
+    assert 'default_namespace: new_namespace  # Inline comment for namespace' in modified_data
+    assert 'registry_url: http://localhost:5000/ # Comment to be removed' not in modified_data
+    assert '# End' in modified_data
