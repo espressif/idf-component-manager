@@ -1,32 +1,36 @@
-# SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import logging
+import os
 
 import pytest
-import vcr
 
 from idf_component_manager.dependencies import download_project_dependencies
 from idf_component_tools import LOGGING_NAMESPACE
 from idf_component_tools.errors import SolverError
 from idf_component_tools.manifest import Manifest
 from idf_component_tools.utils import ProjectRequirements
+from tests.network_test_utils import use_vcr_or_real_env
 
 
-@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_target.yaml')
+@use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_webservice_target.yaml')
+@pytest.mark.network
 def test_target_exists(tmp_path, monkeypatch, caplog):
     monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.3.0')
     monkeypatch.setenv('IDF_PATH', str(tmp_path))
     monkeypatch.setenv('IDF_TARGET', 'esp32s2')
 
     manifest = Manifest.fromdict({
-        'dependencies': {'example/cmp': {'version': '*', 'registry_url': 'http://localhost:5000/'}}
+        'dependencies': {
+            'test_component_manager/pre': {'version': '*', 'registry_url': 'http://localhost:5000/'}
+        }
     })
 
     with pytest.raises(SolverError):
         with caplog.at_level(logging.WARNING, logger=LOGGING_NAMESPACE):
             download_project_dependencies(
                 ProjectRequirements(manifests=[manifest]),
-                lock_path='test.lock',
+                lock_path=tmp_path / 'test.lock',
                 managed_components_path='managed_components',
             )
             assert len(caplog.records) == 1
@@ -36,21 +40,25 @@ def test_target_exists(tmp_path, monkeypatch, caplog):
             ) in caplog.records[0].message
 
 
-@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_pre_release.yaml')
-def test_pre_release_exists(tmp_path, monkeypatch, caplog):
+@use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_webservice_pre_release.yaml')
+@pytest.mark.network
+def test_pre_release_exists(tmp_path, monkeypatch, caplog, mock_registry):
     monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.3.0')
     monkeypatch.setenv('IDF_PATH', str(tmp_path))
     monkeypatch.setenv('IDF_TARGET', 'esp32')
 
+    registry_url = os.getenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
     manifest = Manifest.fromdict({
-        'dependencies': {'example/cmp': {'version': '*', 'registry_url': 'http://localhost:5000/'}}
+        'dependencies': {
+            'test_component_manager/pre': {'version': '*', 'registry_url': f'{registry_url}'}
+        }
     })
 
     with pytest.raises(SolverError):
         with caplog.at_level(logging.WARNING, logger=LOGGING_NAMESPACE):
             download_project_dependencies(
                 ProjectRequirements(manifests=[manifest]),
-                lock_path='test.lock',
+                lock_path=tmp_path / 'test.lock',
                 managed_components_path='managed_components',
             )
             assert len(caplog.records) == 1

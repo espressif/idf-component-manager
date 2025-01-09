@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import filecmp
@@ -6,7 +6,6 @@ import os
 import shutil
 
 import pytest
-import vcr
 
 from idf_component_tools.errors import FetchingError
 from idf_component_tools.hash_tools.calculate import hash_dir
@@ -15,6 +14,7 @@ from idf_component_tools.manifest import SolvedComponent
 from idf_component_tools.sources import WebServiceSource
 from idf_component_tools.sources.web_service import download_archive
 from idf_component_tools.utils import ComponentVersion
+from tests.network_test_utils import use_vcr_or_real_env
 
 
 class TestComponentWebServiceSource:
@@ -38,7 +38,8 @@ class TestComponentWebServiceSource:
         )
 
     # If you re-record this cassette, make sure the file downloaded only once
-    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_fetch_webservice.yaml')
+    @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_fetch_webservice.yaml')
+    @pytest.mark.network
     def test_download(self, monkeypatch, release_component_path, tmp_path):
         monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', 'http://example.com')
 
@@ -50,7 +51,7 @@ class TestComponentWebServiceSource:
             system_cache_path=cache_dir,
         )
         cmp = SolvedComponent(
-            name='test/cmp',
+            name='test_component_manager/cmp',
             version=ComponentVersion('1.0.1'),
             source=source,
             component_hash=self.CMP_HASH,
@@ -78,7 +79,7 @@ class TestComponentWebServiceSource:
         manifest = manifest_manager.load()
 
         fixture_cmp = SolvedComponent(
-            name='test/cmp',
+            name='test_component_manager/cmp',
             version=ComponentVersion('1.0.0'),
             source=source,
             component_hash=hash_dir(
@@ -111,18 +112,28 @@ class TestComponentWebServiceSource:
         with pytest.raises(FetchingError):
             download_archive(f'file://{source_file}', tmp_path)
 
-    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_pre_release.yaml')
-    def test_pre_release_exists_with_pre_release_spec(self):
-        source = WebServiceSource(registry_url='http://localhost:5000/')
+    @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_webservice_pre_release.yaml')
+    @pytest.mark.network
+    def test_pre_release_exists_with_pre_release_spec(self, mock_registry):
+        registry_url = os.getenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
+        source = WebServiceSource(registry_url=registry_url)
 
-        source.versions('example/cmp', spec='^0.0.5-alpha1')
+        source.versions('test_component_manager/pre', spec='^0.0.5-alpha1')
 
-    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_versions.yaml')
-    def test_skip_pre_release(self):
-        source = WebServiceSource(registry_url='http://localhost:5000/', pre_release=False)
-        assert len(source.versions('example/cmp').versions) == 1
+    @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_webservice_versions.yaml')
+    @pytest.mark.network
+    def test_skip_pre_release(self, mock_registry):
+        registry_url = os.getenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
+        source = WebServiceSource(registry_url=registry_url, pre_release=False)
+        assert len(source.versions('test_component_manager/cmp').versions) == 2
 
-    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_webservice_versions.yaml')
-    def test_select_pre_release(self):
-        source = WebServiceSource(registry_url='http://localhost:5000/', pre_release=True)
-        assert len(source.versions('example/cmp').versions) == 2
+    @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_webservice_versions.yaml')
+    @pytest.mark.network
+    def test_select_pre_release(self, mock_registry):
+        registry_url = os.getenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
+        source = WebServiceSource(registry_url=registry_url, pre_release=True)
+        assert len(source.versions('test_component_manager/cmp').versions) == 3
+
+
+def test_webservice_normalized_name():
+    assert WebServiceSource().normalized_name('cmp') == 'espressif/cmp'

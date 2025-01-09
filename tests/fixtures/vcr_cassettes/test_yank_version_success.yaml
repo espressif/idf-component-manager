@@ -6,89 +6,132 @@ interactions:
       - '*/*'
       Accept-Encoding:
       - gzip, deflate
-      Authorization:
-      - Bearer L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.3.2 (Darwin/22.1.0 arm64; python/3.10.0)
+      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
     method: GET
-    uri: http://localhost:5000/api/components/test/cmp
+    uri: http://localhost:5000/api/components/test_component_manager/test_yankable
   response:
     body:
-      string: '{"created_at":"2023-09-21T11:13:23.049164+00:00","featured":false,"name":"cmp","namespace":"test","versions":[{"build_metadata_keys":["version-type:string"],"component_hash":"52d551662b2a3c07a29269bf193bd631f5aba89a68e0082882a93d6fd1244753","created_at":"2023-09-21T11:13:23.592938+00:00","dependencies":[],"description":null,"discussion":"","docs":{"api":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003/api.md","api_fr":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003/api_fr.md","changelog":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003/changelog.md","changelog_fr":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003/changelog_fr.md","readme":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003/readme.md","readme_fr":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003/readme_fr.md"},"documentation":"","downloads_total":0,"examples":[{"docs":{"readme":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003/examples/ef9d7973-adff-4342-aa26-ca903f10fa6e/readme.md"},"id":"ef9d7973-adff-4342-aa26-ca903f10fa6e","name":"sample_project","url":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003/examples/ef9d7973-adff-4342-aa26-ca903f10fa6e.tgz"}],"exclusion_list":["**/__pycache__","**/*.pyc","**/*.pyd","**/*.pyo","**/.DS_Store","**/.git/**/*","**/.svn/**/*","**/dist/**/*","**/build/**/*","**/managed_components/**/*","**/dependencies.lock","**/.github/**/*","**/.gitlab-ci.yml","**/.idea/**/*","**/.vscode/**/*","**/.settings/**/*","**/sdkconfig","**/sdkconfig.old","**/.component_hash"],"homepage":"","id":"4194c129-9c18-430e-8500-9f97ffe2337b","info_metadata_keys":[],"issues":"","license":{"name":"FTL","url":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003/license.txt"},"maintainers":[],"repository":"","tags":[],"targets":[],"uploader":"dmitry","url":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003.tgz","version":"1.1.0","yanked_at":null,"yanked_message":null}]}
-
-        '
+      string: "{\n  \"created_at\": \"2025-01-15T16:13:21.260025+00:00\",\n  \"featured\":
+        false,\n  \"name\": \"test_yankable\",\n  \"namespace\": \"test_component_manager\",\n
+        \ \"versions\": [\n    {\n      \"build_metadata_keys\": [\n        \"dependencies-*-type:string\",\n
+        \       \"version-type:string\"\n      ],\n      \"component_hash\": \"6aa92cea9fc3c109d000105a7762864e3e5433ebb7a177d15b35d879cef78aa4\",\n
+        \     \"created_at\": \"2025-01-15T16:13:21.489356+00:00\",\n      \"dependencies\":
+        [\n        {\n          \"is_public\": false,\n          \"matches\": [],\n
+        \         \"name\": null,\n          \"namespace\": null,\n          \"registry_url\":
+        null,\n          \"require\": true,\n          \"rules\": [],\n          \"source\":
+        \"idf\",\n          \"spec\": \">=4.1\"\n        }\n      ],\n      \"description\":
+        \"This component is an example, to be used with the IDF component manager.\",\n
+        \     \"discussion\": null,\n      \"docs\": {\n        \"readme\": \"http://localhost:9000/test-public/components/test_component_manager/test_yankable/1.0.0/readme.md\"\n
+        \     },\n      \"documentation\": null,\n      \"downloads_total\": 0,\n
+        \     \"examples\": [\n        {\n          \"docs\": {},\n          \"id\":
+        \"309dba17-a1c3-4efd-9580-0b76fac7d458\",\n          \"name\": \"cmp_ex\",\n
+        \         \"url\": \"http://localhost:9000/test-public/fd1b173f-56cb-4ae1-a07e-553fb815c7ee/examples/309dba17-a1c3-4efd-9580-0b76fac7d458.tgz\"\n
+        \       }\n      ],\n      \"exclusion_list\": [\n        \"**/__pycache__\",\n
+        \       \"**/*.pyc\",\n        \"**/*.pyd\",\n        \"**/*.pyo\",\n        \"**/.DS_Store\",\n
+        \       \"**/.git/**/*\",\n        \"**/.svn/**/*\",\n        \"**/dist/**/*\",\n
+        \       \"**/build/**/*\",\n        \"**/build_*/**/*\",\n        \"**/managed_components/**/*\",\n
+        \       \"**/dependencies.lock\",\n        \"**/.github/**/*\",\n        \"**/.gitlab-ci.yml\",\n
+        \       \"**/.idea/**/*\",\n        \"**/.vscode/**/*\",\n        \"**/.settings/**/*\",\n
+        \       \"**/sdkconfig\",\n        \"**/sdkconfig.old\",\n        \"**/.component_hash\"\n
+        \     ],\n      \"homepage\": \"https://github.com/espressif/example_components/tree/main/cmp\",\n
+        \     \"id\": \"63033a2d-8ee2-4dc6-beb4-16721d93044c\",\n      \"info_metadata_keys\":
+        [\n        \"description-type:string\",\n        \"url-type:string\"\n      ],\n
+        \     \"issues\": null,\n      \"license\": {\n        \"name\": \"Custom\",\n
+        \       \"url\": \"http://localhost:9000/test-public/components/test_component_manager/test_yankable/1.0.0/license.txt\"\n
+        \     },\n      \"maintainers\": [],\n      \"repository\": null,\n      \"tags\":
+        [],\n      \"targets\": [],\n      \"url\": \"http://localhost:9000/test-public/components/test_component_manager/test_yankable/1.0.0/test_component_manager__test_yankable-v1.0.0.zip\",\n
+        \     \"version\": \"1.0.0\",\n      \"yanked_at\": null,\n      \"yanked_message\":
+        null\n    }\n  ]\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '2092'
+      - '2655'
       Content-Security-Policy:
       - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
         font-src 'self';
       Content-Type:
       - application/json
       Date:
-      - Thu, 21 Sep 2023 11:13:47 GMT
+      - Wed, 15 Jan 2025 17:24:29 GMT
       Server:
-      - Werkzeug/2.3.7 Python/3.11.1
+      - Werkzeug/3.1.3 Python/3.13.0
       Strict-Transport-Security:
       - max-age=1209600; includeSubDomains
-      Vary:
-      - Cookie
       X-Content-Type-Options:
       - nosniff
     status:
       code: 200
       message: OK
 - request:
-    body: '{"message": "critical test"}'
+    body: null
     headers:
       Accept:
       - '*/*'
       Accept-Encoding:
       - gzip, deflate
-      Authorization:
-      - Bearer L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ
       Connection:
       - keep-alive
-      Content-Length:
-      - '28'
-      Content-Type:
-      - application/json
       User-Agent:
-      - idf-component-manager/1.3.2 (Darwin/22.1.0 arm64; python/3.10.0)
-    method: POST
-    uri: http://localhost:5000/api/components/test/cmp/1.1.0/yank
+      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
+    method: GET
+    uri: http://localhost:5000/api/components/test_component_manager/test_yankable
   response:
     body:
-      string: '{"build_metadata_keys":["version-type:string"],"component_hash":"52d551662b2a3c07a29269bf193bd631f5aba89a68e0082882a93d6fd1244753","created_at":"2023-09-21T11:13:23.592938+00:00","dependencies":[],"description":null,"discussion":"","docs":{"api":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003/api.md","api_fr":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003/api_fr.md","changelog":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003/changelog.md","changelog_fr":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003/changelog_fr.md","readme":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003/readme.md","readme_fr":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003/readme_fr.md"},"documentation":"","downloads_total":0,"examples":[{"docs":{"readme":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003/examples/ef9d7973-adff-4342-aa26-ca903f10fa6e/readme.md"},"id":"ef9d7973-adff-4342-aa26-ca903f10fa6e","name":"sample_project","url":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003/examples/ef9d7973-adff-4342-aa26-ca903f10fa6e.tgz"}],"exclusion_list":["**/__pycache__","**/*.pyc","**/*.pyd","**/*.pyo","**/.DS_Store","**/.git/**/*","**/.svn/**/*","**/dist/**/*","**/build/**/*","**/managed_components/**/*","**/dependencies.lock","**/.github/**/*","**/.gitlab-ci.yml","**/.idea/**/*","**/.vscode/**/*","**/.settings/**/*","**/sdkconfig","**/sdkconfig.old","**/.component_hash"],"homepage":"","id":"4194c129-9c18-430e-8500-9f97ffe2337b","info_metadata_keys":[],"issues":"","license":{"name":"FTL","url":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003/license.txt"},"maintainers":[],"repository":"","tags":[],"targets":[],"uploader":"dmitry","url":"http://localhost:9000/test-public/dbdb7a8b-1452-43e3-9224-8b0cd1106003.tgz","version":"1.1.0","yanked_at":"2023-09-21T11:13:47.876194+00:00","yanked_message":"critical
-        test"}
-
-        '
+      string: "{\n  \"created_at\": \"2025-01-15T16:13:21.260025+00:00\",\n  \"featured\":
+        false,\n  \"name\": \"test_yankable\",\n  \"namespace\": \"test_component_manager\",\n
+        \ \"versions\": [\n    {\n      \"build_metadata_keys\": [\n        \"dependencies-*-type:string\",\n
+        \       \"version-type:string\"\n      ],\n      \"component_hash\": \"6aa92cea9fc3c109d000105a7762864e3e5433ebb7a177d15b35d879cef78aa4\",\n
+        \     \"created_at\": \"2025-01-15T16:13:21.489356+00:00\",\n      \"dependencies\":
+        [\n        {\n          \"is_public\": false,\n          \"matches\": [],\n
+        \         \"name\": null,\n          \"namespace\": null,\n          \"registry_url\":
+        null,\n          \"require\": true,\n          \"rules\": [],\n          \"source\":
+        \"idf\",\n          \"spec\": \">=4.1\"\n        }\n      ],\n      \"description\":
+        \"This component is an example, to be used with the IDF component manager.\",\n
+        \     \"discussion\": null,\n      \"docs\": {\n        \"readme\": \"http://localhost:9000/test-public/components/test_component_manager/test_yankable/1.0.0/readme.md\"\n
+        \     },\n      \"documentation\": null,\n      \"downloads_total\": 0,\n
+        \     \"examples\": [\n        {\n          \"docs\": {},\n          \"id\":
+        \"309dba17-a1c3-4efd-9580-0b76fac7d458\",\n          \"name\": \"cmp_ex\",\n
+        \         \"url\": \"http://localhost:9000/test-public/fd1b173f-56cb-4ae1-a07e-553fb815c7ee/examples/309dba17-a1c3-4efd-9580-0b76fac7d458.tgz\"\n
+        \       }\n      ],\n      \"exclusion_list\": [\n        \"**/__pycache__\",\n
+        \       \"**/*.pyc\",\n        \"**/*.pyd\",\n        \"**/*.pyo\",\n        \"**/.DS_Store\",\n
+        \       \"**/.git/**/*\",\n        \"**/.svn/**/*\",\n        \"**/dist/**/*\",\n
+        \       \"**/build/**/*\",\n        \"**/build_*/**/*\",\n        \"**/managed_components/**/*\",\n
+        \       \"**/dependencies.lock\",\n        \"**/.github/**/*\",\n        \"**/.gitlab-ci.yml\",\n
+        \       \"**/.idea/**/*\",\n        \"**/.vscode/**/*\",\n        \"**/.settings/**/*\",\n
+        \       \"**/sdkconfig\",\n        \"**/sdkconfig.old\",\n        \"**/.component_hash\"\n
+        \     ],\n      \"homepage\": \"https://github.com/espressif/example_components/tree/main/cmp\",\n
+        \     \"id\": \"63033a2d-8ee2-4dc6-beb4-16721d93044c\",\n      \"info_metadata_keys\":
+        [\n        \"description-type:string\",\n        \"url-type:string\"\n      ],\n
+        \     \"issues\": null,\n      \"license\": {\n        \"name\": \"Custom\",\n
+        \       \"url\": \"http://localhost:9000/test-public/components/test_component_manager/test_yankable/1.0.0/license.txt\"\n
+        \     },\n      \"maintainers\": [],\n      \"repository\": null,\n      \"tags\":
+        [],\n      \"targets\": [],\n      \"url\": \"http://localhost:9000/test-public/components/test_component_manager/test_yankable/1.0.0/test_component_manager__test_yankable-v1.0.0.zip\",\n
+        \     \"version\": \"1.0.0\",\n      \"yanked_at\": null,\n      \"yanked_message\":
+        null\n    }\n  ]\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '2021'
+      - '2655'
       Content-Security-Policy:
       - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
         font-src 'self';
       Content-Type:
       - application/json
       Date:
-      - Thu, 21 Sep 2023 11:13:47 GMT
+      - Wed, 15 Jan 2025 17:24:29 GMT
       Server:
-      - Werkzeug/2.3.7 Python/3.11.1
+      - Werkzeug/3.1.3 Python/3.13.0
       Strict-Transport-Security:
       - max-age=1209600; includeSubDomains
-      Vary:
-      - Cookie
       X-Content-Type-Options:
       - nosniff
     status:

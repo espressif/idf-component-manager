@@ -1,12 +1,12 @@
-# SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import json
+import os
 from copy import deepcopy
 from pathlib import Path
 
 import jsonschema
 import pytest
-import vcr
 from click.testing import CliRunner
 from jsonschema.exceptions import ValidationError
 
@@ -14,9 +14,11 @@ from idf_component_manager.cli.core import initialize_cli
 from idf_component_manager.core import ComponentManager
 from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.manager import ManifestManager
+from tests.network_test_utils import use_vcr_or_real_env
 
 
-@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_manifest_create_add_dependency.yaml')
+@use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_manifest_create_add_dependency.yaml')
+@pytest.mark.network
 def test_manifest_create_add_dependency(mock_registry):  # noqa: ARG001
     runner = CliRunner()
     with runner.isolated_filesystem() as tempdir:
@@ -48,27 +50,30 @@ def test_manifest_create_add_dependency(mock_registry):  # noqa: ARG001
 
         assert (
             'Successfully added dependency'
-            in runner.invoke(cli, ['manifest', 'add-dependency', 'espressif/cmp']).output
+            in runner.invoke(
+                cli, ['manifest', 'add-dependency', 'test_component_manager/cmp']
+            ).output
         )
         manifest_manager = ManifestManager(main_manifest_path, 'main')
-        assert manifest_manager.manifest_tree['dependencies']['espressif/cmp'] == '*'
+        assert manifest_manager.manifest_tree['dependencies']['test_component_manager/cmp'] == '*'
         assert (
             'Successfully added dependency'
             in runner.invoke(
                 cli,
-                ['manifest', 'add-dependency', 'espressif/cmp', '--component', 'foo'],
+                ['manifest', 'add-dependency', 'test_component_manager/cmp', '--component', 'foo'],
             ).output
         )
         manifest_manager = ManifestManager(foo_manifest_path, 'foo')
-        assert manifest_manager.manifest_tree['dependencies']['espressif/cmp'] == '*'
+        assert manifest_manager.manifest_tree['dependencies']['test_component_manager/cmp'] == '*'
         assert (
             'Successfully added dependency'
             in runner.invoke(
-                cli, ['manifest', 'add-dependency', 'espressif/cmp', '--path', src_path]
+                cli,
+                ['manifest', 'add-dependency', 'test_component_manager/cmp', '--path', src_path],
             ).output
         )
         manifest_manager = ManifestManager(src_manifest_path, 'src')
-        assert manifest_manager.manifest_tree['dependencies']['espressif/cmp'] == '*'
+        assert manifest_manager.manifest_tree['dependencies']['test_component_manager/cmp'] == '*'
 
 
 def test_manifest_schema(tmp_path, valid_manifest):
@@ -104,8 +109,10 @@ def test_manifest_schema(tmp_path, valid_manifest):
             jsonschema.validate(invalid_manifest, schema_dict)
 
 
-@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_add_dependency_with_registry_url.yaml')
-def test_add_dependency_with_registry_url():
+@use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_add_dependency_with_registry_url.yaml')
+@pytest.mark.network
+def test_add_dependency_with_registry_url(mock_registry):
+    registry_url = os.getenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
     runner = CliRunner()
     with runner.isolated_filesystem() as tempdir:
         main_path = Path(tempdir) / 'main'
@@ -120,15 +127,15 @@ def test_add_dependency_with_registry_url():
                 [
                     'manifest',
                     'add-dependency',
-                    'espressif/cmp==8.0.0',
+                    'test/cmp==1.0.0',
                     '--registry-url',
-                    'http://localhost:5000',
+                    registry_url,
                 ],
             ).output
         )
 
         assert (
-            'registry_url: http://localhost:5000'
+            f'registry_url: {registry_url}'
             in Path(tempdir, 'main', 'idf_component.yml').read_text()
         )
 

@@ -1,14 +1,44 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
+import shutil
+import tempfile
 import typing as t
+from functools import wraps
 from pathlib import Path
+from uuid import uuid4
 
 import pytest
 import requests_mock
+import yaml
 
+from idf_component_manager.core import ComponentManager
 from idf_component_tools import HINT_LEVEL, ComponentManagerSettings, get_logger
 from idf_component_tools.hash_tools.constants import HASH_FILENAME
+from idf_component_tools.registry.api_client import APIClient
+from idf_component_tools.registry.api_models import TaskStatus
+from idf_component_tools.registry.client_errors import ComponentNotFound
+
+
+@pytest.fixture(scope='session', autouse=True)
+def check_network_environment():
+    if 'USE_REGISTRY' in os.environ:
+        assert os.environ.get('IDF_COMPONENT_REGISTRY_URL'), 'IDF_COMPONENT_REGISTRY_URL is not set'
+        assert os.environ.get('IDF_COMPONENT_API_TOKEN'), 'IDF_COMPONENT_API_TOKEN is not set'
+        assert os.environ.get('IDF_COMPONENT_STORAGE_URL'), 'IDF_COMPONENT_STORAGE_URL is not set'
+
+
+def skip_on_real_environment(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # True only if we're not testing with real environment or the test is not marked with 'network'
+        if ('USE_REGISTRY' not in os.environ) or 'network' not in func.__dict__.get(
+            '_pytestmark', []
+        ):
+            return func(*args, **kwargs)
+        return
+
+    return wrapper
 
 
 @pytest.fixture()
@@ -161,7 +191,11 @@ def example_component_path(fixtures_path):
 
 
 @pytest.fixture(scope='function', autouse=True)
-def disable_local_env():
+def disable_local_env(request):
+    if 'network' in request.keywords:
+        yield
+        return
+
     restore_env = {}
     for name in ComponentManagerSettings.known_env_vars():
         restore_env[name] = os.environ.pop(name, None)
@@ -174,16 +208,35 @@ def disable_local_env():
 
 
 @pytest.fixture()
+@skip_on_real_environment
 def mock_registry_without_token(monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
 
 
 @pytest.fixture()
-def mock_registry(mock_registry_without_token, monkeypatch):  # noqa: ARG001
-    monkeypatch.setenv(
-        'IDF_COMPONENT_API_TOKEN',
-        'L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ',  # pragma: allowlist secret
-    )
+@skip_on_real_environment
+def mock_storage(monkeypatch):
+    monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'http://localhost:9000/test-public/')
+
+
+@pytest.fixture()
+@skip_on_real_environment
+def mock_registry(mock_registry_without_token, mock_storage):
+    pass
+
+
+@pytest.fixture()
+@skip_on_real_environment
+def mock_yank(monkeypatch):
+    monkeypatch.setattr(APIClient, 'yank_version', lambda *_, **__: None)
+
+
+@pytest.fixture()
+@skip_on_real_environment
+def mock_upload(monkeypatch):
+    task_status = TaskStatus(id='id', status='success', warnings=[])
+    monkeypatch.setattr(APIClient, 'upload_version', lambda *_, **__: 'job_id')
+    monkeypatch.setattr(APIClient, 'task_status', lambda *_, **__: task_status)
 
 
 @pytest.fixture
@@ -213,3 +266,191 @@ def hash_component(fixtures_path):
         )
 
     return inner
+
+
+def upload_cmp_1_0_0():
+    manifest = {
+        'description': 'This component is an example, to be used for testing.',
+        'url': 'https://github.com/somewhere_over_the_rainbow',
+        'dependencies': {
+            'idf': '>=4.4.0',
+            'test_component_manager/dep': {
+                'version': '==1.0.0',
+                'registry_url': f'{os.environ["IDF_COMPONENT_REGISTRY_URL"]}',
+            },
+        },
+    }
+    upload_test_component('cmp', manifest, '1.0.0')
+
+
+def upload_cmp_1_0_1():
+    manifest = {
+        'description': 'This component is an example, to be used for testing.',
+        'url': 'https://github.com/somewhere_over_the_rainbow',
+        'dependencies': {
+            'idf': '>=4.4.0',
+            'test_component_manager/dep': {
+                'version': '<=1.0.1',
+                'registry_url': f'{os.environ["IDF_COMPONENT_REGISTRY_URL"]}',
+            },
+        },
+    }
+    upload_test_component('cmp', manifest, '1.0.1')
+
+
+def upload_cmp_2_0_0_alpha1():
+    manifest = {
+        'description': 'This component is an example, to be used for testing.',
+        'url': 'https://github.com/somewhere_over_the_rainbow',
+        'dependencies': {
+            'idf': '>=4.4.0',
+        },
+    }
+    upload_test_component('cmp', manifest, '2.0.0-alpha1')
+
+
+def upload_dep_1_0_0():
+    manifest = {
+        'description': 'This component is a dependency for cmp, to be used for testing.',
+        'url': 'https://github.com/somewhere_over_the_rainbow',
+        'targets': ['esp32'],
+    }
+    upload_test_component('dep', manifest, '1.0.0')
+
+
+def upload_dep_1_0_1():
+    manifest = {
+        'description': 'This component is a dependency for cmp, to be used for testing.',
+        'url': 'https://github.com/somewhere_over_the_rainbow',
+        'targets': ['esp32'],
+    }
+
+    upload_test_component('dep', manifest, '1.0.1')
+
+
+def upload_only_pre_release():
+    manifest = {
+        'description': 'This component is a pre-release example, to be used for testing.',
+        'url': 'https://github.com/somewhere_over_the_rainbow',
+        'targets': ['esp32'],
+    }
+    upload_test_component('pre', manifest, '0.0.5-alpha1')
+
+
+def upload_test_component(component_name, manifest, version, yank=False):
+    """
+    Helper function to upload a component to the registry
+    for testing purposes with the real environment
+    """
+    with tempfile.TemporaryDirectory() as tmp_path:
+        fixtures_path = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            'fixtures',
+        )
+        cmp_path = Path(fixtures_path) / 'components' / 'cmp_with_example'
+        # Copy the component to the temporary directory
+        temp_cmp_path = Path(tmp_path) / component_name
+        shutil.copytree(cmp_path, temp_cmp_path)
+        # Replace the manifest file with the provided dictionary
+        if manifest:
+            manifest_path = temp_cmp_path / 'idf_component.yml'
+            with open(manifest_path, 'w') as fw:
+                yaml.dump(manifest, fw)
+        # Upload the component to the registry
+        manager = ComponentManager(path=temp_cmp_path)
+        manager.upload_component(component_name, version, namespace='test_component_manager')
+        if yank:
+            while True:
+                try:
+                    manager.yank_version(
+                        component_name,
+                        version,
+                        'Yanking a test version',
+                        namespace='test_component_manager',
+                    )
+                    break
+                except Exception:
+                    pass
+
+
+def disable_request_cache(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        request_caching = os.environ.get('IDF_COMPONENT_CACHE_HTTP_REQUESTS')
+        try:
+            os.environ['IDF_COMPONENT_CACHE_HTTP_REQUESTS'] = '0'
+            return func(*args, **kwargs)
+        finally:
+            if request_caching is not None:
+                os.environ['IDF_COMPONENT_CACHE_HTTP_REQUESTS'] = request_caching
+            else:
+                os.environ.pop('IDF_COMPONENT_CACHE_HTTP_REQUESTS', None)
+
+    return wrapper
+
+
+@pytest.fixture(scope='session', autouse=True)
+@disable_request_cache
+def check_and_upload_components_for_testing():
+    if 'USE_REGISTRY' not in os.environ:
+        return
+
+    api_client = APIClient(
+        registry_url=os.environ.get('IDF_COMPONENT_REGISTRY_URL'),
+        api_token=os.environ.get('IDF_COMPONENT_API_TOKEN'),
+        default_namespace='test_component_manager',
+    )
+
+    try:
+        api_client.versions('test_component_manager/dep', spec='*')
+    except ComponentNotFound:
+        upload_dep_1_0_0()
+        upload_dep_1_0_1()
+
+    try:
+        api_client.versions('test_component_manager/cmp', spec='*')
+    except ComponentNotFound:
+        upload_cmp_1_0_0()
+        upload_cmp_1_0_1()
+        upload_cmp_2_0_0_alpha1()
+
+    try:
+        api_client.versions('test_component_manager/pre', spec='*')
+    except ComponentNotFound:
+        upload_only_pre_release()
+
+    try:
+        api_client.versions('test_component_manager/ynk', spec='*')
+    except ComponentNotFound:
+        upload_test_component('ynk', None, '1.0.0', yank=True)
+
+    try:
+        api_client.versions('test_component_manager/stb_and_ynk', spec='*')
+    except ComponentNotFound:
+        upload_test_component('stb_and_ynk', None, '1.0.0', yank=True)
+        upload_test_component('stb_and_ynk', None, '1.0.1')
+
+    try:
+        api_client.versions('test_component_manager/pre_and_ynk', spec='*')
+    except ComponentNotFound:
+        upload_test_component('pre_and_ynk', None, '1.0.0', yank=True)
+        upload_test_component('pre_and_ynk', None, '2.0.0-alpha1')
+
+    try:
+        api_client.versions('test_component_manager/stb_and_ynk_and_pre', spec='*')
+    except ComponentNotFound:
+        upload_test_component('stb_and_ynk_and_pre', None, '1.0.0', True)
+        upload_test_component('stb_and_ynk_and_pre', None, '1.0.1')
+        upload_test_component('stb_and_ynk_and_pre', None, '2.0.0-alpha1')
+
+    try:
+        api_client.versions('test_component_manager/test_yankable', spec='*')
+    except ComponentNotFound:
+        upload_test_component('test_yankable', None, '1.0.0')
+
+
+@pytest.fixture(scope='function')
+def component_name():
+    if 'USE_REGISTRY' in os.environ:
+        return f'test_{str(uuid4())}'
+    return 'test'

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import logging
 import os
@@ -7,7 +7,6 @@ from ssl import SSLEOFError
 
 import pytest
 import requests_mock
-import vcr
 from requests import Response
 
 from idf_component_tools import LOGGING_NAMESPACE
@@ -24,16 +23,17 @@ from idf_component_tools.registry.service_details import (
 )
 from idf_component_tools.registry.storage_client import StorageClient
 from idf_component_tools.semver import Version
+from tests.network_test_utils import use_vcr_or_real_env
 
 
 @pytest.fixture
 def registry_url():
-    return 'http://localhost:5000'
+    return os.getenv('IDF_COMPONENT_REGISTRY_URL') or 'http://localhost:5000'
 
 
 @pytest.fixture
 def storage_url():
-    return 'http://localhost:9000/test-public'
+    return os.getenv('IDF_COMPONENT_STORAGE_URL') or 'http://localhost:9000/test-public'
 
 
 def response_413(*_, **__):
@@ -74,25 +74,27 @@ class TestAPIClient:
         for test in tests:
             assert join_url(*test['in']) == test['out']
 
-    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_component_versions.yaml')
+    @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_component_versions.yaml')
+    @pytest.mark.network
     def test_version(self, storage_url):
         client = StorageClient(storage_url=storage_url)
 
         # Also check case normalisation
-        component = client.versions(component_name='Test/Cmp', spec='>=1.0.0')
+        component = client.versions(component_name='Test_component_manager/Cmp', spec='>=1.0.0')
 
-        assert component.name == 'test/cmp'
-        assert len(list(component.versions)) == 2
+        assert component.name == 'test_component_manager/cmp'
+        assert len(list(component.versions)) == 3
 
-    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_component_details.yaml')
+    @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_component_details.yaml')
+    @pytest.mark.network
     def test_component(self, storage_url):
         client = StorageClient(storage_url=storage_url)
 
         # Also check case normalisation
-        result = client.component(component_name='tesT/CMP')
+        result = client.component(component_name='test_component_manageR/CMP')
 
-        assert result['name'] == 'test/cmp'
-        assert result['version'] == '1.0.1'
+        assert result['name'] == 'test_component_manager/cmp'
+        assert result['version'] == '2.0.0-alpha1'
         assert result['docs']['readme'].startswith(storage_url)
         assert result['examples'][0]['url'].startswith(storage_url)
         assert result['license']['url'].startswith(storage_url)
@@ -101,7 +103,8 @@ class TestAPIClient:
         ua = user_agent()
         assert str(__version__) in ua
 
-    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_api_information.yaml')
+    @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_api_information.yaml')
+    @pytest.mark.network
     def test_api_information(self, registry_url):
         client = APIClient(registry_url=registry_url)
         information = client.api_information()
@@ -138,28 +141,31 @@ class TestAPIClient:
         assert registry_url == IDF_COMPONENT_REGISTRY_URL
         assert storage_urls == []
 
-    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_no_registry_url_use_static.yaml')
-    def test_no_registry_url_use_static(self, monkeypatch):
-        monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'http://localhost:9000/test-public')
-
+    @use_vcr_or_real_env(
+        'tests/fixtures/vcr_cassettes/test_no_registry_url_use_static.yaml',
+    )
+    @pytest.mark.network
+    def test_no_registry_url_use_static(self, mock_storage):
         storage_urls = get_storage_urls()
         client = MultiStorageClient(storage_urls=storage_urls)
-        client.component(component_name='espressif/cmp')  # no errors
+        client.component(component_name='test_component_manager/cmp')  # no errors
 
-    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
-    @pytest.mark.parametrize('version', ['=1.1.0', '1.1.0', '==1.1.0,==1.1.0'])
+    @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
+    @pytest.mark.network
+    @pytest.mark.parametrize('version', ['=1.0.0', '1.0.0', '==1.0.0,==1.0.0'])
     def test_only_yanked_version_warning(self, storage_url, version, caplog):
         client = StorageClient(storage_url=storage_url)
 
         with caplog.at_level(logging.WARNING, logger=LOGGING_NAMESPACE):
-            client.component(component_name='example/cmp_yanked', version=version)
+            client.component(component_name='test_component_manager/stb_and_ynk', version=version)
             assert len(caplog.records) == 1
             assert (
-                'The following versions of the "example/cmp_yanked" component have been yanked:'
+                'The following versions of the "test_component_manager/stb_and_ynk" component have been yanked:'
                 in caplog.text
             )
 
-    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
+    @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
+    @pytest.mark.network
     @pytest.mark.parametrize(
         'version',
         [
@@ -172,11 +178,14 @@ class TestAPIClient:
     )
     def test_filter_yanked_version_for_component(self, storage_url, version):
         client = StorageClient(storage_url=storage_url)
-        result = client.component(component_name='example/cmp_yanked', version=version)
+        result = client.component(
+            component_name='test_component_manager/stb_and_ynk', version=version
+        )
 
         assert result['version'] == '1.0.1'
 
-    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
+    @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
+    @pytest.mark.network
     @pytest.mark.parametrize(
         'spec',
         [
@@ -190,7 +199,7 @@ class TestAPIClient:
     def test_filter_yanked_version_for_component_versions(self, storage_url, spec):
         client = StorageClient(storage_url=storage_url)
 
-        result = client.versions(component_name='example/cmp_yanked', spec=spec)
+        result = client.versions(component_name='test_component_manager/stb_and_ynk', spec=spec)
         assert result.versions[0].semver == Version('1.0.1')
 
     def test_token_information(
@@ -212,7 +221,8 @@ class TestAPIClient:
         }.items():
             assert response[k] == v
 
-    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_token_information_with_exception.yaml')
+    @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_token_information_with_exception.yaml')
+    @pytest.mark.network
     def test_token_information_with_exception(self, registry_url):
         client = APIClient(registry_url=registry_url)
         with pytest.raises(Exception):
@@ -232,17 +242,19 @@ class TestAPIClient:
             assert m.request_history[0].method == 'DELETE'
             assert m.request_history[0].url == 'http://localhost:5000/api/tokens/current'
 
-    @vcr.use_cassette('tests/fixtures/vcr_cassettes/test_version_multiple_storages.yaml')
-    def test_version_multiple_storages(self, fixtures_path):
+    @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_version_multiple_storages.yaml')
+    @pytest.mark.network
+    def test_version_multiple_storages(self, fixtures_path, mock_storage):
+        remote_storage_url = os.environ['IDF_COMPONENT_STORAGE_URL']
         storage_file_path = f'file://{fixtures_path}/'
-        storage_urls = [storage_file_path, 'https://components-file.espressif.com']
+        storage_urls = [storage_file_path, remote_storage_url]
         client = MultiStorageClient(storage_urls=storage_urls)
 
         result = client.component(component_name='example/cmp')
         assert result['download_url'].startswith(storage_file_path)
 
-        result = client.component(component_name='espressif/mdns')
-        assert result['download_url'].startswith('https://components-file.espressif.com')
+        result = client.component(component_name='test_component_manager/cmp')
+        assert result['download_url'].startswith(remote_storage_url)
 
     def test_upload_component_returns_413_status(self, tmp_path, registry_url, monkeypatch):
         monkeypatch.setattr(

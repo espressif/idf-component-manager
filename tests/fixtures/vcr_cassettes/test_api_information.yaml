@@ -9,27 +9,34 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.3.0-dev (Darwin/22.1.0 arm64; python/3.9.16)
+      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
     method: GET
     uri: http://localhost:5000/api
   response:
     body:
       string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",\n
-        \ \"info\": \"Espressif Component Manager Service HTTP JSON API\",\n  \"status\":
-        \"ok\",\n  \"version\": \"0.2.0\"\n}\n"
+        \ \"info\": \"ESP Component Registry API\",\n  \"status\": \"ok\",\n  \"version\":
+        \"1.5.0\"\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '168'
+      - '145'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
       Content-Type:
       - application/json
       Date:
-      - Tue, 21 Mar 2023 15:42:17 GMT
+      - Wed, 15 Jan 2025 16:53:24 GMT
       Server:
-      - Werkzeug/2.2.3 Python/3.11.1
+      - Werkzeug/3.1.3 Python/3.13.0
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
     status:
       code: 200
       message: OK
