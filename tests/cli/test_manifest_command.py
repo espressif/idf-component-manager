@@ -111,7 +111,7 @@ def test_manifest_schema(tmp_path, valid_manifest):
 
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_add_dependency_with_registry_url.yaml')
 @pytest.mark.network
-def test_add_dependency_with_registry_url(mock_registry):
+def test_add_dependency_with_registry_url(mock_registry):  # noqa: ARG001
     registry_url = os.getenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
     runner = CliRunner()
     with runner.isolated_filesystem() as tempdir:

@@ -75,7 +75,7 @@ def test_sync_dependency_with_rules(tmp_path):
 
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_download_metadata.yaml')
 @pytest.mark.network
-def test_prepare_component_all_versions(mock_storage):
+def test_prepare_component_all_versions(mock_storage):  # noqa: ARG001
     client = MultiStorageClient(storage_urls=[os.environ['IDF_COMPONENT_STORAGE_URL']])
     reqs = [ComponentRequirement(name='test_component_manager/cmp', version='*')]
     mirror = prepare_component_versions(client, reqs)
@@ -87,7 +87,7 @@ def test_prepare_component_all_versions(mock_storage):
 
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_download_metadata.yaml')
 @pytest.mark.network
-def test_prepare_component_versions_with_dependency1(mock_storage):
+def test_prepare_component_versions_with_dependency1(mock_storage):  # noqa: ARG001
     client = MultiStorageClient(storage_urls=[os.environ['IDF_COMPONENT_STORAGE_URL']])
     reqs = [ComponentRequirement(name='test_component_manager/cmp', version='==1.0.1')]
     mirror = prepare_component_versions(client, reqs)
@@ -99,7 +99,7 @@ def test_prepare_component_versions_with_dependency1(mock_storage):
 
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_download_metadata.yaml')
 @pytest.mark.network
-def test_prepare_component_versions_with_dependency2(mock_storage):
+def test_prepare_component_versions_with_dependency2(mock_storage):  # noqa: ARG001
     client = MultiStorageClient(storage_urls=[os.environ['IDF_COMPONENT_STORAGE_URL']])
     reqs = [ComponentRequirement(name='test_component_manager/cmp', version='>1.0.2')]
     mirror = prepare_component_versions(client, reqs)
@@ -111,7 +111,7 @@ def test_prepare_component_versions_with_dependency2(mock_storage):
 
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_download_metadata.yaml')
 @pytest.mark.network
-def test_prepare_component_versions_with_multi_dependencies(mock_storage):
+def test_prepare_component_versions_with_multi_dependencies(mock_storage):  # noqa: ARG001
     client = MultiStorageClient(storage_urls=[os.environ['IDF_COMPONENT_STORAGE_URL']])
     reqs = [
         ComponentRequirement(name='test_component_manager/dep', version='==1.0.0'),
@@ -125,7 +125,7 @@ def test_prepare_component_versions_with_multi_dependencies(mock_storage):
 
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_download_metadata_unknown_component.yaml')
 @pytest.mark.network
-def test_prepare_component_versions_with_unknown_component(caplog, mock_storage):
+def test_prepare_component_versions_with_unknown_component(caplog, mock_storage):  # noqa: ARG001
     client = MultiStorageClient(storage_urls=[os.environ['IDF_COMPONENT_STORAGE_URL']])
     reqs = [ComponentRequirement(name='unknown/component', version='*')]
     mirror = prepare_component_versions(client, reqs)
@@ -251,11 +251,11 @@ def test_registry_sync_latest_with_two_requirements(tmp_path):
 
 
 # this yaml includes
-# 3.3.9-testcm2 prerelease
-# 3.3.8 yanked
+# 2.0.0-alpha1 prerelease
+# 1.0.0 yanked
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_sync_example_cmp_only_prerelease.yaml')
 @pytest.mark.network
-def test_registry_sync_latest_but_only_got_prerelease(tmp_path, mock_registry, caplog):
+def test_registry_sync_latest_but_only_got_prerelease(tmp_path, mock_registry, caplog):  # noqa: ARG001
     manager = ComponentManager(path=str(tmp_path))
     manager.sync_registry(
         'default',
@@ -272,12 +272,12 @@ def test_registry_sync_latest_but_only_got_prerelease(tmp_path, mock_registry, c
 
 
 # this yaml includes
-# 3.3.9-testcm2 prerelease
-# 3.3.8 yanked
-# 3.3.7 stable
+# 1.0.0 yanked
+# 1.0.1 stable
+# 2.0.0-alpha1 prerelease
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_sync_example_cmp.yaml')
 @pytest.mark.network
-def test_registry_sync_latest_but_latest_is_prerelease(tmp_path, mock_registry):
+def test_registry_sync_latest_but_latest_is_prerelease(tmp_path, mock_registry):  # noqa: ARG001
     manager = ComponentManager(path=str(tmp_path))
     manager.sync_registry(
         'default',
@@ -325,10 +325,10 @@ def test_registry_sync_latest_but_latest_is_prerelease(tmp_path, mock_registry):
 
 
 # this yaml includes
-# 3.3.8 yanked
+# 1.0.0 yanked
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_sync_example_cmp_only_yanked.yaml')
 @pytest.mark.network
-def test_registry_sync_but_only_got_yanked(tmp_path, caplog, mock_registry):
+def test_registry_sync_but_only_got_yanked(tmp_path, caplog, mock_registry):  # noqa: ARG001
     manager = ComponentManager(path=str(tmp_path))
     manager.sync_registry(
         'default',

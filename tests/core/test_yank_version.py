@@ -30,7 +30,7 @@ def setup_yankable_component(component_name, fixtures_path):
 
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_yank_version_success.yaml')
 @pytest.mark.network
-def test_yank_component_version(mock_registry, mock_yank, tmp_path, component_name, fixtures_path):
+def test_yank_component_version(mock_registry, mock_yank, tmp_path, component_name, fixtures_path):  # noqa: ARG001
     manager = ComponentManager(path=str(tmp_path))
 
     component_name = f'{component_name}_yankable'
@@ -43,7 +43,7 @@ def test_yank_component_version(mock_registry, mock_yank, tmp_path, component_na
 
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_yank_version_not_found.yaml')
 @pytest.mark.network
-def test_yank_component_version_not_exists(mock_registry, tmp_path):
+def test_yank_component_version_not_exists(mock_registry, tmp_path):  # noqa: ARG001
     manager = ComponentManager(path=str(tmp_path))
     with pytest.raises(
         FatalError,

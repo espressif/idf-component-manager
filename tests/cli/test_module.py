@@ -16,7 +16,7 @@ def test_cli(mocker):
 
 
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_exception_on_warnings.yaml')
-def test_raise_exception_on_warnings(invoke_cli, mock_registry):
+def test_raise_exception_on_warnings(invoke_cli, mock_registry):  # noqa: ARG001
     output = invoke_cli(
         '--warnings-as-errors',
         'project',

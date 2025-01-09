@@ -145,7 +145,7 @@ class TestAPIClient:
         'tests/fixtures/vcr_cassettes/test_no_registry_url_use_static.yaml',
     )
     @pytest.mark.network
-    def test_no_registry_url_use_static(self, mock_storage):
+    def test_no_registry_url_use_static(self, mock_storage):  # noqa: ARG002
         storage_urls = get_storage_urls()
         client = MultiStorageClient(storage_urls=storage_urls)
         client.component(component_name='test_component_manager/cmp')  # no errors
@@ -244,7 +244,7 @@ class TestAPIClient:
 
     @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_version_multiple_storages.yaml')
     @pytest.mark.network
-    def test_version_multiple_storages(self, fixtures_path, mock_storage):
+    def test_version_multiple_storages(self, fixtures_path, mock_storage):  # noqa: ARG002
         remote_storage_url = os.environ['IDF_COMPONENT_STORAGE_URL']
         storage_file_path = f'file://{fixtures_path}/'
         storage_urls = [storage_file_path, remote_storage_url]

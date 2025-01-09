@@ -114,7 +114,7 @@ class TestComponentWebServiceSource:
 
     @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_webservice_pre_release.yaml')
     @pytest.mark.network
-    def test_pre_release_exists_with_pre_release_spec(self, mock_registry):
+    def test_pre_release_exists_with_pre_release_spec(self, mock_registry):  # noqa: ARG002
         registry_url = os.getenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
         source = WebServiceSource(registry_url=registry_url)
 
@@ -122,14 +122,14 @@ class TestComponentWebServiceSource:
 
     @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_webservice_versions.yaml')
     @pytest.mark.network
-    def test_skip_pre_release(self, mock_registry):
+    def test_skip_pre_release(self, mock_registry):  # noqa: ARG002
         registry_url = os.getenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
         source = WebServiceSource(registry_url=registry_url, pre_release=False)
         assert len(source.versions('test_component_manager/cmp').versions) == 2
 
     @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_webservice_versions.yaml')
     @pytest.mark.network
-    def test_select_pre_release(self, mock_registry):
+    def test_select_pre_release(self, mock_registry):  # noqa: ARG002
         registry_url = os.getenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
         source = WebServiceSource(registry_url=registry_url, pre_release=True)
         assert len(source.versions('test_component_manager/cmp').versions) == 3

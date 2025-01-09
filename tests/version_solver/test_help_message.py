@@ -42,7 +42,7 @@ def test_target_exists(tmp_path, monkeypatch, caplog):
 
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_webservice_pre_release.yaml')
 @pytest.mark.network
-def test_pre_release_exists(tmp_path, monkeypatch, caplog, mock_registry):
+def test_pre_release_exists(tmp_path, monkeypatch, caplog, mock_registry):  # noqa: ARG001
     monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.3.0')
     monkeypatch.setenv('IDF_PATH', str(tmp_path))
     monkeypatch.setenv('IDF_TARGET', 'esp32')
