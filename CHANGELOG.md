@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.1.2 (2025-01-10)
+
+### Fix
+
+- keep comments in config YAML with ruamel.yaml
+- Limit urllib3 version for tests
+- Always use canonical representation of the component version
+
 ## v2.1.1 (2024-12-06)
 
 ### Fix
