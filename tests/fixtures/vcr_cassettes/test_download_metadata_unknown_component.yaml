@@ -9,27 +9,23 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.4.1 (Darwin/22.1.0 arm64; python/3.11.1)
+      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
     method: GET
     uri: http://localhost:9000/test-public/components/unknown/component.json
   response:
     body:
       string: '<?xml version="1.0" encoding="UTF-8"?>
 
-        <Error><Code>NoSuchKey</Code><Message>The specified key does not exist.</Message><Key>components/unknown/component.json</Key><BucketName>test-public</BucketName><Resource>/test-public/components/unknown/component.json</Resource><RequestId>17A06DEF66B9B9BA</RequestId><HostId>f09cbec4-9d4d-497f-a8b9-148ea7dca914</HostId></Error>'
+        <Error><Code>NoSuchKey</Code><Message>The specified key does not exist.</Message><Key>components/unknown/component.json</Key><BucketName>test-public</BucketName><Resource>/test-public/components/unknown/component.json</Resource><RequestId>181AEBEC9777D561</RequestId><HostId>dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8</HostId></Error>'
     headers:
       Accept-Ranges:
       - bytes
       Content-Length:
-      - '367'
-      Content-Security-Policy:
-      - block-all-mixed-content
+      - '395'
       Content-Type:
       - application/xml
       Date:
-      - Wed, 13 Dec 2023 15:32:14 GMT
-      No-Gzip-Compression:
-      - 'true'
+      - Wed, 15 Jan 2025 16:53:27 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -37,8 +33,10 @@ interactions:
       Vary:
       - Origin
       - Accept-Encoding
+      X-Amz-Id-2:
+      - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
       X-Amz-Request-Id:
-      - 17A06DEF66B9B9BA
+      - 181AEBEC9777D561
       X-Content-Type-Options:
       - nosniff
       X-Xss-Protection:

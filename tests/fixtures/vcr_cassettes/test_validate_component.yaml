@@ -6,39 +6,129 @@ interactions:
       - '*/*'
       Accept-Encoding:
       - gzip, deflate
-      Authorization:
-      - Bearer L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/1.3.2 (Darwin/22.1.0 arm64; python/3.10.0)
+      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
     method: GET
-    uri: http://localhost:5000/api/components/espressif/cmp
+    uri: http://localhost:5000/api/components/test_component_manager/cmp
   response:
     body:
-      string: '{"created_at":"2023-09-21T10:23:53.786567+00:00","featured":false,"name":"cmp","namespace":"espressif","versions":[{"build_metadata_keys":["version-type:string"],"component_hash":"6b01813805e15d5bbc428ec2ad0ab4d83d5a2ccb38886dfb78c6d420ac82f92d","created_at":"2023-09-21T10:23:54.469278+00:00","dependencies":[],"description":null,"discussion":"","docs":{"api":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09/api.md","api_fr":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09/api_fr.md","changelog":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09/changelog.md","changelog_fr":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09/changelog_fr.md","readme":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09/readme.md","readme_fr":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09/readme_fr.md"},"documentation":"","downloads_total":0,"examples":[{"docs":{"readme":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09/examples/2faf231b-5424-4bae-9f55-7e2cc35df7c2/readme.md"},"id":"2faf231b-5424-4bae-9f55-7e2cc35df7c2","name":"sample_project","url":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09/examples/2faf231b-5424-4bae-9f55-7e2cc35df7c2.tgz"}],"exclusion_list":["**/__pycache__","**/*.pyc","**/*.pyd","**/*.pyo","**/.DS_Store","**/.git/**/*","**/.svn/**/*","**/dist/**/*","**/build/**/*","**/managed_components/**/*","**/dependencies.lock","**/.github/**/*","**/.gitlab-ci.yml","**/.idea/**/*","**/.vscode/**/*","**/.settings/**/*","**/sdkconfig","**/sdkconfig.old","**/.component_hash"],"homepage":"","id":"95789275-7637-42ff-af78-c354ae69a0e2","info_metadata_keys":[],"issues":"","license":{"name":"FTL","url":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09/license.txt"},"maintainers":[],"repository":"","tags":[],"targets":[],"uploader":"dmitry","url":"http://localhost:9000/test-public/a6854c12-1095-4284-b6ab-3b777d16fb09.tgz","version":"1.0.0-alpha.1.4","yanked_at":null,"yanked_message":null}]}
-
-        '
+      string: "{\n  \"created_at\": \"2025-01-15T16:12:31.023081+00:00\",\n  \"featured\":
+        false,\n  \"name\": \"cmp\",\n  \"namespace\": \"test_component_manager\",\n
+        \ \"versions\": [\n    {\n      \"build_metadata_keys\": [\n        \"dependencies-*-type:string\",\n
+        \       \"version-type:string\"\n      ],\n      \"component_hash\": \"ad776a87dfae6f5aef2715d950a1639cf2daa2b20d23892df628ce1c91b9815d\",\n
+        \     \"created_at\": \"2025-01-15T16:12:39.504221+00:00\",\n      \"dependencies\":
+        [\n        {\n          \"is_public\": false,\n          \"matches\": [],\n
+        \         \"name\": null,\n          \"namespace\": null,\n          \"registry_url\":
+        null,\n          \"require\": true,\n          \"rules\": [],\n          \"source\":
+        \"idf\",\n          \"spec\": \">=4.4.0\"\n        }\n      ],\n      \"description\":
+        \"This component is an example, to be used for testing.\",\n      \"discussion\":
+        null,\n      \"docs\": {\n        \"readme\": \"http://localhost:9000/test-public/components/test_component_manager/cmp/2.0.0-alpha1/readme.md\"\n
+        \     },\n      \"documentation\": null,\n      \"downloads_total\": 0,\n
+        \     \"examples\": [\n        {\n          \"docs\": {},\n          \"id\":
+        \"88a532db-4fb1-4dac-b929-d8673de96eff\",\n          \"name\": \"cmp_ex\",\n
+        \         \"url\": \"http://localhost:9000/test-public/fd607183-775b-429d-8d1a-82c1e8beb224/examples/88a532db-4fb1-4dac-b929-d8673de96eff.tgz\"\n
+        \       }\n      ],\n      \"exclusion_list\": [\n        \"**/__pycache__\",\n
+        \       \"**/*.pyc\",\n        \"**/*.pyd\",\n        \"**/*.pyo\",\n        \"**/.DS_Store\",\n
+        \       \"**/.git/**/*\",\n        \"**/.svn/**/*\",\n        \"**/dist/**/*\",\n
+        \       \"**/build/**/*\",\n        \"**/build_*/**/*\",\n        \"**/managed_components/**/*\",\n
+        \       \"**/dependencies.lock\",\n        \"**/.github/**/*\",\n        \"**/.gitlab-ci.yml\",\n
+        \       \"**/.idea/**/*\",\n        \"**/.vscode/**/*\",\n        \"**/.settings/**/*\",\n
+        \       \"**/sdkconfig\",\n        \"**/sdkconfig.old\",\n        \"**/.component_hash\"\n
+        \     ],\n      \"homepage\": \"https://github.com/somewhere_over_the_rainbow\",\n
+        \     \"id\": \"6c0c2ee7-1292-4a16-a244-00bceae53334\",\n      \"info_metadata_keys\":
+        [\n        \"description-type:string\",\n        \"url-type:string\"\n      ],\n
+        \     \"issues\": null,\n      \"license\": {\n        \"name\": \"Custom\",\n
+        \       \"url\": \"http://localhost:9000/test-public/components/test_component_manager/cmp/2.0.0-alpha1/license.txt\"\n
+        \     },\n      \"maintainers\": [],\n      \"repository\": null,\n      \"tags\":
+        [],\n      \"targets\": [],\n      \"url\": \"http://localhost:9000/test-public/components/test_component_manager/cmp/2.0.0-alpha1/test_component_manager__cmp-v2.0.0-alpha1.zip\",\n
+        \     \"version\": \"2.0.0-alpha1\",\n      \"yanked_at\": null,\n      \"yanked_message\":
+        null\n    },\n    {\n      \"build_metadata_keys\": [\n        \"dependencies-*-registry_url-type:string\",\n
+        \       \"dependencies-*-type:string\",\n        \"dependencies-*-version-type:string\",\n
+        \       \"version-type:string\"\n      ],\n      \"component_hash\": \"76f4b9074f855f24e82b902edcb2b1a9f2231bad828c63c5cfc8362d0d1aace8\",\n
+        \     \"created_at\": \"2025-01-15T16:12:35.383894+00:00\",\n      \"dependencies\":
+        [\n        {\n          \"is_public\": false,\n          \"matches\": [],\n
+        \         \"name\": null,\n          \"namespace\": null,\n          \"registry_url\":
+        null,\n          \"require\": true,\n          \"rules\": [],\n          \"source\":
+        \"idf\",\n          \"spec\": \">=4.4.0\"\n        },\n        {\n          \"is_public\":
+        false,\n          \"matches\": [],\n          \"name\": \"dep\",\n          \"namespace\":
+        \"test_component_manager\",\n          \"registry_url\": \"http://localhost:5000\",\n
+        \         \"require\": true,\n          \"rules\": [],\n          \"source\":
+        \"service\",\n          \"spec\": \"<=1.0.1\"\n        }\n      ],\n      \"description\":
+        \"This component is an example, to be used for testing.\",\n      \"discussion\":
+        null,\n      \"docs\": {\n        \"readme\": \"http://localhost:9000/test-public/components/test_component_manager/cmp/1.0.1/readme.md\"\n
+        \     },\n      \"documentation\": null,\n      \"downloads_total\": 0,\n
+        \     \"examples\": [\n        {\n          \"docs\": {},\n          \"id\":
+        \"eace5136-440f-43fc-916d-0252be0a4ebc\",\n          \"name\": \"cmp_ex\",\n
+        \         \"url\": \"http://localhost:9000/test-public/2e61cf8c-3f4b-43be-89bb-af4d676ee602/examples/eace5136-440f-43fc-916d-0252be0a4ebc.tgz\"\n
+        \       }\n      ],\n      \"exclusion_list\": [\n        \"**/__pycache__\",\n
+        \       \"**/*.pyc\",\n        \"**/*.pyd\",\n        \"**/*.pyo\",\n        \"**/.DS_Store\",\n
+        \       \"**/.git/**/*\",\n        \"**/.svn/**/*\",\n        \"**/dist/**/*\",\n
+        \       \"**/build/**/*\",\n        \"**/build_*/**/*\",\n        \"**/managed_components/**/*\",\n
+        \       \"**/dependencies.lock\",\n        \"**/.github/**/*\",\n        \"**/.gitlab-ci.yml\",\n
+        \       \"**/.idea/**/*\",\n        \"**/.vscode/**/*\",\n        \"**/.settings/**/*\",\n
+        \       \"**/sdkconfig\",\n        \"**/sdkconfig.old\",\n        \"**/.component_hash\"\n
+        \     ],\n      \"homepage\": \"https://github.com/somewhere_over_the_rainbow\",\n
+        \     \"id\": \"0351a083-cf6a-4c7c-a893-fce3abac9d20\",\n      \"info_metadata_keys\":
+        [\n        \"description-type:string\",\n        \"url-type:string\"\n      ],\n
+        \     \"issues\": null,\n      \"license\": {\n        \"name\": \"Custom\",\n
+        \       \"url\": \"http://localhost:9000/test-public/components/test_component_manager/cmp/1.0.1/license.txt\"\n
+        \     },\n      \"maintainers\": [],\n      \"repository\": null,\n      \"tags\":
+        [],\n      \"targets\": [],\n      \"url\": \"http://localhost:9000/test-public/components/test_component_manager/cmp/1.0.1/test_component_manager__cmp-v1.0.1.zip\",\n
+        \     \"version\": \"1.0.1\",\n      \"yanked_at\": null,\n      \"yanked_message\":
+        null\n    },\n    {\n      \"build_metadata_keys\": [\n        \"dependencies-*-registry_url-type:string\",\n
+        \       \"dependencies-*-type:string\",\n        \"dependencies-*-version-type:string\",\n
+        \       \"version-type:string\"\n      ],\n      \"component_hash\": \"b341989ac67a6415769d22bb8c983010a046ddbdd467d5e2eb6b5c9b57ac7368\",\n
+        \     \"created_at\": \"2025-01-15T16:12:31.249115+00:00\",\n      \"dependencies\":
+        [\n        {\n          \"is_public\": false,\n          \"matches\": [],\n
+        \         \"name\": null,\n          \"namespace\": null,\n          \"registry_url\":
+        null,\n          \"require\": true,\n          \"rules\": [],\n          \"source\":
+        \"idf\",\n          \"spec\": \">=4.4.0\"\n        },\n        {\n          \"is_public\":
+        false,\n          \"matches\": [],\n          \"name\": \"dep\",\n          \"namespace\":
+        \"test_component_manager\",\n          \"registry_url\": \"http://localhost:5000\",\n
+        \         \"require\": true,\n          \"rules\": [],\n          \"source\":
+        \"service\",\n          \"spec\": \"==1.0.0\"\n        }\n      ],\n      \"description\":
+        \"This component is an example, to be used for testing.\",\n      \"discussion\":
+        null,\n      \"docs\": {\n        \"readme\": \"http://localhost:9000/test-public/components/test_component_manager/cmp/1.0.0/readme.md\"\n
+        \     },\n      \"documentation\": null,\n      \"downloads_total\": 0,\n
+        \     \"examples\": [\n        {\n          \"docs\": {},\n          \"id\":
+        \"a8535ef5-2044-4891-b532-e9fa72d43fd3\",\n          \"name\": \"cmp_ex\",\n
+        \         \"url\": \"http://localhost:9000/test-public/97570975-d6a8-4353-a5b2-f5072b02f827/examples/a8535ef5-2044-4891-b532-e9fa72d43fd3.tgz\"\n
+        \       }\n      ],\n      \"exclusion_list\": [\n        \"**/__pycache__\",\n
+        \       \"**/*.pyc\",\n        \"**/*.pyd\",\n        \"**/*.pyo\",\n        \"**/.DS_Store\",\n
+        \       \"**/.git/**/*\",\n        \"**/.svn/**/*\",\n        \"**/dist/**/*\",\n
+        \       \"**/build/**/*\",\n        \"**/build_*/**/*\",\n        \"**/managed_components/**/*\",\n
+        \       \"**/dependencies.lock\",\n        \"**/.github/**/*\",\n        \"**/.gitlab-ci.yml\",\n
+        \       \"**/.idea/**/*\",\n        \"**/.vscode/**/*\",\n        \"**/.settings/**/*\",\n
+        \       \"**/sdkconfig\",\n        \"**/sdkconfig.old\",\n        \"**/.component_hash\"\n
+        \     ],\n      \"homepage\": \"https://github.com/somewhere_over_the_rainbow\",\n
+        \     \"id\": \"075f9bd4-39a5-4bdf-b571-ce20b4f80ee5\",\n      \"info_metadata_keys\":
+        [\n        \"description-type:string\",\n        \"url-type:string\"\n      ],\n
+        \     \"issues\": null,\n      \"license\": {\n        \"name\": \"Custom\",\n
+        \       \"url\": \"http://localhost:9000/test-public/components/test_component_manager/cmp/1.0.0/license.txt\"\n
+        \     },\n      \"maintainers\": [],\n      \"repository\": null,\n      \"tags\":
+        [],\n      \"targets\": [],\n      \"url\": \"http://localhost:9000/test-public/components/test_component_manager/cmp/1.0.0/test_component_manager__cmp-v1.0.0.zip\",\n
+        \     \"version\": \"1.0.0\",\n      \"yanked_at\": null,\n      \"yanked_message\":
+        null\n    }\n  ]\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '2107'
+      - '8257'
       Content-Security-Policy:
       - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
         font-src 'self';
       Content-Type:
       - application/json
       Date:
-      - Thu, 21 Sep 2023 10:57:27 GMT
+      - Wed, 15 Jan 2025 16:53:23 GMT
       Server:
-      - Werkzeug/2.3.7 Python/3.11.1
+      - Werkzeug/3.1.3 Python/3.13.0
       Strict-Transport-Security:
       - max-age=1209600; includeSubDomains
-      Vary:
-      - Cookie
       X-Content-Type-Options:
       - nosniff
     status:
@@ -48,24 +138,24 @@ interactions:
     body: !!python/object/new:_io.BytesIO
       state: !!python/tuple
       - !!binary |
-        LS05OGE1MTcwOTEzZWE0NzE3YTJlNWIzNGZiNTdlMDc0YQ0KQ29udGVudC1EaXNwb3NpdGlvbjog
+        LS0yZWRmNTViNDgxZDQ0N2NjYTVkNDdlOGYxZWM0Zjk1NQ0KQ29udGVudC1EaXNwb3NpdGlvbjog
         Zm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImNtcF8xLjAuMC1hbHBoYS50Z3oiDQpD
-        b250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL29jdGV0LXN0cmVhbQ0KDQofiwgIliEMZQL/Y21wXzEu
-        MC4wLWFscGhhLnRnegDtmltv2jAYhrnOr7DYRaESxocc6UGtgKlIFFDppl1MQlFiiLWcloSKatp/
-        nylVD3TttE2kVfM9EhgRy5ESv++bzzFu4/bJxF2dCdcXWW0nkA3PtYRwfv97/T8ljNIaWtVKYJkX
-        bqZOX6smzEJRISNxRE3HYA63dRM7lmUxrtWA90+7hHOsRW0ZxqY1Ny1h+mPNP9a/pRs1ZJSp/8hd
-        SM/NIsZ+3091m8/f3/3Hb8L/9af+z8D/S/F/+87/ucMdR2c25pRTx9QhACpA99z9JoYyL3JcrIrd
-        6d/U9Wf9n1rmlv65zpX+SZn6r6j/e5G6/7NIxjJaRrNMfF/KTPiNz/2L6WA8QhxT3tS0XBSN7vh8
-        Mh71R5ez6UW3N7iYItzcOnDa680Go+7wU69/06EuYy9c+qKuhsjEQs0ykc28JEqTWMRFowkOA/kP
-        9d9bqf8sw7K5YTiYEtOwLRBnFRgOuv3RtL/z+u+l/Fd639I/NU3I/1IIpSfiXIDYIf+h/q92/W8b
-        JjMY0bHhWBYxbfCECuBFKfZ2fI4/5T9nT/Of6JD/ZdDe19A+mk56X1ofZSi6SXqdyUVQXIpV0UGM
-        MIb6eZqJPJdzNL1WFXyUo8Y0cONF4Mom6o7R8LKnxrgbZrh5omgNfFXjy7kUWQedpq4XiBbDRHVr
-        ax9u1wXQYV74MsHBsaZdJdJHajbOAhGGSaOp/dDQLWkm42LeqJ+tj6B5lkSoez5BVyLLZRIjigkm
-        X+N680D7CZ4F9T/k/7/V/w/e/9qqBSlVAenP71dk8XUUvkL+U5Nu6V9nyhIg/0vAF6mIVVJ7UuQd
-        lbhqPnTQ3vGRjsmeFrkqeNVHBW1Ha6FLkRc3XyJDh4VqT8TKjdJQYDWDjjV1HReiuOkp8pQz7Tag
-        O5uEbrlhGrjgKpD/UP+/yfr/4f4vm5sUpFqF/N9UYjvdBvb3+78YXz//w/4v8H/w/9L8/+H6r00p
-        vACukv+v14GDHfr/S/UfI9b2/i+mE6j/yuBV1n+313oPwGoAAAAAAAAAAAAAAAAAAAAAAAAAAAD+
-        l18RV6wgAFAAAA0KLS05OGE1MTcwOTEzZWE0NzE3YTJlNWIzNGZiNTdlMDc0YS0tDQo=
+        b250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL29jdGV0LXN0cmVhbQ0KDQofiwgIA+iHZwL/Y21wXzEu
+        MC4wLWFscGhhLnRnegDtmmtv2jAUhvmcX2GxD4VKGNtxkkIvahWYikQBFTbtwyQUJYZYy21JqEDT
+        /vtM6Xqhl2maSLvmPBIYEcuWYp/3zTkxbuLm6chZngvHE2llJ5ANz7WE6Pzu9/p/ShhlFbSsFMAi
+        y51UTV8pJ+wAhbkMxTG1dLNlrhcD6/TAoi2uVYB3T7OAOdZBbRnGpjU3LWEPY55yi1PL5Gr/qfin
+        jPAKMoqMf8+JpAgSZxE83U91m83e3/rjN6H/+mP9p6D/hei/dav/jHHd0AnFhLXMlgXyXwbsC+eb
+        6Mssz3C+zHcX/ybnz+q/0n2l/6bBONd1rq5T3bSMCiJFxn9J9d8N1fpPQxnJcBFOU/F9IVPh1T53
+        L8e94QDpmOp1TctEXrOHF6PhoDuYTMeXdqd3OUa4vnXhrNOZ9gZ2/1One92hKiM3WHiiqoZIxVzt
+        MpFO3ThM4khEea0OEgP+D/nfW8n/7vu/xXV4ACgD/Z7dHYy7O8//XvJ/Fe9b/q/CH/y/EALpiigT
+        EOvg/+D/4P+//f+AEqj/lgE3TLC74zn+5P86e+T/hFvg/0XQ3NfQPhqPOl8aH2Ug7DhZpXLu5xOx
+        zNuIEcZQN0tSkWVyhsYrlcGHGaqNfSea+46sI3uI+pOOGuN2mP7miaLR81SOL2dSpG10ljiuLxoM
+        E9WtqX24qQugoyz3ZIz9E027iqWH1G6c+iII4lpd+6GhG5JURvmsVj1fX0GzNA6RfTFCVyLNZBwh
+        JViYfI2q9UPtJ2jWf+n/UP9/Nf+3nnr/2yIWg1AqA9Kb3VVk8SoMXsH/qUm33v9ybjHw/yLwRCIi
+        5dSuFFlbOa7aD220d3LMMdnTQkcZr/ooo21rDTQRWX79JVJ0lKv2VCydMAkEVjvoRFP3cS7y654i
+        S3Sm3Rh0e+PQDSdIfAdUBfwf8v83mf8/OP9lMgNCtQz+v8nEdnoM7O/PfzHDIHD+C/Qf9L9A/b9f
+        /21xqP+WSv/XdWB/h/r/Uv7HiLV9/stQNgD5XwG8Sv13u9Z7CFIDAAAAAAAAAAAAAAAAAAAAAAAA
+        AADwr/wCIC19wABQAAANCi0tMmVkZjU1YjQ4MWQ0NDdjY2E1ZDQ3ZThmMWVjNGY5NTUtLQ0K
       - 0
       - null
     headers:
@@ -73,39 +163,35 @@ interactions:
       - '*/*'
       Accept-Encoding:
       - gzip, deflate
-      Authorization:
-      - Bearer L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ
       Connection:
       - keep-alive
       Content-Length:
-      - '1019'
+      - '1023'
       Content-Type:
-      - multipart/form-data; boundary=98a5170913ea4717a2e5b34fb57e074a
+      - multipart/form-data; boundary=2edf55b481d447cca5d47e8f1ec4f955
       User-Agent:
-      - idf-component-manager/1.3.2 (Darwin/22.1.0 arm64; python/3.10.0)
+      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
     method: POST
     uri: http://localhost:5000/api/components/validate
   response:
     body:
-      string: '{"job_id":"072dee75-562e-41c4-8cad-9c2696c3a06f"}
-
-        '
+      string: "{\n  \"job_id\": \"e6203281-eb0b-452a-bd1e-7ccfa2b4f90a\"\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '50'
+      - '55'
       Content-Security-Policy:
       - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
         font-src 'self';
       Content-Type:
       - application/json
       Date:
-      - Thu, 21 Sep 2023 10:57:27 GMT
+      - Wed, 15 Jan 2025 16:53:23 GMT
       Server:
-      - Werkzeug/2.3.7 Python/3.11.1
+      - Werkzeug/3.1.3 Python/3.13.0
       Strict-Transport-Security:
       - max-age=1209600; includeSubDomains
       X-Content-Type-Options:
@@ -113,91 +199,4 @@ interactions:
     status:
       code: 201
       message: CREATED
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Authorization:
-      - Bearer L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ
-      Connection:
-      - keep-alive
-      User-Agent:
-      - idf-component-manager/1.3.2 (Darwin/22.1.0 arm64; python/3.10.0)
-    method: GET
-    uri: http://localhost:5000/api/tasks/072dee75-562e-41c4-8cad-9c2696c3a06f
-  response:
-    body:
-      string: '{"id":"072dee75-562e-41c4-8cad-9c2696c3a06f","message":"Pending...","progress":0.0,"status":"pending"}
-
-        '
-    headers:
-      Access-Control-Allow-Origin:
-      - '*'
-      Connection:
-      - close
-      Content-Length:
-      - '103'
-      Content-Security-Policy:
-      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
-        font-src 'self';
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 21 Sep 2023 10:57:27 GMT
-      Server:
-      - Werkzeug/2.3.7 Python/3.11.1
-      Strict-Transport-Security:
-      - max-age=1209600; includeSubDomains
-      X-Content-Type-Options:
-      - nosniff
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Authorization:
-      - Bearer L1nSp1bkNJzi4B-gZ0sIFJi329g69HbQc_JWM8BtfYz-XPM59bzvZeC8jrot-2CZ
-      Connection:
-      - keep-alive
-      User-Agent:
-      - idf-component-manager/1.3.2 (Darwin/22.1.0 arm64; python/3.10.0)
-    method: GET
-    uri: http://localhost:5000/api/tasks/072dee75-562e-41c4-8cad-9c2696c3a06f
-  response:
-    body:
-      string: '{"id":"072dee75-562e-41c4-8cad-9c2696c3a06f","message":"Uploaded archive
-        is valid","progress":100.0,"status":"success"}
-
-        '
-    headers:
-      Access-Control-Allow-Origin:
-      - '*'
-      Connection:
-      - close
-      Content-Length:
-      - '120'
-      Content-Security-Policy:
-      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
-        font-src 'self';
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 21 Sep 2023 10:57:30 GMT
-      Server:
-      - Werkzeug/2.3.7 Python/3.11.1
-      Strict-Transport-Security:
-      - max-age=1209600; includeSubDomains
-      X-Content-Type-Options:
-      - nosniff
-    status:
-      code: 200
-      message: OK
 version: 1

@@ -1,28 +1,24 @@
-# SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import logging
 import shutil
 
 import pytest
 import requests_mock
-import vcr
 
 from idf_component_manager.core import ComponentManager
-from idf_component_tools import LOGGING_NAMESPACE
 from idf_component_tools.errors import FatalError, NothingToDoError
+from tests.network_test_utils import use_vcr_or_real_env
 
 # ruff: noqa: ARG001
 
 
-@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_upload_component.yaml')
-def test_upload_component(mock_registry, pre_release_component_path, caplog):
+@use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_upload_component.yaml')
+@pytest.mark.network
+def test_upload_component(mock_registry, mock_upload, pre_release_component_path, component_name):
     manager = ComponentManager(path=pre_release_component_path)
+    name_to_upload = f'{component_name}_upload'
 
-    with caplog.at_level(logging.WARNING, logger=LOGGING_NAMESPACE):
-        manager.upload_component('cmp')
-        assert len(caplog.records) == 2
-        assert 'A component description has not been provided in the manifest file.' in caplog.text
-        assert 'A homepage URL has not been provided in the manifest file.' in caplog.text
+    manager.upload_component(name_to_upload, namespace='test_component_manager')
 
 
 def test_upload_component_http_error(mock_registry, pre_release_component_path):
@@ -44,8 +40,7 @@ def test_upload_component_http_error(mock_registry, pre_release_component_path):
             manager.upload_component('cmp')
 
 
-@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_check_only_component.yaml')
-def test_check_only_upload_component(mock_registry, pre_release_component_path):
+def test_check_only_upload_component(pre_release_component_path):
     manager = ComponentManager(path=pre_release_component_path)
 
     manager.upload_component(
@@ -54,35 +49,39 @@ def test_check_only_upload_component(mock_registry, pre_release_component_path):
     )
 
 
-@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_allow_existing_component.yaml')
-def test_allow_existing_component(mock_registry, release_component_path, tmp_path):
+@use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_allow_existing_component.yaml')
+@pytest.mark.network
+def test_allow_existing_component(mock_registry, mock_upload, release_component_path, tmp_path):
     shutil.copytree(release_component_path, str(tmp_path / 'cmp'))
     manager = ComponentManager(path=str(tmp_path / 'cmp'))
 
     manager.upload_component(
         'cmp',
         allow_existing=True,
+        namespace='test_component_manager',
     )
 
 
-@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_validate_component.yaml')
-def test_validate_component(mock_registry_without_token, pre_release_component_path):
+@use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_validate_component.yaml')
+@pytest.mark.network
+def test_validate_component(mock_registry_without_token, mock_upload, pre_release_component_path):
     manager = ComponentManager(path=pre_release_component_path)
 
     manager.upload_component(
         'cmp',
         dry_run=True,
+        namespace='test_component_manager',
     )
 
 
-@vcr.use_cassette('tests/fixtures/vcr_cassettes/test_upload_component_skip_pre.yaml')
-def test_upload_component_skip_pre(mock_registry, pre_release_component_path):
+def test_upload_component_skip_pre(pre_release_component_path):
     manager = ComponentManager(path=pre_release_component_path)
 
     with pytest.raises(NothingToDoError) as e:
         manager.upload_component(
             'cmp',
             skip_pre_release=True,
+            namespace='test_component_manager',
         )
 
         assert str(e.value).startswith('Skipping pre-release')

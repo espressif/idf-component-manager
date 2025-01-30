@@ -236,7 +236,7 @@ class ComponentManager:
             )
 
         response = requests.get(example_url['url'], stream=True)  # noqa: S113
-        with tarfile.open(fileobj=response.raw, mode='r|gz') as tar:
+        with tarfile.open(fileobj=response.raw, mode='r|gz') as tar:  # type: ignore
             tar.extractall(project_path)  # noqa: S202
         notice(
             'Example "{}" successfully downloaded to {}'.format(
