@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Core module of component manager"""
 
@@ -441,13 +441,6 @@ class ComponentManager:
     ):
         api_client = get_api_client(namespace=namespace, profile_name=profile_name)
         component_name = '/'.join([api_client.default_namespace, name])
-
-        versions = api_client.versions(component_name=component_name).versions
-
-        if version not in versions:
-            raise VersionNotFoundError(
-                f'Version {version} of the component "{component_name}" is not on the registry'
-            )
 
         api_client.yank_version(
             component_name=component_name,
