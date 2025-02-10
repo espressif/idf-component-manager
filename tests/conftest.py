@@ -17,7 +17,7 @@ from idf_component_tools import HINT_LEVEL, ComponentManagerSettings, get_logger
 from idf_component_tools.hash_tools.constants import HASH_FILENAME
 from idf_component_tools.registry.api_client import APIClient
 from idf_component_tools.registry.api_models import TaskStatus
-from idf_component_tools.registry.client_errors import ComponentNotFound
+from idf_component_tools.registry.client_errors import ComponentNotFound, VersionNotFound
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -30,12 +30,12 @@ def check_network_environment():
 
 def skip_on_real_environment(func):
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(request, *args, **kwargs):
         # True only if we're not testing with real environment or the test is not marked with 'network'
-        if ('USE_REGISTRY' not in os.environ) or 'network' not in func.__dict__.get(
-            '_pytestmark', []
-        ):
-            return func(*args, **kwargs)
+        not_using_registry = 'USE_REGISTRY' not in os.environ
+        test_is_not_marked_network = request.node.get_closest_marker('network') is None
+        if not_using_registry or test_is_not_marked_network:
+            return func(request, *args, **kwargs)
         return
 
     return wrapper
@@ -209,31 +209,40 @@ def disable_local_env(request):
 
 @pytest.fixture()
 @skip_on_real_environment
-def mock_registry_without_token(monkeypatch):
+def mock_registry_without_token(request, monkeypatch):  # noqa: ARG001
     monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
 
 
 @pytest.fixture()
 @skip_on_real_environment
-def mock_storage(monkeypatch):
+def mock_storage(request, monkeypatch):  # noqa: ARG001
     monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'http://localhost:9000/test-public/')
 
 
 @pytest.fixture()
 @skip_on_real_environment
-def mock_registry(mock_registry_without_token, mock_storage):
+def mock_registry(request, mock_registry_without_token, mock_storage):
     pass
 
 
 @pytest.fixture()
 @skip_on_real_environment
-def mock_yank(monkeypatch):
+def mock_yank(request, monkeypatch):  # noqa: ARG001
     monkeypatch.setattr(APIClient, 'yank_version', lambda *_, **__: None)
 
 
 @pytest.fixture()
 @skip_on_real_environment
-def mock_upload(monkeypatch):
+def mock_yank_404(request, monkeypatch):  # noqa: ARG001
+    def f(*_, **__):
+        raise VersionNotFound('Version "1.2.0" of component "cmp" was not found in the registry.')
+
+    monkeypatch.setattr(APIClient, 'yank_version', f)
+
+
+@pytest.fixture()
+@skip_on_real_environment
+def mock_upload(request, monkeypatch):  # noqa: ARG001
     task_status = TaskStatus(id='id', status='success', warnings=[])
     monkeypatch.setattr(APIClient, 'upload_version', lambda *_, **__: 'job_id')
     monkeypatch.setattr(APIClient, 'task_status', lambda *_, **__: task_status)

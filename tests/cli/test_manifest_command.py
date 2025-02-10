@@ -127,7 +127,7 @@ def test_add_dependency_with_registry_url(mock_registry):  # noqa: ARG001
                 [
                     'manifest',
                     'add-dependency',
-                    'test/cmp==1.0.0',
+                    'test_component_manager/cmp==1.0.0',
                     '--registry-url',
                     registry_url,
                 ],
