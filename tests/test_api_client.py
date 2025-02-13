@@ -11,16 +11,13 @@ from requests import Response
 
 from idf_component_tools import LOGGING_NAMESPACE
 from idf_component_tools.__version__ import __version__
+from idf_component_tools.config import get_registry_url, get_storage_urls
 from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL
 from idf_component_tools.registry.api_client import APIClient
 from idf_component_tools.registry.base_client import user_agent
 from idf_component_tools.registry.client_errors import APIClientError
 from idf_component_tools.registry.multi_storage_client import MultiStorageClient
 from idf_component_tools.registry.request_processor import join_url
-from idf_component_tools.registry.service_details import (
-    get_registry_url,
-    get_storage_urls,
-)
 from idf_component_tools.registry.storage_client import StorageClient
 from idf_component_tools.semver import Version
 from tests.network_test_utils import use_vcr_or_real_env

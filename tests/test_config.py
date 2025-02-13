@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import json
@@ -10,8 +10,6 @@ from idf_component_tools.config import (
     ConfigError,
     ConfigManager,
     ProfileItem,
-)
-from idf_component_tools.registry.service_details import (
     get_registry_url,
     get_storage_urls,
 )

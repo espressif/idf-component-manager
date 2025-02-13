@@ -118,3 +118,7 @@ class RunningEnvironmentError(FatalError):
 
 class WarningAsExceptionError(FatalError):
     pass
+
+
+class NoSuchProfile(FatalError):
+    pass

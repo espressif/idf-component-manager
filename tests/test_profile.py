@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import json
@@ -8,17 +8,16 @@ import pytest
 from jsonref import requests
 from pytest import fixture, raises, warns
 
-from idf_component_tools.config import Config, ConfigError
+from idf_component_tools.config import Config, ConfigError, get_profile
 from idf_component_tools.constants import (
     DEFAULT_NAMESPACE,
     IDF_COMPONENT_STAGING_REGISTRY_URL,
 )
+from idf_component_tools.errors import NoSuchProfile
 from idf_component_tools.messages import UserDeprecationWarning
 from idf_component_tools.registry.client_errors import APIClientError
 from idf_component_tools.registry.service_details import (
-    NoSuchProfile,
     get_api_client,
-    get_profile,
     get_storage_client,
 )
 

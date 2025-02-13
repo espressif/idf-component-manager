@@ -67,6 +67,7 @@ else:
 # so we need to convert them to string
 _http_url_adapter = TypeAdapter(HttpUrl)
 UrlField = Annotated[
+    # return with trailing slash
     str, BeforeValidator(lambda value: str(_http_url_adapter.validate_python(value)))
 ]
 
