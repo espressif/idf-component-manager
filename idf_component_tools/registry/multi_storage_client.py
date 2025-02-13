@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Classes to work with ESP Component Registry"""
 
@@ -84,11 +84,10 @@ class MultiStorageClient:
     @property
     @lru_cache(1)
     def storage_clients(self):
-        clients = [*self.local_storage_clients, *self.profile_storage_clients]
+        yield from self.local_storage_clients
+        yield from self.profile_storage_clients
         if self.registry_storage_client:
-            clients.append(self.registry_storage_client)
-
-        return clients
+            yield self.registry_storage_client
 
     def versions(self, component_name: str, spec: str = '*') -> ComponentWithVersions:
         cmp_with_versions = ComponentWithVersions(component_name, [])

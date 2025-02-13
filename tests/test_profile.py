@@ -201,11 +201,12 @@ class TestMultiStorageClient:
             local_storage_urls=['file://local1', 'file://local2'],
         )
 
-        assert client.storage_clients[0].storage_url == 'file://local1'
-        assert client.storage_clients[1].storage_url == 'file://local2'
-        assert client.storage_clients[2].storage_url == 'https://something.else'
+        storage_clients = list(client.storage_clients)
+        assert storage_clients[0].storage_url == 'file://local1'
+        assert storage_clients[1].storage_url == 'file://local2'
+        assert storage_clients[2].storage_url == 'https://something.else'
         assert (
-            client.storage_clients[3].storage_url
+            storage_clients[3].storage_url
             == requests.get(IDF_COMPONENT_STAGING_REGISTRY_URL + '/api').json()[
                 'components_base_url'
             ]
