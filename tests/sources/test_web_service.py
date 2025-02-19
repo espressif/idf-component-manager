@@ -41,13 +41,14 @@ class TestComponentWebServiceSource:
     @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_fetch_webservice.yaml')
     @pytest.mark.network
     def test_download(self, monkeypatch, release_component_path, tmp_path):
+        original_registry = os.getenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
         monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', 'http://example.com')
 
         cache_dir = str(tmp_path / 'cache')
         monkeypatch.setenv('IDF_COMPONENT_CACHE_PATH', cache_dir)
 
         source = WebServiceSource(
-            registry_url='http://localhost:5000',  # use a different registry_url for testing
+            registry_url=original_registry,  # use a different registry_url for testing
             system_cache_path=cache_dir,
         )
         cmp = SolvedComponent(

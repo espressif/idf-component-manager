@@ -105,10 +105,10 @@ class TestAPIClient:
 
     @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_api_information.yaml')
     @pytest.mark.network
-    def test_api_information(self, registry_url):
+    def test_api_information(self, registry_url, storage_url):
         client = APIClient(registry_url=registry_url)
         information = client.api_information()
-        assert information['components_base_url'] == 'http://localhost:9000/test-public'
+        assert information['components_base_url'] == storage_url
 
     def test_file_adapter(self, fixtures_path):
         storage_url = f'file://{fixtures_path}'
