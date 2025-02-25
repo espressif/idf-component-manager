@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Tools for interaction with IDF build system"""
 
@@ -52,7 +52,7 @@ def get_idf_version():
         idf_version = subprocess.check_output([sys.executable, idf_py_path, '--version'])  # noqa: S603
     except subprocess.CalledProcessError:
         raise RunningEnvironmentError(
-            'Could not get IDF version from calling "idf.py --version".\n' 'idf.py path: {}'.format(
+            'Could not get IDF version from calling "idf.py --version".\nidf.py path: {}'.format(
                 idf_py_path
             )
         )
@@ -70,7 +70,7 @@ def get_idf_version():
         return str(Version.coerce(res[0]))
     else:
         raise RunningEnvironmentError(
-            'Could not parse IDF version from calling "idf.py --version".\n' 'Output: {}'.format(
+            'Could not parse IDF version from calling "idf.py --version".\nOutput: {}'.format(
                 idf_version
             )
         )

@@ -5,6 +5,7 @@
 import functools
 import os
 import re
+import secrets
 import shutil
 import tarfile
 import tempfile
@@ -78,7 +79,7 @@ from .core_utils import (
     ProgressBar,
     _create_manifest_if_missing,
     archive_filename,
-    copy_examples_folders,
+    check_examples_folder,
     dist_name,
     get_validated_manifest,
     parse_example,
@@ -358,7 +359,7 @@ class ComponentManager:
         repository: t.Optional[str] = None,
         commit_sha: t.Optional[str] = None,
         repository_path: t.Optional[str] = None,
-    ) -> t.Tuple[str, Manifest]:
+    ) -> t.Tuple[str, t.Optional[str], Manifest]:
         dest_path = self.path / dest_dir if dest_dir else self.default_dist_path
 
         if version == 'git':
@@ -401,24 +402,43 @@ class ComponentManager:
             exclude=exclude_set,
         )
 
-        if manifest.examples:
-            copy_examples_folders(
-                manifest.examples,
-                Path(self.path),
-                dest_temp_dir,
-                use_gitignore=manifest.use_gitignore,
-                include=manifest.include_set,
-                exclude=manifest.exclude_set,
-            )
-
         manifest_manager.dump(str(dest_temp_dir))
 
         get_validated_manifest(manifest_manager, str(dest_temp_dir))
 
         archive_filepath = os.path.join(dest_path, archive_filename(name, manifest.version))
-        notice(f'Saving archive to "{archive_filepath}"')
+        notice(f'Saving component archive to "{archive_filepath}"')
         pack_archive(str(dest_temp_dir), archive_filepath)
-        return archive_filepath, manifest
+
+        if not manifest.examples:
+            return archive_filepath, None, manifest
+
+        check_examples_folder(manifest.examples, Path(self.path))
+
+        # Create a destination directory for examples defined in the manifest
+        examples_dest_dir = dest_path / f'{name}_{manifest.version}_examples'
+        examples_dest_dir.mkdir(parents=True, exist_ok=True)
+
+        for example in manifest.examples:
+            example_path = (self.path / Path(list(example.values())[0])).resolve()
+            # Do not consider examples from the `examples` directory
+            if Path(os.path.relpath(example_path, self.path)).parts[0] == 'examples':
+                continue
+
+            # Create a random directory to avoid conflicts with other examples
+            copy_filtered_directory(
+                example_path.as_posix(),
+                (examples_dest_dir / secrets.token_hex(4) / example_path.name).as_posix(),
+                use_gitignore=manifest.use_gitignore,
+                include=manifest.include_set,
+                exclude=exclude_set,
+            )
+
+        examples_archive_filepath = f'{examples_dest_dir}.tgz'
+        pack_archive(examples_dest_dir.as_posix(), examples_archive_filepath)
+        notice(f'Saving examples archive to "{examples_archive_filepath}"')
+
+        return archive_filepath, examples_archive_filepath, manifest
 
     @general_error_handler
     def delete_version(
@@ -518,6 +538,8 @@ class ComponentManager:
         """
         api_client = get_api_client(namespace=namespace, profile_name=profile_name)
 
+        examples_archive = []
+
         if archive:
             if version:
                 raise FatalError(
@@ -539,7 +561,7 @@ class ComponentManager:
             finally:
                 shutil.rmtree(tempdir)
         else:
-            archive, manifest = self.pack_component(
+            archive, examples_archive, manifest = self.pack_component(
                 name=name,
                 version=version,
                 dest_dir=dest_dir,
@@ -586,10 +608,15 @@ class ComponentManager:
                 memo['progress'] = monitor.bytes_read
 
             if dry_run:
-                job_id = api_client.validate_version(file_path=archive, callback=callback)
+                job_id = api_client.validate_version(
+                    file_path=archive, callback=callback, example_file_path=examples_archive
+                )
             else:
                 job_id = api_client.upload_version(
-                    component_name=component_name, file_path=archive, callback=callback
+                    component_name=component_name,
+                    file_path=archive,
+                    example_file_path=examples_archive,
+                    callback=callback,
                 )
 
             progress_bar.close()
