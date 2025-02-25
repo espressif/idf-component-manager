@@ -16,10 +16,10 @@ from idf_component_manager.cli.validations import (
 from idf_component_manager.core import ComponentManager
 from idf_component_manager.utils import VersionSolverResolution
 from idf_component_tools import warn
-from idf_component_tools.config import ConfigManager, ProfileItem
+from idf_component_tools.config import ConfigManager, ProfileItem, get_profile
 from idf_component_tools.errors import FatalError
 from idf_component_tools.registry.client_errors import APIClientError
-from idf_component_tools.registry.service_details import get_api_client, get_profile
+from idf_component_tools.registry.service_details import get_api_client
 
 from .constants import get_profile_option, get_project_dir_option
 from .utils import add_options, deprecated_option

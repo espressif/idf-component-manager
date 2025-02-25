@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import json
@@ -8,17 +8,16 @@ import pytest
 from jsonref import requests
 from pytest import fixture, raises, warns
 
-from idf_component_tools.config import Config, ConfigError
+from idf_component_tools.config import Config, ConfigError, get_profile
 from idf_component_tools.constants import (
     DEFAULT_NAMESPACE,
     IDF_COMPONENT_STAGING_REGISTRY_URL,
 )
+from idf_component_tools.errors import NoSuchProfile
 from idf_component_tools.messages import UserDeprecationWarning
 from idf_component_tools.registry.client_errors import APIClientError
 from idf_component_tools.registry.service_details import (
-    NoSuchProfile,
     get_api_client,
-    get_profile,
     get_storage_client,
 )
 
@@ -201,11 +200,12 @@ class TestMultiStorageClient:
             local_storage_urls=['file://local1', 'file://local2'],
         )
 
-        assert client.storage_clients[0].storage_url == 'file://local1'
-        assert client.storage_clients[1].storage_url == 'file://local2'
-        assert client.storage_clients[2].storage_url == 'https://something.else'
+        storage_clients = list(client.storage_clients)
+        assert storage_clients[0].storage_url == 'file://local1'
+        assert storage_clients[1].storage_url == 'file://local2'
+        assert storage_clients[2].storage_url == 'https://something.else'
         assert (
-            client.storage_clients[3].storage_url
+            storage_clients[3].storage_url
             == requests.get(IDF_COMPONENT_STAGING_REGISTRY_URL + '/api').json()[
                 'components_base_url'
             ]

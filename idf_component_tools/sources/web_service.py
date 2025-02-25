@@ -17,6 +17,7 @@ from idf_component_tools.archive_tools import (
     get_format_from_path,
     unpack_archive,
 )
+from idf_component_tools.config import get_registry_url
 from idf_component_tools.constants import (
     DEFAULT_NAMESPACE,
     IDF_COMPONENT_REGISTRY_URL,
@@ -93,7 +94,7 @@ def download_archive(url: str, download_dir: str, save_original_filename: bool =
 
 class WebServiceSource(BaseSource):
     registry_url: str = Field(
-        default=IDF_COMPONENT_REGISTRY_URL,
+        default_factory=get_registry_url,
         validation_alias=AliasChoices(
             'registry_url',
             'service_url',

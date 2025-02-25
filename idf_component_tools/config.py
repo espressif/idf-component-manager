@@ -17,8 +17,9 @@ from ruamel.yaml import YAML, CommentedMap, YAMLError
 
 from idf_component_tools.constants import (
     IDF_COMPONENT_REGISTRY_URL,
+    IDF_COMPONENT_STORAGE_URL,
 )
-from idf_component_tools.errors import FatalError
+from idf_component_tools.errors import FatalError, NoSuchProfile
 from idf_component_tools.utils import (
     Annotated,
     BaseModel,
@@ -32,6 +33,7 @@ from idf_component_tools.utils import (
 )
 
 from .build_system_tools import get_idf_version
+from .environment import ComponentManagerSettings
 
 RegistryUrlField = Annotated[
     t.Union[
@@ -106,6 +108,10 @@ def config_dir() -> Path:
     return Path(os.environ.get('IDF_TOOLS_PATH') or Path.home() / '.espressif')
 
 
+def config_file() -> Path:
+    return config_dir() / 'idf_component_manager.yml'
+
+
 def root_managed_components_dir() -> Path:
     return config_dir() / 'root_managed_components' / f'idf{get_idf_version()}'
 
@@ -116,7 +122,7 @@ class ConfigError(FatalError):
 
 class ConfigManager:
     def __init__(self, path=None):
-        self.config_path = Path(path) if path else (config_dir() / 'idf_component_manager.yml')
+        self.config_path = Path(path) if path else config_file()
         self._yaml = YAML()
         self._raw_data: CommentedMap = None  # Storage for CommentedMap from the config file
 
@@ -191,3 +197,64 @@ class ConfigManager:
                     del profile_values[field_name]
 
         self._raw_data['profiles'] = profiles
+
+
+def get_profile(
+    profile_name: t.Optional[str] = None,
+    config_path: t.Optional[str] = None,
+) -> ProfileItem:
+    config_manager = ConfigManager(path=config_path)
+    config = config_manager.load()
+    _profile_name = ComponentManagerSettings().PROFILE or profile_name or 'default'
+
+    if (
+        _profile_name == 'default' and config.profiles.get(_profile_name) is None
+    ) or not _profile_name:
+        return ProfileItem()  # empty profile
+
+    if _profile_name in config.profiles:
+        return config.profiles[_profile_name] or ProfileItem()
+
+    raise NoSuchProfile(
+        f'Profile "{_profile_name}" not found in config file: {config_manager.config_path}'
+    )
+
+
+def get_registry_url(profile: t.Optional[ProfileItem] = None) -> str:
+    """
+    Env var > profile settings > default
+    """
+    if profile is None:
+        profile = get_profile()
+
+    return (
+        ComponentManagerSettings().REGISTRY_URL
+        or (profile.registry_url if profile else IDF_COMPONENT_REGISTRY_URL)
+        or IDF_COMPONENT_REGISTRY_URL
+    )
+
+
+def get_storage_urls(profile: t.Optional[ProfileItem] = None) -> t.List[str]:
+    """
+    Env var > profile settings > default
+    """
+    if profile is None:
+        profile = get_profile()
+
+    storage_url_env = ComponentManagerSettings().STORAGE_URL  # fool mypy
+    if storage_url_env:
+        storage_urls = storage_url_env.split(';')
+    else:
+        storage_urls = profile.storage_urls or []
+
+    res = []  # sequence matters, the first url goes first
+    for url in storage_urls:
+        url = url.strip()
+        if url == 'default':
+            _url = IDF_COMPONENT_STORAGE_URL
+        else:
+            _url = url
+
+        if _url not in res:
+            res.append(_url)
+    return res

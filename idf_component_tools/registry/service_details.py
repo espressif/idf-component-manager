@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 """Helper function to init API client"""
@@ -6,74 +6,10 @@
 import typing as t
 
 from idf_component_tools import ComponentManagerSettings
-from idf_component_tools.config import ConfigManager, ProfileItem
-from idf_component_tools.constants import (
-    IDF_COMPONENT_REGISTRY_URL,
-    IDF_COMPONENT_STORAGE_URL,
-)
-from idf_component_tools.errors import FatalError
+from idf_component_tools.config import ProfileItem, get_profile, get_registry_url, get_storage_urls
 
 from .api_client import APIClient
 from .multi_storage_client import MultiStorageClient
-
-
-class NoSuchProfile(FatalError):
-    pass
-
-
-def get_profile(
-    profile_name: t.Optional[str] = None,
-    config_path: t.Optional[str] = None,
-) -> ProfileItem:
-    config_manager = ConfigManager(path=config_path)
-    config = config_manager.load()
-    _profile_name = ComponentManagerSettings().PROFILE or profile_name or 'default'
-
-    if (
-        _profile_name == 'default' and config.profiles.get(_profile_name) is None
-    ) or not _profile_name:
-        return ProfileItem()  # empty profile
-
-    if _profile_name in config.profiles:
-        return config.profiles[_profile_name] or ProfileItem()
-
-    raise NoSuchProfile(
-        f'Profile "{profile_name}" not found in config file: {config_manager.config_path}'
-    )
-
-
-def get_registry_url(profile: t.Optional[ProfileItem] = None) -> str:
-    """
-    Env var > profile settings > default
-    """
-    return (
-        ComponentManagerSettings().REGISTRY_URL
-        or (profile.registry_url if profile else IDF_COMPONENT_REGISTRY_URL)
-        or IDF_COMPONENT_REGISTRY_URL
-    )
-
-
-def get_storage_urls(profile: t.Optional[ProfileItem] = None) -> t.List[str]:
-    """
-    Env var > profile settings > default
-    """
-    storage_url_env = ComponentManagerSettings().STORAGE_URL
-    if storage_url_env:
-        _storage_urls = [url.strip() for url in storage_url_env.split(';') if url.strip()]
-    else:
-        _storage_urls = profile.storage_urls if profile else []
-
-    res = []  # sequence matters, the first url goes first
-    for url in _storage_urls:
-        if url == 'default':
-            _url = IDF_COMPONENT_STORAGE_URL
-        else:
-            _url = url
-
-        if _url not in res:
-            res.append(_url)
-
-    return res
 
 
 def get_api_client(

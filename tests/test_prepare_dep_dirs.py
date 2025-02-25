@@ -168,8 +168,7 @@ def test_dependencies_with_partial_mirror(tmp_path, monkeypatch):
     assert lock_data['dependencies']['example/cmp']
     assert lock_data['dependencies']['example/cmp']['source']['type'] == 'service'
     assert (
-        lock_data['dependencies']['example/cmp']['source']['registry_url']
-        == IDF_COMPONENT_REGISTRY_URL
+        lock_data['dependencies']['example/cmp']['source']['registry_url'] == 'https://notexist.me/'
     )
     assert lock_data['dependencies']['example/cmp']['version'] == '3.0.3'
 

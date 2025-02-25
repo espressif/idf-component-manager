@@ -14,6 +14,7 @@ import yaml
 
 from idf_component_manager.core import ComponentManager
 from idf_component_tools import HINT_LEVEL, ComponentManagerSettings, get_logger
+from idf_component_tools.config import config_file
 from idf_component_tools.hash_tools.constants import HASH_FILENAME
 from idf_component_tools.registry.api_client import APIClient
 from idf_component_tools.registry.api_models import TaskStatus
@@ -463,3 +464,21 @@ def component_name():
     if 'USE_REGISTRY' in os.environ:
         return f'test_{str(uuid4())}'
     return 'test'
+
+
+@pytest.fixture
+def isolate_idf_component_manager_yml(tmp_path):
+    config_path = config_file()
+    backup_path = tmp_path / 'idf_component_manager.yml'
+
+    do_exist = config_path.is_file()
+    if do_exist:
+        shutil.move(config_path, backup_path)
+        yield
+        shutil.move(backup_path, config_path)
+    else:
+        yield
+        try:
+            config_path.unlink()
+        except FileNotFoundError:
+            pass
