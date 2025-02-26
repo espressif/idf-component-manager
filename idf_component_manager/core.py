@@ -20,7 +20,7 @@ from requests_toolbelt import MultipartEncoderMonitor
 from ruamel.yaml import YAML, CommentedMap
 
 from idf_component_manager.utils import ComponentSource, VersionSolverResolution
-from idf_component_tools import ComponentManagerSettings
+from idf_component_tools import ComponentManagerSettings, debug
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name, is_component
 from idf_component_tools.config import root_managed_components_dir
@@ -87,6 +87,17 @@ from .core_utils import (
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
 from .sync import sync_components
+
+try:
+    import truststore
+
+    truststore.inject_into_ssl()
+    debug('Use truststore as a source of trusted certificates')
+except ImportError:
+    debug(
+        'Failed to import truststore, '
+        "the 'certifi' package will be used as a source of trusted certificates"
+    )
 
 CHECK_INTERVAL = 3
 MAX_PROGRESS = 100  # Expected progress is in percent
