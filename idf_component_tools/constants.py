@@ -26,3 +26,5 @@ You can try to update the component manager by running:
     {} -m pip install --upgrade idf-component-manager
 """.format(sys.executable)
 MANIFEST_FILENAME = 'idf_component.yml'
+
+KCONFIG_VAR_PREFIX = '$kconfig.'

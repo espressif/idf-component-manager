@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# SPDX-FileCopyrightText: 2019-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2019-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 #
 # 'prepare.py' is a tool to be used by CMake build system to prepare components
@@ -12,6 +12,7 @@ import sys
 
 from idf_component_manager.core import ComponentManager
 from idf_component_tools import error, setup_logging
+from idf_component_tools.debugger import KCONFIG_CONTEXT
 from idf_component_tools.errors import FatalError
 
 
@@ -20,6 +21,9 @@ def _component_list_file(build_dir):
 
 
 def prepare_dep_dirs(args):
+    if args.sdkconfig_json_file:
+        KCONFIG_CONTEXT.get().update_from_file(args.sdkconfig_json_file)
+
     build_dir = args.build_dir or os.path.dirname(args.managed_components_list_file)
     ComponentManager(
         args.project_dir,
@@ -31,8 +35,15 @@ def prepare_dep_dirs(args):
         local_components_list_file=args.local_components_list_file,
     )
 
+    kconfig_ctx = KCONFIG_CONTEXT.get()
+    if kconfig_ctx.missed_keys:
+        exit(10)
+
 
 def inject_requirements(args):
+    if args.sdkconfig_json_file:
+        KCONFIG_CONTEXT.get().update_from_file(args.sdkconfig_json_file)
+
     ComponentManager(
         args.project_dir,
         lock_path=args.lock_path,
@@ -58,17 +69,22 @@ def main():
     # *1* starting ESP-IDF 5.0
     # *2* starting ESP-IDF 5.1
     # *3* starting ESP-IDF 5.2
+    # *4* starting ESP-IDF 5.5
 
     parser.add_argument(
         '--interface_version',
         help='Version of ESP-IDF build system integration',
         default=0,
         type=int,
-        choices=[0, 1, 2, 3],
+        choices=[0, 1, 2, 3, 4],
     )
 
     parser.add_argument('--lock_path', help='lock file path relative to the project path')
-
+    parser.add_argument(
+        '--sdkconfig_json_file',
+        required=False,
+        help='Path to file with sdkconfig.json, used for parsing kconfig in if clauses',
+    )
     subparsers = parser.add_subparsers(dest='step')
     subparsers.required = True
 
@@ -109,7 +125,7 @@ def main():
 
     for step in inject_step_data:
         inject_step = subparsers.add_parser(
-            step['name'], help=f"Inject requirements to CMake{step.get('extra_help', '')}"
+            step['name'], help=f'Inject requirements to CMake{step.get("extra_help", "")}'
         )
         inject_step.set_defaults(func=inject_requirements)
         inject_step.add_argument(

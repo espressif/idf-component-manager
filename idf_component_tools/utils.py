@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import sys
@@ -26,8 +26,9 @@ from pydantic_core import CoreSchema, ErrorDetails, PydanticCustomError, core_sc
 
 from . import debug
 from .build_system_tools import get_env_idf_target
-from .constants import COMPILED_COMMIT_ID_RE
-from .errors import ManifestError, RunningEnvironmentError
+from .constants import COMPILED_COMMIT_ID_RE, KCONFIG_VAR_PREFIX
+from .debugger import KCONFIG_CONTEXT
+from .errors import ManifestError, MissingKconfigError, RunningEnvironmentError
 from .hash_tools.calculate import hash_object
 from .manager import ManifestManager
 from .semver import Version
@@ -503,9 +504,24 @@ def polish_validation_error(err: ValidationError):
     return '\n'.join(error_msgs)
 
 
+def remove_prefix(text, prefix):
+    if text.startswith(prefix):
+        return text[len(prefix) :]
+    return text
+
+
 def subst_vars_in_str(s: str, env: t.Dict[str, t.Any] = None) -> str:  # type: ignore
     if env is None:
         env = os.environ
+
+    if s.startswith(KCONFIG_VAR_PREFIX):
+        # consider it as a kconfig
+        key = remove_prefix(s, KCONFIG_VAR_PREFIX)
+        kconfig_ctx = KCONFIG_CONTEXT.get()
+        if key in kconfig_ctx.sdkconfig:
+            return kconfig_ctx.sdkconfig[key]
+        else:
+            raise MissingKconfigError(key)
 
     try:
         return Template(s).substitute(env)

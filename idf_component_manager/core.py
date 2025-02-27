@@ -25,6 +25,7 @@ from idf_component_tools.archive_tools import pack_archive, unpack_archive
 from idf_component_tools.build_system_tools import build_name, is_component
 from idf_component_tools.config import root_managed_components_dir
 from idf_component_tools.constants import MANIFEST_FILENAME
+from idf_component_tools.debugger import KCONFIG_CONTEXT
 from idf_component_tools.errors import (
     FatalError,
     InternalError,
@@ -132,6 +133,7 @@ class ComponentManager:
         lock_path: t.Optional[str] = None,
         manifest_path: t.Optional[str] = None,
         interface_version: int = 0,
+        sdkconfig_json_file: t.Optional[str] = None,
     ) -> None:
         # Working directory
         self.path = Path(path).resolve()
@@ -163,6 +165,9 @@ class ComponentManager:
         self.default_dist_path = self.path / 'dist'
 
         self.interface_version = interface_version
+
+        if sdkconfig_json_file:
+            KCONFIG_CONTEXT.get().update_from_file(sdkconfig_json_file)
 
     def _get_manifest_dir(self, component: str = 'main', path: t.Optional[str] = None) -> str:
         if component != 'main' and path is not None:
@@ -665,6 +670,7 @@ class ComponentManager:
         managed_components_list_file,
         component_list_file,
         local_components_list_file=None,
+        sdkconfig_json_file=None,
     ):
         """Process all manifests and download all dependencies"""
         # root core components
@@ -719,7 +725,10 @@ class ComponentManager:
 
             project_requirements = ProjectRequirements(manifests)
             downloaded_components = download_project_dependencies(
-                project_requirements, self.lock_path, self.managed_components_path
+                project_requirements,
+                self.lock_path,
+                self.managed_components_path,
+                sdkconfig_json_file,
             )
 
         # Exclude requirements paths

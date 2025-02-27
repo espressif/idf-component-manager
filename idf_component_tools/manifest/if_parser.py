@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import typing as t
@@ -20,6 +20,7 @@ from pyparsing import (
 )
 
 from idf_component_tools.build_system_tools import get_env_idf_target, get_idf_version
+from idf_component_tools.constants import KCONFIG_VAR_PREFIX
 from idf_component_tools.errors import RunningEnvironmentError
 from idf_component_tools.messages import warn
 from idf_component_tools.semver import SimpleSpec, Version
@@ -194,6 +195,9 @@ class IfClause(Stmt):
         elif self.op in self.VERSION_OP_LIST:
             return self._get_value_as_version(_l, _r)
         elif self.op in self.REUSED_OP_LIST and isinstance(_r, str):
+            if self.left.stmt.startswith(KCONFIG_VAR_PREFIX):
+                return self._get_value_as_string(_l, _r)
+
             # if the right value could be a version spec, compare it as a version spec
             # otherwise, compare it as a string
             try:
@@ -245,7 +249,7 @@ class BoolOr(Stmt):
 
 
 _non_terminator_words = Regex(r'[^\n\r\[\]&|\(\)]+')
-LEFT_VALUE = Word(alphas + nums + '${}_-').setParseAction(lambda x: LeftValue(x[0]))
+LEFT_VALUE = Word(alphas + nums + '${}_-.').setParseAction(lambda x: LeftValue(x[0]))
 
 OPERATORS = MatchFirst(
     Literal(op)
