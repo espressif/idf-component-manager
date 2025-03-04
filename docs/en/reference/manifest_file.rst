@@ -381,35 +381,79 @@ Conditional Dependencies
 
 The ``if`` field is a boolean expression that is evaluated to determine if the dependency should be included. An expression consists of three parts: left value, operator, and right value.
 
-The left value could be
+Here's a detailed comparison table for the ``if`` field:
 
--  keyword ``idf_version``: the version of ESP-IDF that is used to build the component
--  keyword ``target``: the current target selected for the project
--  a string
--  `environment variables`_
+.. list-table:: Supported Comparison Types
+   :header-rows: 1
 
-The right value could be
+   -  -  Left Value Type
+      -  Operators
+      -  Right Value Type
 
--  a string
--  a list of strings
+   -  -  keyword ``idf_version``
+      -  N/A
+      -  string that represents :ref:`version ranges <version-range-specifications>`
 
-The operator to compare with a string could be
+   -  -  keyword ``target``
+      -  ``!=``, ``==``
+      -  string
 
--  ``<=``
--  ``<``
--  ``>=``
--  ``>``
--  ``~=``
--  ``~``
--  ``=``
--  ``^``
--  ``!=``
--  ``==``
+   -  -  keyword ``target``
+      -  ``in``, ``not in``
+      -  list of strings
 
-The operator to compare with a list of strings could be
+   -  -  arbitrary string
+      -  ``!=``, ``==``
+      -  string
 
--  ``not in``
--  ``in``
+   -  -  arbitrary string
+      -  ``in``, ``not in``
+      -  list of strings
+
+   -  -  `environment variables`_
+      -  N/A
+      -  string that represents :ref:`Version Ranges <version-range-specifications>`
+
+   -  -  `environment variables`_
+      -  ``!=``, ``==``
+      -  string
+
+   -  -  `environment variables`_
+      -  ``in``, ``not in``
+      -  list of strings
+
+   -  -  `kconfig options`_
+      -  ``==``, ``!=``
+      -  string
+
+   -  -  `kconfig options`_
+      -  ``in``, ``not in``
+      -  list of strings
+
+   -  -  `kconfig options`_
+      -  ``==``, ``!=``, ``<=``, ``<``, ``>=``, ``>``
+      -  decimal integer or hexadecimal integer (e.g. ``0x1234``)
+
+   -  -  `kconfig options`_
+      -  ``!=``, ``==``
+      -  boolean (``True``, ``False``)
+
+.. versionadded:: 2.2.0
+
+   - Support `kconfig options`_ as left value (requires ESP-IDF v5.5+)
+   - Support ``boolean``, ``integer`` and ``hexadecimal integer`` data types for `kconfig options`_
+
+.. warning::
+
+   Since kconfig supports data types, you MUST use double quotes for strings while comparing with kconfig options. Otherwise, the component manager will treat the value as an integer, and raise an error if the value is not parsable as an integer.
+
+   Double quotes are not required for strings when not comparing with kconfig options, but we recommend using them for consistency.
+
+.. warning::
+
+   If you specified `environment variables`_ as the left value of the if clause, and the environment variable is not set, an error will be raised.
+
+   If you specified `kconfig options`_ as the left value of the if clause, but the kconfig is included in your project, or components, an error will be raised.
 
 To make a complex boolean expression, you can use nested parentheses with boolean operators ``&&`` and ``||``.
 
@@ -420,22 +464,22 @@ To make a complex boolean expression, you can use nested parentheses with boolea
       version: "~1.0.0"
       rules:
         - if: "idf_version >=3.3,<5.0"
-        - if: "target in [esp32, esp32c3]"
+        - if: target in ["esp32", "esp32c3"]
         # the above two conditions equals to
-        - if: idf_version >=3.3,<5.0 && target in [esp32, esp32c3]
+        - if: idf_version >=3.3,<5.0 && target in ["esp32", "esp32c3"]
 
-The left value of the if clause could be `environment variables`_. If the environment variable is not set, an error will be raised.
+.. hint::
 
-One possible use-case is to test it in the CI/CD pipeline. For example:
+   One possible use-case of `environment variables`_ is to test it in the CI/CD pipeline. For example:
 
-.. code:: yaml
+   .. code:: yaml
 
-   dependencies:
-     optional_component:
-       matches:
-         - if: "$TESTING_COMPONENT in [foo, bar]"
+      dependencies:
+        optional_component:
+          matches:
+            - if: "$TESTING_COMPONENT in [foo, bar]"
 
-The dependency will only be included when the environment variable ``TESTING_COMPONENT`` is set to ``foo`` or ``bar``.
+   The dependency will only be included when the environment variable ``TESTING_COMPONENT`` is set to ``foo`` or ``bar``.
 
 ``version`` (if clause)
 -----------------------
@@ -463,6 +507,10 @@ Environment Variables
 
    Environment variables are not allowed in manifests when uploading components to the ESP Component Registry.
 
+.. warning::
+
+   Environment variables should only contain alphanumeric characters and underscores, and should not start with a number.
+
 You can use environment variables for the attributes that support them. The component manager will replace the environment variables with their values. Use the following syntax:
 
 -  ``$VAR``
@@ -471,6 +519,61 @@ You can use environment variables for the attributes that support them. The comp
 If you need to use a literal dollar sign (``$``), escape it with another dollar sign: ``$$string``.
 
 .. _local-source:
+
+Kconfig Options
+===============
+
+You can use Kconfig options for the attributes that support them. All Kconfig options are prefixed with ``$kconfig.``, and don't have to include the ``CONFIG_`` prefix.
+
+For example, to compare with the Kconfig option ``CONFIG_MY_OPTION``, use ``$kconfig.MY_OPTION``.
+
+Besides, only Kconfig options that are defined in the ESP-IDF project and the direct dependency components are supported. For example
+
+.. code:: yaml
+
+   dependencies:
+      cmp:
+        version: "*"
+        matches:
+          - if: "$kconfig.BOOTLOADER_LOG_LEVEL_WARN == True"
+
+This works, since ``CONFIG_BOOTLOADER_LOG_LEVEL_WARN`` is defined in the ESP-IDF project.
+
+.. code:: yaml
+
+   dependencies:
+      example/cmp:
+        version: "*"
+        matches:
+          - if: "$kconfig.MY_OPTION == True"
+
+This will not work, since ``CONFIG_MY_OPTION`` is not defined in the ESP-IDF project.
+
+.. code:: yaml
+
+   dependencies:
+      espressif/mdns:
+         version: "1.8.1"
+
+      example/cmp:
+        version: "*"
+        matches:
+          - if: "$kconfig.MDNS_MAX_SERVICES == 10"
+
+This works, since ``CONFIG_MDNS_MAX_SERVICES`` is defined in the ``espressif/mdns`` component, and ``espressif/mdns`` is a direct dependency of your project.
+
+.. code:: yaml
+
+   dependencies:
+      cmp_a:
+         version: "*"
+
+      example/cmp:
+        version: "*"
+        matches:
+          - if: "$kconfig.OPTION_FROM_CMP_B == True"
+
+This will not work, even if ``CONFIG_OPTION_FROM_CMP_B`` is defined in the ``cmp_b`` component, and ``cmp_a`` depends on ``cmp_b``, since `cmp_b` is not a direct dependency of your project.
 
 Local Directory Dependencies
 ============================

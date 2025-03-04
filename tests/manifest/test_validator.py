@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import logging
 import os
@@ -8,6 +8,7 @@ import pytest
 
 from idf_component_manager.dependencies import detect_unused_components
 from idf_component_tools import LOGGING_NAMESPACE
+from idf_component_tools.debugger import KCONFIG_CONTEXT
 from idf_component_tools.manager import ManifestManager, UploadMode
 from idf_component_tools.manifest import SLUG_REGEX, OptionalRequirement, SolvedComponent
 from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS, known_targets
@@ -331,11 +332,31 @@ class TestManifestValidator:
             ('target not in [esp32, esp32c3] && idf_version == 5.0.0', False),
             ('(target in [esp32, esp32c3] || idf_version == 5.0.0) && idf_version == 6.0.0', False),
             ('target in [esp32, esp32c3] || (idf_version == 5.0.0 && idf_version == 6.0.0)', True),
+            ('$kconfig.integer_9 == 9', True),
+            ('$kconfig.integer_9 < 11', True),
+            ('$kconfig.integer_9 >= 9', True),
+            ('$kconfig.hex_1 == 0x1', True),
+            ('$kconfig.hex_1 <= 1', True),
+            ('$kconfig.bool_true == True', True),
+            ('$kconfig.bool_false == False', True),
+            ('$kconfig.string_foo == "foo"', True),
+            ('$kconfig.string_foo == foo', True),
+            ('$kconfig.version_4_0_0 == 4.0.0', True),
+            ('$kconfig.version_4_0_0 == 4.0', True),
         ],
     )
     def test_parse_if_clause(self, if_clause, bool_value, monkeypatch):
         monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.0.0')
         monkeypatch.setenv('IDF_TARGET', 'esp32')
+
+        KCONFIG_CONTEXT.get().sdkconfig.update({
+            'integer_9': 9,
+            'hex_1': 0x1,
+            'bool_true': True,
+            'bool_false': False,
+            'string_foo': 'foo',
+            'version_4_0_0': '4.0.0',
+        })
 
         assert parse_if_clause(if_clause).get_value() == bool_value
 
@@ -476,7 +497,9 @@ class TestManifestValidatorUploadMode:
         [
             (
                 'foo >= 4.4',
-                ['Invalid field "dependencies:optional:rules:[0]:if": Invalid version spec "foo"'],
+                [
+                    'Invalid field "dependencies:optional:rules:[0]:if": Invalid version string: "foo"'
+                ],
             ),
             (
                 'target is esp32',
