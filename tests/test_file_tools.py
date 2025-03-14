@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import logging
 import os
@@ -220,6 +220,27 @@ def test_no_default_exclude_with_gitignore(assets_path):
     assert filtered_paths(assets_path, use_gitignore=True, exclude_default=True) == {
         assets_path / '1.txt',
         assets_path / 'ignore.dir' / 'file.txt',
+        assets_path / '.gitignore',
+        assets_path / '.gitlab-ci.yml',
+    }
+
+
+def test_include_files_excluded_by_gitignore(assets_path):
+    create_gitignore(assets_path, ['examples', '1.txt'])
+    examples_dir = assets_path / 'examples'
+    examples_dir.mkdir()
+    (examples_dir / 'test.txt').write_text('1')
+    test_example = examples_dir / 'test_example'
+    test_example.mkdir()
+    (test_example / 'test.txt').write_text('1')
+
+    assert filtered_paths(assets_path, use_gitignore=True, include=['examples/**/*', '1.txt']) == {
+        assets_path / 'examples' / 'test_example' / 'test.txt',
+        assets_path / 'examples' / 'test_example',
+        assets_path / 'examples' / 'test.txt',
+        assets_path / 'ignore.dir' / 'file.txt',
+        assets_path / 'ignore.me',
+        assets_path / '1.txt',
         assets_path / '.gitignore',
         assets_path / '.gitlab-ci.yml',
     }

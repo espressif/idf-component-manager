@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import logging
 import os
@@ -171,19 +171,6 @@ class TestManifestValidator:
         errors = Manifest.validate_manifest(valid_manifest)
 
         assert errors == ['Invalid field "files:include": Input should be a valid list']
-
-    def test_validate_files_invalid_keys_combination(self, valid_manifest):
-        valid_manifest['files']['use_gitignore'] = True
-        errors = Manifest.validate_manifest(valid_manifest)
-
-        assert errors == [
-            'Invalid field "files": Cannot use ".gitignore" and "exclude"/"include" at the same time'
-        ]
-
-    def test_validate_files_valid_keys_combination(self, valid_manifest):
-        valid_manifest['files']['use_gitignore'] = False
-        errors = Manifest.validate_manifest(valid_manifest)
-        assert not errors
 
     @pytest.mark.parametrize(
         'invalid_tag',
