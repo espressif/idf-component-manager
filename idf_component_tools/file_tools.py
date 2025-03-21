@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Set of tools and constants to work with files and directories"""
 
@@ -119,29 +119,25 @@ def filtered_paths(
     include_paths('**/*')
 
     if use_gitignore:
-        # Exclude user patterns
-        for pattern in exclude:
-            exclude_paths(pattern)
-
         # Exclude .gitignore patterns
         exclude_gitignore = gitignore_ignored_files(base_path)
         paths.difference_update(exclude_gitignore)
         exclude_all_directories()
     else:
-        # Exclude all defaults, including directories
+        # Exclude defaults
         if exclude_default:
             for pattern in DEFAULT_EXCLUDE:
                 exclude_paths(pattern)
 
-        # Exclude user patterns
-        for pattern in exclude:
-            exclude_paths(pattern)
+    # Exclude manifest patterns
+    for pattern in exclude:
+        exclude_paths(pattern)
 
-        exclude_all_directories()
+    exclude_all_directories()
 
-        # Include everything that was explicitly added
-        for pattern in include:
-            include_paths(pattern)
+    # Include manifest patterns
+    for pattern in include:
+        include_paths(pattern)
 
     return paths
 

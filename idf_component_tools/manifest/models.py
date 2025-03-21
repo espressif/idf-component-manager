@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import typing as t
 import warnings
@@ -354,20 +354,6 @@ class FilesField(BaseModel):
     use_gitignore: bool = False
     include: UniqueStrListField = []
     exclude: UniqueStrListField = []
-
-    @model_validator(mode='before')  # type: ignore
-    @classmethod
-    def validate_files(cls, data: t.Any) -> t.Any:
-        if not isinstance(data, dict):
-            return data
-
-        if 'use_gitignore' in data and data['use_gitignore']:
-            if 'exclude' in data or 'include' in data:
-                raise ValueError(
-                    'Invalid field "files": Cannot use ".gitignore" and "exclude"/"include" at the same time'
-                )
-
-        return data
 
 
 class RepositoryInfoField(BaseModel):

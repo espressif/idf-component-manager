@@ -171,34 +171,12 @@ In CI/CD pipelines, using environment variables to log in is more convenient. Yo
 Filter Component Files
 ======================
 
-As a component developer, you may want to specify which files from the component directory will be uploaded to the ESP Component Registry. There are two ways to achieve this: either by `using a .gitignore file`_ or by `using manifest filters`_.
+As a component developer, you may want to specify which files from the component directory will be uploaded to the ESP Component Registry. This can be achieved by using `manifest filters`_ and a `.gitignore file`_.
 
-.. warning::
+Manifest Filters
+----------------
 
-   You are not allowed to use both methods simultaneously.
-
-Using a .gitignore File
------------------------
-
-First, you need to specify the ``use_gitignore`` option in the ``idf_component.yml`` manifest file.
-
-.. code:: yaml
-
-   files:
-      use_gitignore: true
-
-Then, patterns specified in the ``.gitignore`` file will be automatically excluded before packaging or uploading the component.
-
-.. code:: yaml
-
-   test_dir/   # Exclude files in all `test_dir` directories (including the directories themselves)
-
-More information on how ``.gitignore`` works can be found in the `official documentation <https://git-scm.com/docs/gitignore/en>`_.
-
-Using Manifest Filters
-----------------------
-
-In this case, your ``idf_component.yml`` manifest may have ``include`` and ``exclude`` filters. For example:
+Your ``idf_component.yml`` manifest may have ``files`` section with ``include`` and ``exclude`` filters. For example:
 
 .. code:: yaml
 
@@ -211,6 +189,38 @@ In this case, your ``idf_component.yml`` manifest may have ``include`` and ``exc
          - "**/.DS_Store"  # Include files excluded by default
 
 Files and directories that are excluded by default can be found `here <https://github.com/espressif/idf-component-manager/blob/main/idf_component_tools/file_tools.py#L16>`_.
+
+.gitignore File
+---------------
+
+If you have a ``.gitignore`` file in your component directory, you can use it to filter files. All you need to do, is to specify the ``use_gitignore`` option in the ``idf_component.yml`` manifest file.
+
+.. code:: yaml
+
+   files:
+      use_gitignore: true
+
+Patterns specified in the ``.gitignore`` file will be automatically excluded before packaging or uploading the component.
+
+.. code:: yaml
+
+   test_dir/   # Exclude files in all `test_dir` directories (including the directories themselves)
+
+More information on how ``.gitignore`` works can be found in the `official documentation <https://git-scm.com/docs/gitignore>`_.
+
+You can also use both manifest filters and a ``.gitignore`` file. In this case, the patterns from the ``.gitignore`` file will be applied first. Example:
+
+.. code:: yaml
+
+   files:
+      use_gitignore: true
+      exclude:
+         - ".env"          # Exclude `.env` file
+      include:
+         - "test_dir/**/*" # Include all files in `test_dir` directory
+                           # which were excluded by `.gitignore`
+
+When using ``.gitignore``, files specified `here <https://github.com/espressif/idf-component-manager/blob/main/idf_component_tools/file_tools.py#L16>`_ will not be excluded by default.
 
 .. warning::
 

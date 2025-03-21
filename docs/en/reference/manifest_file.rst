@@ -141,32 +141,53 @@ A dictionary with the following options:
 -  ``include``: List of patterns to include.
 -  ``exclude``: List of patterns to exclude.
 
-.. note::
-
-   You cannot use ``.gitignore`` and ``include``/``exclude`` rules at the same time.
-
 Examples:
 
 #. Use ``.gitignore`` to exclude files:
 
-.. code:: yaml
+   .. code:: yaml
 
-   files:
-      use_gitignore: true
+      files:
+         use_gitignore: true
 
-2. Use ``include`` and ``exclude`` patterns:
+#. Use ``include`` and ``exclude`` patterns:
 
-.. code:: yaml
+   .. code:: yaml
 
-   files:
-      exclude:
-         - "*.py"          # Exclude all Python files
-         - "**/*.list"     # Exclude `.list` files in all directories
-         - "big_dir/**/*"  # Exclude `big_dir` directory and its content
-      include:
-         - "**/.DS_Store"  # Include files excluded by default
+      files:
+         exclude:
+            - "*.py"          # Exclude all Python files
+            - "**/*.list"     # Exclude `.list` files in all directories
+            - "big_dir/**/*"  # Exclude `big_dir` directory and its content
+         include:
+            - "**/.DS_Store"  # Include files excluded by default
 
-..
+#. Use both. Consider the following ``.gitignore`` file:
+
+   .. code:: text
+
+      test_dir/
+
+   Then manifest ``idf_component.yml`` might look like:
+
+   .. code:: yaml
+
+      files:
+         use_gitignore: true
+         exclude:
+            - ".env"          # Exclude `.env` file
+         include:
+            - "test_dir/**/*" # Include all files in `test_dir` directory
+                              # which were excluded by `.gitignore`
+
+Filters are applied in the following order:
+
+#. All files are included.
+#. If ``use_gitignore`` is set to ``true``, files are excluded using the ``.gitignore`` file. Otherwise the default exclusion list is used.
+#. If ``exclude`` field is set, files are excluded using the patterns in the ``exclude`` field.
+#. If ``include`` field is set, files are included using the patterns in the ``include`` field, even if they were excluded in the previous steps.
+
+Note that the ``include`` field could be used to override files in ``exclude`` field, ``.gitignore`` file and default exclusion list.
 
 This field is optional and can be omitted if the component contains all files in the root directory with the default list of exceptions.
 
@@ -180,18 +201,6 @@ This field is optional and can be omitted if the component contains all files in
 A list of files and directories excluded by default:
 
 |DEFAULT_EXCLUDE|
-
-Here is an example on how to use the ``files`` field. Note that the ``include`` field could be used to override the default exclusion list.
-
-.. code:: yaml
-
-   files:
-     exclude:
-       - "*.py" # Exclude all Python files
-       - "**/*.list" # Exclude `.list` files in all directories
-       - "big_dir/**/*" # Exclude `big_dir` directory and its content
-     include:
-       - "**/.DS_Store" # Include files excluded by default
 
 .. _manifest-examples:
 
