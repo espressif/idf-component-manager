@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import typing as t
@@ -20,15 +20,46 @@ from pyparsing import (
 )
 
 from idf_component_tools.build_system_tools import get_env_idf_target, get_idf_version
-from idf_component_tools.errors import RunningEnvironmentError
+from idf_component_tools.constants import KCONFIG_VAR_PREFIX
+from idf_component_tools.debugger import KCONFIG_CONTEXT
+from idf_component_tools.errors import MissingKconfigError, RunningEnvironmentError
 from idf_component_tools.messages import warn
 from idf_component_tools.semver import SimpleSpec, Version
-from idf_component_tools.utils import subst_vars_in_str
+from idf_component_tools.utils import remove_prefix, subst_vars_in_str
+
+_value_type = t.Union[str, int, bool, Version]
 
 
 class Stmt:
     def __repr__(self):
         return self.stmt
+
+    @staticmethod
+    def eval_bool(s: str) -> bool:
+        _s = s.strip()
+        if _s == 'True':
+            return True
+
+        if _s == 'False':
+            return False
+
+        raise ValueError('Invalid boolean "{}" in "if" clause'.format(s))
+
+    @staticmethod
+    def eval_int(s: str) -> int:
+        _s = s.strip()
+        try:
+            return int(_s, 16) if _s.startswith('0x') else int(_s)
+        except ValueError:
+            raise ValueError('Invalid integer "{}" in "if" clause'.format(s))
+
+    @staticmethod
+    def eval_version(s: str) -> Version:
+        _s = s.strip()
+        try:
+            return Version(_s)
+        except ValueError:
+            raise ValueError('Invalid version "{}" in "if" clause'.format(s))
 
     @staticmethod
     def eval_str(s: str) -> str:
@@ -42,14 +73,34 @@ class Stmt:
             raise ValueError('Invalid string "{}" in "if" clause'.format(s))
 
     @staticmethod
-    def eval_list(s: str) -> t.List[str]:
+    def eval_single(s: str) -> _value_type:
+        # bool > int > version > str
+        try:
+            return Stmt.eval_bool(s)
+        except ValueError:
+            pass
+
+        try:
+            return Stmt.eval_int(s)
+        except ValueError:
+            pass
+
+        try:
+            return Stmt.eval_version(s)
+        except ValueError:
+            pass
+
+        return Stmt.eval_str(s)
+
+    @staticmethod
+    def eval_list(s: str) -> t.List[_value_type]:
         _s = s.strip()
 
         if _s[0] == '[' and _s[-1] == ']':
             _s = _s[1:-1]
 
         try:
-            return [Stmt.eval_str(part) for part in _s.split(',')]
+            return [Stmt.eval_single(part) for part in _s.split(',')]
         except (ValueError, SyntaxError):
             raise ValueError('Invalid list "{}" in "if" clause'.format(s))
 
@@ -61,155 +112,130 @@ class LeftValue(Stmt):
     def __init__(self, stmt: str) -> None:
         self.stmt = stmt
 
-    def get_value(self) -> str:
-        if self.stmt == 'idf_version':
+    def get_value(self) -> _value_type:
+        _s = self.stmt.strip()
+        if _s == 'idf_version':
             try:
-                return get_idf_version()
+                return Version(get_idf_version())
             except RunningEnvironmentError:
                 warn('Running in an environment without IDF. Using "0.0.0" as the IDF version')
-                return '0.0.0'
+                return Version('0.0.0')
 
-        if self.stmt == 'target':
+        if _s == 'target':
             try:
                 return get_env_idf_target()
             except RunningEnvironmentError:
                 warn('Running in an environment without IDF. Using "unknown" as IDF target')
                 return 'unknown'
 
-        return subst_vars_in_str(self.stmt)
+        # consider it as a kconfig
+        if _s.startswith(KCONFIG_VAR_PREFIX):
+            key = remove_prefix(_s, KCONFIG_VAR_PREFIX)
+            kconfig_ctx = KCONFIG_CONTEXT.get()
+            if key in kconfig_ctx.sdkconfig:
+                return kconfig_ctx.sdkconfig[key]
+            else:
+                raise MissingKconfigError(key)
+
+        return self.eval_single(subst_vars_in_str(_s))
 
 
-class String(Stmt):
+class Single(Stmt):
     def __init__(self, stmt: str) -> None:
         self.stmt = stmt
 
-    def get_value(self) -> str:
-        return self.eval_str(self.stmt)
+    def get_value(self) -> _value_type:
+        return self.eval_single(subst_vars_in_str(self.stmt))
 
 
 class List(Stmt):
     def __init__(self, stmt: str) -> None:
         self.stmt = stmt
 
-    def get_value(self) -> t.List[str]:
+    def get_value(self) -> t.List[_value_type]:
         return self.eval_list(self.stmt)
 
 
 class IfClause(Stmt):
-    # WARNING: sequence of operators is important
-    # For example, `not in` should be checked before `in` because `in` is a substring of `not in`
+    _OP_LAMBDA_MAP = {
+        '<=': lambda x, y: x <= y,
+        '<': lambda x, y: x < y,
+        '>=': lambda x, y: x >= y,
+        '>': lambda x, y: x > y,
+        '==': lambda x, y: x == y,
+        '!=': lambda x, y: x != y,
+        'not in': lambda x, y: x not in y,
+        'in': lambda x, y: x in y,
+    }
 
-    # used with both version specs and list of strings
-    REUSED_OP_LIST = [
-        '!=',
-        '==',
-    ]
+    _LIST_OPS = ['not in', 'in']
 
-    # only used with version specs
-    VERSION_OP_LIST = [
-        '<=',
-        '<',
-        '>=',
-        '>',
-        '~=',
-        '~',
-        '=',
-        '^',
-    ]
-
-    # only used with list of strings
-    LIST_OP_LIST = [
-        'not in',
-        'in',
-    ]
-
-    def __init__(self, left: LeftValue, op: str, right: t.Union[String, List]):
+    def __init__(self, left: LeftValue, op: str, right: t.Union[Single, List]):
         self.left: LeftValue = left
-        self.op: t.Optional[str] = op
-        self.right: t.Union[String, List] = right
+        self.op = op
+        self.right: t.Union[Single, List] = right
 
     @property
     def stmt(self):
         return '{} {} {}'.format(self.left, self.op, self.right)
 
-    def _get_value_as_version(self, _l: str, _r: t.Union[str, t.List[str]]) -> bool:
-        if isinstance(_r, list):
-            raise ValueError(
-                f'Operator {self.op} only supports string on the right side. Got "{_r}"'
-            )
-
-        def _clear_spaces(*s: str) -> str:
-            return ''.join(s).replace(' ', '')
-
-        spec_without_spaces = _clear_spaces(self.op or '', _r)
+    @staticmethod
+    def eval_spec(op: str, right: str) -> SimpleSpec:
+        spec_without_spaces = f'{op}{right}'.replace(' ', '')
         try:
             spec = SimpleSpec(spec_without_spaces)
         except ValueError:
             raise ValueError(f'Invalid version spec "{spec_without_spaces}"')
 
-        try:
-            version = Version.coerce(_l)
-        except ValueError:
-            raise ValueError(f'Invalid version spec "{_l}"')
+        return spec
 
-        return spec.match(version)
-
-    def _get_value_as_string(self, _l: str, _r: t.Union[str, t.List[str]]) -> bool:
-        if isinstance(_r, list):
+    def get_value(self) -> bool:  # type: ignore
+        def raise_invalid_type_error() -> None:
             raise ValueError(
-                f'Operator {self.op} only supports string on the right side. Got "{_r}"'
+                f'Invalid operator "{self.op}" for comparing "{self.left}" and "{self.right}". \n'
+                f'Please check documentation https://docs.espressif.com/projects/idf-component-manager/en/latest/reference/manifest_file.html#conditional-dependencies'
             )
 
-        if self.op == '==':
-            return _l == _r
-
-        if self.op == '!=':
-            return _l != _r
-
-        raise ValueError(f'Support operators: "==,!=". Got "{self.op}"')
-
-    def _get_value_as_list(self, _l: str, _r: t.Union[str, t.List[str]]) -> bool:
-        if isinstance(_r, str):
-            raise ValueError(
-                f'Operator {self.op} only supports list of strings on the right side. Got "{_r}"'
-            )
-
-        if self.op == 'in':
-            return _l in _r
-
-        if self.op == 'not in':
-            return _l not in _r
-
-        raise ValueError(f'Support operators: "in,not in". Got "{self.op}"')
-
-    def get_value(self) -> bool:
-        return self._get_value()
-
-    def _get_value(self) -> bool:
         _l = self.left.get_value()
-        _r = self.right.get_value()
+        _r_stmt = subst_vars_in_str(self.right.stmt)
 
-        if self.op in self.LIST_OP_LIST:
-            return self._get_value_as_list(_l, _r)
-        elif self.op in self.VERSION_OP_LIST:
-            return self._get_value_as_version(_l, _r)
-        elif self.op in self.REUSED_OP_LIST and isinstance(_r, str):
-            # if the right value could be a version spec, compare it as a version spec
-            # otherwise, compare it as a string
-            try:
-                SimpleSpec(self.op + _r)
-            except ValueError:
-                return self._get_value_as_string(_l, _r)
+        # idf_version compare with version spec
+        if isinstance(_l, Version):
+            if _r_stmt[0] == _r_stmt[-1] == '"':
+                # this is to keep the backward compatibility
+                _r_stmt = _r_stmt[1:-1]
+            _spec = self.eval_spec(self.op, _r_stmt)
+            return _spec.match(_l)
+
+        # target only support !=, ==, in, not in
+        if self.left.stmt.strip() == 'target':
+            if self.op in ['==', '!=']:
+                return self._OP_LAMBDA_MAP[self.op](_l, self.eval_str(self.right.stmt))
+            elif self.op in self._LIST_OPS:
+                return self._OP_LAMBDA_MAP[self.op](_l, self.eval_list(self.right.stmt))
             else:
-                return self._get_value_as_version(_l, _r)
-        elif self.op in self.REUSED_OP_LIST and isinstance(_r, list):
-            raise ValueError(
-                f'Operator {self.op} only supports string on the right side. Got "{_r}"'
-            )
+                raise_invalid_type_error()
 
-        raise ValueError(
-            f'Support operators: "{",".join(self.LIST_OP_LIST + self.VERSION_OP_LIST + self.REUSED_OP_LIST)}". Got "{self.op}"'
-        )
+        # env var, kconfig, string, compare with string, int, bool, as the left value
+        try:
+            if self.op in self._LIST_OPS:
+                return self._OP_LAMBDA_MAP[self.op](str(_l), self.eval_list(_r_stmt))
+            elif isinstance(_l, bool):
+                return self._OP_LAMBDA_MAP[self.op](_l, self.eval_bool(_r_stmt))
+            elif isinstance(_l, int):
+                return self._OP_LAMBDA_MAP[self.op](_l, self.eval_int(_r_stmt))
+            elif isinstance(_l, str):
+                # compare with Version?
+                try:
+                    _spec = self.eval_spec(self.op, _r_stmt)
+                except ValueError:
+                    return self._OP_LAMBDA_MAP[self.op](_l, self.eval_str(_r_stmt))
+                else:
+                    return _spec.match(Version(_l))
+            else:
+                raise_invalid_type_error()
+        except KeyError:
+            raise_invalid_type_error()
 
     @classmethod
     def __get_pydantic_core_schema__(
@@ -245,24 +271,50 @@ class BoolOr(Stmt):
 
 
 _non_terminator_words = Regex(r'[^\n\r\[\]&|\(\)]+')
-LEFT_VALUE = Word(alphas + nums + '${}_-').setParseAction(lambda x: LeftValue(x[0]))
+LEFT_VALUE = Word(alphas + nums + '${}_-.').setParseAction(lambda x: LeftValue(x[0]))
 
-OPERATORS = MatchFirst(
-    Literal(op)
-    for op in [
-        *IfClause.REUSED_OP_LIST,
-        *IfClause.VERSION_OP_LIST,
-        *IfClause.LIST_OP_LIST,
-    ]
-).setParseAction(lambda x: x[0])
+# Operators
+_LE = Literal('<=')
+_LT = Literal('<')
 
-STRING = _non_terminator_words.setParseAction(lambda x: String(x[0]))
+_GE = Literal('>=')
+_GT = Literal('>')
+
+_TILDE_EQ = Literal('~=')
+_TILDE = Literal('~')
+
+_CARET = Literal('^')
+
+_EQ = Literal('==')
+_NE = Literal('!=')
+_VER_EQ = Literal('=')
+
+_NOT_IN = Literal('not in')
+_IN = Literal('in')
+
+# sub-string operators should be defined after the main operators
+OPERATORS = MatchFirst([
+    _LE,
+    _LT,
+    _GE,
+    _GT,
+    _TILDE_EQ,
+    _TILDE,
+    _EQ,
+    _NE,
+    _VER_EQ,
+    _CARET,
+    _NOT_IN,
+    _IN,
+]).setParseAction(lambda x: x[0])
+
+# Left Value is everything till the operator
+STRING = _non_terminator_words.setParseAction(lambda x: Single(x[0]))
 LIST = (Literal('[') + STRING + Literal(']')).setParseAction(lambda x: List(f'{x[0]}{x[1]}{x[2]}'))
 
 IF_CLAUSE = (LEFT_VALUE + OPERATORS + (LIST | STRING)).setParseAction(
     lambda x: IfClause(x[0], x[1], x[2])
 )
-
 
 AND = Keyword('&&')
 OR = Keyword('||')

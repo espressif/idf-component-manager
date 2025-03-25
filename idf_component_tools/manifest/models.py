@@ -30,15 +30,17 @@ from idf_component_tools.constants import (
     DEFAULT_NAMESPACE,
     IDF_COMPONENT_REGISTRY_URL,
 )
+from idf_component_tools.debugger import KCONFIG_CONTEXT
 from idf_component_tools.errors import (
     InternalError,
     MetadataKeyError,
+    MissingKconfigError,
     RunningEnvironmentError,
 )
 from idf_component_tools.hash_tools.calculate import hash_object
 from idf_component_tools.logging import suppress_logging
 from idf_component_tools.manager import UploadMode
-from idf_component_tools.messages import notice
+from idf_component_tools.messages import debug, notice
 from idf_component_tools.registry.api_models import DependencyResponse
 from idf_component_tools.semver import Version
 from idf_component_tools.sources import BaseSource, LocalSource, Source
@@ -98,6 +100,9 @@ class OptionalDependency(BaseModel):
                 UploadMode.false,
             ]:
                 raise e
+        except MissingKconfigError as e:
+            # ignore missing kconfig
+            debug(str(e))
 
         return v
 
@@ -624,10 +629,16 @@ class Manifest(BaseModel):
 
     @property
     def requirements(self) -> t.List[ComponentRequirement]:
-        return sorted(
-            [r for r in self.raw_requirements if r.meet_optional_dependencies],
-            key=lambda x: x.name,
-        )
+        kconfig_ctx = KCONFIG_CONTEXT.get()
+        res = []
+        for r in self.raw_requirements:
+            try:
+                if r.meet_optional_dependencies:
+                    res.append(r)
+            except MissingKconfigError as e:
+                kconfig_ctx.set_missed_kconfig(str(e), r)
+
+        return sorted(res, key=lambda x: x.name)
 
     @property
     def real_name(self) -> str:
