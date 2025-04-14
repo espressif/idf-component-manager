@@ -403,7 +403,7 @@ class HashedComponentVersion:
 class ComponentWithVersions:
     def __init__(self, name: str, versions: t.List[HashedComponentVersion]) -> None:
         self.versions = versions
-        self.name = name
+        self.name = name.lower()
 
     def merge(self, cmp_with_versions: 'ComponentWithVersions') -> None:
         if self.name != cmp_with_versions.name:
