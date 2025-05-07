@@ -198,6 +198,10 @@ This field is optional and can be omitted if the component contains all files in
       -  during the creation of the archive before the component uploaded to the registry.
       -  the component is used as a `git dependency <GitDependencies>`_.
 
+.. note::
+
+   Filters are also applied to examples located in the component directory.
+
 A list of files and directories excluded by default:
 
 |DEFAULT_EXCLUDE|
