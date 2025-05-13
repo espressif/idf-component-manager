@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import click
 
@@ -15,7 +15,7 @@ def init_project():
     @click.group()
     def project():
         """
-        Group of project related commands
+        Group of project-related commands.
         """
         pass
 
@@ -25,7 +25,7 @@ def init_project():
         '-p',
         '--path',
         default=None,
-        help='Path of the new project. '
+        help='Path to the new project. '
         'The project will be created directly in the given folder if it is empty.',
         callback=validate_path_for_project,
     )
@@ -34,7 +34,7 @@ def init_project():
         """
         Create a project from an example.
 
-        You can specify EXAMPLE in the format like:
+        You can specify EXAMPLE in the following format:
         namespace/name=1.0.0:example
 
         where "=1.0.0" is a version specification.
@@ -43,7 +43,7 @@ def init_project():
 
         compote project create-from-example example/cmp^3.3.8:cmp_ex
 
-        Namespace and version are optional in the EXAMPLE argument.
+        The namespace and version are optional in the EXAMPLE argument.
         """
         manager.create_project_from_example(example, path=path, profile_name=profile_name)
 

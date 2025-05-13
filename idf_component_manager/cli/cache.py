@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import click
 
@@ -11,14 +11,14 @@ def init_cache():
     @click.group()
     def cache():
         """
-        Group of commands to manage cache of the IDF Component Manager.
+        Group of commands for managing the cache of the IDF Component Manager.
         """
         pass
 
     @cache.command()
     def clear():
         """
-        Clear the cache of components and API client cache.
+        Clear the component cache.
         """
         FileCache().clear()
         notice(f'Successfully cleared cache at\n\t{FileCache().path()}')
@@ -34,7 +34,7 @@ def init_cache():
     @click.option('--bytes', is_flag=True, default=False, help='Print size in bytes')
     def size(bytes):
         """
-        Print the cache size in human-readable format.
+        Print the cache size in a human-readable format.
         """
         size = FileCache().size()
         if bytes:

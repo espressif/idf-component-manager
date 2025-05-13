@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import json
 
@@ -23,14 +23,14 @@ def init_manifest():
     @click.group()
     def manifest():
         """
-        Group of commands to manage manifest of the project.
+        Group of commands for managing the project manifest.
         """
         pass
 
     @manifest.command()
     def schema():
         """
-        Print json schema of the manifest file idf_component.yml
+        Print the JSON schema of the manifest file idf_component.yml.
         """
         print(json.dumps(MANIFEST_JSON_SCHEMA, indent=2))
 
@@ -44,7 +44,7 @@ def init_manifest():
             '-p',
             '--path',
             default=None,
-            help='Path to the component where the dependency will be added. The component name is ignored when the path is specified.',
+            help='Path to the component where the dependency will be added. The component name is ignored if the path is specified.',
             callback=validate_existing_dir,
         ),
     ]
@@ -54,12 +54,12 @@ def init_manifest():
             '--git', default=None, help='Git URL of the component.', callback=validate_git_url
         ),
         click.option(
-            '--git-path', default='.', help='Path to the component in the git repository.'
+            '--git-path', default='.', help='Path to the component in the Git repository.'
         ),
         click.option(
             '--git-ref',
             default=None,
-            help='Git reference (branch, tag, commit SHA) of the component.',
+            help='Git reference (branch, tag, or commit SHA) of the component.',
         ),
     ]
 
@@ -67,17 +67,14 @@ def init_manifest():
     @add_options(PROJECT_DIR_OPTION + MANIFEST_OPTIONS)
     def create(manager, component, path):
         """
-        Create manifest file for the specified component.
+        Create a manifest file for the specified component.
 
         By default:
 
-        If you run the command in the directory with project, the manifest
-        will be created in the "main" directory.
+        - If you run the command in a project directory, the manifest will be created in the "main" directory.
+        - If you run the command in a component directory, the manifest will be created in that directory.
 
-        If you run the command in the directory with a component, the manifest
-        will be created right in that directory.
-
-        You can explicitly specify directory using the ``--path`` option.
+        You can explicitly specify a directory using the ``--path`` option.
         """
         manager.create_manifest(component=component, path=path)
 
@@ -102,24 +99,22 @@ def init_manifest():
 
         By default:
 
-        If you run the command in the directory with project, the dependency
-        will be added to the manifest in the "main" directory.
+        - If you run the command in a project directory, the dependency will be added to the manifest in the "main" directory.
+        - If you run the command in a component directory, the dependency will be added to the manifest in that directory.
 
-        If you run the command in the directory with a component,
-        the dependency will be added to the manifest right in that directory.
-
-        You can explicitly specify directory using the ``--path`` option.
+        You can explicitly specify a directory using the ``--path`` option.
 
         \b
         Examples:
         - $ compote manifest add-dependency example/cmp
-          Will add a component `example/cmp` with constraint `*`
+          Will add a component `example/cmp` with the constraint `*`.
         - $ compote manifest add-dependency example/cmp<=3.3.3
-          Will add a component `example/cmp` with constraint `<=3.3.3`
+          Will add a component `example/cmp` with the constraint `<=3.3.3`.
         - $ compote manifest add-dependency example/cmp --registry-url https://components-staging.espressif.com
-          Will add a component `example/cmp` from the staging registry with constraint `*`
+          Will add a component `example/cmp` from the staging registry with the constraint `*`.
         - $ compote manifest add-dependency cmp --git https://github.com/espressif/example_components.git --git-path cmp
-          Will add a component `cmp` from the git repository with path `cmp`
+          Will add a component `cmp` from the Git repository with the path `cmp`.
+
         """
         manager.add_dependency(
             dependency,

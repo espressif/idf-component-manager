@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import sys
 import typing as t
@@ -29,7 +29,7 @@ if CLICK_SUPPORTS_SHOW_DEFAULT:
 
 def initialize_cli():
     """
-    Initialize CLI
+    Initialize the CLI.
     """
 
     @click.group(context_settings=DEFAULT_SETTINGS)
@@ -46,7 +46,7 @@ def initialize_cli():
     @cli.command()
     def version():
         """
-        Print version of the IDF Component Manager.
+        Print the version of the IDF Component Manager.
         """
         print(idf_component_manager_version)
 
@@ -62,7 +62,7 @@ def initialize_cli():
 
 def safe_cli():
     """
-    CLI entrypoint with error handling.
+    CLI entry point with error handling.
     """
     try:
         cli = initialize_cli()

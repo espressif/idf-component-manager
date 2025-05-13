@@ -12,5 +12,5 @@ from conf_common import *  # noqa
 compote_cli = initialize_cli()
 
 project = 'IDF Component Management'
-copyright = '2023, Espressif Systems (Shanghai) Co., Ltd.'
+copyright = '2023-2025, Espressif Systems (Shanghai) Co., Ltd.'
 language = 'en'

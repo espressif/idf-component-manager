@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import subprocess  # noqa: S404
@@ -67,8 +67,8 @@ _RC_FILE_PATH = {
 }
 
 _SOURCING_STR = {
-    'bash': f". {_COMPLETE_FILE_PATH['bash']}",
-    'zsh': f". {_COMPLETE_FILE_PATH['zsh']}",
+    'bash': f'. {_COMPLETE_FILE_PATH["bash"]}',
+    'zsh': f'. {_COMPLETE_FILE_PATH["zsh"]}',
     'fish': None,  # not needed
 }
 
@@ -98,10 +98,10 @@ _DOC_STRSTRING = """
     \b
     Besides, you may use:
         $ compote autocomplete --shell [SHELL] --install
-    to create the completion file and inject the sourcing script to your rc files automatically.
+    to create the completion file and inject the sourcing script into your rc files automatically.
 
     \b
-    You may use also use:
+    You may also use:
         $ compote autocomplete --shell [SHELL] --install --dry-run
     to simulate running with the `--install` flag and check what would be done.
     """.format(
@@ -140,8 +140,8 @@ def init_autocomplete():
         '--dry-run',
         is_flag=True,
         default=False,
-        help='Only useful when flag "--install" is set. Instead of real file system changes, '
-        'log would be printed if this flag is set.',
+        help='Only useful when the flag "--install" is set. Instead of making real file system changes, '
+        'logs will be printed if this flag is set.',
     )
     @_doc(_DOC_STRSTRING)
     def autocomplete(shell, install, dry_run):

@@ -2,25 +2,25 @@
  Packaging ESP-IDF Components
 ##############################
 
-This tutorial will guide you through packaging a simple ESP-IDF component. You will learn how to create all the necessary files and upload your component to the `ESP Component Registry <https://components.espressif.com>`_.
+This tutorial will walk you through the process of packaging a simple ESP-IDF component. You will learn how to create the required files and upload your component to the `ESP Component Registry <https://components.espressif.com>`_.
 
 ***************
  Prerequisites
 ***************
 
-In this tutorial, we assume that you have already installed ESP-IDF. If it is not installed, please refer to our `ESP-IDF Get Started Guide <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html>`_.
+This tutorial assumes you already have ESP-IDF installed. If not, please follow the instructions in the `ESP-IDF Get Started Guide <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html>`_.
 
-****************************
- A Simple ESP-IDF Component
-****************************
+*****************************
+ Creating a Simple Component
+*****************************
 
-An ESP-IDF component can be created by running the following command:
+You can create a new ESP-IDF component using the following command:
 
 .. code:: shell
 
    idf.py create-component test_cmp
 
-After running the command, your component's local file tree will look like this:
+After running the command, the local file structure of your component will look like this:
 
 .. code:: text
 
@@ -31,13 +31,13 @@ After running the command, your component's local file tree will look like this:
        │   └── test_cmp.h
        └── test_cmp.c
 
-You have created your first bare minimum component. These files are sufficient for local use; however, to publish your component on the ESP Component Registry, it is necessary to provide more details. Please navigate to the component directory and continue with the next steps.
+You have now created a minimal component. These files are sufficient for local use. However, to publish your component on the ESP Component Registry, additional details are required. Navigate to the component directory and follow the steps below.
 
 ***********************
  Extra Packaging Files
 ***********************
 
-In this section, you will add files that help the ESP Component Registry understand your component better. When this section is finished, the file structure will look like:
+In this section, you will add files that help the ESP Component Registry better understand your component. After completing this section, your directory should look like this:
 
 .. code:: text
 
@@ -54,17 +54,17 @@ In this section, you will add files that help the ESP Component Registry underst
 Create ``idf_component.yml``
 ============================
 
-A manifest file, ``idf_component.yml``, is required to let the ESP Component Registry recognize your ESP-IDF component.
+The ``idf_component.yml`` manifest file is required for the ESP Component Registry to recognize your component.
 
-Here's the minimal ``idf_component.yml``:
+Here’s a minimal example of an ``idf_component.yml`` file:
 
 .. code:: yaml
 
    version: "0.0.1"
 
-The ESP Component Registry only requires the ``version`` of the component in the `idf_component.yml`. The ``version`` must follow :ref:`versioning scheme <versioning-scheme>`.
+The only required field is `version`, which must follow the :ref:`versioning scheme <versioning-scheme>`.
 
-However, we recommend adding ``url`` and ``description``. Otherwise, a warning will be printed.
+We also recommend including `url` and `description`. Otherwise, a warning will be displayed.
 
 .. code:: yaml
 
@@ -72,14 +72,14 @@ However, we recommend adding ``url`` and ``description``. Otherwise, a warning w
    description: "This is a test component"
    url: "https://mycomponent.com"  # The homepage of the component. It can be a GitHub repository page.
 
-For information about additional fields in the manifest, please check the :doc:`manifest file reference <../reference/manifest_file>`.
+For more details, refer to the :doc:`manifest file reference <../reference/manifest_file>`.
 
 Create a License File
 =====================
 
-Once you've uploaded your component, other users can discover, download, and use it. Including a license with your component is crucial to ensure proper usage.
+Once your component is published, others can discover, download, and use it. Including a license is essential for proper use.
 
-If you need help choosing a license for your component, you can check the https://choosealicense.com website. Once you've selected your license, be sure to include the full text of the license in the ``LICENSE`` or ``LICENSE.txt`` file in your component's root directory. Be sure to check the "How to apply this license" section to see if there are additional actions required to apply the license.
+If you’re unsure which license to choose, visit https://choosealicense.com. Once selected, add the full license text in a ``LICENSE`` or ``LICENSE.txt`` file in your component’s root directory. Be sure to check the "How to apply this license" section to see if there are additional actions required to apply the license.
 
 After selecting a license, you can add the ``license`` field in your ``idf_component.yml`` file. The value should be the SPDX license identifier of the chosen license. You can check the identifier list at https://spdx.org/licenses/. For example, if you choose the MIT license, the ``idf_component.yml`` should look like:
 
@@ -91,7 +91,7 @@ After selecting a license, you can add the ``license`` field in your ``idf_compo
 Create README.md
 ================
 
-A README file will help users understand your component better. It typically includes a brief introduction, installation steps, and a simple getting-started tutorial.
+A README helps users understand your component. It usually includes a brief intro, installation steps, and a basic usage example.
 
 .. code:: text
 
@@ -101,29 +101,31 @@ A README file will help users understand your component better. It typically inc
 
    ## Installation
 
-   - step 1
-   - step 2
+   - Step 1
+   - Step 2
 
    ## Getting Started
 
-   - step 1
-   - step 2
+   - Step 1
+   - Step 2
 
 .. _staging-registry:
 
-**************************
- Test on Staging Registry
-**************************
+****************************
+ Test with Staging Registry
+****************************
 
-For testing purposes, it's recommended to upload the components to the staging server first. To upload components to our staging server, you may follow the steps in the :ref:`login-staging-registry` section.
+For testing purposes, we recommend to upload the components to the staging server first.
 
-After logging in, you can upload your component to the staging registry by running the following command:
+First, follow the steps in the :ref:`login-staging-registry` section to log in.
+
+Then, upload your component to the staging registry by running the following command:
 
 .. code:: shell
 
    compote upload --profile "staging" --component test_cmp
 
-To use the uploaded component in your project, you need to specify the registry URL in the ``idf_component.yml`` file:
+To use it in your project, add the registry URL in your manifest:
 
 .. code:: yaml
 
@@ -132,19 +134,21 @@ To use the uploaded component in your project, you need to specify the registry 
        version: "*"
        registry_url: https://components-staging.espressif.com
 
-***********************
- Publish the Component
-***********************
+************************
+ Publish Your Component
+************************
 
-To upload components to the ESP Component Registry, you may follow the steps in the :ref:`login-via-cli` section.
+To publish components to the ESP Component Registry (production registry), follow the steps in :ref:`login-via-cli`.
 
-After successfully logging in, you can upload your component to the ESP Component Registry (production registry) by running the following command:
+After successfully logging in, upload with:
 
 .. code:: shell
 
    compote component upload --name test_cmp
 
-Once uploaded, your component should be viewable at `https://components.espressif.com/components/<your_default_namespace>/test_cmp`.
+Once uploaded, your component will be available at:
+
+``https://components.espressif.com/components/<your_default_namespace>/test_cmp``
 
 To upload the component to another namespace, you can specify the namespace in the command:
 
@@ -152,7 +156,7 @@ To upload the component to another namespace, you can specify the namespace in t
 
    compote component upload --name test_cmp --namespace another_namespace
 
-Currently, creating a custom namespace requires approval from Espressif. You may submit a request using the `Namespace Request Form <https://components.espressif.com/settings/permissions/>`_. Once we approve your request, you can upload components to the new namespace. You can check the approval status on the same page. We will also notify you via email once the request is approved.
+Currently, creating a custom namespace requires approval from Espressif. You may submit a request via the `Namespace Request Form <https://components.espressif.com/settings/permissions/>`_. Once we approve your request, you can upload components to the new namespace. You can check the approval status on the same page. We will also notify you via email once the request is approved.
 
 *****************
  Advanced Usages
@@ -160,12 +164,12 @@ Currently, creating a custom namespace requires approval from Espressif. You may
 
 What we mentioned above is the basic usage for uploading a component. Here are more use cases and tips.
 
-Authentication with Environment Variables
-=========================================
+Authentication via Environment Variables
+========================================
 
-In CI/CD pipelines, using environment variables to log in is more convenient. You can set the following environment variables:
+For CI/CD, use these environment variables:
 
--  ``IDF_COMPONENT_REGISTRY_URL``: The registry URL to log in.
+-  ``IDF_COMPONENT_REGISTRY_URL``: Registry URL to log in.
 -  ``IDF_COMPONENT_API_TOKEN``: The API token to authenticate with the registry URL.
 
 Filter Component Files
@@ -175,6 +179,8 @@ As a component developer, you may want to specify which files from the component
 
 Manifest Filters
 ----------------
+
+Example:
 
 Your ``idf_component.yml`` manifest may have ``files`` section with ``include`` and ``exclude`` filters. For example:
 
@@ -188,7 +194,7 @@ Your ``idf_component.yml`` manifest may have ``files`` section with ``include`` 
       include:
          - "**/.DS_Store"  # Include files excluded by default
 
-Files and directories that are excluded by default can be found `here <https://github.com/espressif/idf-component-manager/blob/main/idf_component_tools/file_tools.py#L16>`_.
+Files and directories that are excluded by default are listed `here <https://github.com/espressif/idf-component-manager/blob/main/idf_component_tools/file_tools.py#L16>`_.
 
 .gitignore File
 ---------------
@@ -198,7 +204,7 @@ If you have a ``.gitignore`` file in your component directory, you can use it to
 .. code:: yaml
 
    files:
-      use_gitignore: true
+     use_gitignore: true
 
 Patterns specified in the ``.gitignore`` file will be automatically excluded before packaging or uploading the component.
 
@@ -231,7 +237,7 @@ When using ``.gitignore``, files specified `here <https://github.com/espressif/i
 Add Dependencies
 ================
 
-When your component depends on another component, you need to specify this dependency relationship in your component's manifest file as well. Our :doc:`Version Solver <../guides/version_solver>` would collect all dependencies and calculate the final versioning solution. For example:
+When your component depends on another component, you need to specify this dependency relationship in your component's manifest file as well. Our :doc:`Version Solver <../guides/version_solver>` would collect all dependencies and calculate the final versioning solution. Example:
 
 .. code:: yaml
 
@@ -252,16 +258,16 @@ Please refer to our :ref:`version range specification <version-range-specificati
 Add Example Projects
 ====================
 
-You may want to provide example projects to help users get started with your component. By default, the examples directory is located at ``examples`` within the component directory. All example projects are discovered recursively. To customize the path to the examples directory, you can set it in the :ref:`manifest file <manifest-examples>`.
+You may want to provide example projects to help users get started with your component. By default, the ``examples`` directory is located within the component directory, and all example projects are discovered recursively. To customize the path to the examples directory, you can specify it in the :ref:`manifest file <manifest-examples>`.
 
-When an archive containing the component is uploaded to the registry, all examples are repacked into individual archives. Therefore, every example must be self-sufficient, meaning it should not depend on any files in the examples directory outside its own directory. For convenience, the ``examples`` directory is also included in the component archive.
+When an archive containing the component is uploaded to the registry, all examples are repackaged into individual archives. Therefore, each example must be self-contained—meaning it should not depend on any files outside its own directory within the ``examples`` folder. For convenience, the entire ``examples`` directory is also included in the component archive.
 
 Adding Dependency on the Component for Examples
 -----------------------------------------------
 
-When a component repository is cloned from a Git repository, it is essential for the example in the ``examples`` directory to use the component that resides right here in the tree. However, when a single example is downloaded using CLI from the registry, and there is no dependency around, it must be downloaded from the registry.
+When a component repository is cloned from a Git repository, it is essential for the example in the ``examples`` directory to use the component located within the same repository tree. However, when a single example is downloaded via the CLI from the registry and no local dependency is present, the component must be fetched from the registry.
 
-This behavior can be achieved by setting the ``override_path`` for the dependency in the manifest file. When ``override_path`` is defined for a dependency from the registry, it will be used with higher priority. When you download an example from the registry, it doesn't contain ``override_path`` since all ``override_path`` fields are automatically removed. During the build process, it won't attempt to look for the component nearby.
+This behavior can be controlled by setting the ``override_path`` for the dependency in the manifest file. When ``override_path`` is defined for a registry dependency, it takes precedence. However, when an example is downloaded from the registry, the ``override_path`` field is automatically removed. As a result, during the build process, the system will not attempt to locate the component locally.
 
 For example, for a component named ``cmp`` published in the registry as ``watman/cmp``, the ``idf_component.yml`` manifest in the ``examples/hello_world/main`` may look like:
 
@@ -276,9 +282,9 @@ For example, for a component named ``cmp`` published in the registry as ``watman
 
 .. note::
 
-   You shouldn't add your component's directory to ``EXTRA_COMPONENT_DIRS`` in the example's ``CMakeLists.txt``, as it will break the examples downloaded with the repository.
+   Do not add your component's directory to ``EXTRA_COMPONENT_DIRS`` in the example's ``CMakeLists.txt``, as this will break examples downloaded from the registry.
 
-Upload Component with GitHub Action
-===================================
+Upload Component via GitHub Action
+==================================
 
 We provide a `GitHub action <https://github.com/espressif/upload-components-ci-action>`_ to help you upload your components to the registry as part of your GitHub workflow.
