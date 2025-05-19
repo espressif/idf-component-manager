@@ -2,7 +2,7 @@
  Versioning
 ############
 
-The IDF Component Manager enforces a strict versioning scheme on all components it manages. Component versioning allows ESP-IDF applications to have more fine-grained control on what features and bug fixes are included in a particular managed component. Furthermore, the IDF Component Manager implements a version solver that allows ESP-IDF applications to specify multiple versions based on a range of versions for a particular component dependency. The version solver will automatically select the most appropriate version of the component based on a predefined set of rules. This document describes the versioning scheme and the rules used by the version solver.
+The IDF Component Manager enforces a strict versioning scheme on all components it manages. Component versioning allows ESP-IDF applications to have more fine-grained control over which features and bug fixes are included in a particular managed component. Additionally, the IDF Component Manager implements a version solver that allows ESP-IDF applications to specify a range of acceptable versions for a component dependency. The version solver will automatically select the most appropriate version of the component based on predefined rules. This document describes the versioning scheme and the rules used by the version solver.
 
 .. _versioning-scheme:
 
@@ -10,7 +10,7 @@ The IDF Component Manager enforces a strict versioning scheme on all components 
  Versioning Scheme
 *******************
 
-A managed component's version number contains the following fields:
+A managed component’s version number contains the following fields:
 
 .. code:: none
 
@@ -40,28 +40,28 @@ A managed component's version number contains the following fields:
 
       -  Y
 
-      -  -  This version should be used when the package mainly depends on an upstream package.
-         -  There are only downstream code changes between two revision versions.
-         -  The prepend separator is ``~``, like ``~1``, ``~2``, ``~100``.
-         -  The revision field has a default value of ``0``.
+      -  -  This version should be used if the package mainly depends on an upstream package.
+         -  There are only downstream code changes between two revisions.
+         -  The prefix separator is ``~``, such as ``~1``, ``~2``, ``~100``.
+         -  The revision field defaults to ``0``.
 
    -  -  Pre-release
 
       -  Y
 
-      -  -  Represents the prerelease version, like ``a1``, ``b2``, ``rc0``.
-         -  The prepend separator is ``-``, like ``-a1``, ``-b2``, ``-rc0``.
-         -  This field could be separated into several identifiers by ``.``, like ``-a1.b2``, ``-foo.bar``.
+      -  -  Represents the prerelease version, such as ``a1``, ``b2``, ``rc0``.
+         -  The prefix separator is ``-``, like ``-a1``, ``-b2``, ``-rc0``.
+         -  This field may be separated into multiple identifiers by ``.``, such as ``-a1.b2``, ``-foo.bar``.
 
    -  -  Build
 
       -  Y
 
       -  -  Represents the build version, like ``build1``, ``build2``.
-         -  The prepend separator is ``+``, like ``+a1``, ``+b2``, ``+rc0``.
-         -  This field could be separated into several identifiers by ``.``, like ``+a1.b2``, ``+foo.bar``.
+         -  The prefix separator is ``+``, like ``+a1``, ``+b2``, ``+rc0``.
+         -  This field may be separated into multiple identifiers by ``.``, such as ``+a1.b2``, ``+foo.bar``.
 
-A full version number containing all fields such as ``0.1.2~3-dev4.7+git5.66`` would be parsed into the following:
+A full version number with all fields, such as ``0.1.2~3-dev4.7+git5.66``, would be parsed as follows:
 
 -  ``major``: ``int`` 0
 -  ``minor``: ``int`` 1
@@ -72,13 +72,13 @@ A full version number containing all fields such as ``0.1.2~3-dev4.7+git5.66`` w
 
 .. note::
 
-   CLI commands ``compote component pack`` and ``compote component upload`` accept ``--version=git`` to read version from the current git tag. However, ``~`` is not allowed in git tags. Therefore, you must replace ``~`` with ``.`` in the git tag if your version contains revision. For example, for version ``0.1.2~3`` use git tag ``0.1.2.3`` or ``v0.1.2.3``.
+   CLI commands ``compote component pack`` and ``compote component upload`` accept ``--version=git`` to read the version from the current Git tag. However, ``~`` is not allowed in Git tags. Therefore, if your version contains a revision, you must replace ``~`` with ``.`` in the Git tag. For example, for version ``0.1.2~3``, use the Git tag ``0.1.2.3`` or ``v0.1.2.3``.
 
 ********************
  Version Precedence
 ********************
 
-When the version solver compares two different version numbers, the solver determines the preeminent version by comparing each field of the two versions from left to right. The version with the leftmost larger field will be the preeminent version. For example:
+When the version solver compares two different version numbers, it determines the higher version by comparing each field from left to right. The version with the first larger (leftmost) field is considered the higher version. For example:
 
 .. list-table:: Version Precedence Example
    :widths: 35 65
@@ -133,7 +133,7 @@ When the version solver compares two different version numbers, the solver deter
 
 .. warning::
 
-   Build version is a special case. According to `semantic versioning <https://semver.org/#spec-item-10>`_, ``build`` must be ignored when determining version precedence. If two version numbers only differ in the ``build`` field, the comparison will yield an unexpected result.
+   The build version is a special case. According to `Semantic Versioning <https://semver.org/#spec-item-10>`_, the ``build`` field must be ignored when determining version precedence. If two version numbers differ only in the ``build`` field, the comparison may yield an unexpected result.
 
 .. _version-range-specifications:
 
@@ -141,76 +141,76 @@ When the version solver compares two different version numbers, the solver deter
  Range Specifications
 **********************
 
-When specifying a range of versions for a component dependency (in an `idf_component.yml`), the range specification should be one of the following:
+When specifying a version range for a dependency (in `idf_component.yml`), the specification must be:
 
--  A clause
--  A comma separated list of clauses (No extra spaces)
+-  A single clause, or
+-  A comma-separated list of clauses (no extra spaces).
 
 Clauses
 =======
 
-A typical clause includes one operator and one version number. If the clause does not have an operator, the clause will default to the ``==`` operator. For example, the clause ``1.2.3`` is equivalent to the clause ``==1.2.3``.
+A typical clause includes one operator and one version number. If a clause does not specify an operator, it defaults to the ``==`` operator. For example, the clause ``1.2.3`` is equivalent to ``==1.2.3``.
 
 Comparison Clause
 -----------------
 
-Comparison clauses use one of the following operators: ``>=``, ``>``, ``==``, ``<``, ``<=``, ``!=``
+Comparison clauses use one of the following operators: ``>=``, ``>``, ``==``, ``<``, ``<=``, or ``!=``.
 
-For more detailed information regarding comparing two version numbers, please refer to `the earlier section <#version-precedence>`__
+For more detailed information about comparing two version numbers, refer to `the earlier section <#version-precedence>`__.
 
 Wildcard Clause
 ---------------
 
-A wildcard clause uses the symbol ``*`` in one or more fields of the version number. Usually the ``*`` symbol means it could be replaced with anything in this field.
+A wildcard clause uses the symbol ``*`` in one or more fields of the version number. Typically, the ``*`` symbol means that any value is acceptable in that field.
 
 .. warning::
 
-   You may only use the ``*`` symbol in the ``major``, ``minor``, and ``patch`` field.
+   You may use the ``*`` symbol only in the ``major``, ``minor``, and ``patch`` fields.
 
-You may also use the wildcard symbol in the comparison clauses, which make them into wildcard clauses. For example:
+You can also use the wildcard symbol in comparison clauses, turning them into wildcard clauses. For example:
 
--  ``==0.1.*`` is equal to ``>=0.1.0,<0.2.0``.
--  ``>=0.1.*`` is equal to ``>=0.1.0``.
--  ``==1.*`` or ``==1.*.*`` is equal to ``>=1.0.0,<2.0.0``.
--  ``>=1.*`` or ``>=1.*.*`` is equal to ``>=1.0.0``.
--  ``*``, ``==*`` or ``>=*`` is equal to ``>=0.0.0``.
+-  ``==0.1.*`` is equivalent to ``>=0.1.0,<0.2.0``.
+-  ``>=0.1.*`` is equivalent to ``>=0.1.0``.
+-  ``==1.*`` or ``==1.*.*`` is equivalent to ``>=1.0.0,<2.0.0``.
+-  ``>=1.*`` or ``>=1.*.*`` is equivalent to ``>=1.0.0``.
+-  ``*``, ``==*``, or ``>=*`` is equivalent to ``>=0.0.0``.
 
 Compatible Release Clause
 -------------------------
 
-Compatible release clauses always use the ``~=`` operator. It matches the version that is expected to be compatible with the specified version.
+Compatible release clauses always use the ``~=`` operator. They match versions that are expected to be compatible with the specified version.
 
 For example:
 
--  ``~=1.2.3-alpha4`` is equal to ``>=1.2.3-alpha4,==1.2.*``.
--  ``~=1.2.3`` is equal to ``>=1.2.3,==1.2.*``.
--  ``~=1.2`` is equal to ``>=1.2.0,==1.*``.
--  ``~=1`` is equal to ``>=1.0,==1.*``.
+-  ``~=1.2.3-alpha4`` is equivalent to ``>=1.2.3-alpha4,==1.2.*``.
+-  ``~=1.2.3`` is equivalent to ``>=1.2.3,==1.2.*``.
+-  ``~=1.2`` is equivalent to ``>=1.2.0,==1.*``.
+-  ``~=1`` is equivalent to ``>=1.0,==1.*``.
 
 Compatible Minor Release Clause
 -------------------------------
 
-Compatible minor release clauses always use the ``~`` operator. Usually it allows patch-level changes, but it would also allow minor level changes if only a major version is specified.
+Compatible minor release clauses always use the ``~`` operator. They usually allow patch-level changes, but also allow minor-level changes if only the major version is specified.
 
 For example:
 
--  ``~1.2.3-alpha4`` is equal to ``>=1.2.3-alpha4,==1.2.*``.
--  ``~1.2.3`` is equal to ``>=1.2.3,==1.2.*``.
--  ``~1.2`` is equal to ``>=1.2.0,==1.2.*``.
--  ``~1`` is equal to ``>=1.0,==1.*``.
+-  ``~1.2.3-alpha4`` is equivalent to ``>=1.2.3-alpha4,==1.2.*``.
+-  ``~1.2.3`` is equivalent to ``>=1.2.3,==1.2.*``.
+-  ``~1.2`` is equivalent to ``>=1.2.0,==1.2.*``.
+-  ``~1`` is equivalent to ``>=1.0,==1.*``.
 
 Compatible Major Release Clause
 -------------------------------
 
-Compatible major release clauses always use the ``^`` operator. It allows the changes that do not modify the left-most non-zero version.
+Compatible major release clauses always use the ``^`` operator. They allow changes that do not modify the left-most non-zero version field.
 
 For example:
 
--  ``^1.2.3-alpha4`` is equal to ``>=1.2.3-alpha4,==1.*``.
--  ``^1.2.3`` is equal to ``>=1.2.3,==1.*``.
--  ``^1.2`` is equal to ``>=1.2.0,==1.*``.
--  ``^1`` is equal to ``>=1.0,==1.*``.
--  ``^0.2.3-alpha4`` is equal to ``>=0.2.3-alpha4,==0.2.*``.
--  ``^0.2.3`` is equal to ``>=0.2.3,==0.2.*``.
--  ``^0.2`` is equal to ``>=0.2.0,==0.2.*``.
--  ``^0`` is equal to ``>=0.0.0,==0.0.0*``.
+-  ``^1.2.3-alpha4`` is equivalent to ``>=1.2.3-alpha4,==1.*``.
+-  ``^1.2.3`` is equivalent to ``>=1.2.3,==1.*``.
+-  ``^1.2`` is equivalent to ``>=1.2.0,==1.*``.
+-  ``^1`` is equivalent to ``>=1.0,==1.*``.
+-  ``^0.2.3-alpha4`` is equivalent to ``>=0.2.3-alpha4,==0.2.*``.
+-  ``^0.2.3`` is equivalent to ``>=0.2.3,==0.2.*``.
+-  ``^0.2`` is equivalent to ``>=0.2.0,==0.2.*``.
+-  ``^0`` is equivalent to ``>=0.0.0,==0.0.0*``.

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import typing as t
 import webbrowser
@@ -29,7 +29,7 @@ def init_registry():
     @click.group()
     def registry():
         """
-        Group of commands to work with component registry
+        Group of commands to work with the component registry.
         """
         pass
 
@@ -39,40 +39,40 @@ def init_registry():
         '--no-browser',
         is_flag=True,
         default=False,
-        help='Do not open browser and only print login URL to the terminal',
+        help='Do not open the browser; only print the login URL to the terminal.',
     )
     @click.option(
         '--description',
-        default='Token created through CLI login',
-        help='Description for the token for future reference',
+        default='Token created through CLI login.',
+        help='Description of the token for future reference.',
     )
     @click.option(
         '--default-namespace',
-        help='Default namespace to use for the components',
+        help='Default namespace to use for components.',
         callback=validate_name,
     )
     @click.option(
         '--default_namespace',
-        help="This argument has been deprecated by 'default-namespace'",
+        help="This argument has been deprecated by '--default-namespace'.",
         hidden=True,
         callback=combined_callback(deprecated_option, validate_name),
         expose_value=False,
     )
     @click.option(
         '--registry-url',
-        help='URL of the registry to use',
+        help='URL of the registry to use.',
         callback=validate_url,
     )
     @click.option(
         '--registry_url',
-        help="This argument has been deprecated by '--registry-url'",
+        help="This argument has been deprecated by '--registry-url'.",
         hidden=True,
         callback=combined_callback(deprecated_option, validate_url),
         expose_value=False,
     )
     def login(profile_name, no_browser, description, default_namespace, registry_url):
         """
-        Login to the component registry
+        Login to the component registry.
         """
         # Load config for dump later
         config = ConfigManager().load()
@@ -144,11 +144,11 @@ def init_registry():
         '--no-revoke',
         is_flag=True,
         default=False,
-        help='Do not revoke the token on the server side when logging out',
+        help='Do not revoke the token on the server side when logging out.',
     )
     def logout(profile_name, no_revoke):
         """
-        Logout from the component registry.
+        Log out from the component registry.
         Removes the token from the profile and revokes it on the registry.
         """
 
@@ -177,15 +177,15 @@ def init_registry():
     @click.option(
         '--interval',
         default=0,
-        help='Sets the frequency (in seconds) for component synchronization. '
-        'If set to 0, the program will run once and terminate.',
+        help='Set the frequency (in seconds) for component synchronization. '
+        'If set to 0, the program will run once and then terminate.',
     )
     @click.option(
         '--recursive',
         '-R',
         is_flag=True,
         default=False,
-        help='Search components recursively',
+        help='Search for components recursively',
     )
     @click.option(
         '--component',
@@ -201,7 +201,7 @@ def init_registry():
         type=click.Choice([r.value for r in VersionSolverResolution]),
         default=VersionSolverResolution.ALL.value,
         help='Resolution strategy for syncing components. By default, all versions are synced. '
-        'If set to "latest", only the latest version of the components will be synced.',
+        'If set to "latest", only the latest version of each component will be synced.',
     )
     @click.argument('path', required=True)
     def sync(
@@ -214,7 +214,7 @@ def init_registry():
         path: str,
     ) -> None:
         """
-        Sync components from the registry to local directory
+        Sync components from the registry to a local directory.
         """
         manager.sync_registry(
             profile_name,

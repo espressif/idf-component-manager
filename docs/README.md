@@ -2,19 +2,28 @@
 
 To build documentation locally, run these command from the root of the project
 
-Install dependencies:
+1. Install dependencies:
 
 ```sh
 pip install .[docs]
 ```
 
-Build the docs:
+Install the project in **development mode**:
+
+```sh
+$ pip install -e .
+```
+
+More details on development mode can be found here:
+https://setuptools.pypa.io/en/latest/userguide/development_mode.html
+
+2. Build the docs:
 
 ```sh
 sphinx-build docs/en docs/html_output
 ```
 
-Preview in the browser:
+3. Preview in the browser:
 
 ```sh
 python -m webbrowser -t "file://$(pwd)/docs/html_output/index.html"

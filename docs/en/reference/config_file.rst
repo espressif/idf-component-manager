@@ -2,9 +2,9 @@
  ``idf_component_manager.yml`` Configuration File
 ##################################################
 
-The IDF Component Manager configuration file, named ``idf_component_manager.yml``, is a YAML file that contains a set of different profiles. Each profile is a collection of configurations used to define the behavior of where to upload or download the components.
+The IDF Component Manager configuration file, named ``idf_component_manager.yml``, is a YAML file that defines a set of profiles. Each profile is a collection of configurations that determines where components are uploaded from or downloaded to.
 
-By default, the configuration file is located at the following paths:
+By default, the configuration file is located in the following paths:
 
 .. tabs::
 
@@ -20,7 +20,7 @@ By default, the configuration file is located at the following paths:
 
       $HOME/.espressif
 
-You may also set the environment variable ``IDF_TOOLS_PATH`` to specify a different path for the configuration file.
+You can also override the path by setting the ``IDF_TOOLS_PATH`` environment variable.
 
 ********************
  Configuration File
@@ -28,9 +28,9 @@ You may also set the environment variable ``IDF_TOOLS_PATH`` to specify a differ
 
 .. versionadded:: 2.1
 
-   Support local storage mirror and ``local_storage_url`` field.
+   Support for local storage mirrors and the ``local_storage_url`` field.
 
-Each profile supports the following fields related to the URLs:
+Each profile supports the following URL-related fields:
 
 .. list-table::
    :stub-columns: 1
@@ -42,8 +42,8 @@ Each profile supports the following fields related to the URLs:
 
    -  -  Type
       -  URI
-      -  URI or a list of URIs
-      -  URI or a list of URIs
+      -  URI or list of URIs
+      -  URI or list of URIs
 
    -  -  Default
       -  components.espressif.com
@@ -56,22 +56,22 @@ Each profile supports the following fields related to the URLs:
       -  ``IDF_COMPONENT_STORAGE_URL``
       -  ❌
 
-   -  -  Support Upload
+   -  -  Supports Upload?
       -  ✅
       -  ❌
       -  ❌
 
-   -  -  Support Download
+   -  -  Supports Download?
       -  ✅
       -  ✅
       -  ✅
 
-   -  -  Require Internet?
+   -  -  Requires Internet?
       -  ✅
       -  ✅
       -  ❌
 
-Besides the URLs, each profile supports the following fields:
+In addition to URLs, each profile supports the following fields:
 
 .. list-table::
 
@@ -84,16 +84,16 @@ Besides the URLs, each profile supports the following fields:
    -  -  ``api_token``
       -  string
       -  None
-      -  The API token to authenticate with the ``registry_url``.
-      -  Required when uploading components.
+      -  The API token used to authenticate with the ``registry_url``.
+      -  Required for uploading components.
 
    -  -  ``default_namespace``
       -  string
       -  espressif
-      -  The default namespace to use when uploading components.
+      -  The default namespace for uploading components.
       -  ❌
 
-By default, the configuration file should behave as follows:
+Here is a minimal default configuration:
 
 .. code:: yaml
 
@@ -101,7 +101,7 @@ By default, the configuration file should behave as follows:
      default:
        registry_url: "components.espressif.com"
 
-For Chinese users, we recommend using the following storage URL to experience faster download speeds:
+For users in China, we recommend using the following `storage_url` to improve download speeds:
 
 .. code:: yaml
 
@@ -110,7 +110,7 @@ For Chinese users, we recommend using the following storage URL to experience fa
        storage_url:
          - "https://components-file.espressif.cn"
 
-Additionally, if you have a :doc:`local mirror set <../guides/partial_mirror>`, you can also add the local storage URL to the configuration file:
+If you have a :doc:`local mirror set <../guides/partial_mirror>`, you can also define the `local_storage_url` in the configuration file:
 
 .. code:: yaml
 
@@ -118,18 +118,24 @@ Additionally, if you have a :doc:`local mirror set <../guides/partial_mirror>`, 
      default:
        local_storage_url:
          - file:///Users/username/storage/  # Unix path
-         # - file://C:/storage/ # Windows path
+         # - file://C:/storage/             # Windows path
          - http://localhost:9004
 
 .. _url_precedence:
 
 ***************************************
- URLs Precedence While Version Solving
+ URL Precedence During Version Solving
 ***************************************
 
-While performing version solving, the version solver will always start with the URLs defined in ``local_storage_url``, then ``storage_url``, and finally ``registry_url``. If the versions found in the first URL satisfy the requirements, the version solver will not attempt to find the versions in the next URLs. If the version solver cannot find the versions in any of the URLs, it will return an error.
+When solving versions, the resolver checks sources in the following order:
 
-For example, if your default profile is as follows:
+#. ``local_storage_url``
+#. ``storage_url``
+#. ``registry_url``
+
+If a valid version is found in one of the earlier sources, the resolver does not check the remaining ones. If no source provides a valid version, an error is returned.
+
+Given the following configuration:
 
 .. code:: yaml
 
@@ -143,7 +149,7 @@ For example, if your default profile is as follows:
          - http://localhost:9004
          - http://localhost:9005
 
-While solving the versions, the version solver will look for the versions in this order:
+The version solver will check sources in this order:
 
 -  ``registry_url`` defined in the manifest ``dependencies`` field
 -  http://localhost:9004
@@ -158,17 +164,17 @@ While solving the versions, the version solver will look for the versions in thi
  Login via CLI
 ***************
 
-To log in to the registry server, you may use the following command:
+To log in to the registry server, use the following command:
 
 .. code:: shell
 
    compote registry login --profile "default" --registry-url "https://components.espressif.com" --default-namespace <your_github_username>
 
-This command will open a browser window where you can log in with your GitHub account. After logging in, you will be redirected to a page that generates a token. Copy this token and paste it into the terminal.
+This command will open a browser window where you can authenticate with your GitHub account. After logging in, you’ll be redirected to a page displaying your token. Copy and paste it into the terminal.
 
-Passing the ``--default-namespace`` option while logging in is recommended. Otherwise, you will need to specify the namespace every time you upload a component. By default, you are granted permission to upload components to the namespace that matches your GitHub username.
+Passing the ``--default-namespace`` option is recommended to avoid specifying the namespace on every upload. By default, your GitHub username will be used as the namespace and you will be given permission to upload components to that namespace.
 
-The token will be saved in the configuration file, so you don't have to create it manually.
+The token will be stored in the configuration file automatically, so you don't have to create it manually..
 
 .. _login-staging-registry:
 
@@ -176,10 +182,10 @@ The token will be saved in the configuration file, so you don't have to create i
  Login to Staging Registry
 ***************************
 
-To log in to the staging registry, use the following command:
+To log in to the staging registry, use the command:
 
 .. code:: shell
 
    compote registry login --profile "staging" --registry-url "https://components-staging.espressif.com" --default-namespace <your-github-username>
 
-After logging in, the configurations will be saved in the ``staging`` profile.
+After logging in, the configuration will be saved under the ``staging`` profile.

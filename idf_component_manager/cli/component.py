@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import click
@@ -30,16 +30,16 @@ def init_component():
     @click.group()
     def component():
         """
-        Group of commands to interact with components.
+        Group of commands for interacting with components.
         """
         pass
 
     COMPONENT_VERSION_OPTION = [
         click.option(
             '--version',
-            help='Set version if not defined in the manifest. '
-            'Use "git" to get version from the git tag. '
-            '(command would fail if running not from a git tag)',
+            help='Set the version if it is not defined in the manifest. '
+            'Use "git" to get the version from the Git tag. '
+            '(The command will fail if not running from a Git tag.)',
         )
     ]
 
@@ -47,19 +47,19 @@ def init_component():
         click.option(
             '--repository',
             default=None,
-            help='The URL of the component repository. This option overwrites the value in the idf_component.yml',
+            help='The URL of the component repository. This option overrides the value in the idf_component.yml file.',
             callback=validate_git_url,
         ),
         click.option(
             '--commit-sha',
             default=None,
-            help='Git commit SHA of the the component version. This option overwrites the value in the idf_component.yml',
+            help='Git commit SHA of the component version. This option overrides the value in the idf_component.yml file.',
             callback=validate_sha,
         ),
         click.option(
             '--repository-path',
             default=None,
-            help='Path to the component in the repository. This option overwrites the value in the idf_component.yml',
+            help='Path to the component in the repository. This option overrides the value in the idf_component.yml file.',
         ),
     ]
 
@@ -81,7 +81,7 @@ def init_component():
         repository_path,
     ):  # noqa: namespace is not used
         """
-        Create component archive and store it in the dist directory.
+        Create a component archive and store it in the dist directory.
         """
         manager.pack_component(
             name=name,
@@ -102,8 +102,8 @@ def init_component():
     )
     @click.option(
         '--archive',
-        help='Path of the archive with a component to upload. '
-        'When not provided the component will be packed automatically.',
+        help='Path to the archive of the component to upload. '
+        'When not provided, the component will be packed automatically.',
         callback=validate_if_archive,
     )
     @click.option(
@@ -116,7 +116,7 @@ def init_component():
         '--check-only',
         is_flag=True,
         default=False,
-        help='Check if given component version is already uploaded and exit.',
+        help='Check if the given component version is already uploaded and exit.',
     )
     @click.option(
         '--allow-existing',
@@ -128,7 +128,7 @@ def init_component():
         '--dry-run',
         is_flag=True,
         default=False,
-        help='Upload component for validation without creating a version in the registry.',
+        help='Upload the component for validation without creating a version in the registry.',
     )
     def upload(
         manager,
@@ -147,9 +147,9 @@ def init_component():
         repository_path,
     ):
         """
-        Upload component to the component registry.
+        Upload a component to the component registry.
 
-        If the component doesn't exist in the registry it will be created automatically.
+        If the component does not exist in the registry, it will be created automatically.
         """
         manager.upload_component(
             name,
@@ -172,7 +172,7 @@ def init_component():
     @click.option('--job', required=True, help='Upload job ID')
     def upload_status(manager, profile_name, job):
         """
-        Check the component uploading status.
+        Check the status of a component upload.
         """
         manager.upload_component_status(job, profile_name=profile_name)
 
@@ -183,7 +183,7 @@ def init_component():
     )
     def delete(manager, profile_name, namespace, name, version):
         """
-        Delete specified version of the component from the component registry.
+        Delete the specified version of a component from the component registry.
         The deleted version cannot be restored or re-uploaded.
         """
         manager.delete_version(name, version, profile_name=profile_name, namespace=namespace)
@@ -193,7 +193,7 @@ def init_component():
     @click.option(
         '--version',
         required=True,
-        help='Component version to yank version.',
+        help='Component version to yank.',
         callback=validate_version,
     )
     @click.option(
@@ -203,8 +203,8 @@ def init_component():
     )
     def yank(manager, profile_name, namespace, name, version, message):
         """
-        Yank specified version of the component from the component registry.
-        Yanked version will only be downloaded if the exact version is specified in the component manifest or lock file.
+        Yank the specified version of a component from the component registry.
+        A yanked version will only be downloaded if the exact version is specified in the component manifest or lock file.
         A warning message is printed every time a yanked version is downloaded.
         """
         manager.yank_version(name, version, message, profile_name=profile_name, namespace=namespace)

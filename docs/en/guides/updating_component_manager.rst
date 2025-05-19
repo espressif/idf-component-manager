@@ -6,7 +6,7 @@ To update the IDF Component Manager to the latest version, run the following com
 
 .. note::
 
-   If your version of ESP-IDF doesn't come with the IDF Component Manager, you can install it using the same commands.
+   If your version of ESP-IDF does not include the IDF Component Manager, you can install it using the same commands.
 
 .. tabs::
 
@@ -14,7 +14,7 @@ To update the IDF Component Manager to the latest version, run the following com
 
       Windows
 
-      Run ``ESP-IDF PowerShell Environment`` or ``ESP-IDF Command Prompt (cmd.exe)`` from the Start menu and run the following command:
+      Open the ``ESP-IDF PowerShell Environment`` or ``ESP-IDF Command Prompt (cmd.exe)`` from the Start menu, then run:
 
       .. code:: powershell
 
