@@ -1,10 +1,10 @@
-# SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import shutil
 
 import pytest
-import yaml
+from ruamel.yaml import YAML
 
 from integration_tests.integration_test_helpers import build_project, fixtures_path, project_action
 
@@ -126,7 +126,7 @@ def test_local_dependency_reconfigure_non_existing(project):
     assert 'Configuring done' in res
 
     with open(os.path.join(project, 'dependencies.lock')) as f:
-        lock = yaml.safe_load(f)
+        lock = YAML(typ='safe').load(f)
         assert 'example/cmp' in lock['dependencies']
         assert lock['dependencies']['example/cmp']['source']['path'] == os.path.join(
             project, 'example__cmp'
@@ -134,17 +134,17 @@ def test_local_dependency_reconfigure_non_existing(project):
 
     # rename the folder
     with open(os.path.join(project, 'main', 'idf_component.yml')) as f:
-        manifest = yaml.safe_load(f)
+        manifest = YAML().load(f)
         manifest['dependencies']['example/cmp']['path'] = '../cmp'
 
     with open(os.path.join(project, 'main', 'idf_component.yml'), 'w') as fw:
-        yaml.dump(manifest, fw)
+        YAML().dump(manifest, fw)
 
     shutil.move(os.path.join(project, 'example__cmp'), os.path.join(project, 'cmp'))
 
     res = project_action(project, 'reconfigure')
     assert 'Configuring done' in res
     with open(os.path.join(project, 'dependencies.lock')) as f:
-        lock = yaml.safe_load(f)
+        lock = YAML(typ='safe').load(f)
         assert 'example/cmp' in lock['dependencies']
         assert lock['dependencies']['example/cmp']['source']['path'] == os.path.join(project, 'cmp')

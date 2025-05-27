@@ -1,13 +1,11 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import typing as t
-from collections import OrderedDict
 from io import StringIO
 
 from pydantic import ValidationError
-from yaml import Node, SafeDumper, YAMLError, safe_load
-from yaml import dump as dump_yaml
+from ruamel.yaml import YAML, YAMLError
 
 from idf_component_tools.build_system_tools import get_env_idf_target, get_idf_version
 from idf_component_tools.errors import LockError
@@ -26,16 +24,11 @@ class LockFile(SolvedManifest):
 EMPTY_LOCK: t.Dict[str, t.Any] = {}
 
 
-def _ordered_dict_representer(dumper: SafeDumper, data: t.OrderedDict) -> Node:
-    return dumper.represent_data(dict(data))
-
-
-SafeDumper.add_representer(OrderedDict, _ordered_dict_representer)
-
-
 class LockManager:
     def __init__(self, path):
         self._path = path
+        self._yaml = YAML(typ='safe')
+        self._yaml.default_flow_style = False
 
     def exists(self):
         return os.path.isfile(self._path)
@@ -66,12 +59,9 @@ class LockManager:
                 lock = LockFile(**solution.model_dump())
                 lock.target = get_env_idf_target()
 
-                dump_yaml(
+                self._yaml.dump(
                     data=lock.model_dump(),
                     stream=new_lock,
-                    encoding='utf-8',
-                    allow_unicode=True,
-                    Dumper=SafeDumper,
                 )
                 new_lock.seek(0)
                 new_lock_content = new_lock.read()
@@ -96,7 +86,7 @@ class LockManager:
 
         try:
             with open(self._path, encoding='utf-8') as f:
-                yaml_dict = safe_load(f)
+                yaml_dict = self._yaml.load(f)
 
             if not yaml_dict:
                 lock = LockFile.fromdict(EMPTY_LOCK)

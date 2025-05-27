@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
@@ -6,8 +6,8 @@ import os
 import subprocess
 import typing as t
 
-import yaml
 from jinja2 import Environment, Template
+from ruamel.yaml import YAML
 
 from idf_component_manager.core import ComponentManager
 
@@ -48,7 +48,7 @@ def create_manifest(
     component_path = get_component_path(project_path, component_name)
 
     with open(os.path.join(component_path, 'idf_component.yml')) as manifest:
-        manifest_dict = yaml.safe_load(manifest)
+        manifest_dict = YAML().load(manifest)
     for library in libraries:
         manifest_dict['dependencies'][library] = component_dict['dependencies'][library]
         if 'targets' in component_dict:
@@ -57,7 +57,7 @@ def create_manifest(
             manifest_dict['version'] = component_dict['version']
 
     with open(os.path.join(component_path, 'idf_component.yml'), 'w') as new_manifest:
-        yaml.dump(manifest_dict, new_manifest, default_flow_style=False, allow_unicode=True)
+        YAML().dump(manifest_dict, new_manifest)
 
 
 def create_component(
@@ -168,7 +168,7 @@ def project_action(project_path, *actions):
 
 def assert_dependency_version(project_path, component_name, version):
     with open(os.path.join(project_path, 'dependencies.lock')) as f:
-        lock = yaml.safe_load(f)
+        lock = YAML(typ='safe').load(f)
         assert component_name in lock['dependencies']
         assert lock['dependencies'][component_name]['version'] == version
 

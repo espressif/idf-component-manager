@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -7,8 +7,8 @@ import typing as t
 from pathlib import Path
 
 import pytest
-import yaml
 from jinja2 import Environment, FileSystemLoader
+from ruamel.yaml import YAML
 
 from idf_component_tools.config import root_managed_components_dir
 from idf_component_tools.constants import MANIFEST_FILENAME
@@ -36,7 +36,7 @@ def project(request, tmpdir_factory):
     if not os.path.isdir(root_managed_components_dir()):
         os.makedirs(root_managed_components_dir())
     with open(os.path.join(root_managed_components_dir(), MANIFEST_FILENAME), 'w') as fw:
-        yaml.dump({'dependencies': root_dependencies}, fw)
+        YAML().dump({'dependencies': root_dependencies}, fw)
 
     # create project components
     components = request.param.get('components', {'main': {}})

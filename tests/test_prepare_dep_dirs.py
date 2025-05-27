@@ -5,7 +5,7 @@ import textwrap
 from pathlib import Path
 
 import pytest
-import yaml
+from ruamel.yaml import YAML
 
 from idf_component_manager.core import ComponentManager
 from idf_component_manager.prepare_components.prepare import _component_list_file
@@ -24,7 +24,6 @@ def _generate_lock_file(project_dir: Path, yaml_str: str, build_dir: str = 'buil
     (project_dir / 'main' / 'idf_component.yml').write_text(textwrap.dedent(yaml_str))
 
     os.makedirs(project_dir / build_dir, exist_ok=True)
-
     ComponentManager(
         path=str(project_dir),
         interface_version=2,
@@ -52,7 +51,7 @@ def test_dependencies_with_registry_url(tmp_path, monkeypatch):
 
     assert (tmp_path / 'dependencies.lock').exists()
     with open(tmp_path / 'dependencies.lock') as f:
-        lock_data = yaml.safe_load(f)
+        lock_data = YAML(typ='safe').load(f)
 
     assert lock_data['dependencies']['jason-mao/esp_jpeg']
     assert (
@@ -78,7 +77,7 @@ def test_dependencies_with_different_source(tmp_path, monkeypatch):
 
     assert (tmp_path / 'dependencies.lock').exists()
     with open(tmp_path / 'dependencies.lock') as f:
-        lock_data = yaml.safe_load(f)
+        lock_data = YAML(typ='safe').load(f)
     assert lock_data['dependencies']['example/cmp']
     assert lock_data['dependencies']['example/cmp']['source']['type'] == 'service'
     touch_timestamp = os.path.getmtime(tmp_path / 'dependencies.lock')
@@ -100,7 +99,7 @@ def test_dependencies_with_different_source(tmp_path, monkeypatch):
 
     assert (tmp_path / 'dependencies.lock').exists()
     with open(tmp_path / 'dependencies.lock') as f:
-        lock_data = yaml.safe_load(f)
+        lock_data = YAML(typ='safe').load(f)
     assert lock_data['dependencies']['example/cmp']
     assert lock_data['dependencies']['example/cmp']['source']['type'] == 'git'
 
@@ -166,7 +165,7 @@ def test_dependencies_with_partial_mirror(tmp_path, monkeypatch):
 
     assert (tmp_path / 'dependencies.lock').exists()
     with open(tmp_path / 'dependencies.lock') as f:
-        lock_data = yaml.safe_load(f)
+        lock_data = YAML(typ='safe').load(f)
     assert lock_data['dependencies']['example/cmp']
     assert lock_data['dependencies']['example/cmp']['source']['type'] == 'service'
     assert (
@@ -210,7 +209,7 @@ def test_dependencies_with_partial_mirror(tmp_path, monkeypatch):
 
     assert (tmp_path / 'dependencies.lock').exists()
     with open(tmp_path / 'dependencies.lock') as f:
-        lock_data = yaml.safe_load(f)
+        lock_data = YAML(typ='safe').load(f)
     assert lock_data['dependencies']['example/cmp']
     assert lock_data['dependencies']['example/cmp']['source']['type'] == 'service'
     assert (

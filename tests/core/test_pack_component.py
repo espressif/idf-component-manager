@@ -6,8 +6,8 @@ import tempfile
 from pathlib import Path
 
 import pytest
-import yaml
 from click.testing import CliRunner
+from ruamel.yaml import YAML
 
 from idf_component_manager.cli.core import initialize_cli
 from idf_component_manager.core import ComponentManager
@@ -239,12 +239,14 @@ def test_pack_component_with_examples(tmp_path, cmp_with_example):
 
 
 def test_pack_component_with_rules_if(
-    tmp_path, release_component_path, valid_optional_dependency_manifest_with_idf
+    tmp_path,
+    release_component_path,
+    valid_optional_dependency_manifest_with_idf,
 ):
     project_path = tmp_path / 'cmp'
     shutil.copytree(release_component_path, str(project_path))
     with open(str(project_path / MANIFEST_FILENAME), 'w') as fw:
-        yaml.dump(valid_optional_dependency_manifest_with_idf, fw)
+        YAML().dump(valid_optional_dependency_manifest_with_idf, fw)
 
     component_manager = ComponentManager(path=str(project_path))
     component_manager.pack_component('cmp', '2.3.4')

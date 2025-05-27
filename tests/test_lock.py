@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import filecmp
@@ -13,7 +13,7 @@ from pathlib import Path
 import pytest
 import requests
 import requests_mock
-import yaml
+from ruamel.yaml import YAML
 
 from idf_component_manager.dependencies import is_solve_required
 from idf_component_tools import LOGGING_NAMESPACE, setup_logging
@@ -43,7 +43,7 @@ def valid_lock_path(fixtures_path):
 @pytest.fixture
 def valid_solution_dependency_dict(fixtures_path):
     with open(os.path.join(fixtures_path, 'locks', 'dependencies.lock')) as f:
-        d = yaml.safe_load(f)
+        d = YAML(typ='safe').load(f)
 
     return d['dependencies']
 
@@ -51,7 +51,7 @@ def valid_solution_dependency_dict(fixtures_path):
 @pytest.fixture
 def valid_solution_hash(fixtures_path):
     with open(os.path.join(fixtures_path, 'locks', 'dependencies.lock')) as f:
-        d = yaml.safe_load(f)
+        d = YAML(typ='safe').load(f)
 
     return d['manifest_hash']
 

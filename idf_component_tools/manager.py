@@ -1,11 +1,11 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import enum
 import os
 import typing as t
 from pathlib import Path
 
-import yaml
+from ruamel.yaml import YAML, CommentedMap, YAMLError
 
 from .constants import MANIFEST_FILENAME
 from .errors import ManifestError
@@ -56,6 +56,8 @@ class ManifestManager:
         # validation attrs
         self._validation_errors: t.List[str] = None  # type: ignore
 
+        self._yaml = YAML()
+
     def validate(self) -> 'ManifestManager':
         from .manifest.models import (
             Manifest,
@@ -74,8 +76,10 @@ class ManifestManager:
         # validate manifest
         else:
             try:
-                manifest_dict = yaml.safe_load(self.path.read_text(encoding='utf-8')) or {}
-            except yaml.YAMLError:
+                manifest_dict = (
+                    self._yaml.load(self.path.read_text(encoding='utf-8')) or CommentedMap()
+                )
+            except YAMLError:
                 self._validation_errors = [
                     'Cannot parse the manifest file. Please check that\n'
                     '\t{}\n'
@@ -173,9 +177,7 @@ class ManifestManager:
             path = os.path.join(path, MANIFEST_FILENAME)
 
         with open(path, 'w', encoding='utf-8') as fw:
-            yaml.dump(
+            self._yaml.dump(
                 self.manifest_tree,
                 fw,
-                allow_unicode=True,
-                Dumper=yaml.SafeDumper,
             )
