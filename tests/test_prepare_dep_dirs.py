@@ -12,6 +12,7 @@ from idf_component_manager.prepare_components.prepare import _component_list_fil
 from idf_component_tools.config import Config, ConfigManager, ProfileItem
 from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL
 from idf_component_tools.errors import FatalError
+from tests.network_test_utils import use_vcr_or_real_env
 
 
 def _generate_lock_file(project_dir: Path, yaml_str: str, build_dir: str = 'build'):
@@ -218,3 +219,24 @@ def test_dependencies_with_partial_mirror(tmp_path, monkeypatch):
         == IDF_COMPONENT_REGISTRY_URL
     )
     assert lock_data['dependencies']['example/cmp']['version'] == '3.3.7'
+
+
+@use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_dependencies_case_normalization.yaml')
+@pytest.mark.network
+def test_dependencies_case_normalization(tmp_path, monkeypatch):
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32')
+    monkeypatch.setenv('IDF_PATH', '/tmp')
+    monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:5000')
+    monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'http://localhost:9000/test-public')
+
+    _generate_lock_file(
+        tmp_path,
+        """
+        dependencies:
+            test_component_manager/CmP:
+                version: '==1.0.1'
+        """,
+    )
+
+    assert (tmp_path / 'dependencies.lock').exists()

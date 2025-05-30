@@ -70,7 +70,6 @@ class BaseClient:
 
     def versions(self, component_name: str, spec: str = '*') -> ComponentWithVersions:
         """List of versions for given component with required spec"""
-        component_name = component_name.lower()
         spec = spec or '*'
 
         component_response = self.get_component_response(  # type: ignore
@@ -145,6 +144,7 @@ def filter_versions(
     spec: t.Optional[str],
     component_name: str,
 ) -> t.List[VersionResponse]:
+    component_name = component_name.lower()
     filtered_versions = []
     yanked_versions = []
 

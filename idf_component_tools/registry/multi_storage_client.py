@@ -90,6 +90,7 @@ class MultiStorageClient:
             yield self.registry_storage_client
 
     def versions(self, component_name: str, spec: str = '*') -> ComponentWithVersions:
+        component_name = component_name.lower()
         cmp_with_versions = ComponentWithVersions(component_name, [])
 
         for storage_client in self.storage_clients:
