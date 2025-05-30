@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -12,6 +12,7 @@ from idf_component_tools.errors import FetchingError
 from idf_component_tools.file_tools import copy_filtered_directory
 from idf_component_tools.git_client import GitClient
 from idf_component_tools.hash_tools.calculate import hash_dir, hash_url
+from idf_component_tools.hash_tools.checksums import ChecksumsModel
 from idf_component_tools.manager import ManifestManager
 from idf_component_tools.utils import (
     ComponentVersion,
@@ -95,9 +96,6 @@ class GitSource(BaseSource):
 
         if not component.version:
             raise FetchingError(f'Version should provided for {component.name}')
-
-        if self.up_to_date(component, download_path):
-            return download_path
 
         temp_dir = tempfile.mkdtemp()
         try:
@@ -215,3 +213,6 @@ class GitSource(BaseSource):
         self._client.ref_and_path_exists(
             repo=self.repo, bare_path=self.cache_path(), path=self.repo_path, ref=ref
         )
+
+    def version_checksums(self, component: 'SolvedComponent') -> t.Optional[ChecksumsModel]:  # noqa: ARG002
+        return None

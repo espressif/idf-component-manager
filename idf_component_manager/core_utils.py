@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import re
@@ -10,13 +10,12 @@ from tqdm import tqdm
 
 from idf_component_tools import notice
 from idf_component_tools.constants import DEFAULT_NAMESPACE, MANIFEST_FILENAME
-from idf_component_tools.errors import ComponentModifiedError, FatalError
+from idf_component_tools.errors import ComponentModifiedError, FatalError, ModifiedComponent
 from idf_component_tools.file_tools import (
     check_unexpected_component_files,
     copy_directories,
     filtered_paths,
 )
-from idf_component_tools.hash_tools.constants import HASH_FILENAME
 from idf_component_tools.manager import ManifestManager, UploadMode
 from idf_component_tools.manifest import Manifest
 from idf_component_tools.manifest.constants import SLUG_BODY_REGEX
@@ -99,32 +98,31 @@ def validate_examples_manifest(path: str) -> None:
         ).load()
 
 
-def raise_component_modified_error(managed_components_dir: str, components: t.List[str]) -> None:
+def raise_component_modified_error(
+    managed_components_dir: str, components: t.List[ModifiedComponent]
+) -> None:
     project_path = Path(managed_components_dir).parent
-    component_example_name = components[0].replace('/', '__')
+    component_example_name = components[0].name.replace('/', '__')
     managed_component_dir = Path(managed_components_dir, component_example_name)
     component_dir = project_path / 'components' / component_example_name
-    hash_path = managed_component_dir / HASH_FILENAME
     error = (
-        'Some components ({component_names}) in the "managed_components" directory were modified '
-        'on the disk since the last run of the CMake. '
+        'Some components in the "managed_components" directory were modified '
+        'on the disk since the last run of the CMake.\n\n'
+        '{modified_components}\n\n'
         'Content of this directory is managed automatically.\n'
         'If you want to keep the changes, '
-        'you can move the directory with the component to the "components"'
-        'directory of your project.\n'
+        'you can move the directory with the component to the "components" '
+        'folder of your project.\n'
         'I.E. for "{component_example}" run:\n'
         'mv {managed_component_dir} {component_dir}\n'
-        'Or, if you want to discard the changes remove the "{hash_filename}" file '
-        "from the component's directory.\n"
-        'I.E. for "{component_example}" run:\n'
-        'rm {hash_path}'
+        'If you want to discard the changes, remove the whole component directory from the "managed_components".'
     ).format(
-        component_names=', '.join(components),
+        modified_components='\n'.join([
+            f'{component.name}: {component.msg}' for component in components
+        ]),
         component_example=component_example_name,
         managed_component_dir=managed_component_dir,
         component_dir=component_dir,
-        hash_path=hash_path,
-        hash_filename=HASH_FILENAME,
     )
     raise ComponentModifiedError(error)
 

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import shutil
@@ -91,9 +91,22 @@ def test_fullclean_managed_components(project):
     project_action(project, 'fullclean')
     assert not Path(project, 'managed_components').is_dir()
     project_action(project, 'reconfigure')
-    component_hash = Path(project, 'managed_components', 'example__cmp', '.component_hash')
-    with component_hash.open(mode='wt') as hash_file:
-        hash_file.write('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+
+    # Create new file and fullclean
+    with open(os.path.join(project, 'managed_components', 'example__cmp', 'test_file'), 'w') as f:
+        f.write('test file')
+
+    project_action(project, 'fullclean')
+    assert not Path(project, 'managed_components', 'example__cmp').is_dir()
+    project_action(project, 'reconfigure')
+
+    # Remove CHECKSUMS.json to test different behavior
+    os.remove(os.path.join(project, 'managed_components', 'example__cmp', 'CHECKSUMS.json'))
+
+    # Create new file again and fullclean
+    with open(os.path.join(project, 'managed_components', 'example__cmp', 'test_file'), 'w') as f:
+        f.write('test file')
+
     project_action(project, 'fullclean')
     assert Path(project, 'managed_components', 'example__cmp').is_dir()
 
@@ -140,5 +153,16 @@ def test_component_hash_exclude_built_files(project, result, monkeypatch):
     assert 'Configuring done' in res
 
     monkeypatch.setenv('IDF_COMPONENT_STRICT_CHECKSUM', 'y')
+    res = project_action(project, 'reconfigure')
+    assert 'Configuring done' in res
+
+    os.remove(
+        os.path.join(
+            project,
+            'managed_components',
+            'test__component_with_exclude_for_component_hash',
+            'CHECKSUMS.json',
+        )
+    )
     res = project_action(project, 'reconfigure')
     assert result in res

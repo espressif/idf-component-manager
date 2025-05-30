@@ -9,7 +9,8 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
+      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
+        python/3.11.10)
     method: GET
     uri: http://localhost:5000/api
   response:
@@ -30,7 +31,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 15 Jan 2025 16:53:24 GMT
+      - Fri, 21 Mar 2025 14:17:55 GMT
       Server:
       - Werkzeug/3.1.3 Python/3.13.0
       Strict-Transport-Security:

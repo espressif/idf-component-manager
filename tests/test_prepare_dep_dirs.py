@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import textwrap
@@ -71,36 +71,38 @@ def test_dependencies_with_different_source(tmp_path, monkeypatch):
         tmp_path,
         """
         dependencies:
-            hfudev/test_comp:  # this one does not exists on production
-                version: "0.4.0"
+          example/cmp:  # this one does not exists on production
+            version: "3.3.9~1"
         """,
     )
 
     assert (tmp_path / 'dependencies.lock').exists()
     with open(tmp_path / 'dependencies.lock') as f:
         lock_data = yaml.safe_load(f)
-    assert lock_data['dependencies']['hfudev/test_comp']
-    assert lock_data['dependencies']['hfudev/test_comp']['source']['type'] == 'service'
+    assert lock_data['dependencies']['example/cmp']
+    assert lock_data['dependencies']['example/cmp']['source']['type'] == 'service'
     touch_timestamp = os.path.getmtime(tmp_path / 'dependencies.lock')
-
     # use git source instead
+
     _generate_lock_file(
         tmp_path,
         """
         dependencies:
-            hfudev/test_comp:  # this one does not exists on production
-                version: "f1c676d941c560655117382c914adc49f3fe3935"  # pragma: allowlist secret
-                git: "https://github.com/hfudev/test_proj.git"
-    """,
+            example/cmp:  # this one does not exists on production
+                version: "121f1c16ecbf502b8595c869cb3649a5b811b024"  # pragma: allowlist secret
+                git: "https://github.com/espressif/example_components.git"
+                path: "cmp"
+        """,
     )
+
     # modified
     assert os.path.getmtime(tmp_path / 'dependencies.lock') > touch_timestamp
 
     assert (tmp_path / 'dependencies.lock').exists()
     with open(tmp_path / 'dependencies.lock') as f:
         lock_data = yaml.safe_load(f)
-    assert lock_data['dependencies']['hfudev/test_comp']
-    assert lock_data['dependencies']['hfudev/test_comp']['source']['type'] == 'git'
+    assert lock_data['dependencies']['example/cmp']
+    assert lock_data['dependencies']['example/cmp']['source']['type'] == 'git'
 
 
 def test_removing_dependency_with_env_var(tmp_path, monkeypatch):
@@ -195,13 +197,14 @@ def test_dependencies_with_partial_mirror(tmp_path, monkeypatch):
             }
         )
     )
+
     _generate_lock_file(
         tmp_path,
         # Requires BUILD_BOARD env var to be set
         """
         dependencies:
-          example/cmp:
-            version: '3.3.7'
+            example/cmp:
+                version: '3.3.7'
         """,
     )
 

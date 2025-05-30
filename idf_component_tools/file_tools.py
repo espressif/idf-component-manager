@@ -52,6 +52,18 @@ UNEXPECTED_FILES = {
 }
 
 
+def get_file_extension(path: str) -> t.Optional[str]:
+    """Returns file extension with leading dot or None"""
+
+    extensions = Path(path).suffixes
+
+    if not extensions:
+        return None
+
+    # Join multiple extensions (for example .tar.gz)
+    return ''.join(extensions)
+
+
 def gitignore_ignored_files(path: t.Union[str, Path]) -> t.Set[Path]:
     """Returns set of files ignored by .gitignore file"""
 

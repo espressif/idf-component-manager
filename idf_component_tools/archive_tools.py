@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Set of tools to work with archives"""
 
@@ -35,6 +35,18 @@ KNOWN_ARCHIVE_EXTENSIONS = [
     'txz',
     'zip',
 ]
+
+
+def get_archive_extension(filename: str) -> t.Optional[str]:
+    """Get archive extension from filename.
+
+    :param filename: archive filename
+    :return: extension or None
+    """
+    try:
+        return f'.{get_format_from_path(filename)[1]}'
+    except ArchiveError:
+        return None
 
 
 def get_format_from_path(path):

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -10,6 +10,7 @@ from pydantic_core.core_schema import SerializerFunctionWrapHandler
 
 from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.errors import InternalError, SourceError
+from idf_component_tools.hash_tools.checksums import ChecksumsModel
 from idf_component_tools.manager import ManifestManager
 from idf_component_tools.messages import warn
 from idf_component_tools.utils import (
@@ -21,6 +22,9 @@ from idf_component_tools.utils import (
 
 from ..build_system_tools import build_name_to_namespace_name
 from .base import BaseSource
+
+if t.TYPE_CHECKING:
+    from idf_component_tools.manifest import SolvedComponent
 
 
 class ManifestContextError(SourceError):
@@ -124,7 +128,7 @@ class LocalSource(BaseSource):
     def volatile(self) -> bool:
         return True
 
-    def download(self, component, download_path):
+    def download(self, component: 'SolvedComponent', download_path: str) -> str:  # noqa: ARG002
         directory_name = os.path.basename(str(self._path))
         component_with_namespace = component.name.replace('/', '__')
         namespace_and_component = component.name.split('/')
@@ -149,7 +153,7 @@ class LocalSource(BaseSource):
             )
         return str(self._path)
 
-    def versions(self, name, spec='*', target=None):
+    def versions(self, name, spec='*', target=None):  # noqa: ARG002
         """For local return version from manifest, or * if manifest not found"""
         name = self._path.name
 
@@ -171,3 +175,6 @@ class LocalSource(BaseSource):
                 HashedComponentVersion(version_str, targets=targets, dependencies=dependencies)
             ],
         )
+
+    def version_checksums(self, component: 'SolvedComponent') -> t.Optional[ChecksumsModel]:  # noqa: ARG002
+        return None

@@ -1,16 +1,12 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
 import typing as t
 from abc import abstractmethod
 
-from idf_component_tools import ComponentManagerSettings
-from idf_component_tools.errors import FetchingError
 from idf_component_tools.file_cache import FileCache
-from idf_component_tools.hash_tools.validate_managed_component import (
-    validate_managed_component_by_hashfile,
-)
+from idf_component_tools.hash_tools.checksums import ChecksumsModel
 from idf_component_tools.semver import SimpleSpec
 from idf_component_tools.utils import BaseModel, ComponentWithVersions, Literal
 
@@ -99,25 +95,6 @@ class BaseSource(BaseModel):
     def normalized_name(self, name: str) -> str:
         return name
 
-    def up_to_date(self, component: 'SolvedComponent', path: str) -> bool:
-        from idf_component_tools.hash_tools.validate_managed_component import (  # avoid circular import
-            validate_managed_component_by_hashdir,
-        )
-
-        if self.downloadable:
-            if not component.component_hash:
-                raise FetchingError('Cannot install component with unknown hash')
-
-            if not os.path.isdir(path):
-                return False
-
-            if ComponentManagerSettings().STRICT_CHECKSUM:
-                return validate_managed_component_by_hashdir(path, component.component_hash)
-            else:
-                return validate_managed_component_by_hashfile(path, component.component_hash)
-
-        return True
-
     def validate_version_spec(self, spec: str) -> bool:
         if not spec or spec == '*':
             return True
@@ -143,3 +120,7 @@ class BaseSource(BaseModel):
         Returns list of absolute paths to directories with component on local filesystem
         """
         return None
+
+    @abstractmethod
+    def version_checksums(self, component: 'SolvedComponent') -> t.Optional[ChecksumsModel]:
+        pass

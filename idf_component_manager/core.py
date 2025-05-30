@@ -29,6 +29,7 @@ from idf_component_tools.debugger import KCONFIG_CONTEXT
 from idf_component_tools.errors import (
     FatalError,
     InternalError,
+    ModifiedComponent,
     NothingToDoError,
     VersionAlreadyExistsError,
     VersionNotFoundError,
@@ -38,12 +39,10 @@ from idf_component_tools.file_tools import (
 )
 from idf_component_tools.git_client import GitClient, clean_tag_version
 from idf_component_tools.hash_tools.errors import (
-    HashDoesNotExistError,
-    HashNotEqualError,
-    HashNotSHA256Error,
+    ValidatingHashError,
 )
-from idf_component_tools.hash_tools.validate_managed_component import (
-    validate_managed_component_hash,
+from idf_component_tools.hash_tools.validate import (
+    validate_hashfile_eq_hashdir,
 )
 from idf_component_tools.manager import (
     ManifestManager,
@@ -476,18 +475,20 @@ class ComponentManager:
         if not managed_components_dir.is_dir():
             return
 
-        undeleted_components = []
+        undeleted_components: t.List[ModifiedComponent] = []
         for component_dir in managed_components_dir.glob('*/'):
-            if not (managed_components_dir / component_dir).is_dir():
+            component_full_path = managed_components_dir / component_dir
+
+            if not (component_full_path).is_dir():
                 continue
 
             try:
-                validate_managed_component_hash(str(managed_components_dir / component_dir))
-                shutil.rmtree(str(managed_components_dir / component_dir))
-            except (HashNotEqualError, HashNotSHA256Error):
-                undeleted_components.append(component_dir.name)
-            except HashDoesNotExistError:
-                pass
+                if not ComponentManagerSettings().OVERWRITE_MANAGED_COMPONENTS:
+                    validate_hashfile_eq_hashdir(component_full_path)
+
+                shutil.rmtree(str(component_full_path))
+            except ValidatingHashError as e:
+                undeleted_components.append(ModifiedComponent(component_dir.name, str(e)))
 
         if undeleted_components:
             raise_component_modified_error(str(managed_components_dir), undeleted_components)

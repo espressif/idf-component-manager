@@ -9,7 +9,8 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
+      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
+        python/3.11.10)
     method: GET
     uri: http://localhost:5000/api
   response:
@@ -30,7 +31,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 15 Jan 2025 16:53:28 GMT
+      - Thu, 22 May 2025 14:25:04 GMT
       Server:
       - Werkzeug/3.1.3 Python/3.13.0
       Strict-Transport-Security:
@@ -50,15 +51,16 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
+      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
+        python/3.11.10)
     method: GET
     uri: http://localhost:9000/test-public/components/test_component_manager/stb_and_ynk_and_pre.json
   response:
     body:
       string: '{"name": "stb_and_ynk_and_pre", "namespace": "test_component_manager",
-        "created_at": "2025-01-15T16:13:08.437577+00:00", "featured": false, "versions":
-        [{"id": "e02429d7-5e0f-45c4-9406-35d6af18e05e", "version": "2.0.0-alpha1",
-        "created_at": "2025-01-15T16:13:17.262240+00:00", "description": "This component
+        "created_at": "2025-03-21T13:54:13.409108+00:00", "featured": false, "versions":
+        [{"id": "15147fe0-be11-4f0d-a6c6-b44ad8394b73", "version": "2.0.0-alpha1",
+        "created_at": "2025-03-21T13:54:20.659293+00:00", "description": "This component
         is an example, to be used with the IDF component manager.", "component_hash":
         "d93e8f72c23c70c7cc4120066dc4a71d80b4c0fa2c8f8df210fe921b4f2c918e", "url":
         "components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/test_component_manager__stb_and_ynk_and_pre-v2.0.0-alpha1.zip",
@@ -68,17 +70,13 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "df045359-1124-4a52-9966-4fd41bbed5b9", "name": "cmp_ex",
-        "url": "63d7f290-8c7d-450e-8744-87e88fa263a9/examples/df045359-1124-4a52-9966-4fd41bbed5b9.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__",
-        "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*",
-        "**/dist/**/*", "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "yanked_at": null, "yanked_message": null, "build_metadata_keys":
-        ["dependencies-*-type:string", "version-type:string"], "info_metadata_keys":
-        ["description-type:string", "url-type:string"]}, {"id": "651f3f00-760c-40e8-90a8-58c75057126e",
-        "version": "1.0.1", "created_at": "2025-01-15T16:13:13.021257+00:00", "description":
+        "examples": [{"id": "46380e8b-da72-4678-a98c-f9d9e659b861", "name": "cmp_ex",
+        "url": "22a26e01-e136-4002-b26f-cfce3dd1376c/examples/46380e8b-da72-4678-a98c-f9d9e659b861.tgz",
+        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/CHECKSUMS.json",
+        "yanked_at": null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-type:string",
+        "version-type:string"], "info_metadata_keys": ["description-type:string",
+        "url-type:string"]}, {"id": "24a3ce11-bc5a-44ef-88a1-c0bf07f8524f", "version":
+        "1.0.1", "created_at": "2025-03-21T13:54:17.363047+00:00", "description":
         "This component is an example, to be used with the IDF component manager.",
         "component_hash": "e8bcd12eaac473865a664e01627ed8548a4b9f1479e5c4dedb852b7edb28356f",
         "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.1/test_component_manager__stb_and_ynk_and_pre-v1.0.1.zip",
@@ -88,17 +86,13 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.1/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "c19c292b-0d96-4fac-8192-d69622015cc3", "name": "cmp_ex",
-        "url": "c9b2564a-cb11-4c1e-ab58-a310ae0e0a8b/examples/c19c292b-0d96-4fac-8192-d69622015cc3.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__",
-        "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*",
-        "**/dist/**/*", "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "yanked_at": null, "yanked_message": null, "build_metadata_keys":
-        ["dependencies-*-type:string", "version-type:string"], "info_metadata_keys":
-        ["description-type:string", "url-type:string"]}, {"id": "098ee7e3-3eb7-457b-82fc-df9d28b1b2ec",
-        "version": "1.0.0", "created_at": "2025-01-15T16:13:08.651113+00:00", "description":
+        "examples": [{"id": "39c1db23-e357-48d7-81fb-068d973c2888", "name": "cmp_ex",
+        "url": "b8e1bacc-0713-47f7-978e-9aec627c9fcb/examples/39c1db23-e357-48d7-81fb-068d973c2888.tgz",
+        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk_and_pre/1.0.1/CHECKSUMS.json",
+        "yanked_at": null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-type:string",
+        "version-type:string"], "info_metadata_keys": ["description-type:string",
+        "url-type:string"]}, {"id": "89af24dd-edd1-414d-9ede-6190a6676f3f", "version":
+        "1.0.0", "created_at": "2025-03-21T13:54:13.989338+00:00", "description":
         "This component is an example, to be used with the IDF component manager.",
         "component_hash": "6aa92cea9fc3c109d000105a7762864e3e5433ebb7a177d15b35d879cef78aa4",
         "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.0/test_component_manager__stb_and_ynk_and_pre-v1.0.0.zip",
@@ -108,32 +102,27 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.0/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "b1f7a6dc-c0e3-4aa6-8f92-b8e0e803e1d3", "name": "cmp_ex",
-        "url": "86fc7bc4-3885-4348-bdbc-0692f6a35c90/examples/b1f7a6dc-c0e3-4aa6-8f92-b8e0e803e1d3.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__",
-        "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*",
-        "**/dist/**/*", "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "yanked_at": "2025-01-15T16:13:11.563887+00:00", "yanked_message":
-        "Yanking a test version", "build_metadata_keys": ["dependencies-*-type:string",
-        "version-type:string"], "info_metadata_keys": ["description-type:string",
-        "url-type:string"]}]}'
+        "examples": [{"id": "903b683a-aee6-4f46-b49c-a2d306ce0c60", "name": "cmp_ex",
+        "url": "a56e8f0b-9650-410f-bd7a-4200e43fde92/examples/903b683a-aee6-4f46-b49c-a2d306ce0c60.tgz",
+        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk_and_pre/1.0.0/CHECKSUMS.json",
+        "yanked_at": "2025-03-21T13:54:16.613369+00:00", "yanked_message": "Yanking
+        a test version", "build_metadata_keys": ["dependencies-*-type:string", "version-type:string"],
+        "info_metadata_keys": ["description-type:string", "url-type:string"]}]}'
     headers:
       Accept-Ranges:
       - bytes
       Cache-Control:
       - max-age=300
       Content-Length:
-      - '5599'
+      - '4730'
       Content-Type:
       - binary/octet-stream
       Date:
-      - Wed, 15 Jan 2025 16:53:28 GMT
+      - Thu, 22 May 2025 14:25:04 GMT
       ETag:
-      - '"3c6baf66c1e154e5671b51aa913d45f3"'
+      - '"452d02a7cf3ec15670279a98bff27e9e"'
       Last-Modified:
-      - Wed, 15 Jan 2025 16:13:17 GMT
+      - Fri, 11 Apr 2025 13:12:46 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -144,9 +133,13 @@ interactions:
       X-Amz-Id-2:
       - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
       X-Amz-Request-Id:
-      - 181AEBECB7B9EEC9
+      - 1841DF87D9DCBC42
       X-Content-Type-Options:
       - nosniff
+      X-Ratelimit-Limit:
+      - '4341'
+      X-Ratelimit-Remaining:
+      - '4341'
       X-Xss-Protection:
       - 1; mode=block
     status:
@@ -162,15 +155,16 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
+      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
+        python/3.11.10)
     method: GET
     uri: http://localhost:9000/test-public/components/test_component_manager/stb_and_ynk_and_pre.json
   response:
     body:
       string: '{"name": "stb_and_ynk_and_pre", "namespace": "test_component_manager",
-        "created_at": "2025-01-15T16:13:08.437577+00:00", "featured": false, "versions":
-        [{"id": "e02429d7-5e0f-45c4-9406-35d6af18e05e", "version": "2.0.0-alpha1",
-        "created_at": "2025-01-15T16:13:17.262240+00:00", "description": "This component
+        "created_at": "2025-03-21T13:54:13.409108+00:00", "featured": false, "versions":
+        [{"id": "15147fe0-be11-4f0d-a6c6-b44ad8394b73", "version": "2.0.0-alpha1",
+        "created_at": "2025-03-21T13:54:20.659293+00:00", "description": "This component
         is an example, to be used with the IDF component manager.", "component_hash":
         "d93e8f72c23c70c7cc4120066dc4a71d80b4c0fa2c8f8df210fe921b4f2c918e", "url":
         "components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/test_component_manager__stb_and_ynk_and_pre-v2.0.0-alpha1.zip",
@@ -180,17 +174,13 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "df045359-1124-4a52-9966-4fd41bbed5b9", "name": "cmp_ex",
-        "url": "63d7f290-8c7d-450e-8744-87e88fa263a9/examples/df045359-1124-4a52-9966-4fd41bbed5b9.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__",
-        "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*",
-        "**/dist/**/*", "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "yanked_at": null, "yanked_message": null, "build_metadata_keys":
-        ["dependencies-*-type:string", "version-type:string"], "info_metadata_keys":
-        ["description-type:string", "url-type:string"]}, {"id": "651f3f00-760c-40e8-90a8-58c75057126e",
-        "version": "1.0.1", "created_at": "2025-01-15T16:13:13.021257+00:00", "description":
+        "examples": [{"id": "46380e8b-da72-4678-a98c-f9d9e659b861", "name": "cmp_ex",
+        "url": "22a26e01-e136-4002-b26f-cfce3dd1376c/examples/46380e8b-da72-4678-a98c-f9d9e659b861.tgz",
+        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/CHECKSUMS.json",
+        "yanked_at": null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-type:string",
+        "version-type:string"], "info_metadata_keys": ["description-type:string",
+        "url-type:string"]}, {"id": "24a3ce11-bc5a-44ef-88a1-c0bf07f8524f", "version":
+        "1.0.1", "created_at": "2025-03-21T13:54:17.363047+00:00", "description":
         "This component is an example, to be used with the IDF component manager.",
         "component_hash": "e8bcd12eaac473865a664e01627ed8548a4b9f1479e5c4dedb852b7edb28356f",
         "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.1/test_component_manager__stb_and_ynk_and_pre-v1.0.1.zip",
@@ -200,17 +190,13 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.1/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "c19c292b-0d96-4fac-8192-d69622015cc3", "name": "cmp_ex",
-        "url": "c9b2564a-cb11-4c1e-ab58-a310ae0e0a8b/examples/c19c292b-0d96-4fac-8192-d69622015cc3.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__",
-        "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*",
-        "**/dist/**/*", "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "yanked_at": null, "yanked_message": null, "build_metadata_keys":
-        ["dependencies-*-type:string", "version-type:string"], "info_metadata_keys":
-        ["description-type:string", "url-type:string"]}, {"id": "098ee7e3-3eb7-457b-82fc-df9d28b1b2ec",
-        "version": "1.0.0", "created_at": "2025-01-15T16:13:08.651113+00:00", "description":
+        "examples": [{"id": "39c1db23-e357-48d7-81fb-068d973c2888", "name": "cmp_ex",
+        "url": "b8e1bacc-0713-47f7-978e-9aec627c9fcb/examples/39c1db23-e357-48d7-81fb-068d973c2888.tgz",
+        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk_and_pre/1.0.1/CHECKSUMS.json",
+        "yanked_at": null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-type:string",
+        "version-type:string"], "info_metadata_keys": ["description-type:string",
+        "url-type:string"]}, {"id": "89af24dd-edd1-414d-9ede-6190a6676f3f", "version":
+        "1.0.0", "created_at": "2025-03-21T13:54:13.989338+00:00", "description":
         "This component is an example, to be used with the IDF component manager.",
         "component_hash": "6aa92cea9fc3c109d000105a7762864e3e5433ebb7a177d15b35d879cef78aa4",
         "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.0/test_component_manager__stb_and_ynk_and_pre-v1.0.0.zip",
@@ -220,32 +206,27 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.0/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "b1f7a6dc-c0e3-4aa6-8f92-b8e0e803e1d3", "name": "cmp_ex",
-        "url": "86fc7bc4-3885-4348-bdbc-0692f6a35c90/examples/b1f7a6dc-c0e3-4aa6-8f92-b8e0e803e1d3.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__",
-        "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*",
-        "**/dist/**/*", "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "yanked_at": "2025-01-15T16:13:11.563887+00:00", "yanked_message":
-        "Yanking a test version", "build_metadata_keys": ["dependencies-*-type:string",
-        "version-type:string"], "info_metadata_keys": ["description-type:string",
-        "url-type:string"]}]}'
+        "examples": [{"id": "903b683a-aee6-4f46-b49c-a2d306ce0c60", "name": "cmp_ex",
+        "url": "a56e8f0b-9650-410f-bd7a-4200e43fde92/examples/903b683a-aee6-4f46-b49c-a2d306ce0c60.tgz",
+        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk_and_pre/1.0.0/CHECKSUMS.json",
+        "yanked_at": "2025-03-21T13:54:16.613369+00:00", "yanked_message": "Yanking
+        a test version", "build_metadata_keys": ["dependencies-*-type:string", "version-type:string"],
+        "info_metadata_keys": ["description-type:string", "url-type:string"]}]}'
     headers:
       Accept-Ranges:
       - bytes
       Cache-Control:
       - max-age=300
       Content-Length:
-      - '5599'
+      - '4730'
       Content-Type:
       - binary/octet-stream
       Date:
-      - Wed, 15 Jan 2025 16:53:28 GMT
+      - Thu, 22 May 2025 14:25:04 GMT
       ETag:
-      - '"3c6baf66c1e154e5671b51aa913d45f3"'
+      - '"452d02a7cf3ec15670279a98bff27e9e"'
       Last-Modified:
-      - Wed, 15 Jan 2025 16:13:17 GMT
+      - Fri, 11 Apr 2025 13:12:46 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -256,9 +237,13 @@ interactions:
       X-Amz-Id-2:
       - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
       X-Amz-Request-Id:
-      - 181AEBECB8355B23
+      - 1841DF87DA94956A
       X-Content-Type-Options:
       - nosniff
+      X-Ratelimit-Limit:
+      - '4341'
+      X-Ratelimit-Remaining:
+      - '4341'
       X-Xss-Protection:
       - 1; mode=block
     status:
@@ -274,7 +259,8 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
+      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
+        python/3.11.10)
     method: GET
     uri: http://localhost:9000/test-public/components/test_component_manager/stb_and_ynk_and_pre/1.0.1/test_component_manager__stb_and_ynk_and_pre-v1.0.1.zip
   response:
@@ -282,16 +268,16 @@ interactions:
       string: !!binary |
         UEsDBBQAAAAIAAAAIQBudpsIbwAAAHQAAAAOAAAAQ01ha2VMaXN0cy50eHRLzk3MTo3PzczLzC3N
         jS9KLSzNLEpN0QhzDQr29PdTMNYz1eQqKMrPSk0u0QiA0H6JuamaXJkpafHJ+bkF+XmpeSVAjemZ
-        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
+        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
@@ -302,25 +288,25 @@ interactions:
         GqVvELC+HxkQB5Y9WBbpl90pG/3CUyCffCH4mUiwnm4Xb++rlzVc51c3syyjYF2qcXqxWG+/Vw/L
         4vVu8/hjIrNTMyL+n5CPapad5dT6rsDjLPsFUEsDBBQAAAAIAAAAIQDXTMITPAAAAE0AAAAjAAAA
         ZXhhbXBsZXMvY21wX2V4L21haW4vQ01ha2VMaXN0cy50eHTLTEmLT87PLcjPS80riS9KTc8sLkkt
-        0ggOcg5WUErOLYhPrdBLVuJSwAI8/Zx9Ql1c4108g4Bq9ZQ0uQBQSwMEFAAAAAgAAAAhAN7TcKRn
-        AAAAdwAAACYAAABleGFtcGxlcy9jbXBfZXgvbWFpbi9pZGZfY29tcG9uZW50LnltbB2JQQrCMBRE
-        9znFkO5TxV23SsGFZ5DQjPqh+fkkQTy+bWHg8d4MA+63GdeSrSi14xE1vll3youtY5aVLtGoiboI
-        2+QA/mK2leOSbVfgy9qk6AR/Cadw9kcsW62S+LTYP9sVwnjMuz9QSwMEFAAAAAgAAAAhAHC3Vima
+        0ggOcg5WUErOLYhPrdBLVuJSwAI8/Zx9Ql1c4108g4Bq9ZQ0uQBQSwMEFAAAAAgAAAAhAHC3Vima
         AAAAsAAAAB0AAABleGFtcGxlcy9jbXBfZXgvbWFpbi9jbXBfZXguYz2MPQuDMBQA9/yKh11U8APp
         ZKeiLRSEFnToJiE+zYMYg0lLpfS/N11628FxWcwghvZW35MzKawWs600Sdfhy5VQ5MUeTtasaC2N
         0G7W4WwhbCXXk+QUQXWFpqv9479pSKC2mFwG1I5GwrWEo+FCYlKkuc8ytiMt1GNACMRsUhkw9lxo
-        AG5MP3PS4c8i9mbg8UUvUakljA7sw75QSwECFAMUAAAACAAAACEAbnabCG8AAAB0AAAADgAAAAAA
-        AAAAAAAAgAEAAAAAQ01ha2VMaXN0cy50eHRQSwECFAMUAAAACAAAACEAp8brVgoAAAAIAAAABwAA
-        AAAAAAAAAAAAgAGbAAAATElDRU5TRVBLAQIUAxQAAAAIAAAAIQCmwGOklAAAAMUAAAARAAAAAAAA
-        AAAAAACAAcoAAABpZGZfY29tcG9uZW50LnltbFBLAQIUAxQAAAAIAAAAIQCFuI5HEgAAABIAAAAJ
-        AAAAAAAAAAAAAACAAY0BAABSRUFETUUubWRQSwECFAMUAAAACAAAACEATIV5qrMAAADVAAAABQAA
-        AAAAAAAAAAAAgAHGAQAAY21wLmNQSwECFAMUAAAACAAAACEAOX0gn4AAAACLAAAADQAAAAAAAAAA
+        AG5MP3PS4c8i9mbg8UUvUakljA7sw75QSwMEFAAAAAgAAAAhAN7TcKRnAAAAdwAAACYAAABleGFt
+        cGxlcy9jbXBfZXgvbWFpbi9pZGZfY29tcG9uZW50LnltbB2JQQrCMBRE9znFkO5TxV23SsGFZ5DQ
+        jPqh+fkkQTy+bWHg8d4MA+63GdeSrSi14xE1vll3youtY5aVLtGoiboI2+QA/mK2leOSbVfgy9qk
+        6AR/Cadw9kcsW62S+LTYP9sVwnjMuz9QSwECFAMUAAAACAAAACEAbnabCG8AAAB0AAAADgAAAAAA
+        AAAAAAAAgAEAAAAAQ01ha2VMaXN0cy50eHRQSwECFAMUAAAACAAAACEAhbiORxIAAAASAAAACQAA
+        AAAAAAAAAAAAgAGbAAAAUkVBRE1FLm1kUEsBAhQDFAAAAAgAAAAhAEyFeaqzAAAA1QAAAAUAAAAA
+        AAAAAAAAAIAB1AAAAGNtcC5jUEsBAhQDFAAAAAgAAAAhAKbAY6SUAAAAxQAAABEAAAAAAAAAAAAA
+        AIABqgEAAGlkZl9jb21wb25lbnQueW1sUEsBAhQDFAAAAAgAAAAhAKfG61YKAAAACAAAAAcAAAAA
+        AAAAAAAAAIABbQIAAExJQ0VOU0VQSwECFAMUAAAACAAAACEAOX0gn4AAAACLAAAADQAAAAAAAAAA
         AAAAgAGcAgAAaW5jbHVkZS9jbXAuaFBLAQIUAxQAAAAIAAAAIQBXbieXDAEAAG8BAAAeAAAAAAAA
         AAAAAACAAUcDAABleGFtcGxlcy9jbXBfZXgvQ01ha2VMaXN0cy50eHRQSwECFAMUAAAACAAAACEA
         10zCEzwAAABNAAAAIwAAAAAAAAAAAAAAgAGPBAAAZXhhbXBsZXMvY21wX2V4L21haW4vQ01ha2VM
-        aXN0cy50eHRQSwECFAMUAAAACAAAACEA3tNwpGcAAAB3AAAAJgAAAAAAAAAAAAAAgAEMBQAAZXhh
-        bXBsZXMvY21wX2V4L21haW4vaWRmX2NvbXBvbmVudC55bWxQSwECFAMUAAAACAAAACEAcLdWKZoA
-        AACwAAAAHQAAAAAAAAAAAAAAgAG3BQAAZXhhbXBsZXMvY21wX2V4L21haW4vY21wX2V4LmNQSwUG
+        aXN0cy50eHRQSwECFAMUAAAACAAAACEAcLdWKZoAAACwAAAAHQAAAAAAAAAAAAAAgAEMBQAAZXhh
+        bXBsZXMvY21wX2V4L21haW4vY21wX2V4LmNQSwECFAMUAAAACAAAACEA3tNwpGcAAAB3AAAAJgAA
+        AAAAAAAAAAAAgAHhBQAAZXhhbXBsZXMvY21wX2V4L21haW4vaWRmX2NvbXBvbmVudC55bWxQSwUG
         AAAAAAoACgCRAgAAjAYAAAAA
     headers:
       Accept-Ranges:
@@ -330,11 +316,11 @@ interactions:
       Content-Type:
       - binary/octet-stream
       Date:
-      - Wed, 15 Jan 2025 16:53:28 GMT
+      - Thu, 22 May 2025 14:25:04 GMT
       ETag:
-      - '"40ea5e2309dc6a289658eaefea010db8"'
+      - '"68e17ccac6174d550ad03ce9ef85031b"'
       Last-Modified:
-      - Wed, 15 Jan 2025 16:13:12 GMT
+      - Fri, 21 Mar 2025 13:54:17 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -345,9 +331,13 @@ interactions:
       X-Amz-Id-2:
       - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
       X-Amz-Request-Id:
-      - 181AEBECB89FB1F5
+      - 1841DF87DB0DE3B0
       X-Content-Type-Options:
       - nosniff
+      X-Ratelimit-Limit:
+      - '4341'
+      X-Ratelimit-Remaining:
+      - '4341'
       X-Xss-Protection:
       - 1; mode=block
     status:
@@ -363,7 +353,70 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
+      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
+        python/3.11.10)
+    method: GET
+    uri: http://localhost:9000/test-public/components/test_component_manager/stb_and_ynk_and_pre/1.0.1/CHECKSUMS.json
+  response:
+    body:
+      string: '{"version": "1.0", "algorithm": "sha256", "created_at": "2025-03-21T13:54:17.210106+00:00",
+        "files": [{"path": "CMakeLists.txt", "size": 116, "hash": "8669d01f35122a010bc9db440dcfd5c85f0e25fb4dae8198c35928d0824c0891"},
+        {"path": "README.md", "size": 18, "hash": "8142405f0800c513bb954570e30ef959ba8c3149ec7291764a07fe4d9e0add20"},
+        {"path": "cmp.c", "size": 213, "hash": "d3a068cdba6c02214e667418b746cb18e0fbab867296641a9fff39140bb593a8"},
+        {"path": "idf_component.yml", "size": 197, "hash": "d7d32532d4517353dea83cff8088392668d7d4fe389b3d338563b5352016416d"},
+        {"path": "LICENSE", "size": 8, "hash": "c0c56958ef8be5c1979366896b7e0c7206949a5aa2b23f51429c7f56b10990d3"},
+        {"path": "include/cmp.h", "size": 139, "hash": "f0b2e9f159f2e5b2b00d3a9e36990e09c5ac1525c54d74955c74d7346f46b9f4"},
+        {"path": "examples/cmp_ex/CMakeLists.txt", "size": 367, "hash": "648656b95877ec258644ad42b52452800fc00198f5b873af364d757238b2b2d0"},
+        {"path": "examples/cmp_ex/main/CMakeLists.txt", "size": 77, "hash": "13143b3c59f6b7fb35c129db86e6cb0f5e4a628b74de06e90604a75b3e92725d"},
+        {"path": "examples/cmp_ex/main/cmp_ex.c", "size": 176, "hash": "ac0d7fb42f389d502f00eb5dcc4e3c06ba6fdb8618bffeea0298ee329bff30f6"},
+        {"path": "examples/cmp_ex/main/idf_component.yml", "size": 119, "hash": "5c0b235d6f8aa8b194b662b9ecbf546473ffb88d9a6efac4b5bfddc18d3f2227"}]}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '1325'
+      Content-Type:
+      - binary/octet-stream
+      Date:
+      - Thu, 22 May 2025 14:25:04 GMT
+      ETag:
+      - '"89928953d433c8d100b270638b5ec4dd"'
+      Last-Modified:
+      - Fri, 21 Mar 2025 13:54:17 GMT
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      - Accept-Encoding
+      X-Amz-Id-2:
+      - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
+      X-Amz-Request-Id:
+      - 1841DF87DB7BA13A
+      X-Content-Type-Options:
+      - nosniff
+      X-Ratelimit-Limit:
+      - '4341'
+      X-Ratelimit-Remaining:
+      - '4341'
+      X-Xss-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
+        python/3.11.10)
     method: GET
     uri: http://localhost:5000/api
   response:
@@ -384,7 +437,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 15 Jan 2025 16:53:28 GMT
+      - Thu, 22 May 2025 14:25:05 GMT
       Server:
       - Werkzeug/3.1.3 Python/3.13.0
       Strict-Transport-Security:
@@ -404,15 +457,16 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
+      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
+        python/3.11.10)
     method: GET
     uri: http://localhost:9000/test-public/components/test_component_manager/stb_and_ynk_and_pre.json
   response:
     body:
       string: '{"name": "stb_and_ynk_and_pre", "namespace": "test_component_manager",
-        "created_at": "2025-01-15T16:13:08.437577+00:00", "featured": false, "versions":
-        [{"id": "e02429d7-5e0f-45c4-9406-35d6af18e05e", "version": "2.0.0-alpha1",
-        "created_at": "2025-01-15T16:13:17.262240+00:00", "description": "This component
+        "created_at": "2025-03-21T13:54:13.409108+00:00", "featured": false, "versions":
+        [{"id": "15147fe0-be11-4f0d-a6c6-b44ad8394b73", "version": "2.0.0-alpha1",
+        "created_at": "2025-03-21T13:54:20.659293+00:00", "description": "This component
         is an example, to be used with the IDF component manager.", "component_hash":
         "d93e8f72c23c70c7cc4120066dc4a71d80b4c0fa2c8f8df210fe921b4f2c918e", "url":
         "components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/test_component_manager__stb_and_ynk_and_pre-v2.0.0-alpha1.zip",
@@ -422,17 +476,13 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "df045359-1124-4a52-9966-4fd41bbed5b9", "name": "cmp_ex",
-        "url": "63d7f290-8c7d-450e-8744-87e88fa263a9/examples/df045359-1124-4a52-9966-4fd41bbed5b9.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__",
-        "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*",
-        "**/dist/**/*", "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "yanked_at": null, "yanked_message": null, "build_metadata_keys":
-        ["dependencies-*-type:string", "version-type:string"], "info_metadata_keys":
-        ["description-type:string", "url-type:string"]}, {"id": "651f3f00-760c-40e8-90a8-58c75057126e",
-        "version": "1.0.1", "created_at": "2025-01-15T16:13:13.021257+00:00", "description":
+        "examples": [{"id": "46380e8b-da72-4678-a98c-f9d9e659b861", "name": "cmp_ex",
+        "url": "22a26e01-e136-4002-b26f-cfce3dd1376c/examples/46380e8b-da72-4678-a98c-f9d9e659b861.tgz",
+        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/CHECKSUMS.json",
+        "yanked_at": null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-type:string",
+        "version-type:string"], "info_metadata_keys": ["description-type:string",
+        "url-type:string"]}, {"id": "24a3ce11-bc5a-44ef-88a1-c0bf07f8524f", "version":
+        "1.0.1", "created_at": "2025-03-21T13:54:17.363047+00:00", "description":
         "This component is an example, to be used with the IDF component manager.",
         "component_hash": "e8bcd12eaac473865a664e01627ed8548a4b9f1479e5c4dedb852b7edb28356f",
         "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.1/test_component_manager__stb_and_ynk_and_pre-v1.0.1.zip",
@@ -442,17 +492,13 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.1/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "c19c292b-0d96-4fac-8192-d69622015cc3", "name": "cmp_ex",
-        "url": "c9b2564a-cb11-4c1e-ab58-a310ae0e0a8b/examples/c19c292b-0d96-4fac-8192-d69622015cc3.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__",
-        "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*",
-        "**/dist/**/*", "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "yanked_at": null, "yanked_message": null, "build_metadata_keys":
-        ["dependencies-*-type:string", "version-type:string"], "info_metadata_keys":
-        ["description-type:string", "url-type:string"]}, {"id": "098ee7e3-3eb7-457b-82fc-df9d28b1b2ec",
-        "version": "1.0.0", "created_at": "2025-01-15T16:13:08.651113+00:00", "description":
+        "examples": [{"id": "39c1db23-e357-48d7-81fb-068d973c2888", "name": "cmp_ex",
+        "url": "b8e1bacc-0713-47f7-978e-9aec627c9fcb/examples/39c1db23-e357-48d7-81fb-068d973c2888.tgz",
+        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk_and_pre/1.0.1/CHECKSUMS.json",
+        "yanked_at": null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-type:string",
+        "version-type:string"], "info_metadata_keys": ["description-type:string",
+        "url-type:string"]}, {"id": "89af24dd-edd1-414d-9ede-6190a6676f3f", "version":
+        "1.0.0", "created_at": "2025-03-21T13:54:13.989338+00:00", "description":
         "This component is an example, to be used with the IDF component manager.",
         "component_hash": "6aa92cea9fc3c109d000105a7762864e3e5433ebb7a177d15b35d879cef78aa4",
         "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.0/test_component_manager__stb_and_ynk_and_pre-v1.0.0.zip",
@@ -462,32 +508,27 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.0/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "b1f7a6dc-c0e3-4aa6-8f92-b8e0e803e1d3", "name": "cmp_ex",
-        "url": "86fc7bc4-3885-4348-bdbc-0692f6a35c90/examples/b1f7a6dc-c0e3-4aa6-8f92-b8e0e803e1d3.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__",
-        "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*",
-        "**/dist/**/*", "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "yanked_at": "2025-01-15T16:13:11.563887+00:00", "yanked_message":
-        "Yanking a test version", "build_metadata_keys": ["dependencies-*-type:string",
-        "version-type:string"], "info_metadata_keys": ["description-type:string",
-        "url-type:string"]}]}'
+        "examples": [{"id": "903b683a-aee6-4f46-b49c-a2d306ce0c60", "name": "cmp_ex",
+        "url": "a56e8f0b-9650-410f-bd7a-4200e43fde92/examples/903b683a-aee6-4f46-b49c-a2d306ce0c60.tgz",
+        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk_and_pre/1.0.0/CHECKSUMS.json",
+        "yanked_at": "2025-03-21T13:54:16.613369+00:00", "yanked_message": "Yanking
+        a test version", "build_metadata_keys": ["dependencies-*-type:string", "version-type:string"],
+        "info_metadata_keys": ["description-type:string", "url-type:string"]}]}'
     headers:
       Accept-Ranges:
       - bytes
       Cache-Control:
       - max-age=300
       Content-Length:
-      - '5599'
+      - '4730'
       Content-Type:
       - binary/octet-stream
       Date:
-      - Wed, 15 Jan 2025 16:53:28 GMT
+      - Thu, 22 May 2025 14:25:05 GMT
       ETag:
-      - '"3c6baf66c1e154e5671b51aa913d45f3"'
+      - '"452d02a7cf3ec15670279a98bff27e9e"'
       Last-Modified:
-      - Wed, 15 Jan 2025 16:13:17 GMT
+      - Fri, 11 Apr 2025 13:12:46 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -498,9 +539,13 @@ interactions:
       X-Amz-Id-2:
       - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
       X-Amz-Request-Id:
-      - 181AEBECB963FCC5
+      - 1841DF87DCC8B2D5
       X-Content-Type-Options:
       - nosniff
+      X-Ratelimit-Limit:
+      - '4341'
+      X-Ratelimit-Remaining:
+      - '4341'
       X-Xss-Protection:
       - 1; mode=block
     status:
@@ -516,15 +561,16 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
+      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
+        python/3.11.10)
     method: GET
     uri: http://localhost:9000/test-public/components/test_component_manager/stb_and_ynk_and_pre.json
   response:
     body:
       string: '{"name": "stb_and_ynk_and_pre", "namespace": "test_component_manager",
-        "created_at": "2025-01-15T16:13:08.437577+00:00", "featured": false, "versions":
-        [{"id": "e02429d7-5e0f-45c4-9406-35d6af18e05e", "version": "2.0.0-alpha1",
-        "created_at": "2025-01-15T16:13:17.262240+00:00", "description": "This component
+        "created_at": "2025-03-21T13:54:13.409108+00:00", "featured": false, "versions":
+        [{"id": "15147fe0-be11-4f0d-a6c6-b44ad8394b73", "version": "2.0.0-alpha1",
+        "created_at": "2025-03-21T13:54:20.659293+00:00", "description": "This component
         is an example, to be used with the IDF component manager.", "component_hash":
         "d93e8f72c23c70c7cc4120066dc4a71d80b4c0fa2c8f8df210fe921b4f2c918e", "url":
         "components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/test_component_manager__stb_and_ynk_and_pre-v2.0.0-alpha1.zip",
@@ -534,17 +580,13 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "df045359-1124-4a52-9966-4fd41bbed5b9", "name": "cmp_ex",
-        "url": "63d7f290-8c7d-450e-8744-87e88fa263a9/examples/df045359-1124-4a52-9966-4fd41bbed5b9.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__",
-        "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*",
-        "**/dist/**/*", "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "yanked_at": null, "yanked_message": null, "build_metadata_keys":
-        ["dependencies-*-type:string", "version-type:string"], "info_metadata_keys":
-        ["description-type:string", "url-type:string"]}, {"id": "651f3f00-760c-40e8-90a8-58c75057126e",
-        "version": "1.0.1", "created_at": "2025-01-15T16:13:13.021257+00:00", "description":
+        "examples": [{"id": "46380e8b-da72-4678-a98c-f9d9e659b861", "name": "cmp_ex",
+        "url": "22a26e01-e136-4002-b26f-cfce3dd1376c/examples/46380e8b-da72-4678-a98c-f9d9e659b861.tgz",
+        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/CHECKSUMS.json",
+        "yanked_at": null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-type:string",
+        "version-type:string"], "info_metadata_keys": ["description-type:string",
+        "url-type:string"]}, {"id": "24a3ce11-bc5a-44ef-88a1-c0bf07f8524f", "version":
+        "1.0.1", "created_at": "2025-03-21T13:54:17.363047+00:00", "description":
         "This component is an example, to be used with the IDF component manager.",
         "component_hash": "e8bcd12eaac473865a664e01627ed8548a4b9f1479e5c4dedb852b7edb28356f",
         "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.1/test_component_manager__stb_and_ynk_and_pre-v1.0.1.zip",
@@ -554,17 +596,13 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.1/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "c19c292b-0d96-4fac-8192-d69622015cc3", "name": "cmp_ex",
-        "url": "c9b2564a-cb11-4c1e-ab58-a310ae0e0a8b/examples/c19c292b-0d96-4fac-8192-d69622015cc3.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__",
-        "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*",
-        "**/dist/**/*", "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "yanked_at": null, "yanked_message": null, "build_metadata_keys":
-        ["dependencies-*-type:string", "version-type:string"], "info_metadata_keys":
-        ["description-type:string", "url-type:string"]}, {"id": "098ee7e3-3eb7-457b-82fc-df9d28b1b2ec",
-        "version": "1.0.0", "created_at": "2025-01-15T16:13:08.651113+00:00", "description":
+        "examples": [{"id": "39c1db23-e357-48d7-81fb-068d973c2888", "name": "cmp_ex",
+        "url": "b8e1bacc-0713-47f7-978e-9aec627c9fcb/examples/39c1db23-e357-48d7-81fb-068d973c2888.tgz",
+        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk_and_pre/1.0.1/CHECKSUMS.json",
+        "yanked_at": null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-type:string",
+        "version-type:string"], "info_metadata_keys": ["description-type:string",
+        "url-type:string"]}, {"id": "89af24dd-edd1-414d-9ede-6190a6676f3f", "version":
+        "1.0.0", "created_at": "2025-03-21T13:54:13.989338+00:00", "description":
         "This component is an example, to be used with the IDF component manager.",
         "component_hash": "6aa92cea9fc3c109d000105a7762864e3e5433ebb7a177d15b35d879cef78aa4",
         "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.0/test_component_manager__stb_and_ynk_and_pre-v1.0.0.zip",
@@ -574,32 +612,27 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.0/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "b1f7a6dc-c0e3-4aa6-8f92-b8e0e803e1d3", "name": "cmp_ex",
-        "url": "86fc7bc4-3885-4348-bdbc-0692f6a35c90/examples/b1f7a6dc-c0e3-4aa6-8f92-b8e0e803e1d3.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__",
-        "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*",
-        "**/dist/**/*", "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "yanked_at": "2025-01-15T16:13:11.563887+00:00", "yanked_message":
-        "Yanking a test version", "build_metadata_keys": ["dependencies-*-type:string",
-        "version-type:string"], "info_metadata_keys": ["description-type:string",
-        "url-type:string"]}]}'
+        "examples": [{"id": "903b683a-aee6-4f46-b49c-a2d306ce0c60", "name": "cmp_ex",
+        "url": "a56e8f0b-9650-410f-bd7a-4200e43fde92/examples/903b683a-aee6-4f46-b49c-a2d306ce0c60.tgz",
+        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk_and_pre/1.0.0/CHECKSUMS.json",
+        "yanked_at": "2025-03-21T13:54:16.613369+00:00", "yanked_message": "Yanking
+        a test version", "build_metadata_keys": ["dependencies-*-type:string", "version-type:string"],
+        "info_metadata_keys": ["description-type:string", "url-type:string"]}]}'
     headers:
       Accept-Ranges:
       - bytes
       Cache-Control:
       - max-age=300
       Content-Length:
-      - '5599'
+      - '4730'
       Content-Type:
       - binary/octet-stream
       Date:
-      - Wed, 15 Jan 2025 16:53:28 GMT
+      - Thu, 22 May 2025 14:25:05 GMT
       ETag:
-      - '"3c6baf66c1e154e5671b51aa913d45f3"'
+      - '"452d02a7cf3ec15670279a98bff27e9e"'
       Last-Modified:
-      - Wed, 15 Jan 2025 16:13:17 GMT
+      - Fri, 11 Apr 2025 13:12:46 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -610,9 +643,13 @@ interactions:
       X-Amz-Id-2:
       - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
       X-Amz-Request-Id:
-      - 181AEBECB9DAF962
+      - 1841DF87DD7B784F
       X-Content-Type-Options:
       - nosniff
+      X-Ratelimit-Limit:
+      - '4341'
+      X-Ratelimit-Remaining:
+      - '4341'
       X-Xss-Protection:
       - 1; mode=block
     status:
@@ -628,7 +665,8 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
+      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
+        python/3.11.10)
     method: GET
     uri: http://localhost:9000/test-public/components/test_component_manager/stb_and_ynk_and_pre/1.0.1/test_component_manager__stb_and_ynk_and_pre-v1.0.1.zip
   response:
@@ -636,16 +674,16 @@ interactions:
       string: !!binary |
         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
-        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
+        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
@@ -656,25 +694,25 @@ interactions:
         GqVvELC+HxkQB5Y9WBbpl90pG/3CUyCffCH4mUiwnm4Xb++rlzVc51c3syyjYF2qcXqxWG+/Vw/L
         4vVu8/hjIrNTMyL+n5CPapad5dT6rsDjLPsFUEsDBBQAAAAIAAAAIQDXTMITPAAAAE0AAAAjAAAA
         ZXhhbXBsZXMvY21wX2V4L21haW4vQ01ha2VMaXN0cy50eHTLTEmLT87PLcjPS80riS9KTc8sLkkt
-        0ggOcg5WUErOLYhPrdBLVuJSwAI8/Zx9Ql1c4108g4Bq9ZQ0uQBQSwMEFAAAAAgAAAAhAN7TcKRn
-        AAAAdwAAACYAAABleGFtcGxlcy9jbXBfZXgvbWFpbi9pZGZfY29tcG9uZW50LnltbB2JQQrCMBRE
-        9znFkO5TxV23SsGFZ5DQjPqh+fkkQTy+bWHg8d4MA+63GdeSrSi14xE1vll3youtY5aVLtGoiboI
-        2+QA/mK2leOSbVfgy9qk6AR/Cadw9kcsW62S+LTYP9sVwnjMuz9QSwMEFAAAAAgAAAAhAHC3Vima
+        0ggOcg5WUErOLYhPrdBLVuJSwAI8/Zx9Ql1c4108g4Bq9ZQ0uQBQSwMEFAAAAAgAAAAhAHC3Vima
         AAAAsAAAAB0AAABleGFtcGxlcy9jbXBfZXgvbWFpbi9jbXBfZXguYz2MPQuDMBQA9/yKh11U8APp
         ZKeiLRSEFnToJiE+zYMYg0lLpfS/N11628FxWcwghvZW35MzKawWs600Sdfhy5VQ5MUeTtasaC2N
         0G7W4WwhbCXXk+QUQXWFpqv9479pSKC2mFwG1I5GwrWEo+FCYlKkuc8ytiMt1GNACMRsUhkw9lxo
-        AG5MP3PS4c8i9mbg8UUvUakljA7sw75QSwECFAMUAAAACAAAACEAbnabCG8AAAB0AAAADgAAAAAA
-        AAAAAAAAgAEAAAAAQ01ha2VMaXN0cy50eHRQSwECFAMUAAAACAAAACEAp8brVgoAAAAIAAAABwAA
-        AAAAAAAAAAAAgAGbAAAATElDRU5TRVBLAQIUAxQAAAAIAAAAIQCmwGOklAAAAMUAAAARAAAAAAAA
-        AAAAAACAAcoAAABpZGZfY29tcG9uZW50LnltbFBLAQIUAxQAAAAIAAAAIQCFuI5HEgAAABIAAAAJ
-        AAAAAAAAAAAAAACAAY0BAABSRUFETUUubWRQSwECFAMUAAAACAAAACEATIV5qrMAAADVAAAABQAA
-        AAAAAAAAAAAAgAHGAQAAY21wLmNQSwECFAMUAAAACAAAACEAOX0gn4AAAACLAAAADQAAAAAAAAAA
+        AG5MP3PS4c8i9mbg8UUvUakljA7sw75QSwMEFAAAAAgAAAAhAN7TcKRnAAAAdwAAACYAAABleGFt
+        cGxlcy9jbXBfZXgvbWFpbi9pZGZfY29tcG9uZW50LnltbB2JQQrCMBRE9znFkO5TxV23SsGFZ5DQ
+        jPqh+fkkQTy+bWHg8d4MA+63GdeSrSi14xE1vll3youtY5aVLtGoiboI2+QA/mK2leOSbVfgy9qk
+        6AR/Cadw9kcsW62S+LTYP9sVwnjMuz9QSwECFAMUAAAACAAAACEAbnabCG8AAAB0AAAADgAAAAAA
+        AAAAAAAAgAEAAAAAQ01ha2VMaXN0cy50eHRQSwECFAMUAAAACAAAACEAhbiORxIAAAASAAAACQAA
+        AAAAAAAAAAAAgAGbAAAAUkVBRE1FLm1kUEsBAhQDFAAAAAgAAAAhAEyFeaqzAAAA1QAAAAUAAAAA
+        AAAAAAAAAIAB1AAAAGNtcC5jUEsBAhQDFAAAAAgAAAAhAKbAY6SUAAAAxQAAABEAAAAAAAAAAAAA
+        AIABqgEAAGlkZl9jb21wb25lbnQueW1sUEsBAhQDFAAAAAgAAAAhAKfG61YKAAAACAAAAAcAAAAA
+        AAAAAAAAAIABbQIAAExJQ0VOU0VQSwECFAMUAAAACAAAACEAOX0gn4AAAACLAAAADQAAAAAAAAAA
         AAAAgAGcAgAAaW5jbHVkZS9jbXAuaFBLAQIUAxQAAAAIAAAAIQBXbieXDAEAAG8BAAAeAAAAAAAA
         AAAAAACAAUcDAABleGFtcGxlcy9jbXBfZXgvQ01ha2VMaXN0cy50eHRQSwECFAMUAAAACAAAACEA
         10zCEzwAAABNAAAAIwAAAAAAAAAAAAAAgAGPBAAAZXhhbXBsZXMvY21wX2V4L21haW4vQ01ha2VM
-        aXN0cy50eHRQSwECFAMUAAAACAAAACEA3tNwpGcAAAB3AAAAJgAAAAAAAAAAAAAAgAEMBQAAZXhh
-        bXBsZXMvY21wX2V4L21haW4vaWRmX2NvbXBvbmVudC55bWxQSwECFAMUAAAACAAAACEAcLdWKZoA
-        AACwAAAAHQAAAAAAAAAAAAAAgAG3BQAAZXhhbXBsZXMvY21wX2V4L21haW4vY21wX2V4LmNQSwUG
+        aXN0cy50eHRQSwECFAMUAAAACAAAACEAcLdWKZoAAACwAAAAHQAAAAAAAAAAAAAAgAEMBQAAZXhh
+        bXBsZXMvY21wX2V4L21haW4vY21wX2V4LmNQSwECFAMUAAAACAAAACEA3tNwpGcAAAB3AAAAJgAA
+        AAAAAAAAAAAAgAHhBQAAZXhhbXBsZXMvY21wX2V4L21haW4vaWRmX2NvbXBvbmVudC55bWxQSwUG
         AAAAAAoACgCRAgAAjAYAAAAA
     headers:
       Accept-Ranges:
@@ -684,11 +722,11 @@ interactions:
       Content-Type:
       - binary/octet-stream
       Date:
-      - Wed, 15 Jan 2025 16:53:28 GMT
+      - Thu, 22 May 2025 14:25:05 GMT
       ETag:
-      - '"40ea5e2309dc6a289658eaefea010db8"'
+      - '"68e17ccac6174d550ad03ce9ef85031b"'
       Last-Modified:
-      - Wed, 15 Jan 2025 16:13:12 GMT
+      - Fri, 21 Mar 2025 13:54:17 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -699,9 +737,13 @@ interactions:
       X-Amz-Id-2:
       - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
       X-Amz-Request-Id:
-      - 181AEBECBA370218
+      - 1841DF87DDEC59BD
       X-Content-Type-Options:
       - nosniff
+      X-Ratelimit-Limit:
+      - '4341'
+      X-Ratelimit-Remaining:
+      - '4341'
       X-Xss-Protection:
       - 1; mode=block
     status:
@@ -717,7 +759,70 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
+      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
+        python/3.11.10)
+    method: GET
+    uri: http://localhost:9000/test-public/components/test_component_manager/stb_and_ynk_and_pre/1.0.1/CHECKSUMS.json
+  response:
+    body:
+      string: '{"version": "1.0", "algorithm": "sha256", "created_at": "2025-03-21T13:54:17.210106+00:00",
+        "files": [{"path": "CMakeLists.txt", "size": 116, "hash": "8669d01f35122a010bc9db440dcfd5c85f0e25fb4dae8198c35928d0824c0891"},
+        {"path": "README.md", "size": 18, "hash": "8142405f0800c513bb954570e30ef959ba8c3149ec7291764a07fe4d9e0add20"},
+        {"path": "cmp.c", "size": 213, "hash": "d3a068cdba6c02214e667418b746cb18e0fbab867296641a9fff39140bb593a8"},
+        {"path": "idf_component.yml", "size": 197, "hash": "d7d32532d4517353dea83cff8088392668d7d4fe389b3d338563b5352016416d"},
+        {"path": "LICENSE", "size": 8, "hash": "c0c56958ef8be5c1979366896b7e0c7206949a5aa2b23f51429c7f56b10990d3"},
+        {"path": "include/cmp.h", "size": 139, "hash": "f0b2e9f159f2e5b2b00d3a9e36990e09c5ac1525c54d74955c74d7346f46b9f4"},
+        {"path": "examples/cmp_ex/CMakeLists.txt", "size": 367, "hash": "648656b95877ec258644ad42b52452800fc00198f5b873af364d757238b2b2d0"},
+        {"path": "examples/cmp_ex/main/CMakeLists.txt", "size": 77, "hash": "13143b3c59f6b7fb35c129db86e6cb0f5e4a628b74de06e90604a75b3e92725d"},
+        {"path": "examples/cmp_ex/main/cmp_ex.c", "size": 176, "hash": "ac0d7fb42f389d502f00eb5dcc4e3c06ba6fdb8618bffeea0298ee329bff30f6"},
+        {"path": "examples/cmp_ex/main/idf_component.yml", "size": 119, "hash": "5c0b235d6f8aa8b194b662b9ecbf546473ffb88d9a6efac4b5bfddc18d3f2227"}]}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '1325'
+      Content-Type:
+      - binary/octet-stream
+      Date:
+      - Thu, 22 May 2025 14:25:05 GMT
+      ETag:
+      - '"89928953d433c8d100b270638b5ec4dd"'
+      Last-Modified:
+      - Fri, 21 Mar 2025 13:54:17 GMT
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      - Accept-Encoding
+      X-Amz-Id-2:
+      - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
+      X-Amz-Request-Id:
+      - 1841DF87DE4DE20B
+      X-Content-Type-Options:
+      - nosniff
+      X-Ratelimit-Limit:
+      - '4341'
+      X-Ratelimit-Remaining:
+      - '4341'
+      X-Xss-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
+        python/3.11.10)
     method: GET
     uri: http://localhost:5000/api
   response:
@@ -738,7 +843,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 15 Jan 2025 16:53:28 GMT
+      - Thu, 22 May 2025 14:25:05 GMT
       Server:
       - Werkzeug/3.1.3 Python/3.13.0
       Strict-Transport-Security:
@@ -758,15 +863,16 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
+      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
+        python/3.11.10)
     method: GET
     uri: http://localhost:9000/test-public/components/test_component_manager/stb_and_ynk_and_pre.json
   response:
     body:
       string: '{"name": "stb_and_ynk_and_pre", "namespace": "test_component_manager",
-        "created_at": "2025-01-15T16:13:08.437577+00:00", "featured": false, "versions":
-        [{"id": "e02429d7-5e0f-45c4-9406-35d6af18e05e", "version": "2.0.0-alpha1",
-        "created_at": "2025-01-15T16:13:17.262240+00:00", "description": "This component
+        "created_at": "2025-03-21T13:54:13.409108+00:00", "featured": false, "versions":
+        [{"id": "15147fe0-be11-4f0d-a6c6-b44ad8394b73", "version": "2.0.0-alpha1",
+        "created_at": "2025-03-21T13:54:20.659293+00:00", "description": "This component
         is an example, to be used with the IDF component manager.", "component_hash":
         "d93e8f72c23c70c7cc4120066dc4a71d80b4c0fa2c8f8df210fe921b4f2c918e", "url":
         "components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/test_component_manager__stb_and_ynk_and_pre-v2.0.0-alpha1.zip",
@@ -776,17 +882,13 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "df045359-1124-4a52-9966-4fd41bbed5b9", "name": "cmp_ex",
-        "url": "63d7f290-8c7d-450e-8744-87e88fa263a9/examples/df045359-1124-4a52-9966-4fd41bbed5b9.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__",
-        "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*",
-        "**/dist/**/*", "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "yanked_at": null, "yanked_message": null, "build_metadata_keys":
-        ["dependencies-*-type:string", "version-type:string"], "info_metadata_keys":
-        ["description-type:string", "url-type:string"]}, {"id": "651f3f00-760c-40e8-90a8-58c75057126e",
-        "version": "1.0.1", "created_at": "2025-01-15T16:13:13.021257+00:00", "description":
+        "examples": [{"id": "46380e8b-da72-4678-a98c-f9d9e659b861", "name": "cmp_ex",
+        "url": "22a26e01-e136-4002-b26f-cfce3dd1376c/examples/46380e8b-da72-4678-a98c-f9d9e659b861.tgz",
+        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/CHECKSUMS.json",
+        "yanked_at": null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-type:string",
+        "version-type:string"], "info_metadata_keys": ["description-type:string",
+        "url-type:string"]}, {"id": "24a3ce11-bc5a-44ef-88a1-c0bf07f8524f", "version":
+        "1.0.1", "created_at": "2025-03-21T13:54:17.363047+00:00", "description":
         "This component is an example, to be used with the IDF component manager.",
         "component_hash": "e8bcd12eaac473865a664e01627ed8548a4b9f1479e5c4dedb852b7edb28356f",
         "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.1/test_component_manager__stb_and_ynk_and_pre-v1.0.1.zip",
@@ -796,17 +898,13 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.1/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "c19c292b-0d96-4fac-8192-d69622015cc3", "name": "cmp_ex",
-        "url": "c9b2564a-cb11-4c1e-ab58-a310ae0e0a8b/examples/c19c292b-0d96-4fac-8192-d69622015cc3.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__",
-        "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*",
-        "**/dist/**/*", "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "yanked_at": null, "yanked_message": null, "build_metadata_keys":
-        ["dependencies-*-type:string", "version-type:string"], "info_metadata_keys":
-        ["description-type:string", "url-type:string"]}, {"id": "098ee7e3-3eb7-457b-82fc-df9d28b1b2ec",
-        "version": "1.0.0", "created_at": "2025-01-15T16:13:08.651113+00:00", "description":
+        "examples": [{"id": "39c1db23-e357-48d7-81fb-068d973c2888", "name": "cmp_ex",
+        "url": "b8e1bacc-0713-47f7-978e-9aec627c9fcb/examples/39c1db23-e357-48d7-81fb-068d973c2888.tgz",
+        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk_and_pre/1.0.1/CHECKSUMS.json",
+        "yanked_at": null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-type:string",
+        "version-type:string"], "info_metadata_keys": ["description-type:string",
+        "url-type:string"]}, {"id": "89af24dd-edd1-414d-9ede-6190a6676f3f", "version":
+        "1.0.0", "created_at": "2025-03-21T13:54:13.989338+00:00", "description":
         "This component is an example, to be used with the IDF component manager.",
         "component_hash": "6aa92cea9fc3c109d000105a7762864e3e5433ebb7a177d15b35d879cef78aa4",
         "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.0/test_component_manager__stb_and_ynk_and_pre-v1.0.0.zip",
@@ -816,32 +914,27 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.0/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "b1f7a6dc-c0e3-4aa6-8f92-b8e0e803e1d3", "name": "cmp_ex",
-        "url": "86fc7bc4-3885-4348-bdbc-0692f6a35c90/examples/b1f7a6dc-c0e3-4aa6-8f92-b8e0e803e1d3.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__",
-        "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*",
-        "**/dist/**/*", "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "yanked_at": "2025-01-15T16:13:11.563887+00:00", "yanked_message":
-        "Yanking a test version", "build_metadata_keys": ["dependencies-*-type:string",
-        "version-type:string"], "info_metadata_keys": ["description-type:string",
-        "url-type:string"]}]}'
+        "examples": [{"id": "903b683a-aee6-4f46-b49c-a2d306ce0c60", "name": "cmp_ex",
+        "url": "a56e8f0b-9650-410f-bd7a-4200e43fde92/examples/903b683a-aee6-4f46-b49c-a2d306ce0c60.tgz",
+        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk_and_pre/1.0.0/CHECKSUMS.json",
+        "yanked_at": "2025-03-21T13:54:16.613369+00:00", "yanked_message": "Yanking
+        a test version", "build_metadata_keys": ["dependencies-*-type:string", "version-type:string"],
+        "info_metadata_keys": ["description-type:string", "url-type:string"]}]}'
     headers:
       Accept-Ranges:
       - bytes
       Cache-Control:
       - max-age=300
       Content-Length:
-      - '5599'
+      - '4730'
       Content-Type:
       - binary/octet-stream
       Date:
-      - Wed, 15 Jan 2025 16:53:28 GMT
+      - Thu, 22 May 2025 14:25:05 GMT
       ETag:
-      - '"3c6baf66c1e154e5671b51aa913d45f3"'
+      - '"452d02a7cf3ec15670279a98bff27e9e"'
       Last-Modified:
-      - Wed, 15 Jan 2025 16:13:17 GMT
+      - Fri, 11 Apr 2025 13:12:46 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -852,9 +945,13 @@ interactions:
       X-Amz-Id-2:
       - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
       X-Amz-Request-Id:
-      - 181AEBECBAED8DDD
+      - 1841DF87DF8262BB
       X-Content-Type-Options:
       - nosniff
+      X-Ratelimit-Limit:
+      - '4341'
+      X-Ratelimit-Remaining:
+      - '4341'
       X-Xss-Protection:
       - 1; mode=block
     status:
@@ -870,15 +967,16 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
+      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
+        python/3.11.10)
     method: GET
     uri: http://localhost:9000/test-public/components/test_component_manager/stb_and_ynk_and_pre.json
   response:
     body:
       string: '{"name": "stb_and_ynk_and_pre", "namespace": "test_component_manager",
-        "created_at": "2025-01-15T16:13:08.437577+00:00", "featured": false, "versions":
-        [{"id": "e02429d7-5e0f-45c4-9406-35d6af18e05e", "version": "2.0.0-alpha1",
-        "created_at": "2025-01-15T16:13:17.262240+00:00", "description": "This component
+        "created_at": "2025-03-21T13:54:13.409108+00:00", "featured": false, "versions":
+        [{"id": "15147fe0-be11-4f0d-a6c6-b44ad8394b73", "version": "2.0.0-alpha1",
+        "created_at": "2025-03-21T13:54:20.659293+00:00", "description": "This component
         is an example, to be used with the IDF component manager.", "component_hash":
         "d93e8f72c23c70c7cc4120066dc4a71d80b4c0fa2c8f8df210fe921b4f2c918e", "url":
         "components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/test_component_manager__stb_and_ynk_and_pre-v2.0.0-alpha1.zip",
@@ -888,17 +986,13 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "df045359-1124-4a52-9966-4fd41bbed5b9", "name": "cmp_ex",
-        "url": "63d7f290-8c7d-450e-8744-87e88fa263a9/examples/df045359-1124-4a52-9966-4fd41bbed5b9.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__",
-        "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*",
-        "**/dist/**/*", "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "yanked_at": null, "yanked_message": null, "build_metadata_keys":
-        ["dependencies-*-type:string", "version-type:string"], "info_metadata_keys":
-        ["description-type:string", "url-type:string"]}, {"id": "651f3f00-760c-40e8-90a8-58c75057126e",
-        "version": "1.0.1", "created_at": "2025-01-15T16:13:13.021257+00:00", "description":
+        "examples": [{"id": "46380e8b-da72-4678-a98c-f9d9e659b861", "name": "cmp_ex",
+        "url": "22a26e01-e136-4002-b26f-cfce3dd1376c/examples/46380e8b-da72-4678-a98c-f9d9e659b861.tgz",
+        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/CHECKSUMS.json",
+        "yanked_at": null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-type:string",
+        "version-type:string"], "info_metadata_keys": ["description-type:string",
+        "url-type:string"]}, {"id": "24a3ce11-bc5a-44ef-88a1-c0bf07f8524f", "version":
+        "1.0.1", "created_at": "2025-03-21T13:54:17.363047+00:00", "description":
         "This component is an example, to be used with the IDF component manager.",
         "component_hash": "e8bcd12eaac473865a664e01627ed8548a4b9f1479e5c4dedb852b7edb28356f",
         "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.1/test_component_manager__stb_and_ynk_and_pre-v1.0.1.zip",
@@ -908,17 +1002,13 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.1/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "c19c292b-0d96-4fac-8192-d69622015cc3", "name": "cmp_ex",
-        "url": "c9b2564a-cb11-4c1e-ab58-a310ae0e0a8b/examples/c19c292b-0d96-4fac-8192-d69622015cc3.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__",
-        "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*",
-        "**/dist/**/*", "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "yanked_at": null, "yanked_message": null, "build_metadata_keys":
-        ["dependencies-*-type:string", "version-type:string"], "info_metadata_keys":
-        ["description-type:string", "url-type:string"]}, {"id": "098ee7e3-3eb7-457b-82fc-df9d28b1b2ec",
-        "version": "1.0.0", "created_at": "2025-01-15T16:13:08.651113+00:00", "description":
+        "examples": [{"id": "39c1db23-e357-48d7-81fb-068d973c2888", "name": "cmp_ex",
+        "url": "b8e1bacc-0713-47f7-978e-9aec627c9fcb/examples/39c1db23-e357-48d7-81fb-068d973c2888.tgz",
+        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk_and_pre/1.0.1/CHECKSUMS.json",
+        "yanked_at": null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-type:string",
+        "version-type:string"], "info_metadata_keys": ["description-type:string",
+        "url-type:string"]}, {"id": "89af24dd-edd1-414d-9ede-6190a6676f3f", "version":
+        "1.0.0", "created_at": "2025-03-21T13:54:13.989338+00:00", "description":
         "This component is an example, to be used with the IDF component manager.",
         "component_hash": "6aa92cea9fc3c109d000105a7762864e3e5433ebb7a177d15b35d879cef78aa4",
         "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.0/test_component_manager__stb_and_ynk_and_pre-v1.0.0.zip",
@@ -928,32 +1018,27 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk_and_pre/1.0.0/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "b1f7a6dc-c0e3-4aa6-8f92-b8e0e803e1d3", "name": "cmp_ex",
-        "url": "86fc7bc4-3885-4348-bdbc-0692f6a35c90/examples/b1f7a6dc-c0e3-4aa6-8f92-b8e0e803e1d3.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "exclusion_list": ["**/__pycache__",
-        "**/*.pyc", "**/*.pyd", "**/*.pyo", "**/.DS_Store", "**/.git/**/*", "**/.svn/**/*",
-        "**/dist/**/*", "**/build/**/*", "**/build_*/**/*", "**/managed_components/**/*",
-        "**/dependencies.lock", "**/.github/**/*", "**/.gitlab-ci.yml", "**/.idea/**/*",
-        "**/.vscode/**/*", "**/.settings/**/*", "**/sdkconfig", "**/sdkconfig.old",
-        "**/.component_hash"], "yanked_at": "2025-01-15T16:13:11.563887+00:00", "yanked_message":
-        "Yanking a test version", "build_metadata_keys": ["dependencies-*-type:string",
-        "version-type:string"], "info_metadata_keys": ["description-type:string",
-        "url-type:string"]}]}'
+        "examples": [{"id": "903b683a-aee6-4f46-b49c-a2d306ce0c60", "name": "cmp_ex",
+        "url": "a56e8f0b-9650-410f-bd7a-4200e43fde92/examples/903b683a-aee6-4f46-b49c-a2d306ce0c60.tgz",
+        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk_and_pre/1.0.0/CHECKSUMS.json",
+        "yanked_at": "2025-03-21T13:54:16.613369+00:00", "yanked_message": "Yanking
+        a test version", "build_metadata_keys": ["dependencies-*-type:string", "version-type:string"],
+        "info_metadata_keys": ["description-type:string", "url-type:string"]}]}'
     headers:
       Accept-Ranges:
       - bytes
       Cache-Control:
       - max-age=300
       Content-Length:
-      - '5599'
+      - '4730'
       Content-Type:
       - binary/octet-stream
       Date:
-      - Wed, 15 Jan 2025 16:53:28 GMT
+      - Thu, 22 May 2025 14:25:05 GMT
       ETag:
-      - '"3c6baf66c1e154e5671b51aa913d45f3"'
+      - '"452d02a7cf3ec15670279a98bff27e9e"'
       Last-Modified:
-      - Wed, 15 Jan 2025 16:13:17 GMT
+      - Fri, 11 Apr 2025 13:12:46 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -964,9 +1049,13 @@ interactions:
       X-Amz-Id-2:
       - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
       X-Amz-Request-Id:
-      - 181AEBECBB5CFA1D
+      - 1841DF87E029E873
       X-Content-Type-Options:
       - nosniff
+      X-Ratelimit-Limit:
+      - '4341'
+      X-Ratelimit-Remaining:
+      - '4341'
       X-Xss-Protection:
       - 1; mode=block
     status:
@@ -982,7 +1071,8 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.1 (Darwin/24.2.0 arm64; python/3.11.9)
+      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
+        python/3.11.10)
     method: GET
     uri: http://localhost:9000/test-public/components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/test_component_manager__stb_and_ynk_and_pre-v2.0.0-alpha1.zip
   response:
@@ -990,16 +1080,16 @@ interactions:
       string: !!binary |
         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
-        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
+        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
@@ -1011,25 +1101,25 @@ interactions:
         WG+/Vw/L4vVu8/hjIrNTMyL+n5CPapad5dT6rsDjLPsFUEsDBBQAAAAIAAAAIQDXTMITPAAAAE0A
         AAAjAAAAZXhhbXBsZXMvY21wX2V4L21haW4vQ01ha2VMaXN0cy50eHTLTEmLT87PLcjPS80riS9K
         Tc8sLkkt0ggOcg5WUErOLYhPrdBLVuJSwAI8/Zx9Ql1c4108g4Bq9ZQ0uQBQSwMEFAAAAAgAAAAh
-        AN7TcKRnAAAAdwAAACYAAABleGFtcGxlcy9jbXBfZXgvbWFpbi9pZGZfY29tcG9uZW50LnltbB2J
-        QQrCMBRE9znFkO5TxV23SsGFZ5DQjPqh+fkkQTy+bWHg8d4MA+63GdeSrSi14xE1vll3youtY5aV
-        LtGoiboI2+QA/mK2leOSbVfgy9qk6AR/Cadw9kcsW62S+LTYP9sVwnjMuz9QSwMEFAAAAAgAAAAh
         AHC3VimaAAAAsAAAAB0AAABleGFtcGxlcy9jbXBfZXgvbWFpbi9jbXBfZXguYz2MPQuDMBQA9/yK
         h11U8APpZKeiLRSEFnToJiE+zYMYg0lLpfS/N11628FxWcwghvZW35MzKawWs600Sdfhy5VQ5MUe
         TtasaC2N0G7W4WwhbCXXk+QUQXWFpqv9479pSKC2mFwG1I5GwrWEo+FCYlKkuc8ytiMt1GNACMRs
-        Uhkw9lxoAG5MP3PS4c8i9mbg8UUvUakljA7sw75QSwECFAMUAAAACAAAACEAbnabCG8AAAB0AAAA
-        DgAAAAAAAAAAAAAAgAEAAAAAQ01ha2VMaXN0cy50eHRQSwECFAMUAAAACAAAACEAp8brVgoAAAAI
-        AAAABwAAAAAAAAAAAAAAgAGbAAAATElDRU5TRVBLAQIUAxQAAAAIAAAAIQB7T0zXmgAAAMwAAAAR
-        AAAAAAAAAAAAAACAAcoAAABpZGZfY29tcG9uZW50LnltbFBLAQIUAxQAAAAIAAAAIQCFuI5HEgAA
-        ABIAAAAJAAAAAAAAAAAAAACAAZMBAABSRUFETUUubWRQSwECFAMUAAAACAAAACEATIV5qrMAAADV
-        AAAABQAAAAAAAAAAAAAAgAHMAQAAY21wLmNQSwECFAMUAAAACAAAACEAOX0gn4AAAACLAAAADQAA
+        Uhkw9lxoAG5MP3PS4c8i9mbg8UUvUakljA7sw75QSwMEFAAAAAgAAAAhAN7TcKRnAAAAdwAAACYA
+        AABleGFtcGxlcy9jbXBfZXgvbWFpbi9pZGZfY29tcG9uZW50LnltbB2JQQrCMBRE9znFkO5TxV23
+        SsGFZ5DQjPqh+fkkQTy+bWHg8d4MA+63GdeSrSi14xE1vll3youtY5aVLtGoiboI2+QA/mK2leOS
+        bVfgy9qk6AR/Cadw9kcsW62S+LTYP9sVwnjMuz9QSwECFAMUAAAACAAAACEAbnabCG8AAAB0AAAA
+        DgAAAAAAAAAAAAAAgAEAAAAAQ01ha2VMaXN0cy50eHRQSwECFAMUAAAACAAAACEAhbiORxIAAAAS
+        AAAACQAAAAAAAAAAAAAAgAGbAAAAUkVBRE1FLm1kUEsBAhQDFAAAAAgAAAAhAEyFeaqzAAAA1QAA
+        AAUAAAAAAAAAAAAAAIAB1AAAAGNtcC5jUEsBAhQDFAAAAAgAAAAhAHtPTNeaAAAAzAAAABEAAAAA
+        AAAAAAAAAIABqgEAAGlkZl9jb21wb25lbnQueW1sUEsBAhQDFAAAAAgAAAAhAKfG61YKAAAACAAA
+        AAcAAAAAAAAAAAAAAIABcwIAAExJQ0VOU0VQSwECFAMUAAAACAAAACEAOX0gn4AAAACLAAAADQAA
         AAAAAAAAAAAAgAGiAgAAaW5jbHVkZS9jbXAuaFBLAQIUAxQAAAAIAAAAIQBXbieXDAEAAG8BAAAe
         AAAAAAAAAAAAAACAAU0DAABleGFtcGxlcy9jbXBfZXgvQ01ha2VMaXN0cy50eHRQSwECFAMUAAAA
         CAAAACEA10zCEzwAAABNAAAAIwAAAAAAAAAAAAAAgAGVBAAAZXhhbXBsZXMvY21wX2V4L21haW4v
-        Q01ha2VMaXN0cy50eHRQSwECFAMUAAAACAAAACEA3tNwpGcAAAB3AAAAJgAAAAAAAAAAAAAAgAES
-        BQAAZXhhbXBsZXMvY21wX2V4L21haW4vaWRmX2NvbXBvbmVudC55bWxQSwECFAMUAAAACAAAACEA
-        cLdWKZoAAACwAAAAHQAAAAAAAAAAAAAAgAG9BQAAZXhhbXBsZXMvY21wX2V4L21haW4vY21wX2V4
-        LmNQSwUGAAAAAAoACgCRAgAAkgYAAAAA
+        Q01ha2VMaXN0cy50eHRQSwECFAMUAAAACAAAACEAcLdWKZoAAACwAAAAHQAAAAAAAAAAAAAAgAES
+        BQAAZXhhbXBsZXMvY21wX2V4L21haW4vY21wX2V4LmNQSwECFAMUAAAACAAAACEA3tNwpGcAAAB3
+        AAAAJgAAAAAAAAAAAAAAgAHnBQAAZXhhbXBsZXMvY21wX2V4L21haW4vaWRmX2NvbXBvbmVudC55
+        bWxQSwUGAAAAAAoACgCRAgAAkgYAAAAA
     headers:
       Accept-Ranges:
       - bytes
@@ -1038,11 +1128,11 @@ interactions:
       Content-Type:
       - binary/octet-stream
       Date:
-      - Wed, 15 Jan 2025 16:53:28 GMT
+      - Thu, 22 May 2025 14:25:05 GMT
       ETag:
-      - '"95f2f36bbe3db6e8b006b5adcde0dadc"'
+      - '"2c2472ea126b392d41df07775fa9c77b"'
       Last-Modified:
-      - Wed, 15 Jan 2025 16:13:17 GMT
+      - Fri, 21 Mar 2025 13:54:20 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -1053,9 +1143,75 @@ interactions:
       X-Amz-Id-2:
       - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
       X-Amz-Request-Id:
-      - 181AEBECBBC3DC7E
+      - 1841DF87E0C2BF87
       X-Content-Type-Options:
       - nosniff
+      X-Ratelimit-Limit:
+      - '4341'
+      X-Ratelimit-Remaining:
+      - '4341'
+      X-Xss-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
+        python/3.11.10)
+    method: GET
+    uri: http://localhost:9000/test-public/components/test_component_manager/stb_and_ynk_and_pre/2.0.0-alpha1/CHECKSUMS.json
+  response:
+    body:
+      string: '{"version": "1.0", "algorithm": "sha256", "created_at": "2025-03-21T13:54:20.522320+00:00",
+        "files": [{"path": "CMakeLists.txt", "size": 116, "hash": "8669d01f35122a010bc9db440dcfd5c85f0e25fb4dae8198c35928d0824c0891"},
+        {"path": "README.md", "size": 18, "hash": "8142405f0800c513bb954570e30ef959ba8c3149ec7291764a07fe4d9e0add20"},
+        {"path": "cmp.c", "size": 213, "hash": "d3a068cdba6c02214e667418b746cb18e0fbab867296641a9fff39140bb593a8"},
+        {"path": "idf_component.yml", "size": 204, "hash": "cab0367bd549a482473ce75807e02b9dbc2c273eca54a1efa78fd8a91062f8d1"},
+        {"path": "LICENSE", "size": 8, "hash": "c0c56958ef8be5c1979366896b7e0c7206949a5aa2b23f51429c7f56b10990d3"},
+        {"path": "include/cmp.h", "size": 139, "hash": "f0b2e9f159f2e5b2b00d3a9e36990e09c5ac1525c54d74955c74d7346f46b9f4"},
+        {"path": "examples/cmp_ex/CMakeLists.txt", "size": 367, "hash": "648656b95877ec258644ad42b52452800fc00198f5b873af364d757238b2b2d0"},
+        {"path": "examples/cmp_ex/main/CMakeLists.txt", "size": 77, "hash": "13143b3c59f6b7fb35c129db86e6cb0f5e4a628b74de06e90604a75b3e92725d"},
+        {"path": "examples/cmp_ex/main/cmp_ex.c", "size": 176, "hash": "ac0d7fb42f389d502f00eb5dcc4e3c06ba6fdb8618bffeea0298ee329bff30f6"},
+        {"path": "examples/cmp_ex/main/idf_component.yml", "size": 119, "hash": "5c0b235d6f8aa8b194b662b9ecbf546473ffb88d9a6efac4b5bfddc18d3f2227"}]}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '1325'
+      Content-Type:
+      - binary/octet-stream
+      Date:
+      - Thu, 22 May 2025 14:25:05 GMT
+      ETag:
+      - '"145ce2e18101216ec07d376ca396f327"'
+      Last-Modified:
+      - Fri, 21 Mar 2025 13:54:20 GMT
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      - Accept-Encoding
+      X-Amz-Id-2:
+      - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
+      X-Amz-Request-Id:
+      - 1841DF87E120DEA6
+      X-Content-Type-Options:
+      - nosniff
+      X-Ratelimit-Limit:
+      - '4341'
+      X-Ratelimit-Remaining:
+      - '4341'
       X-Xss-Protection:
       - 1; mode=block
     status:

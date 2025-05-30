@@ -32,6 +32,7 @@
             },
             "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
             "documentation": "",
+            "checksums": "CHECKSUMS.json",
             "repository": "https://github.com/espressif/example_components.git",
             "issues": "https://github.com/espressif/example_components/issues",
             "discussion": "",
