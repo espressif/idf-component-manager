@@ -1,9 +1,11 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import pytest
 from pytest import raises
 
-from idf_component_manager.core_utils import parse_example
+from idf_component_manager.core_utils import (
+    parse_example,
+)
 from idf_component_tools.errors import FatalError
 
 

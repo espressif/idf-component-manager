@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import shutil
@@ -219,9 +219,9 @@ def test_pack_component_with_replacing_manifest_params(tmp_path, release_compone
     assert manifest.repository_info.commit_sha == commit_id
 
 
-def test_pack_component_with_examples(tmp_path, example_component_path):
+def test_pack_component_with_examples(tmp_path, cmp_with_example):
     project_path = tmp_path / 'cmp'
-    shutil.copytree(example_component_path, str(project_path))
+    shutil.copytree(cmp_with_example, str(project_path))
     component_manager = ComponentManager(path=str(project_path))
 
     component_manager.pack_component('cmp', '2.3.4')
@@ -254,14 +254,6 @@ def test_pack_component_with_rules_if(
     'examples, message',
     [
         (
-            [
-                {'path': './custom_example_path/cmp_ex'},
-                {'path': './custom_example_path_2/cmp_ex'},
-            ],
-            'Examples from "./custom_example_path/cmp_ex" and "./custom_example_path_2/cmp_ex" '
-            'have the same name: cmp_ex.',
-        ),
-        (
             [{'path': './custom_example_path'}, {'path': './custom_example_path'}],
             'Some paths in the `examples` block in the manifest are listed multiple times: '
             './custom_example_path',
@@ -287,3 +279,40 @@ def test_pack_component_with_examples_errors(tmp_path, example_component_path, e
 
     with pytest.raises(FatalError, match=message):
         component_manager.pack_component('cmp', '2.3.4')
+
+
+def test_pack_component_with_example_defined_in_manifest(tmp_path, cmp_with_example):
+    project_path = tmp_path / 'cmp'
+    shutil.copytree(cmp_with_example, project_path)
+    shutil.copytree(
+        Path(cmp_with_example) / 'examples' / 'cmp_ex', project_path / 'custom_example_path'
+    )
+
+    component_manager = ComponentManager(path=str(project_path))
+
+    manifest_manager = ManifestManager(project_path, 'cmp')
+    manifest_manager.manifest.examples = [
+        {'path': './custom_example_path'},
+        {'path': './examples/cmp_ex'},
+    ]
+    manifest_manager.dump(str(project_path))
+
+    component_manager.pack_component('cmp', '2.3.4')
+
+    assert (
+        Path(component_manager.default_dist_path) / 'cmp_2.3.4' / 'examples' / 'cmp_ex'
+    ).is_dir()
+    # Component archive is unmodified
+    assert (
+        Path(component_manager.default_dist_path) / 'cmp_2.3.4' / 'custom_example_path'
+    ).is_dir()
+    assert (Path(component_manager.default_dist_path) / 'cmp_2.3.4_examples.tgz').exists()
+    assert any(
+        (hash_dir / 'custom_example_path').is_dir()
+        for hash_dir in (Path(component_manager.default_dist_path) / 'cmp_2.3.4_examples').iterdir()
+    )
+    # Example in "examples" folder is excluded even though it is defined in the manifest
+    assert not all(
+        (hash_dir / 'cmp_ex').is_dir()
+        for hash_dir in (Path(component_manager.default_dist_path) / 'cmp_2.3.4_examples').iterdir()
+    )

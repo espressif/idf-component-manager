@@ -189,16 +189,13 @@ def test_meet_optional_dependency_with_none_version_requirement(monkeypatch):
     assert req.version_spec == '*'
 
 
-def test_validate_example_manifest(fixtures_path):
-    component_with_example_path = os.path.join(fixtures_path, 'components', 'cmp_with_example')
-    validate_examples_manifest(component_with_example_path)
+def test_validate_example_manifest(cmp_with_example):
+    validate_examples_manifest(cmp_with_example)
 
 
-def test_validate_invalid_example_manifest(fixtures_path, tmp_path):
-    component_with_example_path = os.path.join(fixtures_path, 'components', 'cmp_with_example')
-
+def test_validate_invalid_example_manifest(cmp_with_example, tmp_path):
     # Copy component with examples to a temporary directory for modification
-    shutil.copytree(component_with_example_path, os.path.join(tmp_path, 'cmp_with_example'))
+    shutil.copytree(cmp_with_example, os.path.join(tmp_path, 'cmp_with_example'))
 
     # Create invalid example manifest
     Path(

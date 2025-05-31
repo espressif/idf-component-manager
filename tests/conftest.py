@@ -183,6 +183,15 @@ def release_component_path(fixtures_path):
 
 
 @pytest.fixture(scope='session')
+def cmp_with_example(fixtures_path):
+    return os.path.join(
+        fixtures_path,
+        'components',
+        'cmp_with_example',
+    )
+
+
+@pytest.fixture(scope='session')
 def example_component_path(fixtures_path):
     return os.path.join(
         fixtures_path,

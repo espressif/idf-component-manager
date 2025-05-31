@@ -1,10 +1,10 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Classes to work with ESP Component Registry"""
 
-import os
 import typing as t
 from functools import wraps
+from pathlib import Path
 from ssl import SSLEOFError
 
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
@@ -112,30 +112,50 @@ class APIClient(BaseClient):
         """Revoke current token"""
         request('delete', ['tokens', 'current'])
 
-    def _upload_version_to_endpoint(self, request, file_path, endpoint, callback=None):
-        with open(file_path, 'rb') as file:
-            filename = os.path.basename(file_path)
+    def _upload_version_to_endpoint(
+        self, request, file_path, example_file_path, endpoint, callback=None
+    ):
+        version_archive_file_handler = open(file_path, 'rb')
+        file_handlers = [version_archive_file_handler]
+        files = {
+            'file': (Path(file_path).name, version_archive_file_handler, 'application/octet-stream')
+        }
 
-            encoder = MultipartEncoder({'file': (filename, file, 'application/octet-stream')})
-            headers = {'Content-Type': encoder.content_type}
-            data = MultipartEncoderMonitor(encoder, callback)
+        # Handling of example archives defined in the manifest
+        if example_file_path:
+            example_archive_file_handler = open(example_file_path, 'rb')
+            file_handlers.append(example_archive_file_handler)
+            files['example_file'] = (
+                Path(example_file_path).name,
+                example_archive_file_handler,
+                'application/octet-stream',
+            )
 
-            try:
-                return request(
-                    'post',
-                    endpoint,
-                    data=data,
-                    headers=headers,
-                    schema=VersionUpload,
-                    timeout=UPLOAD_COMPONENT_TIMEOUT,
-                )['job_id']
-            # Python 3.10+ can't process 413 error - https://github.com/urllib3/urllib3/issues/2733
-            except (SSLEOFError, ContentTooLargeError):
-                raise APIClientError(
-                    'The component archive exceeds the maximum allowed size. Please consider '
-                    'excluding unnecessary files from your component. If you think your component '
-                    'should be uploaded as it is, please contact components@espressif.com'
-                )
+        # Encode the archives into a multipart form
+        encoder = MultipartEncoder(files)
+        headers = {'Content-Type': encoder.content_type}
+        data = MultipartEncoderMonitor(encoder, callback)
+
+        try:
+            req = request(
+                'post',
+                endpoint,
+                data=data,
+                headers=headers,
+                schema=VersionUpload,
+                timeout=UPLOAD_COMPONENT_TIMEOUT,
+            )
+            for file_handler in file_handlers:
+                file_handler.close()
+
+            return req['job_id']
+        # Python 3.10+ can't process 413 error - https://github.com/urllib3/urllib3/issues/2733
+        except (SSLEOFError, ContentTooLargeError):
+            raise APIClientError(
+                'The component archive exceeds the maximum allowed size. Please consider '
+                'excluding unnecessary files from your component. If you think your component '
+                'should be uploaded as it is, please contact components@espressif.com'
+            )
 
     @_request
     def get_component_response(
@@ -147,18 +167,21 @@ class APIClient(BaseClient):
 
     @auth_required
     @_request
-    def upload_version(self, request, component_name, file_path, callback=None):
+    def upload_version(
+        self, request, component_name, file_path, example_file_path=None, callback=None
+    ):
         return self._upload_version_to_endpoint(
             request,
             file_path,
+            example_file_path,
             ['components', component_name.lower(), 'versions'],
             callback,
         )
 
     @_request
-    def validate_version(self, request, file_path, callback=None):
+    def validate_version(self, request, file_path, example_file_path=None, callback=None):
         return self._upload_version_to_endpoint(
-            request, file_path, ['components', 'validate'], callback
+            request, file_path, example_file_path, ['components', 'validate'], callback
         )
 
     @auth_required

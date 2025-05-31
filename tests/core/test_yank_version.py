@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2024-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
-from pathlib import Path
 
 import pytest
 
@@ -12,14 +11,13 @@ from idf_component_tools.registry.client_errors import ComponentNotFound
 from tests.network_test_utils import use_vcr_or_real_env
 
 
-def setup_yankable_component(component_name, fixtures_path):
+def setup_yankable_component(component_name, cmp_with_example):
     api_client = APIClient(
         registry_url=os.environ.get('IDF_COMPONENT_REGISTRY_URL'),
         api_token=os.environ.get('IDF_COMPONENT_API_TOKEN'),
         default_namespace='test_component_manager',
     )
-    test_path = Path(fixtures_path) / 'components' / 'cmp_with_example'
-    manager = ComponentManager(path=test_path)
+    manager = ComponentManager(path=cmp_with_example)
     try:
         v = api_client.versions(f'test_component_manager/{component_name}', spec='1.0.0')
         if not v.versions:
@@ -30,11 +28,17 @@ def setup_yankable_component(component_name, fixtures_path):
 
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_yank_version_success.yaml')
 @pytest.mark.network
-def test_yank_component_version(mock_registry, mock_yank, tmp_path, component_name, fixtures_path):  # noqa: ARG001
+def test_yank_component_version(
+    mock_registry,  # noqa: ARG001
+    mock_yank,  # noqa: ARG001
+    tmp_path,
+    component_name,
+    cmp_with_example,
+):
     manager = ComponentManager(path=str(tmp_path))
 
     component_name = f'{component_name}_yankable'
-    setup_yankable_component(component_name, fixtures_path)
+    setup_yankable_component(component_name, cmp_with_example)
 
     manager.yank_version(
         component_name, '1.0.0', 'critical test', namespace='test_component_manager'
