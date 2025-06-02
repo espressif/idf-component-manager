@@ -177,7 +177,7 @@ def init_config():
     def unset(ctx, profile, all, **kwargs):
         """
         Unset specific configuration fields or remove the entire profile from the config file.
-        Use `--all` to delete the entire profile, be carefull if you have unsoported/your own fileds under profile.
+        Use `--all` to delete the entire profile, be careful if you have unsupported/your own fields under profile.
         """
 
         config_manager = ConfigManager()
@@ -200,7 +200,10 @@ def init_config():
         except ConfigError as e:
             raise FatalError(str(e))
 
-        if profile not in raw_data.get('profiles', CommentedMap()):
+        if 'profiles' not in raw_data:
+            raw_data['profiles'] = CommentedMap()
+
+        if profile not in raw_data['profiles']:
             raise ConfigError(f"Profile '{profile}' does not exist.")
 
         if all:
@@ -209,14 +212,25 @@ def init_config():
             print(f'Profile "{profile}" was completely removed from the config file.')
             return
 
+        # Track which fields were actually removed
+        removed_fields = []
         for field in fields_to_unset:
-            del raw_data['profiles'][profile][field]
+            # Fix: Check if field exists before trying to delete it
+            if field in raw_data['profiles'][profile]:
+                del raw_data['profiles'][profile][field]
+                removed_fields.append(field)
+
+        # Warn if no fields were actually removed
+        if not removed_fields:
+            print(f'No specified fields found in profile "{profile}".')
+            return
 
         # Remove the profile if it becomes empty
         if not raw_data['profiles'][profile]:
             del raw_data['profiles'][profile]
+
         _write_config(config_path, raw_data, yaml)
 
-        print(f'Successfully removed {", ".join(fields_to_unset)} from the profile "{profile}".')
+        print(f'Successfully removed {", ".join(removed_fields)} from the profile "{profile}".')
 
     return config
