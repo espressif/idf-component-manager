@@ -18,7 +18,6 @@ from idf_component_manager.cli.validations import (
 )
 
 # Group of tests for callbacks used in click options
-# TODO add non-failure cases
 
 
 def test_validate_name():
@@ -62,7 +61,6 @@ def test_validate_url():
         'ftp://',  # Unsupported scheme
         'http://:80',  # Valid scheme but no host
         'www.example.com',  # Missing scheme,
-        '',  # Empty string
     ],
 )
 def test_validate_url_invalid_input(invalid_url):

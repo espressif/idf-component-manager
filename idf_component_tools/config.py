@@ -190,11 +190,18 @@ class ConfigManager:
                 # Add new profile
                 profiles[profile_name] = profile_values
 
-        # Remove subkeys with None values
+        empty_profiles = []
+        # Clean up subkeys with None values and collect empty profiles
         for profile_name, profile_values in profiles.items():
             if profile_values is not None:
                 for field_name in [k for k, v in profile_values.items() if v is None]:
                     del profile_values[field_name]
+                if not profile_values:
+                    empty_profiles.append(profile_name)
+
+        # Delete empty profiles outside the loop
+        for profile_name in empty_profiles:
+            del profiles[profile_name]
 
         self._raw_data['profiles'] = profiles
 

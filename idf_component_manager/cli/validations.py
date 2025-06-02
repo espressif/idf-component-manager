@@ -35,7 +35,7 @@ def validate_existing_dir(ctx, param, value):  # noqa: ARG001
 
 
 def validate_url(ctx, param, value):  # noqa: ARG001
-    if value is not None:
+    if value:
         result = urlparse(value)
         if not result.scheme or not result.hostname:
             raise click.BadParameter('Invalid URL.')
