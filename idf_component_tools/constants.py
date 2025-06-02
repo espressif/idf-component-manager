@@ -27,4 +27,4 @@ You can try to update the component manager by running:
 """.format(sys.executable)
 MANIFEST_FILENAME = 'idf_component.yml'
 
-KCONFIG_VAR_PREFIX = '$kconfig.'
+KCONFIG_VAR_REGEX = re.compile(r'\$CONFIG\{([^}]+)}')

@@ -503,12 +503,6 @@ def polish_validation_error(err: ValidationError):
     return '\n'.join(error_msgs)
 
 
-def remove_prefix(text, prefix):
-    if text.startswith(prefix):
-        return text[len(prefix) :]
-    return text
-
-
 def subst_vars_in_str(s: str, env: t.Dict[str, t.Any] = None) -> str:  # type: ignore
     if env is None:
         env = os.environ

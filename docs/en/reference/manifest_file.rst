@@ -534,9 +534,9 @@ To include a literal dollar sign (``$``), escape it with another dollar sign: ``
 Kconfig Options
 ===============
 
-You can use Kconfig options for attributes that support them. All Kconfig options are prefixed with ``$kconfig.`` and don't need to include the ``CONFIG_`` prefix.
+You can use Kconfig options for attributes that support them. All Kconfig options should be wrapped with ``$CONFIG{...}`` and don't need to include the ``CONFIG_`` prefix.
 
-For example, to compare with the Kconfig option ``CONFIG_MY_OPTION``, use ``$kconfig.MY_OPTION``.
+For example, to compare with the Kconfig option ``CONFIG_MY_OPTION``, use ``$CONFIG{MY_OPTION}``.
 
 Only Kconfig options defined in the ESP-IDF project or its direct dependency components are supported. For example:
 
@@ -546,7 +546,7 @@ Only Kconfig options defined in the ESP-IDF project or its direct dependency com
       cmp:
         version: "*"
         matches:
-          - if: "$kconfig.BOOTLOADER_LOG_LEVEL_WARN == True"
+          - if: "$CONFIG{BOOTLOADER_LOG_LEVEL_WARN} == True"
 
 This works, because ``CONFIG_BOOTLOADER_LOG_LEVEL_WARN`` is defined in the ESP-IDF project.
 
@@ -556,7 +556,7 @@ This works, because ``CONFIG_BOOTLOADER_LOG_LEVEL_WARN`` is defined in the ESP-I
       example/cmp:
         version: "*"
         matches:
-          - if: "$kconfig.MY_OPTION == True"
+          - if: "$CONFIG{MY_OPTION} == True"
 
 This does not work, because ``CONFIG_MY_OPTION`` is not defined in the ESP-IDF project.
 
@@ -569,7 +569,7 @@ This does not work, because ``CONFIG_MY_OPTION`` is not defined in the ESP-IDF p
       example/cmp:
         version: "*"
         matches:
-          - if: "$kconfig.MDNS_MAX_SERVICES == 10"
+          - if: "$CONFIG{MDNS_MAX_SERVICES} == 10"
 
 This works, because ``CONFIG_MDNS_MAX_SERVICES`` is defined in the ``espressif/mdns`` component, which is a direct dependency of your project.
 
@@ -582,7 +582,7 @@ This works, because ``CONFIG_MDNS_MAX_SERVICES`` is defined in the ``espressif/m
       example/cmp:
         version: "*"
         matches:
-          - if: "$kconfig.OPTION_FROM_CMP_B == True"
+          - if: "$CONFIG{OPTION_FROM_CMP_B} == True"
 
 This does not work, even if ``CONFIG_OPTION_FROM_CMP_B`` is defined in the ``cmp_b`` component and ``cmp_a`` depends on ``cmp_b``, because ``cmp_b`` is not a direct dependency of your project.
 
