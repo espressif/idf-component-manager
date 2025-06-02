@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import filecmp
 import logging
@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 import pytest
-import yaml
+from ruamel.yaml import YAML
 
 from idf_component_manager.core import get_validated_manifest
 from idf_component_tools import LOGGING_NAMESPACE
@@ -51,7 +51,7 @@ def test_env_var_with_escaped_dollar_sign(valid_manifest, tmp_path):
     valid_manifest['description'] = '$$foo$$$$$$bar'
     manifest_path = os.path.join(str(tmp_path), 'idf_component.yml')
     with open(manifest_path, 'w') as fw:
-        yaml.dump(valid_manifest, fw)
+        YAML().dump(valid_manifest, fw)
 
     test_dump_path = tmp_path / 'test'
     test_dump_path.mkdir()
@@ -69,7 +69,7 @@ def test_validate_env_not_expanded(valid_manifest, tmp_path):
 
     manifest_path = tmp_path / 'idf_component.yml'
     with open(manifest_path, 'w') as fw:
-        yaml.dump(valid_manifest, fw)
+        YAML().dump(valid_manifest, fw)
 
     manager = ManifestManager(manifest_path, name='test')
 
@@ -81,7 +81,6 @@ def test_validate_env_not_expanded(valid_manifest, tmp_path):
 
     manager.dump(str(test_dump_path))
 
-    # Check that file is not modified
     assert filecmp.cmp(manifest_path, test_dump_path / 'idf_component.yml')
 
 
@@ -95,15 +94,14 @@ def test_dump_does_not_add_fields(tmp_path):
     test_dump_path.mkdir()
     manager.dump(test_dump_path)
 
-    dumped_manifiest_content = (test_dump_path / 'idf_component.yml').read_text()
-
-    assert manifest_content == dumped_manifiest_content
+    dumped_manifest_content = (test_dump_path / 'idf_component.yml').read_text()
+    assert manifest_content == dumped_manifest_content
 
 
 def test_get_validated_manifest(valid_manifest, tmp_path):
     manifest_path = os.path.join(str(tmp_path), 'idf_component.yml')
     with open(manifest_path, 'w') as fw:
-        yaml.dump(valid_manifest, fw)
+        YAML().dump(valid_manifest, fw)
 
     manager = ManifestManager(manifest_path, name='test', upload_mode=True)
     manifest = get_validated_manifest(manager, tmp_path)
@@ -115,7 +113,7 @@ def test_get_validated_manifest(valid_manifest, tmp_path):
 def test_get_validated_manifest_unexpected_file(valid_manifest, tmp_path, caplog):
     manifest_path = os.path.join(str(tmp_path), 'idf_component.yml')
     with open(manifest_path, 'w') as fw:
-        yaml.dump(valid_manifest, fw)
+        YAML().dump(valid_manifest, fw)
 
     # Create CMakeCache.txt file in tmp_path
     Path(tmp_path / 'CMakeCache.txt').touch()
@@ -137,7 +135,7 @@ def test_get_validated_manifest_invalid_component_manifest(valid_manifest, tmp_p
 
     with open(manifest_path, 'w') as fw:
         valid_manifest['version'] = 'invalid'
-        yaml.dump(valid_manifest, fw)
+        YAML().dump(valid_manifest, fw)
 
     manager = ManifestManager(manifest_path, name='test', upload_mode=True)
 
@@ -149,7 +147,7 @@ def test_env_not_expanded_with_example_manifest(valid_manifest, tmp_path):
     valid_manifest['dependencies']['test']['rules'] = [{'if': '$MY_IDF_VAR == 1'}]
     manifest_path = os.path.join(str(tmp_path), 'idf_component.yml')
     with open(manifest_path, 'w') as fw:
-        yaml.dump(valid_manifest, fw)
+        YAML().dump(valid_manifest, fw)
 
     with pytest.raises(RunningEnvironmentError):
         ManifestManager(manifest_path, name='test', upload_mode=UploadMode.component).load()

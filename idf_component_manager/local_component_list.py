@@ -1,11 +1,11 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 
 import typing as t
 
-import yaml
 from pydantic import ValidationError
+from ruamel.yaml import YAML, YAMLError
 
 from idf_component_tools.errors import ProcessingError
 from idf_component_tools.utils import BaseModel, TypedDict
@@ -23,7 +23,7 @@ class LocalComponentList(BaseModel):
 def parse_component_list(path: str) -> t.List[t.Dict[str, str]]:
     with open(path, encoding='utf-8') as f:
         try:
-            components = LocalComponentList.fromdict(yaml.safe_load(f.read()))
+            components = LocalComponentList.fromdict(YAML(typ='safe').load(f))
             return [c for c in components.components]  # type: ignore
-        except (yaml.YAMLError, ValidationError):
+        except (YAMLError, ValidationError):
             raise ProcessingError('Cannot parse components list file.')

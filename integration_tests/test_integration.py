@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import shutil
@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
-import yaml
+from ruamel.yaml import YAML
 
 from idf_component_tools.build_system_tools import get_idf_version
 from idf_component_tools.lock import LockManager
@@ -282,7 +282,9 @@ def test_idf_reconfigure_dependency_doesnt_exist(project):
     Version(get_idf_version()) < Version('5.3.0'), reason='only 5.3 and later support this'
 )
 def test_idf_build_inject_dependencies_even_with_set_components(
-    project, component_name, namespace_name
+    project,
+    component_name,
+    namespace_name,
 ):
     project_cmake_filepath = os.path.join(project, 'CMakeLists.txt')
     with open(project_cmake_filepath) as fr:
@@ -304,7 +306,7 @@ def test_idf_build_inject_dependencies_even_with_set_components(
 
     res = project_action(project, 'reconfigure')
     with open(os.path.join(project, 'dependencies.lock')) as fr:
-        lock = yaml.safe_load(fr)
+        lock = YAML(typ='safe').load(fr)
 
     assert namespace_name in lock['dependencies']
     assert lock['dependencies'][namespace_name]['source']['path'] == os.path.join(

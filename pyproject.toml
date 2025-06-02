@@ -37,7 +37,6 @@ dependencies = [
     "click",
     "colorama",
     "pyparsing",
-    "pyyaml",
     "ruamel.yaml",
     "requests",
     "requests-file",
@@ -127,7 +126,6 @@ DEP001 = ["idf_py_actions"]
 DEP002 = ["colorama"]
 
 [tool.deptry.package_module_name_map]
-pyyaml = ["yaml"]
 "ruamel.yaml" = ["ruamel"]
 
 [tool.commitizen]

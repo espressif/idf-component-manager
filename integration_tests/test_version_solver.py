@@ -5,7 +5,7 @@ import shutil
 from pathlib import Path
 
 import pytest
-import yaml
+from ruamel.yaml import YAML
 
 from idf_component_tools.semver import Version
 from integration_tests.integration_test_helpers import (
@@ -308,7 +308,7 @@ def test_version_solver_on_local_components_higher_priority(project):
         assert line in real_result
 
     with open(os.path.join(project, 'dependencies.lock')) as fr:
-        d = yaml.safe_load(fr)
+        d = YAML(typ='safe').load(fr)
         assert d['dependencies']['test/circular_dependency_a'] == {
             'dependencies': [],
             'source': {
@@ -350,22 +350,22 @@ def test_version_solver_on_local_components_with_higher_versions(project):
         os.path.join(project, 'components', 'example__cmp'),
     )
     with open(os.path.join(project, 'components', 'example__cmp', 'idf_component.yml')) as fr:
-        d = yaml.safe_load(fr)
+        d = YAML().load(fr)
 
     with open(os.path.join(project, 'components', 'example__cmp', 'idf_component.yml'), 'w') as fw:
         v = Version(d['version'])
         v.major += 1
         new_version = str(v)
         d['version'] = new_version
-        yaml.safe_dump(d, fw)
+        YAML().dump(d, fw)
 
     # update the dependency
     with open(os.path.join(project, 'main', 'idf_component.yml')) as fr:
-        d = yaml.safe_load(fr)
+        d = YAML().load(fr)
 
     with open(os.path.join(project, 'main', 'idf_component.yml'), 'w') as fw:
         d['dependencies']['example/cmp']['version'] = new_version
-        yaml.safe_dump(d, fw)
+        YAML().dump(d, fw)
 
     # compile again
     output = project_action(project, 'reconfigure')
@@ -392,7 +392,7 @@ def test_version_is_not_updated_when_not_necessary(project):
     assert 'example/cmp (3.3.3)' in output
     assert 'Configuring done' in output
     with open(os.path.join(project, 'dependencies.lock')) as fr:
-        d = yaml.safe_load(fr)
+        d = YAML(typ='safe').load(fr)
         assert d['dependencies']['example/cmp']['version'] == '3.3.3'
 
     # Check that the version is not updated when it is not necessary
@@ -522,7 +522,7 @@ def test_optional_dependencies_version_solving(project):
     assert 'Configuring done' in output
 
     with open(os.path.join(project, 'dependencies.lock')) as fr:
-        d = yaml.safe_load(fr)
+        d = YAML(typ='safe').load(fr)
         assert d['direct_dependencies'] == [
             'example/cmp',
             'foo',
@@ -536,7 +536,7 @@ def test_optional_dependencies_version_solving(project):
     assert 'Configuring done' in output
 
     with open(os.path.join(project, 'dependencies.lock')) as fr:
-        d = yaml.safe_load(fr)
+        d = YAML(typ='safe').load(fr)
         assert d['direct_dependencies'] == [
             'example/cmp',
             'foo',
@@ -584,7 +584,7 @@ def test_optional_dependencies_unmet_first_then_met(project):
     assert 'Configuring done' in output
 
     with open(os.path.join(project, 'dependencies.lock')) as fr:
-        d = yaml.safe_load(fr)
+        d = YAML(typ='safe').load(fr)
         assert d['direct_dependencies'] == [
             'example/cmp',
             'foo',
@@ -598,7 +598,7 @@ def test_optional_dependencies_unmet_first_then_met(project):
     assert 'Configuring done' in output
 
     with open(os.path.join(project, 'dependencies.lock')) as fr:
-        d = yaml.safe_load(fr)
+        d = YAML(typ='safe').load(fr)
         assert d['direct_dependencies'] == [
             'example/cmp',
             'foo',
@@ -634,7 +634,7 @@ def test_major_version_changed_with_existing_lock(project, monkeypatch):
 
     # lock file is an old version 1.0.0
     with open(os.path.join(project, 'dependencies.lock'), 'w') as fw:
-        yaml.dump(
+        YAML(typ='safe').dump(
             {
                 'dependencies': {
                     'espressif/rmaker_common': {
@@ -691,7 +691,7 @@ def test_major_version_changed_with_incomplete_existing_lock(project, monkeypatc
 
     # lock file is an old version 1.0.0
     with open(os.path.join(project, 'dependencies.lock'), 'w') as fw:
-        yaml.dump(
+        YAML(typ='safe').dump(
             {
                 'dependencies': {
                     'espressif/rmaker_common': {
@@ -741,7 +741,7 @@ def test_major_version_changed_with_incomplete_existing_lock(project, monkeypatc
 def test_major_version_changed_with_changed_idf_version(project, monkeypatch):
     # lock file is an old version 1.0.0
     with open(os.path.join(project, 'dependencies.lock'), 'w') as fw:
-        yaml.dump(
+        YAML(typ='safe').dump(
             {
                 'dependencies': {
                     'example/cmp': {

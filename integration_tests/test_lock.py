@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import hashlib
 import os
@@ -7,7 +7,7 @@ import shutil
 from pathlib import Path
 
 import pytest
-import yaml
+from ruamel.yaml import YAML
 
 from idf_component_tools.lock import LockManager
 from integration_tests.integration_test_helpers import project_action
@@ -95,12 +95,12 @@ def test_lock_version_mismatch(monkeypatch, project):
     }
 
     with open(lock_path, 'w') as fw:
-        yaml.dump(simple_lock, fw)
+        YAML(typ='safe').dump(simple_lock, fw)
 
     res = project_action(project, 'reconfigure')
     assert 'Recreating lock file with the current version' in res
 
     with open(lock_path) as fr:
-        lock = yaml.safe_load(fr)
+        lock = YAML(typ='safe').load(fr)
 
     assert lock['version'] == '2.0.0'

@@ -34,7 +34,6 @@ repos:
         additional_dependencies:
           - annotated-types
           - types-requests
-          - types-PyYAML
           - pydantic
 
   - repo: https://github.com/espressif/check-copyright/

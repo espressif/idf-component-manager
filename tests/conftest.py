@@ -10,7 +10,7 @@ from uuid import uuid4
 
 import pytest
 import requests_mock
-import yaml
+from ruamel.yaml import YAML
 
 from idf_component_manager.core import ComponentManager
 from idf_component_tools import HINT_LEVEL, ComponentManagerSettings, get_logger
@@ -103,8 +103,8 @@ def valid_manifest():
         },
         'files': {'include': ['**/*'], 'exclude': ['.pyc']},
         'url': 'https://test.com/homepage',
-        'documentation': 'https://test.com/documentation',
         'repository': 'git@github.com:test_project/test.git',
+        'documentation': 'https://test.com/documentation',
         'issues': 'https://test.com/tracker',
         'discussion': 'https://discuss.com/discuss',
     }
@@ -374,7 +374,7 @@ def upload_test_component(component_name, manifest, version, yank=False):
         if manifest:
             manifest_path = temp_cmp_path / 'idf_component.yml'
             with open(manifest_path, 'w') as fw:
-                yaml.dump(manifest, fw)
+                YAML().dump(manifest, fw)
         # Upload the component to the registry
         manager = ComponentManager(path=temp_cmp_path)
         manager.upload_component(component_name, version, namespace='test_component_manager')
