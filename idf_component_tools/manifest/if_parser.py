@@ -20,12 +20,12 @@ from pyparsing import (
 )
 
 from idf_component_tools.build_system_tools import get_env_idf_target, get_idf_version
-from idf_component_tools.constants import KCONFIG_VAR_PREFIX
+from idf_component_tools.constants import KCONFIG_VAR_REGEX
 from idf_component_tools.debugger import KCONFIG_CONTEXT
 from idf_component_tools.errors import MissingKconfigError, RunningEnvironmentError
 from idf_component_tools.messages import warn
 from idf_component_tools.semver import SimpleSpec, Version
-from idf_component_tools.utils import remove_prefix, subst_vars_in_str
+from idf_component_tools.utils import subst_vars_in_str
 
 _value_type = t.Union[str, int, bool, Version]
 
@@ -129,8 +129,9 @@ class LeftValue(Stmt):
                 return 'unknown'
 
         # consider it as a kconfig
-        if _s.startswith(KCONFIG_VAR_PREFIX):
-            key = remove_prefix(_s, KCONFIG_VAR_PREFIX)
+        match_s = KCONFIG_VAR_REGEX.match(_s)
+        if match_s:
+            key = match_s.group(1)
             kconfig_ctx = KCONFIG_CONTEXT.get()
             if key in kconfig_ctx.sdkconfig:
                 return kconfig_ctx.sdkconfig[key]

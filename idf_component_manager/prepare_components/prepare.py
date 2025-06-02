@@ -9,11 +9,13 @@
 import argparse
 import os
 import sys
+import typing as t
 
 from idf_component_manager.core import ComponentManager
-from idf_component_tools import error, setup_logging
+from idf_component_tools import error, setup_logging, warn
 from idf_component_tools.debugger import KCONFIG_CONTEXT
 from idf_component_tools.errors import FatalError
+from idf_component_tools.manifest import ComponentRequirement
 
 
 def _component_list_file(build_dir):
@@ -37,6 +39,23 @@ def prepare_dep_dirs(args):
 
     kconfig_ctx = KCONFIG_CONTEXT.get()
     if kconfig_ctx.missed_keys:
+        debug_strs: t.Set[str] = set()
+
+        def debug_message(req: ComponentRequirement) -> str:
+            return 'introduced by {}, defined in {}'.format(
+                req.name,
+                req._manifest_manager.path if req._manifest_manager else '(unknown)',
+            )
+
+        for key, reqs in kconfig_ctx.missed_keys.items():
+            for req in reqs:
+                debug_strs.add(f'    {key}, {debug_message(req)}')
+
+        _nl = '\n'
+        warn(
+            f'The following Kconfig variables were used in "if" clauses, but not found in any Kconfig file:\n'
+            f'{_nl.join(sorted(debug_strs))}\n'
+        )
         exit(10)
 
 
