@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.2.0 (2025-06-02)
+
+### Feat
+
+- **cli**: add commands to edit config
+- improve kconfig item debug message
+- use cmake syntax to represent kconfig option $CONFIG{...}
+- Upload examples defined in manifest separately
+- download component files hash from registry
+- rewrite validate functions
+- add util functions to create and parse file with checksums
+- remove checksum validation in fetcher
+- move logic from source to fetcher
+- create checksums manager class
+- download checksums json during component sync from registry
+- improve if parser, support int, bool, string
+- support kconfig items as if clause left value
+- Use include/exclude file filters with .gitiignore
+- Use system TLS certificate store when available (py3.10 or newer)
+- add esp32h4 known target
+- Remove responsibility for checking version existance when yanking
+- Add option to run network tests against the real environment
+
+### Fix
+
+- **cli**: Fix config unset command
+- convert component name to lower case
+- rename idf_component_tools tests folder
+- fix downloading local component
+- check if component cache folder exists in overwrite mode
+- adjust test to handle breaking change of stdout and stderr behaviour in click 8.2.0
+- use env var REGISTRY_URL and PROFILE for deps without registry_url set
+- skip calling `/api` when unnecessary
+- Fix hardcoded values to variables
+- Skipped asserts in help tests
+
+### Refactor
+
+- migrate to ruamel yaml
+- improve grammar and clarity in documentation and code comments
+
 ## v2.1.2 (2025-01-10)
 
 ### Fix
