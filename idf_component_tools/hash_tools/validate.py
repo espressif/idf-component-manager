@@ -4,7 +4,6 @@ import re
 import typing as t
 from pathlib import Path
 
-from idf_component_tools.file_tools import filtered_paths
 from idf_component_tools.manager import ManifestManager
 
 from .calculate import hash_dir, hash_file
@@ -154,23 +153,7 @@ def validate_checksums_eq_hashdir(
                 f'Hash "{expected_file.hash}" for file "{expected_file_path}" is not a valid SHA256 hash'
             )
 
-    manifest_manager = ManifestManager(root, 'test')
-    manifest = manifest_manager.load()
-
-    exclude_set = set(manifest.exclude_set)
-    exclude_set.add(f'**/{HASH_FILENAME}')
-    exclude_set.add(f'**/{CHECKSUMS_FILENAME}')
-
-    paths = sorted(
-        filtered_paths(
-            root,
-            use_gitignore=manifest.use_gitignore,
-            include=manifest.include_set,
-            exclude=exclude_set,
-            exclude_default=False,
-        ),
-        key=lambda path: path.relative_to(root).as_posix(),
-    )
+    paths = [file_path for file_path in root_path.rglob('*') if file_path.is_file()]
 
     for expected_file in expected_checksums.files:
         expected_file_path = root_path / expected_file.path
