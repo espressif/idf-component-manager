@@ -398,9 +398,9 @@ def dependency_validate(component: SolvedComponent, download_path: t.Optional[st
 
     try:
         validate_hashfile_eq_hashdir(download_path)
-    except ValidatingHashError:
+    except ValidatingHashError as e:
         raise FetchingError(
-            f'The downloaded component "{component.name}" is corrupted. Please try running the command again.'
+            f'The downloaded component "{component.name}" is corrupted. Please try running the command again.\n{e}'
         )
 
 
