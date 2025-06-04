@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.2.1 (2025-06-04)
+
+### Fix
+
+- file existence check during checksums validation
+
 ## v2.2.0 (2025-06-02)
 
 ### Feat
