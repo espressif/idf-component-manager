@@ -275,6 +275,15 @@ class WebServiceSource(BaseSource):
         return name
 
     def download(self, component: 'SolvedComponent', download_path: str) -> str:
+        """Download component from the web service.
+
+        For a detailed workflow, see `contributing_docs/diagrams/web_service_download.md`.
+
+        :param component: Component to download
+        :param download_path: Destination path for the downloaded component
+        :raises FetchingError: If there is an error during the download process.
+        :return: Path to the downloaded component.
+        """
         from idf_component_tools.registry.service_details import get_storage_client
 
         # Check for required components
