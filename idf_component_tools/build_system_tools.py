@@ -12,7 +12,7 @@ from idf_component_tools.errors import RunningEnvironmentError
 
 from .semver import Version
 
-IDF_VERSION_REGEX = re.compile(r'v(\d\.\d(?:\.\d)?)')
+IDF_VERSION_REGEX = re.compile(r'v(\d+\.\d+(?:\.\d+)?)')
 
 CMAKE_PROJECT_LINE = r'include($ENV{IDF_PATH}/tools/cmake/project.cmake)'
 
