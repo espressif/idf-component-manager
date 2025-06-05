@@ -12,7 +12,7 @@ from idf_component_tools.errors import RunningEnvironmentError
 
 from .semver import Version
 
-IDF_VERSION_REGEX = re.compile(r'v(\d\.\d(?:\.\d)?)')
+IDF_VERSION_REGEX = re.compile(r'v(\d+\.\d+(?:\.\d+)?)')
 
 CMAKE_PROJECT_LINE = r'include($ENV{IDF_PATH}/tools/cmake/project.cmake)'
 
@@ -38,7 +38,19 @@ def get_env_idf_target() -> str:
     return env_idf_target
 
 
-def get_idf_version():
+def get_idf_version(short_version: bool = False) -> str:
+    """
+    Get IDF version from environment variable or by calling idf.py --version.
+
+    :param short_version: If True, return only major and minor version (e.g. '4.2').
+    """
+    ver = Version.coerce(_get_idf_version())
+    if short_version:
+        return f'{ver.major}.{ver.minor}'
+    return str(ver)
+
+
+def _get_idf_version() -> str:
     ci_test_idf_version = os.getenv('CI_TESTING_IDF_VERSION')
     if ci_test_idf_version:
         return ci_test_idf_version
@@ -49,7 +61,7 @@ def get_idf_version():
 
     idf_py_path = os.path.join(get_idf_path(), 'tools', 'idf.py')
     try:
-        idf_version = subprocess.check_output([sys.executable, idf_py_path, '--version'])  # noqa: S603
+        idf_version = subprocess.check_output([sys.executable, idf_py_path, '--version'])  # type: ignore # noqa: S603
     except subprocess.CalledProcessError:
         raise RunningEnvironmentError(
             'Could not get IDF version from calling "idf.py --version".\nidf.py path: {}'.format(
@@ -63,9 +75,9 @@ def get_idf_version():
             string_type = str
 
         if not isinstance(idf_version, string_type):
-            idf_version = idf_version.decode('utf-8')
+            idf_version = idf_version.decode('utf-8')  # type: ignore
 
-    res = IDF_VERSION_REGEX.findall(idf_version)
+    res = IDF_VERSION_REGEX.findall(idf_version)  # type: ignore
     if len(res) == 1:
         return str(Version.coerce(res[0]))
     else:
