@@ -37,6 +37,7 @@ from idf_component_tools.errors import (
 )
 from idf_component_tools.file_tools import (
     copy_filtered_directory,
+    prepare_empty_directory,
 )
 from idf_component_tools.git_client import GitClient, clean_tag_version
 from idf_component_tools.hash_tools.errors import (
@@ -417,7 +418,8 @@ class ComponentManager:
 
         # Create a destination directory for examples defined in the manifest
         examples_dest_dir = dest_path / f'{name}_{manifest.version}_examples'
-        examples_dest_dir.mkdir(parents=True, exist_ok=True)
+        # If exists delete it
+        prepare_empty_directory(examples_dest_dir)
 
         for example in manifest.examples:
             example_path = (self.path / Path(list(example.values())[0])).resolve()

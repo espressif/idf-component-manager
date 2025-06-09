@@ -154,18 +154,17 @@ def filtered_paths(
     return paths
 
 
-def prepare_empty_directory(directory: str) -> None:
+def prepare_empty_directory(directory: t.Union[str, Path]) -> None:
     """Prepare directory empty"""
-    dir_exist = os.path.exists(directory)
+    directory = Path(directory)
 
     # Delete path if it's not empty
-    if dir_exist and os.listdir(directory):
+    if directory.exists() and any(directory.iterdir()):
         rmtree(directory)
-        dir_exist = False
 
-    if not dir_exist:
+    if not directory.exists():
         try:
-            os.makedirs(directory)
+            directory.mkdir(parents=True)
         except NotADirectoryError:
             raise FatalError(f'Not a directory in the path. Cannot create directory: {directory}')
         except PermissionError:
