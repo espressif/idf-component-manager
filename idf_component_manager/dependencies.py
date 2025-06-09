@@ -42,7 +42,7 @@ from idf_component_tools.registry.client_errors import NetworkConnectionError
 from idf_component_tools.semver import SimpleSpec, Version
 from idf_component_tools.sources import IDFSource
 from idf_component_tools.sources.fetcher import ComponentFetcher
-from idf_component_tools.utils import ProjectRequirements
+from idf_component_tools.utils import ComponentVersion, ProjectRequirements
 
 
 def check_manifests_targets(project_requirements: ProjectRequirements) -> None:
@@ -437,7 +437,7 @@ def download_project_dependencies(
             debug(
                 f'replacing {dep.name} version {dep.version} with current idf version {cur_idf_version}'
             )
-            dep.version = cur_idf_version
+            dep.version = ComponentVersion(cur_idf_version)
 
     check_manifests_targets(project_requirements)
 

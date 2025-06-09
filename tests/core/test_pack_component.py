@@ -318,3 +318,31 @@ def test_pack_component_with_example_defined_in_manifest(tmp_path, cmp_with_exam
         (hash_dir / 'cmp_ex').is_dir()
         for hash_dir in (Path(component_manager.default_dist_path) / 'cmp_2.3.4_examples').iterdir()
     )
+
+
+def test_pack_component_with_no_duplicates_in_the_dist(tmp_path, cmp_with_example):
+    project_path = tmp_path / 'cmp'
+    shutil.copytree(cmp_with_example, project_path)
+    shutil.copytree(
+        Path(cmp_with_example) / 'examples' / 'cmp_ex', project_path / 'custom_example_path'
+    )
+
+    component_manager = ComponentManager(path=str(project_path))
+
+    manifest_manager = ManifestManager(project_path, 'cmp')
+    manifest_manager.manifest.examples = [
+        {'path': './custom_example_path'},
+    ]
+    manifest_manager.dump(str(project_path))
+
+    component_manager.pack_component('cmp', '2.3.4')
+    component_manager.pack_component('cmp', '2.3.4')
+
+    assert (
+        len([
+            p
+            for p in (component_manager.default_dist_path / 'cmp_2.3.4_examples').iterdir()
+            if p.is_dir()
+        ])
+        == 1
+    )
