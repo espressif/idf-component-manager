@@ -43,6 +43,7 @@ class TestComponentVersion:
             ('1.2.3~1', '1.2.3~1'),
             ('1.2.3-rc1+build1', '1.2.3-rc1+build1'),
             ('1.2.3~1-rc1+build1', '1.2.3~1-rc1+build1'),
+            ('1.2.3-Alpha', '1.2.3-Alpha'),
         ],
     )
     def test_string_is_unified(self, version, expected):

@@ -276,7 +276,7 @@ class ComponentVersion(str):
             version_string: can be `*`, git commit hash (hex, 160 bit),
                 or valid semantic version string
         """
-        self._version_string: str = version_string.strip().lower()
+        self._version_string: str = version_string.strip()
         self._semver: t.Optional[Version] = None
 
         # Setting flags:
