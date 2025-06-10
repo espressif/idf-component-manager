@@ -350,3 +350,45 @@ def test_idf_reconfigure_fixed_order_sdkconfig(project):
         # won't be updated if the dependencies are not changed
         project_action(project, 'reconfigure')
         assert last_mtime == os.stat(os.path.join(project, 'sdkconfig')).st_mtime
+
+
+@pytest.mark.parametrize(
+    'project',
+    [
+        {
+            'components': {
+                'main': {},
+                'component_a': {
+                    'dependencies': {
+                        'component_b': {
+                            'path': '../component_b',
+                        }
+                    }
+                },
+                'component_b': {
+                    'dependencies': {
+                        'component_a': {
+                            'path': '../component_a',
+                        }
+                    }
+                },
+            }
+        },
+    ],
+    indirect=True,
+)
+def test_circular_dependency(project):
+    res = project_action(project, 'reconfigure')
+    assert 'Generating done' in res
+
+    with open(os.path.join(project, 'dependencies.lock')) as fr:
+        lock = YAML(typ='safe').load(fr)
+
+    assert lock['dependencies']['component_a']['source']['path'] == os.path.join(
+        project, 'components', 'component_a'
+    )
+    assert lock['dependencies']['component_a']['source']['type'] == 'local'
+    assert lock['dependencies']['component_b']['source']['path'] == os.path.join(
+        project, 'components', 'component_b'
+    )
+    assert lock['dependencies']['component_b']['source']['type'] == 'local'

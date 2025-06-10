@@ -241,15 +241,23 @@ class ComponentRequirement(DependencyItem):
 
         self.validate_post_init()
 
-    def __hash__(self):
-        d = self.serialize()
-        if self.source.type == 'service':
-            if self.registry_url in [
-                None,
-                IDF_COMPONENT_REGISTRY_URL.rstrip('/'),
-            ]:
+    @staticmethod
+    def _normalized_dict(obj: 'ComponentRequirement') -> t.Dict[str, t.Any]:
+        d = obj.serialize()
+        if obj.source.type == 'service':
+            if obj.registry_url in [None, IDF_COMPONENT_REGISTRY_URL.rstrip('/')]:
                 d['registry_url'] = IDF_COMPONENT_REGISTRY_URL
-        return hash(hash_object(d))
+
+        return d
+
+    def __hash__(self):
+        return hash(hash_object(self._normalized_dict(self)))
+
+    def __eq__(self, other):
+        if not isinstance(other, ComponentRequirement):
+            return NotImplemented
+
+        return self._normalized_dict(self) == self._normalized_dict(other)
 
     def validate_post_init(self) -> None:
         # validate version by source
