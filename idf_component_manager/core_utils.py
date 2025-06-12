@@ -1,10 +1,12 @@
 # SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+import json
 import re
 import shutil
 import typing as t
 from pathlib import Path
 
+from ruamel.yaml import YAML
 from tqdm import tqdm
 
 from idf_component_tools import notice
@@ -17,6 +19,8 @@ from idf_component_tools.manager import ManifestManager, UploadMode
 from idf_component_tools.manifest import Manifest
 from idf_component_tools.manifest.constants import SLUG_BODY_REGEX
 from idf_component_tools.semver import SimpleSpec
+from idf_component_tools.semver.base import Version
+from idf_component_tools.sources.web_service import WebServiceSource
 
 CREATE_PROJECT_FROM_EXAMPLE_NAME_REGEX = (
     r'^((?P<namespace>{slug})\/)?'
@@ -210,3 +214,83 @@ def check_examples_folder(
             'Please check the path of the custom example folder in `examples` field '
             'in `idf_component.yml` file'.format(', '.join(error_paths))
         )
+
+
+def try_remove_dependency_from_manifest(manifest_path: Path, dependency: str) -> bool:
+    yaml = YAML()
+    try:
+        manifest = yaml.load(manifest_path.read_text(encoding='utf8'))
+    except FileNotFoundError:
+        raise FatalError(f'Cannot find manifest file at {manifest_path}')
+
+    if 'dependencies' in manifest and dependency in manifest['dependencies']:
+        manifest['dependencies'].pop(dependency)
+        with open(manifest_path, 'w', encoding='utf8') as manifest_file:
+            yaml.dump(manifest, manifest_file)
+        return True
+    return False
+
+
+def try_remove_dependency_with_fallback(all_components_info, dependency_name):
+    def remove_dependency_and_collect_paths(
+        all_component_info: t.Dict, dependency_name: str
+    ) -> t.List[Path]:
+        removed_from_paths = []
+
+        for component in all_component_info:
+            if not component.get('dir'):
+                raise FatalError(
+                    'Project description file is missing a required "dir" key'
+                    'This may indicate an unsupported format version.'
+                )
+
+            manifest_path = Path(component.get('dir')) / MANIFEST_FILENAME
+
+            if component.get('source') != 'project_components' or not manifest_path.exists():
+                continue
+
+            if try_remove_dependency_from_manifest(manifest_path, dependency_name):
+                removed_from_paths.append(manifest_path)
+
+        return removed_from_paths
+
+    # Try to remove dependency (e.g. with included namespace, git, local)
+    removed_from_paths = remove_dependency_and_collect_paths(all_components_info, dependency_name)
+
+    # If not found, fallback by prefixing the dependency with espressif namespace
+    if not removed_from_paths:
+        # Normalize the name (e.g. if no namespace -> "espressif/<component_name>")
+        dependency_name = WebServiceSource().normalized_name(dependency_name)
+        removed_from_paths = remove_dependency_and_collect_paths(
+            all_components_info, dependency_name
+        )
+
+    return removed_from_paths
+
+
+def validate_project_description_version(project_description: dict):
+    version = project_description.get('version', 'unknown')
+
+    if version == 'unknown':
+        raise FatalError('Project description file is missing version information')
+
+    v = Version.coerce(version)
+    supported = (Version.coerce('1.3') <= v < Version.coerce('2.0')) or (
+        v >= Version.coerce('2.0') and 'all_component_info' in project_description
+    )
+
+    if not supported:
+        raise FatalError(f'project_description.json format version {version} is not supported.')
+
+
+def load_project_description_file(build_path):
+    try:
+        return json.loads((build_path / 'project_description.json').read_text())
+    except FileNotFoundError:
+        raise FatalError(
+            f'Cannot find project description file at {build_path / "project_description.json"}'
+        )
+    except json.JSONDecodeError as e:
+        raise FatalError(f'Invalid JSON in project description file: {e}')
+    except Exception as e:
+        raise FatalError(f'Error reading project description file: {e}')

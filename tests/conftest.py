@@ -191,6 +191,67 @@ def cmp_with_example(fixtures_path):
     )
 
 
+@pytest.fixture
+def project_description():
+    return """{{
+        "version": "1.3.0",
+        "all_component_info": {{
+            "main": {{
+                "alias": "idf::main",
+                "target": "___idf_main",
+                "prefix": "idf",
+                "dir": "{component_path}/main",
+                "source": "project_components",
+                "lib": "__idf_main",
+                "reqs": [],
+                "priv_reqs": ["example__cmp"],
+                "managed_reqs": [],
+                "managed_priv_reqs": ["example__cmp"],
+                "include_dirs": ["."]
+            }},
+            "joltwallet__littlefs": {{
+                "alias": "idf::joltwallet__littlefs",
+                "target": "___idf_joltwallet__littlefs",
+                "prefix": "idf",
+                "dir": "{component_path}/components/joltwallet__littlefs",
+                "source": "project_components",
+                "lib": "__idf_joltwallet__littlefs",
+                "reqs": ["sdmmc", "esp_partition"],
+                "priv_reqs": ["esptool_py", "spi_flash", "vfs"],
+                "managed_reqs": [],
+                "managed_priv_reqs": [],
+                "include_dirs": ["include"]
+            }},
+            "example__cmp": {{
+                "alias": "idf::example__cmp",
+                "target": "___idf_example__cmp",
+                "prefix": "idf",
+                "dir": "{component_path}/managed_components/example__cmp",
+                "source": "project_managed_components",
+                "lib": "__idf_example__cmp",
+                "reqs": [],
+                "priv_reqs": [],
+                "managed_reqs": [],
+                "managed_priv_reqs": [],
+                "include_dirs": ["include"]
+            }},
+            "example__cmp2": {{
+                "alias": "idf::example__cmp2",
+                "target": "___idf_example__cmp2",
+                "prefix": "idf",
+                "dir": "{component_path}/example__cmp2",
+                "source": "project_extra_components",
+                "lib": "__idf_example__cmp2",
+                "reqs": [],
+                "priv_reqs": [],
+                "managed_reqs": [],
+                "managed_priv_reqs": [],
+                "include_dirs": [ "include" ]
+            }}
+        }}
+    }}"""
+
+
 @pytest.fixture(scope='session')
 def example_component_path(fixtures_path):
     return os.path.join(

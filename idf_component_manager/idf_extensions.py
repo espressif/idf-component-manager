@@ -3,6 +3,7 @@
 import os
 import sys
 import typing as t
+from pathlib import Path
 
 from idf_component_manager.cli.validations import (
     validate_add_dependency,
@@ -11,12 +12,14 @@ from idf_component_manager.cli.validations import (
     validate_git_url,
     validate_path_for_project,
 )
+from idf_component_manager.core import remove_dependency_from_project
 from idf_component_manager.utils import (
     CLICK_SUPPORTS_SHOW_DEFAULT,
 )
 from idf_component_tools import error, setup_logging
 from idf_component_tools.errors import FatalError
-from idf_component_tools.utils import UrlField, UrlOrFileField
+from idf_component_tools.semver import Version
+from idf_component_tools.utils import Literal, UrlField, UrlOrFileField
 
 from .core import ComponentManager
 
@@ -183,6 +186,15 @@ def action_extensions(base_actions, project_path):  # noqa: ARG001
         validate_add_dependency(ctx, None, kwargs.get('dependency'))
         callback(subcommand_name, ctx, args, **kwargs)
 
+    def remove_dependency_callback(subcommand_name, ctx, args, **kwargs):  # noqa: ARG001
+        build_path = Path(args.project_dir, ctx.params.get('build_dir') or 'build')
+        dependency = kwargs.get('dependency') or ''
+        try:
+            remove_dependency_from_project(build_path, dependency)
+        except FatalError as e:
+            error(str(e))
+            sys.exit(e.exit_code)
+
     def global_callback(ctx, global_args, tasks):
         def has_global_arg(arg_name, multiple=False):
             """Check if the global argument is set."""
@@ -221,149 +233,176 @@ def action_extensions(base_actions, project_path):  # noqa: ARG001
             elif task.name == 'add-dependency' and has_global_arg('registry_url'):
                 # Pass 'registry_url' to 'add-dependency' so it's written to the manifest.
                 task.action_args['registry_url'] = global_args['registry_url']
+            elif task.name == 'remove-dependency' and Version.coerce(
+                os.getenv('ESP_IDF_VERSION')
+            ) >= Version.coerce('6.0'):
+                try:
+                    sys.path.append(os.path.join(os.environ['IDF_PATH'], 'tools'))
+                    from idf_py_actions.tools import ensure_build_directory
+
+                    ensure_build_directory(global_args, 'idf.py')
+                except (KeyError, ImportError):
+                    # Should not be possible
+                    raise FatalError('The command is not being executed in an ESP-IDF environment.')
+
+    actions = {
+        'create-manifest': {
+            'callback': callback,
+            'help': (
+                'Create manifest for specified component.\n'
+                'By default:\n'
+                'If you run the command in the directory with project, the manifest'
+                ' will be created in the "main" directory.\n'
+                'If you run the command in the directory with a component, '
+                'the manifest will be created right in that directory.\n'
+                'You can explicitly specify directory using the --path option.'
+            ),
+            'options': LOCAL_MANIFEST_OPTIONS,
+        },
+        'add-dependency': {
+            'callback': add_dependency_callback,
+            'help': (
+                'Add dependency to the manifest file.\n'
+                'By default:\n'
+                'If you run the command in the directory with project, the dependency'
+                ' will be added to the manifest in the "main" directory.\n'
+                'If you run the command in the directory with a component, '
+                'the dependency will be added to the manifest right in that directory.\n'
+                'You can explicitly specify directory using the --path option.'
+            ),
+            'arguments': [
+                {
+                    'names': ['dependency'],
+                    'required': True,
+                },
+            ],
+            'options': LOCAL_MANIFEST_OPTIONS + PROFILE_NAME + GIT_OPTIONS + REGISTRY_URL,
+        },
+        'remove_managed_components': {'callback': callback, 'hidden': True},
+        'upload-component': {
+            'callback': callback,
+            'deprecated': True,
+            'hidden': True,
+            'help': (
+                'New CLI command: "compote component upload". '
+                'Upload component to the component registry. '
+                "If the component doesn't exist in the registry "
+                'it will be created automatically.'
+            ),
+            'options': REGISTRY_OPTIONS
+            + VERSION_PARAMETER
+            + [
+                {
+                    'names': ['--archive'],
+                    'help': 'Path of the archive with a component to upload. '
+                    'When not provided the component will be packed automatically.',
+                },
+                {
+                    'names': ['--skip-pre-release'],
+                    'help': 'Do not upload pre-release versions.',
+                    'is_flag': True,
+                    'default': False,
+                },
+                {
+                    'names': ['--check-only'],
+                    'help': 'Check if given component version is already uploaded and exit.',
+                    'is_flag': True,
+                    'default': False,
+                },
+                {
+                    'names': ['--allow-existing'],
+                    'help': 'Return success if existing version is already uploaded.',
+                    'is_flag': True,
+                    'default': False,
+                },
+            ],
+        },
+        'delete-version': {
+            'callback': callback,
+            'deprecated': True,
+            'hidden': True,
+            'help': (
+                'New CLI command: "compote component delete". '
+                'Delete specified version of the component from the component registry.'
+            ),
+            'options': REGISTRY_OPTIONS
+            + [
+                {
+                    'names': ['--version'],
+                    'help': 'Component version',
+                    'required': True,
+                }
+            ],
+        },
+        'upload-component-status': {
+            'callback': callback,
+            'deprecated': True,
+            'hidden': True,
+            'help': (
+                'New CLI command: "compote component upload-status". '
+                'Check the component uploading status by the job ID.'
+            ),
+            'options': PROFILE_NAME
+            + [
+                {
+                    'names': ['--job'],
+                    'help': 'Job ID',
+                    'required': True,
+                }
+            ],
+        },
+        'pack-component': {
+            'callback': callback,
+            'deprecated': True,
+            'hidden': True,
+            'help': (
+                'New CLI command: "compote component pack". '
+                'Create component archive and store it in the dist directory.'
+            ),
+            'options': PROFILE_NAME + NAME + VERSION_PARAMETER,
+        },
+        'create-project-from-example': {
+            'callback': callback,
+            'help': CREATE_PROJECT_FROM_EXAMPLE_DESCR,
+            'arguments': [{'names': ['example']}],
+            'options': PROFILE_NAME
+            + REGISTRY_URL
+            + STORAGE_URL
+            + [
+                {
+                    'names': ['-p', '--path'],
+                    'help': (
+                        'Set the path for the new project. The project '
+                        'will be created directly in the given folder '
+                        'if it does not contain anything'
+                    ),
+                    'required': False,
+                    'callback': validate_path_for_project,
+                }
+            ],
+        },
+        'update-dependencies': {
+            'callback': callback,
+            'help': 'Update dependencies of the project',
+        },
+    }
+
+    if Version.coerce(os.getenv('ESP_IDF_VERSION')) >= Version.coerce('6.0'):
+        actions['remove-dependency'] = {
+            'callback': remove_dependency_callback,
+            'help': (
+                'Remove specified dependency (given as "namespace/component") from all the manifest files in the project\n'
+            ),
+            'arguments': [
+                {
+                    'names': ['dependency'],
+                    'required': True,
+                },
+            ],
+        }
 
     return {
         'global_options': LOCAL_STORAGE_URL,
         'global_action_callbacks': [global_callback],
-        'actions': {
-            'create-manifest': {
-                'callback': callback,
-                'help': (
-                    'Create manifest for specified component.\n'
-                    'By default:\n'
-                    'If you run the command in the directory with project, the manifest'
-                    ' will be created in the "main" directory.\n'
-                    'If you run the command in the directory with a component, '
-                    'the manifest will be created right in that directory.\n'
-                    'You can explicitly specify directory using the --path option.'
-                ),
-                'options': LOCAL_MANIFEST_OPTIONS,
-            },
-            'add-dependency': {
-                'callback': add_dependency_callback,
-                'help': (
-                    'Add dependency to the manifest file.\n'
-                    'By default:\n'
-                    'If you run the command in the directory with project, the dependency'
-                    ' will be added to the manifest in the "main" directory.\n'
-                    'If you run the command in the directory with a component, '
-                    'the dependency will be added to the manifest right in that directory.\n'
-                    'You can explicitly specify directory using the --path option.'
-                ),
-                'arguments': [
-                    {
-                        'names': ['dependency'],
-                        'required': True,
-                    },
-                ],
-                'options': LOCAL_MANIFEST_OPTIONS + PROFILE_NAME + GIT_OPTIONS + REGISTRY_URL,
-            },
-            'remove_managed_components': {'callback': callback, 'hidden': True},
-            'upload-component': {
-                'callback': callback,
-                'deprecated': True,
-                'hidden': True,
-                'help': (
-                    'New CLI command: "compote component upload". '
-                    'Upload component to the component registry. '
-                    "If the component doesn't exist in the registry "
-                    'it will be created automatically.'
-                ),
-                'options': REGISTRY_OPTIONS
-                + VERSION_PARAMETER
-                + [
-                    {
-                        'names': ['--archive'],
-                        'help': 'Path of the archive with a component to upload. '
-                        'When not provided the component will be packed automatically.',
-                    },
-                    {
-                        'names': ['--skip-pre-release'],
-                        'help': 'Do not upload pre-release versions.',
-                        'is_flag': True,
-                        'default': False,
-                    },
-                    {
-                        'names': ['--check-only'],
-                        'help': 'Check if given component version is already uploaded and exit.',
-                        'is_flag': True,
-                        'default': False,
-                    },
-                    {
-                        'names': ['--allow-existing'],
-                        'help': 'Return success if existing version is already uploaded.',
-                        'is_flag': True,
-                        'default': False,
-                    },
-                ],
-            },
-            'delete-version': {
-                'callback': callback,
-                'deprecated': True,
-                'hidden': True,
-                'help': (
-                    'New CLI command: "compote component delete". '
-                    'Delete specified version of the component from the component registry.'
-                ),
-                'options': REGISTRY_OPTIONS
-                + [
-                    {
-                        'names': ['--version'],
-                        'help': 'Component version',
-                        'required': True,
-                    }
-                ],
-            },
-            'upload-component-status': {
-                'callback': callback,
-                'deprecated': True,
-                'hidden': True,
-                'help': (
-                    'New CLI command: "compote component upload-status". '
-                    'Check the component uploading status by the job ID.'
-                ),
-                'options': PROFILE_NAME
-                + [
-                    {
-                        'names': ['--job'],
-                        'help': 'Job ID',
-                        'required': True,
-                    }
-                ],
-            },
-            'pack-component': {
-                'callback': callback,
-                'deprecated': True,
-                'hidden': True,
-                'help': (
-                    'New CLI command: "compote component pack". '
-                    'Create component archive and store it in the dist directory.'
-                ),
-                'options': PROFILE_NAME + NAME + VERSION_PARAMETER,
-            },
-            'create-project-from-example': {
-                'callback': callback,
-                'help': CREATE_PROJECT_FROM_EXAMPLE_DESCR,
-                'arguments': [{'names': ['example']}],
-                'options': PROFILE_NAME
-                + REGISTRY_URL
-                + STORAGE_URL
-                + [
-                    {
-                        'names': ['-p', '--path'],
-                        'help': (
-                            'Set the path for the new project. The project '
-                            'will be created directly in the given folder '
-                            'if it does not contain anything'
-                        ),
-                        'required': False,
-                        'callback': validate_path_for_project,
-                    }
-                ],
-            },
-            'update-dependencies': {
-                'callback': callback,
-                'help': 'Update dependencies of the project',
-            },
-        },
+        'actions': actions,
     }

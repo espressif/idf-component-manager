@@ -82,8 +82,11 @@ from .core_utils import (
     check_examples_folder,
     dist_name,
     get_validated_manifest,
+    load_project_description_file,
     parse_example,
     raise_component_modified_error,
+    try_remove_dependency_with_fallback,
+    validate_project_description_version,
 )
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
@@ -1004,3 +1007,25 @@ class ComponentManager:
                 recursive=recursive,
                 resolution=resolution,
             )
+
+
+def remove_dependency_from_project(build_path: Path, dependency_name: str):
+    project_description = load_project_description_file(build_path)
+    validate_project_description_version(project_description)
+
+    if not project_description.get('all_component_info'):
+        raise FatalError(
+            'Project description file is missing required key "all_component_info". '
+            'This may indicate an unsupported format version.'
+        )
+
+    removed_from_paths = try_remove_dependency_with_fallback(
+        project_description['all_component_info'].values(), dependency_name
+    )
+
+    if removed_from_paths:
+        joined_paths = '\n'.join(str(path) for path in removed_from_paths)
+        notice(f'Successfully removed dependency "{dependency_name}" from: \n{joined_paths}')
+        return
+
+    notice(f'Dependency "{dependency_name}" not found in any component')
