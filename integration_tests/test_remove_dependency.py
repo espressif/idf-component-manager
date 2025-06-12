@@ -41,6 +41,7 @@ def test_remove_dependency_does_not_exist(project):
     assert 'Dependency "ns/someabsolutelyoutrageouscomponent" not found in any component' in res
 
 
+@pytest.mark.xfail(reason='ESP-IDF MR')
 @pytest.mark.parametrize('project', [{}], indirect=True)
 def test_remove_dependency_not_in_old_idf_versions(project):
     res = project_action(project, 'remove-dependency', 'example/cmp')

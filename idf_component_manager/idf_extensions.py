@@ -19,7 +19,7 @@ from idf_component_manager.utils import (
 from idf_component_tools import error, setup_logging
 from idf_component_tools.errors import FatalError
 from idf_component_tools.semver import Version
-from idf_component_tools.utils import Literal, UrlField, UrlOrFileField
+from idf_component_tools.utils import UrlField, UrlOrFileField
 
 from .core import ComponentManager
 
