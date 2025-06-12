@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import re
 from pathlib import Path
@@ -10,7 +10,7 @@ from idf_component_manager.core_utils import COMPONENT_FULL_NAME_WITH_SPEC_REGEX
 from idf_component_tools.archive_tools import ArchiveError, get_format_from_path
 from idf_component_tools.constants import COMPILED_COMMIT_ID_RE, COMPILED_GIT_URL_RE
 from idf_component_tools.manifest import WEB_DEPENDENCY_REGEX
-from idf_component_tools.manifest.constants import SLUG_REGEX
+from idf_component_tools.manifest.constants import MAX_NAME_LENGTH, SLUG_REGEX
 from idf_component_tools.semver import Version
 from idf_component_tools.semver.base import SimpleSpec
 
@@ -19,10 +19,11 @@ def validate_name(ctx, param, value):  # noqa: ARG001
     if value is not None:
         name = value.lower()
 
-        if not re.match(SLUG_REGEX, name):
+        if len(name) > MAX_NAME_LENGTH or not re.match(SLUG_REGEX, name):
             raise click.BadParameter(
-                f'"{name}" should consist of 2 or more letters, numbers, "-" or "_". '
-                'It cannot start or end with "_" or "-", or have sequences of these characters.'
+                f'"{name}" must be between 2 and {MAX_NAME_LENGTH} characters long, '
+                'consist of letters, numbers, "-" or "_", and cannot start or end with "_" or "-", '
+                'nor contain consecutive special characters.'
             )
         return name
 
