@@ -10,7 +10,7 @@ include = [
 
 [project]
 name = "idf-component-manager"
-version = "2.2.1"
+version = "2.2.2"
 authors = [
     { name = "Sergei Silnov", email = "sergei.silnov@espressif.com" },
     { name = "Fu Hanxi", email = "fuhanxi@espressif.com" },

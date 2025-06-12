@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.2.2 (2025-06-12)
+
+### Feat
+
+- Better report for corrupted component error message
+
+### Fix
+
+- fix versions case sensitivity
+- use `ComponentRequirements` in set
+- Do not duplicate examples defined in the manifest when packing multiple times
+- idf version regex supports >10
+- root-level managed components folder path
+
 ## v2.2.1 (2025-06-04)
 
 ### Fix
