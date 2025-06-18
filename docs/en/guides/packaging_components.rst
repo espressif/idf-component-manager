@@ -281,3 +281,31 @@ Upload Component via GitHub Action
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We provide a `GitHub action <https://github.com/espressif/upload-components-ci-action>`_ to help you upload your components to the registry as part of your GitHub workflow.
+
+Upload Component via Github Action using OpenID Connect
+-------------------------------------------------------
+
+You can securely upload components to the ESP Component Registry from a GitHub Actions workflow using `OpenID Connect (OIDC) <https://docs.github.com/en/actions/how-tos/security-for-github-actions/security-hardening-your-deployments/using-openid-connect-with-reusable-workflows>`_. This approach eliminates the need to store long-lived credentials as GitHub secrets. To enable OIDC-based uploads, you must first register a Trusted Uploader in the ESP Component Registry.
+
+Steps to Register a Trusted Uploader
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. **Log in** to the ESP Component Registry.
+2. Click on the dropdown containing your username and navigate to the **Permissions** page.
+3. Select the **namespace** where you want to upload your component.
+4. Click on the component to which you want to upload a version.
+
+   - If the component does not yet exist, click the **"+"** button in the **Components** table and fill out the form to create an empty component (with no versions).
+
+5. In the **Trusted Uploaders** table, click the **"+"** button and complete the form to create a new Trusted Uploader record.
+
+The Trusted Uploader form consists of the following fields:
+
+- **Repository**: Repository name from which the component will be uploaded (e.g., my-org/my-repo).
+- **Workflow**: Either a name of the publishing workflow or the filename of the publishing workflow. In case of the filename of the publishing workflow, this file should exist in the .github/workflows/ directory in the repository defined above.
+- **Branch** (Optional): Branch name from which the component will be uploaded (e.g., main).
+- **Environment** (Optional): Environment name from which the component will be uploaded (e.g., production).
+
+Once this is set up, you can configure your GitHub Actions workflow to use OIDC for uploading.
+
+For an example of setting up the GitHub Actions workflow, see the `upload-components-ci-action documentation <https://github.com/espressif/upload-components-ci-action/blob/v2/README.md#uploading-a-component-using-a-github-oidc-token>`_.
