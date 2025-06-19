@@ -75,6 +75,34 @@ def test_checksums_dump(tmp_path, checksums_model):
     assert stored_checksums == expected_checksums
 
 
+def test_checksums_dump_to_other_path(tmp_path, checksums_model):
+    component_path = tmp_path / 'component'
+    component_path.mkdir()
+    (component_path / 'file1.txt').write_text('file1')
+    checksums_manager = ChecksumsManager(component_path)
+
+    checksums_model.files.append(
+        create_file_field(
+            'file1.txt', 5, 'c147efcfc2d7ea666a9e4f5187b115c90903f0fc896a56df9a6ef5d8f3fc9f31'
+        )
+    )
+
+    external_path = tmp_path / 'ext'
+    external_path.mkdir()
+    checksums_path = external_path / CHECKSUMS_FILENAME
+
+    checksums_manager.dump(external_path)
+    assert checksums_path.is_file()
+
+    stored_checksums = json.loads(checksums_path.read_text())
+    expected_checksums = checksums_model.model_dump()
+
+    normalize_checksums(stored_checksums)
+    normalize_checksums(expected_checksums)
+
+    assert stored_checksums == expected_checksums
+
+
 def test_load_checksums(tmp_path, checksums_model):
     checksums_path = tmp_path / CHECKSUMS_FILENAME
     checksums_manager = ChecksumsManager(tmp_path)
