@@ -46,11 +46,11 @@ class ChecksumsManager:
     def exists(self) -> bool:
         """Check if checksums file exists.
 
-        :return: True if checksums file exists, False otherwise
+        :return: True if checksums file exists in the component directory, False otherwise.
         """
         return (self.path / CHECKSUMS_FILENAME).is_file()
 
-    def dump(self) -> None:
+    def dump(self, path: t.Optional[Path] = None) -> None:
         """Writes checksums to a file.
 
         Format of the file is:
@@ -68,7 +68,12 @@ class ChecksumsManager:
                 ...
             ]
         }
+
+        :param path: Path to directory where checksums file will be created.
+        If None, uses the component path provided during initialization.
         """
+
+        checksums_path = (path if path is not None else self.path) / CHECKSUMS_FILENAME
 
         checksums = ChecksumsModel(
             files=[
@@ -82,7 +87,7 @@ class ChecksumsManager:
             ]
         )
 
-        (self.path / CHECKSUMS_FILENAME).write_text(checksums.model_dump_json())
+        checksums_path.write_text(checksums.model_dump_json())
 
     def load(self) -> ChecksumsModel:
         """Load file with checksums.
