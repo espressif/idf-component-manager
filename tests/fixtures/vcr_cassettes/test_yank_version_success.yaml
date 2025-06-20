@@ -11,51 +11,194 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
-        python/3.11.10)
+      - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
     method: GET
     uri: http://localhost:5000/api/components/test_component_manager/test_yankable
   response:
     body:
-      string: "{\n  \"created_at\": \"2025-03-21T13:49:45.916308+00:00\",\n  \"featured\":
-        false,\n  \"name\": \"test_yankable\",\n  \"namespace\": \"test_component_manager\",\n
-        \ \"versions\": [\n    {\n      \"build_metadata_keys\": [\n        \"dependencies-*-type:string\",\n
-        \       \"version-type:string\"\n      ],\n      \"checksums\": \"http://localhost:9000/test-public/components/test_component_manager/test_yankable/1.0.0/CHECKSUMS.json\",\n
-        \     \"component_hash\": \"6aa92cea9fc3c109d000105a7762864e3e5433ebb7a177d15b35d879cef78aa4\",\n
-        \     \"created_at\": \"2025-03-21T13:49:46.508469+00:00\",\n      \"dependencies\":
-        [\n        {\n          \"is_public\": false,\n          \"matches\": [],\n
-        \         \"name\": null,\n          \"namespace\": null,\n          \"registry_url\":
-        null,\n          \"require\": true,\n          \"rules\": [],\n          \"source\":
-        \"idf\",\n          \"spec\": \">=4.1\"\n        }\n      ],\n      \"description\":
-        \"This component is an example, to be used with the IDF component manager.\",\n
-        \     \"discussion\": null,\n      \"docs\": {\n        \"readme\": \"http://localhost:9000/test-public/components/test_component_manager/test_yankable/1.0.0/readme.md\"\n
-        \     },\n      \"documentation\": null,\n      \"downloads_total\": 0,\n
-        \     \"examples\": [\n        {\n          \"docs\": {},\n          \"id\":
-        \"2e904be3-7603-4423-a6d9-9217f4da2573\",\n          \"name\": \"cmp_ex\",\n
-        \         \"url\": \"http://localhost:9000/test-public/b235efe9-6892-4915-aae8-f62c9f0c65f5/examples/2e904be3-7603-4423-a6d9-9217f4da2573.tgz\"\n
-        \       }\n      ],\n      \"homepage\": \"https://github.com/espressif/example_components/tree/main/cmp\",\n
-        \     \"id\": \"e372987d-9f8b-487a-8513-f1870154a29a\",\n      \"info_metadata_keys\":
-        [\n        \"description-type:string\",\n        \"url-type:string\"\n      ],\n
-        \     \"issues\": null,\n      \"license\": {\n        \"name\": \"Custom\",\n
-        \       \"url\": \"http://localhost:9000/test-public/components/test_component_manager/test_yankable/1.0.0/license.txt\"\n
-        \     },\n      \"maintainers\": [],\n      \"repository\": null,\n      \"tags\":
-        [],\n      \"targets\": [],\n      \"url\": \"http://localhost:9000/test-public/components/test_component_manager/test_yankable/1.0.0/test_component_manager__test_yankable-v1.0.0.zip\",\n
-        \     \"version\": \"1.0.0\",\n      \"yanked_at\": null,\n      \"yanked_message\":
-        null\n    }\n  ]\n}\n"
+      string: "{\n  \"error\": \"ComponentNotFoundError\",\n  \"messages\": [\n    \"Component
+        \\\"test_component_manager/test_yankable\\\" not found\"\n  ]\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '2223'
+      - '128'
       Content-Security-Policy:
       - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
         font-src 'self';
       Content-Type:
       - application/json
       Date:
-      - Fri, 21 Mar 2025 14:17:53 GMT
+      - Fri, 20 Jun 2025 14:54:02 GMT
+      Server:
+      - Werkzeug/3.1.3 Python/3.13.0
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+    status:
+      code: 404
+      message: NOT FOUND
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer ultra_secret_token_for_testing_purposes
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
+    method: GET
+    uri: http://localhost:5000/api/components/test_component_manager/test_yankable
+  response:
+    body:
+      string: "{\n  \"error\": \"ComponentNotFoundError\",\n  \"messages\": [\n    \"Component
+        \\\"test_component_manager/test_yankable\\\" not found\"\n  ]\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '128'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 20 Jun 2025 14:54:02 GMT
+      Server:
+      - Werkzeug/3.1.3 Python/3.13.0
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+    status:
+      code: 404
+      message: NOT FOUND
+- request:
+    body: !!python/object/new:_io.BytesIO
+      state: !!python/tuple
+      - !!binary |
+        LS02NTEyZWJhMjFmMGY0ZTIxOTFiZjQ4NjZmYTQ0N2JiZA0KQ29udGVudC1EaXNwb3NpdGlvbjog
+        Zm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9InRlc3RfeWFua2FibGVfMS4wLjAudGd6
+        Ig0KQ29udGVudC1UeXBlOiBhcHBsaWNhdGlvbi9vY3RldC1zdHJlYW0NCg0KH4sICAp2VWgC/3Rl
+        c3RfeWFua2FibGVfMS4wLjAudGd6AO1dXU/bSBTNs3/F3bBSk2qxPf5M0m21KAlqJEoRYat9WCky
+        9iSere3xjictqOp/37ETAqS0iKoxbH2PIpzYzhjhuefMvXPG6IZu/HESXLymQURFaycwV/ja1jRt
+        5/p9uZ+YFrFacNGqActCBkJdvtVMWD1IJUvpS+K7pmMTy7F0s9/r94intRA/PYwarlEGte+6q623
+        2prW7Zgnrmm5lm+bKvBNQohvt8CtM/6jIGM0yYNlcvd56rT5/Oe7//qT4H/7S/4nyP+18L+/4X+n
+        T2z1w9eJTUziIv03AcM3wXt6xApZ6PJC7i7+Pcf5Kv8Tz6n4X/GAo/qein/bc80WmHXGf0P5P0zV
+        /Z+lLGPpMp0J+u+SCRp13o1Pp5O3x2DrblfLBf+HhrJzstoeByntaiyaz0Ke5jyjmVRfXKg+REVn
+        ejqcQjtMcz1sw+R4ePTnaDwbTU7VTpaFyTKi7S5GHeo/5n9PLv+7pf89F/O/JuBoMhwfT8c7z/++
+        pf8q3rf03yKmjfpfBxIW0qygGOuo/6j/qP9X+m/3PCwANAGn44PRm7GeRo+p/5a1rf+2h/l/LTiL
+        WQHqFYBQCpBSHaMe9R/1v+n677h91P8moKrU7vga9+m/bbnb+q/2of7XAeO5Bs9hejL6a/+QJXTI
+        80vBFrE8oxdyAJa6TTAuckGLgs1hellImhbQmcZBtogD1oXhWzg6G6k2Ns0crSoK+5OIZpLNGRUD
+        OMiDMKb7lm6q0wxtbz0VAL8XMmJcj19p2gfOIlC9cRbTJOGd8mNX+6TBGrlgmZx32q/LozAXPAV6
+        EaR5QmEzC/HL31m7+0L7jMSF+o/6/2D9v+H/8nt9rP83AmsSLXbpA3u4/0u9sdD/hfyP/P84/N8r
+        U0Dk/ybxfzn0phfGruL/YfzvWKaL/N8c/kf/76Px/93+Xw+XfzST/3fhB76v/ue6/lb9z/MdH+t/
+        dWAPDrmAlAsKLJtzkQaS8QyCc76UcL5kSQRFVfWDglJtD2Ip82JgGBEPC51eVQb1kKfG2iZcGGr3
+        PovmBs2MJJC0kEaQs/3FkkWqn1Vt7q/a1GOZJqrRs5jCnCcJ/8iyBczZBwoJy2gBfA7nnCVU5GVD
+        EAfqiORwXv6ycMmXAtYXfVaoZq77bnlYljObqnuHErhQ2qauIKCyO5dNfOTiPYRcCPXl5FK71wZN
+        vK6mrcuWnV/Hx+8+TUaHs5ODs9efDcl5UgaQauLqj6BXn66t06vo6j49TsX8D/O/O/I/z7JsHAA0
+        UP/TgGXGDuL/YfmfWw4DMP9D/kf+r4//b+Z/PulhAthY/v/BSeC96z/Jtv/D9zyC+V8duG8Zp+oT
+        etje2DBu4vbqTr3dRcJA/Uf9/zn0v2eh/7Ox+n/F+z8w/r+l/5a3vf7Tcx3U/1rwuP7P6kERcXvt
+        /gzyfFb2v1vmz2tLKFo7Uf9R/+vR/57T72GsNVX/byWF+mWa7Dj/97bmfy3T8XH+txbs7cFkdAjD
+        q7sNb4IsWFBRbtmcFhLKYYEW0ZxmStBDRouB0uV1tyl7zaCS6Q9UFIxnA2jbuqmTVcWAq72CRXSW
+        BzJWh3SlNuWrjdSC+o/6/8T0fzP/S8oV+Tbm/03AD5b679J/m3zh/3VcF/W/Dmx0myjZNpXOF6Fg
+        uax2Vc+G2HSO6ikR2ZXy/7b2YS0LGsFHJmOQMa2GEtdfUGOAdDWa0L8YQKh+N4Bnr146OnmmLUUy
+        2DjLFqqx5XnlKNv4y4z1Va+7amFIQemmXIVc9b/Wf/R/P5r++3f5v/qm28eQaoT+ryqxO/03AN+x
+        /tO1ffR/Yf6H/F9j/nej/muZxEb/b5P4v5qI2yH/f3P+l9jbz/93XA/zvzrwKPO/dz3r5wXSDQKB
+        QCAQCAQCsWv8ByyDC5cAeAAADQotLTY1MTJlYmEyMWYwZjRlMjE5MWJmNDg2NmZhNDQ3YmJkLS0N
+        Cg==
+      - 0
+      - null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer ultra_secret_token_for_testing_purposes
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1654'
+      Content-Type:
+      - multipart/form-data; boundary=6512eba21f0f4e2191bf4866fa447bbd
+      User-Agent:
+      - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
+    method: POST
+    uri: http://localhost:5000/api/components/test_component_manager/test_yankable/versions
+  response:
+    body:
+      string: "{\n  \"job_id\": \"c2119301-8fe9-415d-a193-90ddf9000ba1\",\n  \"upload_format\":
+        \"tgz\",\n  \"upload_id\": \"362482d9-6041-495d-a801-891d56940807\"\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '136'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 20 Jun 2025 14:54:02 GMT
+      Server:
+      - Werkzeug/3.1.3 Python/3.13.0
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      Vary:
+      - Cookie
+      X-Content-Type-Options:
+      - nosniff
+    status:
+      code: 201
+      message: CREATED
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer ultra_secret_token_for_testing_purposes
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
+    method: GET
+    uri: http://localhost:5000/api/tasks/c2119301-8fe9-415d-a193-90ddf9000ba1
+  response:
+    body:
+      string: "{\n  \"id\": \"c2119301-8fe9-415d-a193-90ddf9000ba1\",\n  \"message\":
+        \"Pending...\",\n  \"progress\": 0.0,\n  \"status\": \"pending\",\n  \"warnings\":
+        []\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '138'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 20 Jun 2025 14:54:02 GMT
       Server:
       - Werkzeug/3.1.3 Python/3.13.0
       Strict-Transport-Security:
@@ -65,4 +208,93 @@ interactions:
     status:
       code: 200
       message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer ultra_secret_token_for_testing_purposes
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
+    method: GET
+    uri: http://localhost:5000/api/tasks/c2119301-8fe9-415d-a193-90ddf9000ba1
+  response:
+    body:
+      string: "{\n  \"id\": \"c2119301-8fe9-415d-a193-90ddf9000ba1\",\n  \"message\":
+        \"The uploaded component was successfully processed. It may take up to 5 minutes
+        for the new version to be available globally.\\nView at: http://localhost:5000/components/test_component_manager/test_yankable/versions/1.0.0\",\n
+        \ \"progress\": 100.0,\n  \"status\": \"success\",\n  \"warnings\": []\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '349'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 20 Jun 2025 14:54:05 GMT
+      Server:
+      - Werkzeug/3.1.3 Python/3.13.0
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"message": "critical test"}'
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer ultra_secret_token_for_testing_purposes
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '28'
+      Content-Type:
+      - application/json
+      User-Agent:
+      - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
+    method: POST
+    uri: http://localhost:5000/api/components/test_component_manager/test_yankable/1.0.0/yank
+  response:
+    body:
+      string: ''
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
+      Content-Type:
+      - text/html; charset=utf-8
+      Date:
+      - Fri, 20 Jun 2025 14:54:05 GMT
+      Server:
+      - Werkzeug/3.1.3 Python/3.13.0
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      Vary:
+      - Cookie
+      X-Content-Type-Options:
+      - nosniff
+    status:
+      code: 204
+      message: NO CONTENT
 version: 1

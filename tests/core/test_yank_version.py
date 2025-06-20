@@ -30,7 +30,6 @@ def setup_yankable_component(component_name, cmp_with_example):
 @pytest.mark.network
 def test_yank_component_version(
     mock_registry,  # noqa: ARG001
-    mock_yank,  # noqa: ARG001
     tmp_path,
     component_name,
     cmp_with_example,

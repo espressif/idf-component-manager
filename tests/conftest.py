@@ -231,14 +231,14 @@ def mock_storage(request, monkeypatch):  # noqa: ARG001
 
 @pytest.fixture()
 @skip_on_real_environment
-def mock_registry(request, mock_registry_without_token, mock_storage):
-    pass
+def mock_token(request, monkeypatch):  # noqa: ARG001
+    monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', 'ultra_secret_token_for_testing_purposes')
 
 
 @pytest.fixture()
 @skip_on_real_environment
-def mock_yank(request, monkeypatch):  # noqa: ARG001
-    monkeypatch.setattr(APIClient, 'yank_version', lambda *_, **__: None)
+def mock_registry(request, mock_registry_without_token, mock_storage, mock_token):
+    pass
 
 
 @pytest.fixture()
