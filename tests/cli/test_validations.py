@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import click
@@ -24,10 +24,18 @@ def test_validate_name():
     assert validate_name(None, None, 'valid') == 'valid'
 
 
-def test_validate_name_invalid_input():
+@pytest.mark.parametrize(
+    'invalid_name',
+    [
+        't',
+        't' * 65,
+        'тест',
+    ],
+)
+def test_validate_name_invalid_input(invalid_name):
     with pytest.raises(click.BadParameter) as exc_info:
-        validate_name(None, None, 'a')
-    assert 'should consist of 2 or more letters, numbers' in str(exc_info.value)
+        validate_name(None, None, invalid_name)
+    assert 'must be between 2 and 64 characters long' in str(exc_info.value)
 
 
 def test_validate_existing_dir(tmp_path):
