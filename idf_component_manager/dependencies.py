@@ -413,6 +413,8 @@ def download_project_dependencies(
     """
     Solves dependencies and download components (only talk about resolve-required scenario)
 
+    For a detailed workflow, see `contributing_docs/diagrams/download_dependencies.md`.
+
     By default, we run as local-first mode, the process is:
     - read existing lock file first, get the solved_components
     - use the solved_components with the version solver, to see if solution is still valid

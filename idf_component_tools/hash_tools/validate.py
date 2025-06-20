@@ -68,6 +68,8 @@ def validate_hashfile_eq_hashdir(root: t.Union[str, Path]) -> None:
     1. Validate hash of each file in the component directory, if CHECKSUMS_FILENAME is present
     2. Validate hashsum of the component directory, if HASH_FILENAME is present
 
+    For a detailed workflow, see `contributing_docs/diagrams/validate_hashfile_eq_hashdir.md`.
+
     :param root: Path to the component
     :raises ComponentNotFoundError: Component path does not exist
     :raises HashNotFoundError: Hash file does not exist
