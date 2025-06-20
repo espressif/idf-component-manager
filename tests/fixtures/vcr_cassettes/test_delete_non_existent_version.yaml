@@ -1,0 +1,302 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer ultra_secret_token_for_testing_purposes
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
+    method: GET
+    uri: http://localhost:5000/api/components/test_component_manager/test_deletable_wrong_ver
+  response:
+    body:
+      string: "{\n  \"error\": \"ComponentNotFoundError\",\n  \"messages\": [\n    \"Component
+        \\\"test_component_manager/test_deletable_wrong_ver\\\" not found\"\n  ]\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '139'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 20 Jun 2025 14:58:53 GMT
+      Server:
+      - Werkzeug/3.1.3 Python/3.13.0
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+    status:
+      code: 404
+      message: NOT FOUND
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer ultra_secret_token_for_testing_purposes
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
+    method: GET
+    uri: http://localhost:5000/api/components/test_component_manager/test_deletable_wrong_ver
+  response:
+    body:
+      string: "{\n  \"error\": \"ComponentNotFoundError\",\n  \"messages\": [\n    \"Component
+        \\\"test_component_manager/test_deletable_wrong_ver\\\" not found\"\n  ]\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '139'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 20 Jun 2025 14:58:53 GMT
+      Server:
+      - Werkzeug/3.1.3 Python/3.13.0
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+    status:
+      code: 404
+      message: NOT FOUND
+- request:
+    body: !!python/object/new:_io.BytesIO
+      state: !!python/tuple
+      - !!binary |
+        LS1kNjcwZGY3MWFjNzA0NzA1OGRjYzc4NTE2NmExMGU1OQ0KQ29udGVudC1EaXNwb3NpdGlvbjog
+        Zm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9InRlc3RfZGVsZXRhYmxlX3dyb25nX3Zl
+        cl8xLjAuMC50Z3oiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL29jdGV0LXN0cmVhbQ0KDQof
+        iwgILXdVaAL/dGVzdF9kZWxldGFibGVfd3JvbmdfdmVyXzEuMC4wLnRnegDtXV1P20gUzbN/xd2w
+        UpNqsT3+DOm22ioJaiRKEWGrfVgpMvYknq3tcceTFlT1v+/YCQmktIiKGFTfowgntjOD8Nxz5t45
+        NrqhG3+dBBdvaBBR0doJzCW+tzVN29m8L/cT0yJWCy5aNWBRyECo7lvNhNWDVLKUviS+azo2cW1b
+        t0mv5/mO1kL88jBq6KMMat91l1tvuTWtmzFPXNNyLd92yvMIsUyvBW6d8R8FGaNJHiyS289Tp81m
+        v971158E/9vf8j9B/q+F//01/zsHxFY/fJ3YxCQu0n8TMHgbfKBHrJCFLi/k7uLfc5zv8j/xnIr/
+        FQ84auyp+Lc912yBWWf8N5T/w1Rd/2nKMpYu0qmgHxdM0KjzfnQ6Gb87Blt3u1ou+H80lJ2T5fY4
+        SGlXY9FsGvI05xnNpPriXI0hKjqT08EE2mGa62EbxseDo7+Ho+lwfKp2sixMFhFtdzHqUP8x/3ty
+        +d8N/e+5Hk4AGoCj8WB0PBntPP/7kf6reN/Sf4uYNup/HUhYSLOCYqyj/qP+o/5f6b/d87AA0ASc
+        jl4P3470NHpM/besbf23Pcz/a8FZzApQrwCEUoCU6hj1qP+o/03Xf8c9QP1vAqpK7Y77uEv/bcvd
+        1n+1D/W/DhjPNXgOk5PhP/uHLKEDnl8KNo/lGb2QfbDUZYJRkQtaFGwGk8tC0rSAziQOsnkcsC4M
+        3sHR2VC1sW7maFlR2B9HNJNsxqjow+s8CGO6b+mmOs3Q9lZLAfBnISPG9fiVpn3iLAI1GqcxTRLe
+        KT92tS8arJALlslZp/2mPAozwVOgF0GaJxTWqxC//Zu1uy+0r0hcqP+o//fW/2v+L9/zHfR/NQEr
+        Ei126QO7v//L8h0X/V/I/8j/j8T/B8Txkf+bxP/l1JteGLuK//vxv2NZJvJ/c/gf/b+Pxv+3+389
+        gvafRvL/LvzAd9X/XNffqv+p9NPH+l8d2INDLiDlggLLZlykgWQ8g+CcLyScL1gSQVFV/aCgVNuD
+        WMq86BtGxMNCp1eVQT3kqbGyCReG2r3PoplBMyMJJC2kEeRsf75gkRpnVZv7yzb1WKaJavQspjDj
+        ScI/s2wOM/aJQsIyWgCfwTlnCRV52RDEgToiOZyXvyxc8oWAVafPCtXMZuyWh2W5sqmGdyiBC6Vt
+        qgcBld25bOIzFx8g5EKoLyeX2p02aOJ1NW1Vtuz8Pjp+/2U8PJyevD5789WQnCdlAKkmrv4IevVp
+        Y51eRlf36XEq6j/q/y33fzo9gvrfRP1PA5YZO4j/++V/LlHTBcz/sP6H/F9f/e96/ueTHiaAjeX/
+        B04C77z/k2z7P3zPI5j/1YG7buNUY0IP22sbxnXcvLtTb3eRMFD/Uf9/Df3vWej/bKz+X/H+A8b/
+        j/Tf8rbv//RcB/W/Fjyu/7N6UETcXrk/gzyfluPvhvlzYwlFayfqP+p/Pfrfcw56GGtN1f8bSaF+
+        mSY7zv+9rfVfy3R8XP+tBXt7MB4ewuDqasPbIAvmVJRbNqOFhHJaoEU0p5kS9JDRoq90eTVsylHT
+        r2T6ExUF41kf2rZu6mRZMeBqr2ARneaBjNUhXalN+WojtaD+o/4/Mf3frP9aptmzsf7fBDyw1P+U
+        /tvkG/+v4+PzH2rBWreJkm1T6XwRCpbLalf1bIj14KieEpFdKf8fKx/WoqARfGYyBhnTaiqx+YKa
+        A6TL2YT+zQRCjbs+PHv10tHJM20hkv7aWTZXjS3OK0fZ2l9mrHrdDNXCkILSdbkKuQr1H/X/ofSf
+        9A4sz8aYaoL+LyuxO/03AD9x/6frWuj/Qv5H/q+R/6/Vfy2T2Mj/TeL/aiFuh/z/w/VfYm8//99x
+        Pcz/6sCjrP/e9qyfF0g3CAQCgUAgEAjErvE/vTQZ9gB4AAANCi0tZDY3MGRmNzFhYzcwNDcwNThk
+        Y2M3ODUxNjZhMTBlNTktLQ0K
+      - 0
+      - null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer ultra_secret_token_for_testing_purposes
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1671'
+      Content-Type:
+      - multipart/form-data; boundary=d670df71ac7047058dcc785166a10e59
+      User-Agent:
+      - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
+    method: POST
+    uri: http://localhost:5000/api/components/test_component_manager/test_deletable_wrong_ver/versions
+  response:
+    body:
+      string: "{\n  \"job_id\": \"62d98eeb-4c3a-4147-9552-54122bca3c0b\",\n  \"upload_format\":
+        \"tgz\",\n  \"upload_id\": \"e70ea394-e2ff-421a-8291-8686f06c98f9\"\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '136'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 20 Jun 2025 14:58:53 GMT
+      Server:
+      - Werkzeug/3.1.3 Python/3.13.0
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      Vary:
+      - Cookie
+      X-Content-Type-Options:
+      - nosniff
+    status:
+      code: 201
+      message: CREATED
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer ultra_secret_token_for_testing_purposes
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
+    method: GET
+    uri: http://localhost:5000/api/tasks/62d98eeb-4c3a-4147-9552-54122bca3c0b
+  response:
+    body:
+      string: "{\n  \"id\": \"62d98eeb-4c3a-4147-9552-54122bca3c0b\",\n  \"message\":
+        \"Pending...\",\n  \"progress\": 0.0,\n  \"status\": \"pending\",\n  \"warnings\":
+        []\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '138'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 20 Jun 2025 14:58:53 GMT
+      Server:
+      - Werkzeug/3.1.3 Python/3.13.0
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer ultra_secret_token_for_testing_purposes
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
+    method: GET
+    uri: http://localhost:5000/api/tasks/62d98eeb-4c3a-4147-9552-54122bca3c0b
+  response:
+    body:
+      string: "{\n  \"id\": \"62d98eeb-4c3a-4147-9552-54122bca3c0b\",\n  \"message\":
+        \"The uploaded component was successfully processed. It may take up to 5 minutes
+        for the new version to be available globally.\\nView at: http://localhost:5000/components/test_component_manager/test_deletable_wrong_ver/versions/1.0.0\",\n
+        \ \"progress\": 100.0,\n  \"status\": \"success\",\n  \"warnings\": []\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '360'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 20 Jun 2025 14:58:56 GMT
+      Server:
+      - Werkzeug/3.1.3 Python/3.13.0
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer ultra_secret_token_for_testing_purposes
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '0'
+      User-Agent:
+      - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
+    method: DELETE
+    uri: http://localhost:5000/api/components/test_component_manager/test_deletable_wrong_ver/100.100.100
+  response:
+    body:
+      string: "{\n  \"error\": \"VersionNotFoundError\",\n  \"messages\": [\n    \"Version
+        \\\"100.100.100\\\" of component \\\"test_deletable_wrong_ver\\\" was not
+        found in the registry.\"\n  ]\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '162'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 20 Jun 2025 14:58:56 GMT
+      Server:
+      - Werkzeug/3.1.3 Python/3.13.0
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      Vary:
+      - Cookie
+      X-Content-Type-Options:
+      - nosniff
+    status:
+      code: 404
+      message: NOT FOUND
+version: 1
