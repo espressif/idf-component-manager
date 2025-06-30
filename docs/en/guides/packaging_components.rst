@@ -123,7 +123,7 @@ Then, upload your component to the staging registry by running the following com
 
 .. code:: shell
 
-   compote upload --profile "staging" --component test_cmp
+   compote component upload --profile "staging" --name test_cmp
 
 To use it in your project, add the registry URL in your manifest:
 
