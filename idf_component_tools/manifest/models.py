@@ -325,14 +325,21 @@ class ComponentRequirement(DependencyItem):
 
     @property
     def meet_optional_dependencies(self) -> bool:
-        if (not self.matches) and (not self.rules):
-            return True
+        try:
+            if (not self.matches) and (not self.rules):
+                return True
 
-        if self.optional_requirement.version_spec_if_meet_conditions(self.version_spec) is not None:
-            return True
+            if (
+                self.optional_requirement.version_spec_if_meet_conditions(self.version_spec)
+                is not None
+            ):
+                return True
 
-        notice('Skipping optional dependency: {}'.format(self.name))
-        return False
+            notice('Skipping optional dependency: {}'.format(self.name))
+            return False
+        except MissingKconfigError as e:
+            KCONFIG_CONTEXT.get().set_missed_kconfig(str(e), self)
+            return False
 
     @classmethod
     def from_dependency_response(cls, dep_resp: DependencyResponse) -> 'ComponentRequirement':
@@ -637,14 +644,10 @@ class Manifest(BaseModel):
 
     @property
     def requirements(self) -> t.List[ComponentRequirement]:
-        kconfig_ctx = KCONFIG_CONTEXT.get()
         res = []
         for r in self.raw_requirements:
-            try:
-                if r.meet_optional_dependencies:
-                    res.append(r)
-            except MissingKconfigError as e:
-                kconfig_ctx.set_missed_kconfig(str(e), r)
+            if r.meet_optional_dependencies:
+                res.append(r)
 
         return sorted(res, key=lambda x: x.name)
 
