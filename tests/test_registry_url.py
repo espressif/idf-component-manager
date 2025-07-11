@@ -12,7 +12,7 @@ from idf_component_tools.sources import WebServiceSource
 def test_set_by_env_var(monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', 'https://foo.com')
     source = WebServiceSource()
-    assert source.registry_url == 'https://foo.com'
+    assert source.registry_url == 'https://foo.com/'
 
     source = WebServiceSource(registry_url='https://bar.com')
     assert source.registry_url == 'https://bar.com'
