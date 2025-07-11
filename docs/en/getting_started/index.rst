@@ -40,4 +40,4 @@ First, activate the `ESP-IDF environment <https://docs.espressif.com/projects/es
           $ . $IDF_PATH/export.fish
           $ compote version
 
-If you're using an older version of the Component Manager, the ``compote version`` command might not be available. In that case, consider upgrading to the latest version. For details, see `Upgrading the IDF Component Manager <#installing-and-upgrading-the-idf-component-manager>`_.
+If you're using an older version of the Component Manager, the ``compote version`` command might not be available. In that case, consider upgrading to the latest version. For details, see :doc:`Upgrading the IDF Component Manager <../guides/updating_component_manager>`.

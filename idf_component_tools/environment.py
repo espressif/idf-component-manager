@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """
 This module contains utility functions for working with environment variables.
@@ -9,7 +9,7 @@ import typing as t
 import warnings
 from functools import lru_cache
 
-from pydantic import AliasChoices, Field, field_validator
+from pydantic import AliasChoices, Field, create_model, field_validator
 from pydantic_core.core_schema import ValidationInfo, ValidatorFunctionWrapHandler
 from pydantic_settings import (
     BaseSettings,
@@ -65,11 +65,14 @@ def detect_ci() -> t.Optional[str]:
 
 class ComponentManagerSettings(BaseSettings):
     """
-    Settings for the component manager
+    Component Manager settings.
 
-    Regarding the Aliases:
-    - The first one is the recommended one
-    - Will raise UserDeprecationWarning if the other env vars are set in the environment
+    .. warning::
+
+        For environment variable aliases, the first alias is the recommended one.
+        Any other listed aliases are also supported, but deprecated and will raise a
+        ``UserDeprecationWarning`` if they are set in the environment.
+        They may be removed in the future.
     """
 
     model_config = SettingsConfigDict(
@@ -77,39 +80,97 @@ class ComponentManagerSettings(BaseSettings):
         env_prefix='IDF_COMPONENT_',
     )
 
-    # logging
-    # by default log-level is hint(15)
-    DEBUG_MODE: bool = False  # log-level: debug(10)
-    NO_HINTS: bool = False  # log-level: notice/info(20)
-    NO_COLORS: bool = False  # with colorama or not
+    # LOGGING
 
-    # general
-    CACHE_PATH: t.Optional[str] = None
+    # by default log-level is hint(15)
+    DEBUG_MODE: bool = Field(False, description='Enable debug mode.')  # log-level: debug(10)
+
+    NO_HINTS: bool = Field(
+        False, description='Disable hints in the output.'
+    )  # log-level: notice/info(20)
+
+    NO_COLORS: bool = Field(False, description='Disable colored output.')  # with colorama or not
+
+    # GENERAL
+
+    CACHE_PATH: t.Optional[str] = Field(
+        None,
+        description="""
+            | Cache directory for Component Manager.
+            | **Default:** Depends on OS
+        """,
+    )
+
     KNOWN_TARGETS: t.Optional[str] = Field(
         default=None,
         validation_alias=AliasChoices(
             'IDF_COMPONENT_KNOWN_TARGETS',
             'IDF_COMPONENT_MANAGER_KNOWN_TARGETS',
         ),
+        description="""
+            Targets that are known to the Component Manager.
+
+            Aliases:
+
+            - ``IDF_COMPONENT_KNOWN_TARGETS``
+            - ``IDF_COMPONENT_MANAGER_KNOWN_TARGETS`` (**deprecated**)
+        """,
     )
 
-    # network
+    # NETWORK
+
     VERSION_PROCESS_TIMEOUT: int = Field(
         default=300,
         validation_alias=AliasChoices(
             'IDF_COMPONENT_VERSION_PROCESS_TIMEOUT', 'COMPONENT_MANAGER_JOB_TIMEOUT'
         ),
+        description="""
+            Timeout for processing version jobs in seconds.
+
+            Aliases:
+
+            - ``IDF_COMPONENT_VERSION_PROCESS_TIMEOUT``
+            - ``COMPONENT_MANAGER_JOB_TIMEOUT`` (**deprecated**)
+        """,
     )
+
     API_TIMEOUT: t.Optional[float] = Field(
         default=None,
         validation_alias=AliasChoices(
             'IDF_COMPONENT_API_TIMEOUT',
             'IDF_COMPONENT_SERVICE_TIMEOUT',
         ),
+        description="""
+            | Timeout for API requests to the Component Registry in seconds.
+            | If not set, the default timeout of the HTTP client will be used.
+
+            Aliases:
+
+            - ``IDF_COMPONENT_API_TIMEOUT``
+            - ``IDF_COMPONENT_SERVICE_TIMEOUT`` (**deprecated**)
+        """,
     )
-    API_TOKEN: t.Optional[str] = None
-    VERIFY_SSL: t.Union[bool, str] = True
-    CACHE_HTTP_REQUESTS: bool = True
+
+    API_TOKEN: t.Optional[str] = Field(
+        None, description='API token to access the Component Registry.'
+    )
+
+    VERIFY_SSL: t.Union[bool, str] = Field(
+        True,
+        description="""
+            | Verify SSL certificates when making requests to the Component Registry.
+            | Set 0 to disable or provide a CA bundle path.
+        """,
+    )
+
+    CACHE_HTTP_REQUESTS: bool = Field(
+        True,
+        description="""
+            | Cache HTTP requests to the Component Registry during runtime.
+            | Set 0 to disable.
+        """,
+    )
+
     PROFILE: t.Optional[str] = Field(
         default=None,
         validation_alias=AliasChoices(
@@ -117,30 +178,80 @@ class ComponentManagerSettings(BaseSettings):
             'IDF_COMPONENT_REGISTRY_PROFILE',
             'IDF_COMPONENT_SERVICE_PROFILE',
         ),
+        description="""
+            | Profile in the config file to use.
+            | **Default:** default
+
+            Aliases:
+
+            - ``IDF_COMPONENT_PROFILE``
+            - ``IDF_COMPONENT_REGISTRY_PROFILE`` (**deprecated**)
+            - ``IDF_COMPONENT_SERVICE_PROFILE`` (**deprecated**)
+        """,
     )
+
     REGISTRY_URL: t.Optional[str] = Field(
         default=None,
         validation_alias=AliasChoices(
             'IDF_COMPONENT_REGISTRY_URL',
             'DEFAULT_COMPONENT_SERVICE_URL',
         ),
-    )
-    STORAGE_URL: t.Optional[str] = None
+        description="""
+            | URL of the default Component Registry.
+            | **Default:** https://components.espressif.com/
 
-    # managed_components
-    OVERWRITE_MANAGED_COMPONENTS: bool = False
+            Aliases:
+
+            - ``IDF_COMPONENT_REGISTRY_URL``
+            - ``DEFAULT_COMPONENT_SERVICE_URL`` (**deprecated**)
+        """,
+    )
+
+    STORAGE_URL: t.Optional[str] = Field(
+        None,
+        description="""
+            | URL of the default file storage server.
+            | **Default:** https://components-file.espressif.com/
+        """,
+    )
+
+    # MANAGED COMPONENTS
+
+    OVERWRITE_MANAGED_COMPONENTS: bool = Field(
+        False,
+        description="""
+            | Overwrite files in the ``managed_components`` directory,
+            | even if they have been modified by the user.
+        """,
+    )
+
     SUPPRESS_UNKNOWN_FILE_WARNINGS: bool = Field(
         default=False,
         validation_alias=AliasChoices(
             'IDF_COMPONENT_SUPPRESS_UNKNOWN_FILE_WARNINGS',
             'IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS',
         ),
+        description="""
+            Ignore unknown files in ``managed_components`` directory.
+
+            Aliases:
+
+            - ``IDF_COMPONENT_SUPPRESS_UNKNOWN_FILE_WARNINGS``
+            - ``IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS`` (**deprecated**)
+        """,
     )
+
     # if true, calculate by hash_dir() instead of checking the .component_hash file
-    STRICT_CHECKSUM: bool = False
+    STRICT_CHECKSUM: bool = Field(
+        False,
+        description="""
+            | Validate checksums strictly.
+            | If set to 1, checksum of each file will be compared to the expected value.
+        """,
+    )
 
     # version solver
-    CHECK_NEW_VERSION: bool = True
+    CHECK_NEW_VERSION: bool = Field(True, description='Check for new versions of components.')
 
     @field_validator('*', mode='wrap')
     @classmethod
@@ -198,3 +309,18 @@ class ComponentManagerSettings(BaseSettings):
                 env_var_names.add(prefix + name)
 
         return sorted(env_var_names)
+
+
+# Separate model for documentation
+ComponentManagerEnvVariables = create_model(  # type: ignore
+    'ComponentManagerEnvVariables',
+    __doc__=ComponentManagerSettings.__doc__,
+    __base__=BaseSettings,
+    **{
+        f'{ComponentManagerSettings.model_config.get("env_prefix")}{field_name}': (
+            field_info.annotation,
+            Field(field_info.default, description=field_info.description),
+        )
+        for (field_name, field_info) in ComponentManagerSettings.model_fields.items()
+    },
+)
