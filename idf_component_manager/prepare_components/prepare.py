@@ -99,7 +99,7 @@ def main():
     # *1* starting ESP-IDF 5.0
     # *2* starting ESP-IDF 5.1
     # *3* starting ESP-IDF 5.2
-    # *4* starting ESP-IDF 5.5
+    # *4* starting ESP-IDF 6.0
 
     parser.add_argument(
         '--interface_version',
