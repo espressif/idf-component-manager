@@ -10,3 +10,5 @@ a5e85486930ea416406ed1b3b24e7b22aeaeb2cc
 90f071b1e6842a5c27feeedbeec8728bfc99f1a3
 # ruff "remove unused noqa"
 430927cb495aa44462473697f4561bf2d5d28d1e
+# Reformat all rst files using docstrfmt
+a002d37f54c3e3d9132916590f2b65b96079b78c
