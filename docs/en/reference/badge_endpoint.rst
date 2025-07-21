@@ -1,6 +1,5 @@
-#######################################
- ESP Component Registry Badge Endpoint
-#######################################
+ESP Component Registry Badge Endpoint
+=====================================
 
 The ESP Component Registry provides an endpoint for generating a badge that displays the version of uploaded components. These badges are useful for documentation and other resources to indicate the version status of a component.
 
@@ -13,16 +12,15 @@ The badge endpoint is available at the following URL:
 Example:
 
 .. image:: https://components.espressif.com/components/example/cmp/badge.svg
-   :target: https://components.espressif.com/components/example/cmp
-   :alt: Example Component Registry Badge
+    :target: https://components.espressif.com/components/example/cmp
+    :alt: Example Component Registry Badge
 
-******************
- Query Parameters
-******************
+Query Parameters
+----------------
 
 The badge endpoint supports the following query parameters:
 
-#. **version**
+1. **version**
 
    Displays a specific version of the component on the badge. To specify the version, use the ``version`` query parameter:
 
@@ -33,10 +31,10 @@ The badge endpoint supports the following query parameters:
    Example:
 
    .. image:: https://components.espressif.com/components/example/cm/badge.svg
-      :target: https://components.espressif.com/components/example/cm
-      :alt: Error Badge Example
+       :target: https://components.espressif.com/components/example/cm
+       :alt: Error Badge Example
 
-#. **prerelease**
+2. **prerelease**
 
    Enables display of the latest pre-release version using the ``prerelease`` query parameter:
 
@@ -44,11 +42,10 @@ The badge endpoint supports the following query parameters:
 
    If there are no newer pre-release versions than the latest stable release, the badge defaults to showing the latest stable version.
 
-********************************************
- Additional Notes on Badge Display Behavior
-********************************************
+Additional Notes on Badge Display Behavior
+------------------------------------------
 
--  **Stable versions**: Displayed by default, if available.
--  **Pre-release versions**: Displayed if explicitly requested via the ``prerelease`` parameter or when no stable versions exist.
--  **Yanked versions**: Displayed only if no stable or pre-release versions exist.
--  **Error badges**: Displayed when the specified version or component does not exist.
+- **Stable versions**: Displayed by default, if available.
+- **Pre-release versions**: Displayed if explicitly requested via the ``prerelease`` parameter or when no stable versions exist.
+- **Yanked versions**: Displayed only if no stable or pre-release versions exist.
+- **Error badges**: Displayed when the specified version or component does not exist.
