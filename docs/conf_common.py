@@ -27,6 +27,7 @@ extensions = [
     'sphinx_copybutton',
     'sphinx_tabs.tabs',
     'sphinx_click',
+    'sphinxcontrib.autodoc_pydantic',
 ]
 smartquotes = False
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']

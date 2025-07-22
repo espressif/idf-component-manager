@@ -58,6 +58,7 @@ docs = [
     "sphinx-rtd-theme",
     "sphinx-tabs",
     "sphinx_collapse",
+    "autodoc_pydantic"
 ]
 
 test = [

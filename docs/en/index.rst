@@ -1,6 +1,5 @@
-################################################################
- IDF Component Manager and ESP Component Registry Documentation
-################################################################
+IDF Component Manager and ESP Component Registry Documentation
+==============================================================
 
 This documentation covers the IDF Component Manager and the ESP Component Registry.
 
@@ -11,16 +10,16 @@ The **ESP Component Registry** (`components.espressif.com <https://components.es
 Using the Component Manager, developers can quickly install components from the registry, simplifying the process of extending project functionality.
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Guides
-   :glob:
+    :maxdepth: 2
+    :caption: Guides
+    :glob:
 
-   getting_started/*
-   guides/*
+    getting_started/*
+    guides/*
 
 .. toctree::
-   :maxdepth: 2
-   :caption: References
-   :glob:
+    :maxdepth: 2
+    :caption: References
+    :glob:
 
-   reference/*
+    reference/*

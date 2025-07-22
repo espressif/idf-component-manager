@@ -62,16 +62,12 @@ repos:
           - --types=change,chore,ci,docs,feat,fix,refactor,remove,revert,test
           - --allow-breaking
 
-  - repo: https://github.com/hfudev/rstfmt
-    rev: v0.1.4
+  - repo: https://github.com/LilSpazJoekp/docstrfmt
+    rev: v1.10.0
     hooks:
-      - id: rstfmt
-        args: ["-w", "-1"]
-        files: "docs\/.+rst$"
-        additional_dependencies: [
-          "sphinx_tabs",
-          "sphinx-click",
-        ]
+      - id: docstrfmt
+        types: [rst]
+        args: ['-l', '99999999999999999999999'] # Set a very high line length limit to avoid wrapping lines in docstrings.
 
   - repo: https://github.com/executablebooks/mdformat
     rev: 0.7.18

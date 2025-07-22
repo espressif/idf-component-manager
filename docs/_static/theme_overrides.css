@@ -49,3 +49,9 @@
       font-weight: bold;
       font-style: italic;
   }
+
+  /* Wrap too long sidebar menu items */
+  ul li code {
+    word-wrap: break-word;
+    white-space: unset;
+  }
