@@ -96,7 +96,7 @@ Changelog = "https://github.com/espressif/idf-component-manager/blob/main/CHANGE
 # Tools #
 #########
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 plugins = [
     "pydantic.mypy"
 ]

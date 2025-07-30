@@ -108,18 +108,19 @@ class ManifestManager:
                 return_with_object=True,
             )
 
-        # override fields defined in manifest manager
-        if self._version is not None:
-            self._manifest.version = ComponentVersion(self._version)
+        if self._manifest:
+            # override fields defined in manifest manager
+            if self._version is not None:
+                self._manifest.version = ComponentVersion(self._version)
 
-        if self._repository is not None:
-            self._manifest.repository = self._repository
+            if self._repository is not None:
+                self._manifest.repository = self._repository
 
-        if self._commit_sha is not None:
-            self._manifest.repository_info = RepositoryInfoField.fromdict({
-                'commit_sha': self._commit_sha,
-                'path': self._repository_path,
-            })
+            if self._commit_sha is not None:
+                self._manifest.repository_info = RepositoryInfoField.fromdict({
+                    'commit_sha': self._commit_sha,
+                    'path': self._repository_path,
+                })
 
         return self
 
