@@ -11,7 +11,7 @@ integration_test:
         coverage_format: cobertura
         path: coverage_integration.xml
     paths:
-      - "*.txt"
+      - '*.txt'
     when: always
   dependencies:
     - build_wheel
@@ -24,8 +24,11 @@ integration_test:
       - IDF_BRANCH_TAG: [release-v5.2, release-v5.3, release-v5.4]
         PYTHON_IMAGE_TAG: [3.8-bullseye, 3.13-bookworm]
         PYTEST_SPLIT_TEST_GROUP: [1, 2, 3, 4, 5]
-      - IDF_BRANCH_TAG: [master]
+      - IDF_BRANCH_TAG: [release-v5.5]
         PYTHON_IMAGE_TAG: [3.9-bullseye, 3.13-bookworm]
+        PYTEST_SPLIT_TEST_GROUP: [1, 2, 3, 4, 5]
+      - IDF_BRANCH_TAG: [master]
+        PYTHON_IMAGE_TAG: [3.10-bullseye, 3.13-bookworm]
         PYTEST_SPLIT_TEST_GROUP: [1, 2, 3, 4, 5]
   before_script:
     - IMAGE_TAG="${DOCKER_IMAGE}:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}"
@@ -41,7 +44,7 @@ integration_test:
     # We want to do so, to make sure that all dependencies are installed carefully
     - |
       if [ "${IDF_BRANCH_TAG}" = "master" ]; then
-        export CONSTRAINT_FILE_VERSION="v5.5"
+        export CONSTRAINT_FILE_VERSION="v6.0"
       else
         export CONSTRAINT_FILE_VERSION=$(echo $IDF_BRANCH_TAG | sed -e "s/release-v/v/g")
       fi
