@@ -4,6 +4,8 @@ import os
 import sys
 import typing as t
 import warnings
+from contextlib import contextmanager
+from contextvars import ContextVar
 from functools import total_ordering
 from string import Template
 
@@ -174,6 +176,39 @@ def str_or_list_or_none_discriminator(v: t.Any) -> t.Optional[str]:
     return None
 
 
+_validation_context_var: ContextVar[t.Dict[str, t.Any]] = ContextVar(
+    '_validation_context_var', default={}
+)
+
+
+@contextmanager
+def validation_context(value: t.Dict[str, t.Any]) -> t.Generator[None, None, None]:
+    """Context manager to set a validation context for pydantic models.
+
+    This context is used to pass additional information during model validation.
+
+    Usage:
+
+    .. code-block:: python
+
+        with validation_context({'key': 'value'}):
+            model = MyModel(...)
+
+    :param value: A dictionary with context data.
+    """
+
+    token = _validation_context_var.set(value)
+    try:
+        yield
+    finally:
+        _validation_context_var.reset(token)
+
+
+def get_validation_context() -> t.Dict[str, t.Any]:
+    """Retrieve the current validation context."""
+    return _validation_context_var.get()
+
+
 class BaseModel(_BaseModel):
     """
     Some general notes about pydantic models
@@ -196,7 +231,13 @@ class BaseModel(_BaseModel):
     )
 
     def __init__(self, **kwargs: t.Any) -> None:
-        super().__init__(**kwargs)
+        # Doing the same as _BaseModel.__init__
+        # but also adding a context for validation
+        self.__pydantic_validator__.validate_python(
+            kwargs,
+            self_instance=self,
+            context=get_validation_context(),
+        )
 
         self._manifest_manager = kwargs.pop('manifest_manager', None)
 

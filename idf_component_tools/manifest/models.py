@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 import typing as t
 import warnings
-from contextvars import ContextVar
 from copy import deepcopy
 
 from pydantic import (
@@ -12,6 +11,7 @@ from pydantic import (
     Field,
     Tag,
     ValidationError,
+    ValidationInfo,
     field_serializer,
     field_validator,
     model_serializer,
@@ -56,6 +56,7 @@ from idf_component_tools.utils import (
     UniqueTagListField,
     UrlField,
     bool_str_discriminator,
+    get_validation_context,
     polish_validation_error,
     str_dict_discriminator,
     validation_error_to_str,
@@ -63,17 +64,6 @@ from idf_component_tools.utils import (
 
 from .constants import COMPILED_FULL_SLUG_REGEX, known_targets
 from .if_parser import IfClause, parse_if_clause
-
-# Context for model validation
-_manifest_validation_context: ContextVar = ContextVar('manifest_validation_context', default={})
-
-
-def set_validation_context(context: t.Dict[str, t.Any]):
-    _manifest_validation_context.set(context)
-
-
-def get_validation_context() -> t.Dict[str, t.Any]:
-    return _manifest_validation_context.get()
 
 
 class OptionalDependency(BaseModel):
@@ -85,7 +75,7 @@ class OptionalDependency(BaseModel):
 
     @field_validator('if_clause')
     @classmethod
-    def validate_if_clause(cls, v: str):
+    def validate_if_clause(cls, v: str, info: ValidationInfo):
         # the parse will call again later in `if_clause_obj`
         # trade off for better error messages
         try:
@@ -95,7 +85,7 @@ class OptionalDependency(BaseModel):
         except ParseException:
             raise ValueError('Invalid syntax: "{}"'.format(v))
         except RunningEnvironmentError as e:
-            if get_validation_context().get('upload_mode') not in [
+            if isinstance(info.context, dict) and info.context.get('upload_mode') not in [
                 UploadMode.example,
                 UploadMode.false,
             ]:
@@ -553,13 +543,18 @@ class Manifest(BaseModel):
         cls,
         obj: t.Any,
         *,
-        upload_mode: UploadMode = UploadMode.false,
         return_with_object: bool = False,
         # pydantic options
         strict: t.Optional[bool] = None,
         from_attributes: t.Optional[bool] = None,
-        context: t.Optional[t.Dict[str, t.Any]] = None,
     ) -> t.Union[t.List[str], t.Tuple[t.List[str], t.Optional['Manifest']]]:
+        context = get_validation_context()
+        upload_mode = (
+            context.get('upload_mode', UploadMode.false)
+            if isinstance(context, dict)
+            else UploadMode.false
+        )
+
         if not isinstance(obj, dict):
             error_msgs = [
                 'Invalid manifest format. Manifest should be a dictionary',
@@ -578,7 +573,6 @@ class Manifest(BaseModel):
                     obj,
                     strict=strict,
                     from_attributes=from_attributes,
-                    context=context,
                 )
         except ValidationError as e:
             error_msgs = [validation_error_to_str(err) for err in e.errors(include_url=False)]

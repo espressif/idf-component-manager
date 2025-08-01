@@ -62,11 +62,10 @@ class ManifestManager:
         from .manifest.models import (
             Manifest,
             RepositoryInfoField,
-            set_validation_context,
         )
 
         # avoid circular dependency
-        from .utils import ComponentVersion
+        from .utils import ComponentVersion, validation_context
 
         if self._manifest:
             return self
@@ -103,13 +102,11 @@ class ManifestManager:
 
         manifest_dict['manifest_manager'] = self
 
-        set_validation_context({'upload_mode': self.upload_mode})
-
-        self._validation_errors, self._manifest = Manifest.validate_manifest(  # type: ignore
-            manifest_dict,
-            upload_mode=self.upload_mode,
-            return_with_object=True,
-        )
+        with validation_context({'upload_mode': self.upload_mode}):
+            self._validation_errors, self._manifest = Manifest.validate_manifest(  # type: ignore
+                manifest_dict,
+                return_with_object=True,
+            )
 
         # override fields defined in manifest manager
         if self._version is not None:
