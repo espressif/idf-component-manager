@@ -15,7 +15,7 @@ from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS, known_
 from idf_component_tools.manifest.if_parser import parse_if_clause
 from idf_component_tools.manifest.models import Manifest, OptionalDependency
 from idf_component_tools.sources import LocalSource
-from idf_component_tools.utils import ComponentVersion
+from idf_component_tools.utils import ComponentVersion, validation_context
 
 
 class TestManifestValidator:
@@ -113,7 +113,8 @@ class TestManifestValidator:
 
         assert not errors
 
-        errors = Manifest.validate_manifest(valid_manifest, upload_mode=UploadMode.component)
+        with validation_context({'upload_mode': UploadMode.component}):
+            errors = Manifest.validate_manifest(valid_manifest)
 
         assert errors == ['Invalid field "targets". Unknown targets: "asdf,esp123"']
 
@@ -156,12 +157,14 @@ class TestManifestValidator:
         assert not errors
 
     def test_check_required_keys(self, valid_manifest):
-        errors = Manifest.validate_manifest(valid_manifest, upload_mode=UploadMode.component)
+        with validation_context({'upload_mode': UploadMode.component}):
+            errors = Manifest.validate_manifest(valid_manifest)
 
         assert not errors
 
     def test_check_required_keys_empty_manifest(self):
-        errors = Manifest.validate_manifest({}, upload_mode=UploadMode.component)
+        with validation_context({'upload_mode': UploadMode.component}):
+            errors = Manifest.validate_manifest({})
 
         assert errors == [
             'Invalid field "version". Must set while uploading component to the registry'
@@ -473,9 +476,8 @@ class TestManifestValidatorUploadMode:
     def test_validate_optional_dependency_success(
         self, valid_optional_dependency_manifest_with_idf
     ):
-        errors = Manifest.validate_manifest(
-            valid_optional_dependency_manifest_with_idf, upload_mode=UploadMode.component
-        )
+        with validation_context({'upload_mode': UploadMode.component}):
+            errors = Manifest.validate_manifest(valid_optional_dependency_manifest_with_idf)
 
         assert not errors
 
@@ -502,9 +504,9 @@ class TestManifestValidatorUploadMode:
         valid_optional_dependency_manifest_with_idf['dependencies']['optional']['rules'][0][
             'if'
         ] = invalid_str
-        errors = Manifest.validate_manifest(
-            valid_optional_dependency_manifest_with_idf, upload_mode=UploadMode.component
-        )
+
+        with validation_context({'upload_mode': UploadMode.component}):
+            errors = Manifest.validate_manifest(valid_optional_dependency_manifest_with_idf)
 
         assert errors == expected_errors
 
@@ -532,9 +534,8 @@ class TestManifestValidatorUploadMode:
         valid_optional_dependency_manifest_with_idf['dependencies']['optional']['rules'][0][
             'if'
         ] = invalid_str
-        errors = Manifest.validate_manifest(
-            valid_optional_dependency_manifest_with_idf, upload_mode=UploadMode.component
-        )
+        with validation_context({'upload_mode': UploadMode.component}):
+            errors = Manifest.validate_manifest(valid_optional_dependency_manifest_with_idf)
 
         assert errors == expected_errors
 
