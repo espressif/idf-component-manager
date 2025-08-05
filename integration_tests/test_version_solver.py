@@ -312,7 +312,7 @@ def test_version_solver_on_local_components_higher_priority(project):
         assert d['dependencies']['test/circular_dependency_a'] == {
             'dependencies': [],
             'source': {
-                'path': os.path.join(project, 'test__circular_dependency_a'),
+                'path': 'test__circular_dependency_a',
                 'type': 'local',
             },
             'version': '*',

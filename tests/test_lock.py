@@ -219,7 +219,7 @@ class TestLockManager(object):
         parser = LockManager(lock_path)
         solution = LockFile.fromdict(
             dict([
-                ('version', '2.0.0'),
+                ('version', '3.0.0'),
                 ('dependencies', valid_solution_dependency_dict),
                 ('manifest_hash', valid_solution_hash),
             ])
@@ -301,7 +301,7 @@ class TestLockManager(object):
                 version: 5.1.0
             manifest_hash: {}
             target: esp32
-            version: 2.0.0
+            version: 3.0.0
         """
             )
             .format(solution.manifest_hash)
@@ -447,7 +447,10 @@ class TestLockManager(object):
                 "Dependencies lock doesn't exist, solving dependencies" in caplog.records[0].message
             )
 
-    def test_update_local_dependency_change_version(self, release_component_path, tmp_path, caplog):
+    def test_update_local_dependency_change_version(
+        self, monkeypatch, release_component_path, tmp_path, caplog
+    ):
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
         project_dir = str(tmp_path / 'cmp')
         shutil.copytree(release_component_path, project_dir)
 
@@ -555,3 +558,36 @@ class TestLockManager(object):
             assert 'Target changed from esp32 to esp32s2' in caplog.records[0].message
             assert 'has a dependency using KConfig options' in caplog.records[0].message
             assert 'espressif/test_cmp' in caplog.records[0].message
+
+    def test_local_source_relative_path(self, tmp_path, release_component_path, monkeypatch):
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
+
+        cmp_dir = str(tmp_path / 'cmp')
+        shutil.copytree(release_component_path, cmp_dir)
+
+        manifest = Manifest.fromdict({'dependencies': {'cmp': {'path': 'cmp'}}})
+        project_requirements = ProjectRequirements([manifest])
+
+        solution = SolvedManifest(
+            direct_dependencies=['cmp'],
+            dependencies=[
+                SolvedComponent(
+                    name='cmp',
+                    version=ComponentVersion('1.0.0'),
+                    source=LocalSource(path=cmp_dir),
+                ),
+            ],
+            manifest_hash=project_requirements.manifest_hash,
+        )
+
+        lock_path = tmp_path / 'dependencies.lock'
+        lock_manager = LockManager(lock_path)
+
+        # Check that the path of local source in dependencies lock is relative
+        lock_manager.dump(solution)
+        assert 'path: cmp' in lock_path.read_text()
+
+        # Check that the path of local source loaded from dependencies lock is absolute
+        solution = lock_manager.load()
+        assert Path(solution.dependencies[0].source.path).is_absolute()
+        assert solution.dependencies[0].source.path == str(cmp_dir)

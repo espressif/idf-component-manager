@@ -10,6 +10,7 @@ from pydantic import (
     AliasChoices,
     Discriminator,
     Field,
+    SerializeAsAny,
     Tag,
     ValidationError,
     ValidationInfo,
@@ -679,7 +680,9 @@ class Manifest(BaseModel):
 class SolvedComponent(BaseModel):
     name: str
     component_hash: t.Optional[str] = None  # type: ignore # idf is now using None
-    source: BaseSource
+    source: SerializeAsAny[
+        BaseSource
+    ]  # use runtime type instead of declared (e.g. LocalSource, GitSource, etc.)
     version: ComponentVersion
     dependencies: t.List[ComponentRequirement] = None  # type: ignore
     targets: UniqueStrListField = None  # type: ignore
@@ -715,16 +718,13 @@ class SolvedComponent(BaseModel):
         return v
 
     @model_serializer(mode='wrap')
-    def serialize_model(self, handler: SerializerFunctionWrapHandler) -> t.Dict[str, t.Any]:
+    def serialize_model(
+        self,
+        handler: SerializerFunctionWrapHandler,
+    ) -> t.Dict[str, t.Any]:
         # serialize from flat dict to {'name': {...}}
         d = handler(self)
-
-        # handler doesn't handle nested model correctly
-        # ATTENTION!!! it's not a clean solution
-        # nested model should be handled by handler
-        d['source'] = self.source.model_dump()
         d['version'] = str(self.version)
-
         name = d.pop('name')
         return {name: d}
 
@@ -763,11 +763,12 @@ class SolvedManifest(BaseModel):
 
     @model_serializer(mode='wrap')
     def serialize_model(self, handler: SerializerFunctionWrapHandler) -> t.Dict[str, t.Any]:
-        d = {}
-        for dep in self.dependencies:
-            d.update(dep.model_dump())
-
         original_d = handler(self)
+
+        d = {}
+        for dep in original_d['dependencies']:
+            d.update(dep)
+
         original_d['dependencies'] = d
         return original_d
 

@@ -128,9 +128,7 @@ def test_local_dependency_reconfigure_non_existing(project):
     with open(os.path.join(project, 'dependencies.lock')) as f:
         lock = YAML(typ='safe').load(f)
         assert 'example/cmp' in lock['dependencies']
-        assert lock['dependencies']['example/cmp']['source']['path'] == os.path.join(
-            project, 'example__cmp'
-        )
+        assert lock['dependencies']['example/cmp']['source']['path'] == 'example__cmp'
 
     # rename the folder
     with open(os.path.join(project, 'main', 'idf_component.yml')) as f:
@@ -147,4 +145,4 @@ def test_local_dependency_reconfigure_non_existing(project):
     with open(os.path.join(project, 'dependencies.lock')) as f:
         lock = YAML(typ='safe').load(f)
         assert 'example/cmp' in lock['dependencies']
-        assert lock['dependencies']['example/cmp']['source']['path'] == os.path.join(project, 'cmp')
+        assert lock['dependencies']['example/cmp']['source']['path'] == 'cmp'
