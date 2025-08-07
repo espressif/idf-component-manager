@@ -33,7 +33,6 @@ from idf_component_tools.errors import (
     ModifiedComponent,
     NothingToDoError,
     VersionAlreadyExistsError,
-    VersionNotFoundError,
 )
 from idf_component_tools.file_tools import (
     copy_filtered_directory,
@@ -455,14 +454,6 @@ class ComponentManager:
 
         api_client = get_api_client(namespace=namespace, profile_name=profile_name)
         component_name = '/'.join([api_client.default_namespace, name])
-
-        # Checking if current version already uploaded
-        versions = api_client.versions(component_name=component_name).versions
-
-        if version not in versions:
-            raise VersionNotFoundError(
-                f'Version {version} of the component "{component_name}" is not on the registry'
-            )
 
         api_client.delete_version(component_name=component_name, component_version=version)
         notice(f'Deleted version {version} of the component {component_name}')

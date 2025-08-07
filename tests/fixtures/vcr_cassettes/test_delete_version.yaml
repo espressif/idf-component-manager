@@ -13,25 +13,25 @@ interactions:
       User-Agent:
       - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
     method: GET
-    uri: http://localhost:5000/api/components/test_component_manager/test_yankable
+    uri: http://localhost:5000/api/components/test_component_manager/test_deletable
   response:
     body:
       string: "{\n  \"error\": \"ComponentNotFoundError\",\n  \"messages\": [\n    \"Component
-        \\\"test_component_manager/test_yankable\\\" not found\"\n  ]\n}\n"
+        \\\"test_component_manager/test_deletable\\\" not found\"\n  ]\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '128'
+      - '129'
       Content-Security-Policy:
       - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
         font-src 'self';
       Content-Type:
       - application/json
       Date:
-      - Fri, 20 Jun 2025 14:54:02 GMT
+      - Fri, 20 Jun 2025 14:52:39 GMT
       Server:
       - Werkzeug/3.1.3 Python/3.13.0
       Strict-Transport-Security:
@@ -55,25 +55,25 @@ interactions:
       User-Agent:
       - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
     method: GET
-    uri: http://localhost:5000/api/components/test_component_manager/test_yankable
+    uri: http://localhost:5000/api/components/test_component_manager/test_deletable
   response:
     body:
       string: "{\n  \"error\": \"ComponentNotFoundError\",\n  \"messages\": [\n    \"Component
-        \\\"test_component_manager/test_yankable\\\" not found\"\n  ]\n}\n"
+        \\\"test_component_manager/test_deletable\\\" not found\"\n  ]\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '128'
+      - '129'
       Content-Security-Policy:
       - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
         font-src 'self';
       Content-Type:
       - application/json
       Date:
-      - Fri, 20 Jun 2025 14:54:02 GMT
+      - Fri, 20 Jun 2025 14:52:41 GMT
       Server:
       - Werkzeug/3.1.3 Python/3.13.0
       Strict-Transport-Security:
@@ -87,36 +87,36 @@ interactions:
     body: !!python/object/new:_io.BytesIO
       state: !!python/tuple
       - !!binary |
-        LS02NTEyZWJhMjFmMGY0ZTIxOTFiZjQ4NjZmYTQ0N2JiZA0KQ29udGVudC1EaXNwb3NpdGlvbjog
-        Zm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9InRlc3RfeWFua2FibGVfMS4wLjAudGd6
-        Ig0KQ29udGVudC1UeXBlOiBhcHBsaWNhdGlvbi9vY3RldC1zdHJlYW0NCg0KH4sICAp2VWgC/3Rl
-        c3RfeWFua2FibGVfMS4wLjAudGd6AO1dXU/bSBTNs3/F3bBSk2qxPf5M0m21KAlqJEoRYat9WCky
-        9iSere3xjictqOp/37ETAqS0iKoxbH2PIpzYzhjhuefMvXPG6IZu/HESXLymQURFaycwV/ja1jRt
-        5/p9uZ+YFrFacNGqActCBkJdvtVMWD1IJUvpS+K7pmMTy7F0s9/r94intRA/PYwarlEGte+6q623
-        2prW7Zgnrmm5lm+bKvBNQohvt8CtM/6jIGM0yYNlcvd56rT5/Oe7//qT4H/7S/4nyP+18L+/4X+n
-        T2z1w9eJTUziIv03AcM3wXt6xApZ6PJC7i7+Pcf5Kv8Tz6n4X/GAo/qein/bc80WmHXGf0P5P0zV
-        /Z+lLGPpMp0J+u+SCRp13o1Pp5O3x2DrblfLBf+HhrJzstoeByntaiyaz0Ke5jyjmVRfXKg+REVn
-        ejqcQjtMcz1sw+R4ePTnaDwbTU7VTpaFyTKi7S5GHeo/5n9PLv+7pf89F/O/JuBoMhwfT8c7z/++
-        pf8q3rf03yKmjfpfBxIW0qygGOuo/6j/qP9X+m/3PCwANAGn44PRm7GeRo+p/5a1rf+2h/l/LTiL
-        WQHqFYBQCpBSHaMe9R/1v+n677h91P8moKrU7vga9+m/bbnb+q/2of7XAeO5Bs9hejL6a/+QJXTI
-        80vBFrE8oxdyAJa6TTAuckGLgs1hellImhbQmcZBtogD1oXhWzg6G6k2Ns0crSoK+5OIZpLNGRUD
-        OMiDMKb7lm6q0wxtbz0VAL8XMmJcj19p2gfOIlC9cRbTJOGd8mNX+6TBGrlgmZx32q/LozAXPAV6
-        EaR5QmEzC/HL31m7+0L7jMSF+o/6/2D9v+H/8nt9rP83AmsSLXbpA3u4/0u9sdD/hfyP/P84/N8r
-        U0Dk/ybxfzn0phfGruL/YfzvWKaL/N8c/kf/76Px/93+Xw+XfzST/3fhB76v/ue6/lb9z/MdH+t/
-        dWAPDrmAlAsKLJtzkQaS8QyCc76UcL5kSQRFVfWDglJtD2Ip82JgGBEPC51eVQb1kKfG2iZcGGr3
-        PovmBs2MJJC0kEaQs/3FkkWqn1Vt7q/a1GOZJqrRs5jCnCcJ/8iyBczZBwoJy2gBfA7nnCVU5GVD
-        EAfqiORwXv6ycMmXAtYXfVaoZq77bnlYljObqnuHErhQ2qauIKCyO5dNfOTiPYRcCPXl5FK71wZN
-        vK6mrcuWnV/Hx+8+TUaHs5ODs9efDcl5UgaQauLqj6BXn66t06vo6j49TsX8D/O/O/I/z7JsHAA0
-        UP/TgGXGDuL/YfmfWw4DMP9D/kf+r4//b+Z/PulhAthY/v/BSeC96z/Jtv/D9zyC+V8duG8Zp+oT
-        etje2DBu4vbqTr3dRcJA/Uf9/zn0v2eh/7Ox+n/F+z8w/r+l/5a3vf7Tcx3U/1rwuP7P6kERcXvt
-        /gzyfFb2v1vmz2tLKFo7Uf9R/+vR/57T72GsNVX/byWF+mWa7Dj/97bmfy3T8XH+txbs7cFkdAjD
-        q7sNb4IsWFBRbtmcFhLKYYEW0ZxmStBDRouB0uV1tyl7zaCS6Q9UFIxnA2jbuqmTVcWAq72CRXSW
-        BzJWh3SlNuWrjdSC+o/6/8T0fzP/S8oV+Tbm/03AD5b679J/m3zh/3VcF/W/Dmx0myjZNpXOF6Fg
-        uax2Vc+G2HSO6ikR2ZXy/7b2YS0LGsFHJmOQMa2GEtdfUGOAdDWa0L8YQKh+N4Bnr146OnmmLUUy
-        2DjLFqqx5XnlKNv4y4z1Va+7amFIQemmXIVc9b/Wf/R/P5r++3f5v/qm28eQaoT+ryqxO/03AN+x
-        /tO1ffR/Yf6H/F9j/nej/muZxEb/b5P4v5qI2yH/f3P+l9jbz/93XA/zvzrwKPO/dz3r5wXSDQKB
-        QCAQCAQCsWv8ByyDC5cAeAAADQotLTY1MTJlYmEyMWYwZjRlMjE5MWJmNDg2NmZhNDQ3YmJkLS0N
-        Cg==
+        LS01MGZhMjAyOWYxY2I0ZDZlYWM0NzBkMGZlYmQwODZmYg0KQ29udGVudC1EaXNwb3NpdGlvbjog
+        Zm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9InRlc3RfZGVsZXRhYmxlXzEuMC4wLnRn
+        eiINCkNvbnRlbnQtVHlwZTogYXBwbGljYXRpb24vb2N0ZXQtc3RyZWFtDQoNCh+LCAi5dVVoAv90
+        ZXN0X2RlbGV0YWJsZV8xLjAuMC50Z3oA7V1dT9tIFM2zf8XdsFKTarE9/gzpttoqCWokShFhq31Y
+        KTL2JJ6t7fGOJy2o6n/fsRMSCLSIqjFsfY8inNjOGOG558y9c8bohm78cRJcvKFBREVrJzCX+NrW
+        NG1n877cT0yLWC24aNWARSEDoS7faiasHqSSpfQl8V3TsQnxiG6Zvul6ttZC/PQwarhGGdS+6y63
+        3nJrWjdjnrim5Vq+5flExT+xTLcFbp3xHwUZo0keLJK7z1OnzWY/3/3XnwT/27f5nyD/18L//pr/
+        nQNiqx++TmxiEhfpvwkYvA0+0CNWyEKXF3J38e85zlf5n3hOxf+KBxzV91T8255rtsCsM/4byv9h
+        qu7/NGUZSxfpVNB/F0zQqPN+dDoZvzsGW3e7Wi74PzSUnZPl9jhIaVdj0Wwa8jTnGc2k+uJc9SEq
+        OpPTwQTaYZrrYRvGx4OjP4ej6XB8qnayLEwWEW13MepQ/zH/e3L53w3977keDgAagKPxYHQ8Ge08
+        //uW/qt439J/i5g26n8dSFhIs4JirKP+o/6j/l/pv93zsADQBJyOXg/fjvQ0ekz9t6xt/bc9zP9r
+        wVnMClCvAIRSgJTqGPWo/6j/Tdd/xz1A/W8Cqkrtjq9xn/7blrut/2of6n8dMJ5r8BwmJ8O/9g9Z
+        Qgc8vxRsHsszeiH7YKnbBKMiF7Qo2Awml4WkaQGdSRxk8zhgXRi8g6OzoWpj3czRsqKwP45oJtmM
+        UdGH13kQxnTf0k11mqHtraYC4PdCRozr8StN+8hZBKo3TmOaJLxTfuxqnzVYIRcsk7NO+015FGaC
+        p0AvgjRPKKxnIX75O2t3X2hfkLhQ/1H/H6z/1/xfbunXwTBqAFYkWuzSB/Zw/5flq+EC+r8aw//o
+        /3o0/vfv5H/PIkj/jeL/cuhNL4xdxf/D+N+xiI/8j/yP/F8j/1+v/3kE7T+N5P9d+IHvq/+5rr9V
+        //N8x8f6Xx3Yg0MuIOWCAstmXKSBZDyD4JwvJJwvWBJBUVX9oKBU24NYyrzoG0bEw0KnV5VBPeSp
+        sbIJF4bavc+imUEzIwkkLaQR5Gx/vmCR6mdVm/vLNvVYpolq9CymMONJwj+xbA4z9pFCwjJaAJ/B
+        OWcJFXnZEMSBOiI5nJe/LFzyhYDVRZ8VqplN3y0Py3JmU3XvUAIXStvUFQRUdueyiU9cfICQC6G+
+        nFxq99qgidfVtFXZsvPr6Pj95/HwcHry+uzNF0NynpQBpJq4+iPo1aeNdXoZXd2nx6lY/8P63+38
+        z3Ndgus/m6j/acAyYwfx/7D8zyWOjfkf8j/yf438fz3/80kPE8DG8v8PTgLvXf9Jtv0fvucRzP/q
+        wH3LOFWf0MP22oZxHTdXd+rtLhIG6j/q/8+h/z0L/R+N1f8r3v+B8f8t/be87fWfnuug/teCx/V/
+        Vg+KiNsr92eQ59Oy/90wf24soWjtRP1H/a9H/3vOQQ9jran6fyMp1C/TZMf5v7c1/2uZjo/zv7Vg
+        bw/Gw0MYXN1teBtkwZyKcstmtJBQDgu0iOY0U4IeMlr0lS6vuk3Za/qVTH+komA860Pb1k2dLCsG
+        XO0VLKLTPJCxOqQrtSlfbaQW1H/U/yem/5v5X+IfEBPnf5uAHyz136X/Nrnl/3U81P9asNZtomTb
+        VDpfhILlstpVPRti3Tmqp0RkV8r/28qHtShoBJ+YjEHGtBpKbL6gxgDpcjSh3xpAqH7Xh2evXjo6
+        eaYtRNJfO8vmqrHFeeUoW/vLjNVVN121MKSgdF2uQq76X+s/+r8fTf/vXP/jWyau/2mG/i8rsTv9
+        NwDfsf7TdQn6vzD/Q/6vMf+7Vv9V9G9j/tck/q8m4nbI/9+c/yX29vP/HdfD/K8OPMr8713P+nmB
+        dINAIBAIBAKBQOwa/wEfnGm2AHgAAA0KLS01MGZhMjAyOWYxY2I0ZDZlYWM0NzBkMGZlYmQwODZm
+        Yi0tDQo=
       - 0
       - null
     headers:
@@ -129,17 +129,17 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '1654'
+      - '1658'
       Content-Type:
-      - multipart/form-data; boundary=6512eba21f0f4e2191bf4866fa447bbd
+      - multipart/form-data; boundary=50fa2029f1cb4d6eac470d0febd086fb
       User-Agent:
       - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
     method: POST
-    uri: http://localhost:5000/api/components/test_component_manager/test_yankable/versions
+    uri: http://localhost:5000/api/components/test_component_manager/test_deletable/versions
   response:
     body:
-      string: "{\n  \"job_id\": \"c2119301-8fe9-415d-a193-90ddf9000ba1\",\n  \"upload_format\":
-        \"tgz\",\n  \"upload_id\": \"362482d9-6041-495d-a801-891d56940807\"\n}\n"
+      string: "{\n  \"job_id\": \"5000c28b-e67b-46d6-a481-228556cdb574\",\n  \"upload_format\":
+        \"tgz\",\n  \"upload_id\": \"e076d541-958e-4653-a561-beff1a1e6c44\"\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -153,7 +153,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 20 Jun 2025 14:54:02 GMT
+      - Fri, 20 Jun 2025 14:52:41 GMT
       Server:
       - Werkzeug/3.1.3 Python/3.13.0
       Strict-Transport-Security:
@@ -179,10 +179,10 @@ interactions:
       User-Agent:
       - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
     method: GET
-    uri: http://localhost:5000/api/tasks/c2119301-8fe9-415d-a193-90ddf9000ba1
+    uri: http://localhost:5000/api/tasks/5000c28b-e67b-46d6-a481-228556cdb574
   response:
     body:
-      string: "{\n  \"id\": \"c2119301-8fe9-415d-a193-90ddf9000ba1\",\n  \"message\":
+      string: "{\n  \"id\": \"5000c28b-e67b-46d6-a481-228556cdb574\",\n  \"message\":
         \"Pending...\",\n  \"progress\": 0.0,\n  \"status\": \"pending\",\n  \"warnings\":
         []\n}\n"
     headers:
@@ -198,7 +198,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 20 Jun 2025 14:54:02 GMT
+      - Fri, 20 Jun 2025 14:52:41 GMT
       Server:
       - Werkzeug/3.1.3 Python/3.13.0
       Strict-Transport-Security:
@@ -222,12 +222,12 @@ interactions:
       User-Agent:
       - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
     method: GET
-    uri: http://localhost:5000/api/tasks/c2119301-8fe9-415d-a193-90ddf9000ba1
+    uri: http://localhost:5000/api/tasks/5000c28b-e67b-46d6-a481-228556cdb574
   response:
     body:
-      string: "{\n  \"id\": \"c2119301-8fe9-415d-a193-90ddf9000ba1\",\n  \"message\":
+      string: "{\n  \"id\": \"5000c28b-e67b-46d6-a481-228556cdb574\",\n  \"message\":
         \"The uploaded component was successfully processed. It may take up to 5 minutes
-        for the new version to be available globally.\\nView at: http://localhost:5000/components/test_component_manager/test_yankable/versions/1.0.0\",\n
+        for the new version to be available globally.\\nView at: http://localhost:5000/components/test_component_manager/test_deletable/versions/1.0.0\",\n
         \ \"progress\": 100.0,\n  \"status\": \"success\",\n  \"warnings\": []\n}\n"
     headers:
       Access-Control-Allow-Origin:
@@ -235,14 +235,14 @@ interactions:
       Connection:
       - close
       Content-Length:
-      - '349'
+      - '350'
       Content-Security-Policy:
       - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
         font-src 'self';
       Content-Type:
       - application/json
       Date:
-      - Fri, 20 Jun 2025 14:54:05 GMT
+      - Fri, 20 Jun 2025 14:52:44 GMT
       Server:
       - Werkzeug/3.1.3 Python/3.13.0
       Strict-Transport-Security:
@@ -253,7 +253,7 @@ interactions:
       code: 200
       message: OK
 - request:
-    body: '{"message": "critical test"}'
+    body: null
     headers:
       Accept:
       - '*/*'
@@ -264,13 +264,11 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '28'
-      Content-Type:
-      - application/json
+      - '0'
       User-Agent:
       - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
-    method: POST
-    uri: http://localhost:5000/api/components/test_component_manager/test_yankable/1.0.0/yank
+    method: DELETE
+    uri: http://localhost:5000/api/components/test_component_manager/test_deletable/1.0.0
   response:
     body:
       string: ''
@@ -283,9 +281,9 @@ interactions:
       - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
         font-src 'self';
       Content-Type:
-      - text/html; charset=utf-8
+      - application/json
       Date:
-      - Fri, 20 Jun 2025 14:54:05 GMT
+      - Fri, 20 Jun 2025 14:52:47 GMT
       Server:
       - Werkzeug/3.1.3 Python/3.13.0
       Strict-Transport-Security:
