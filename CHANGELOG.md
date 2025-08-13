@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.3.0 (2025-08-13)
+
+### Feat
+
+- add service profile as global option to idf.py
+- add `--registry-url` and `--storage-url` params to idf.py
+- add IDF_COMPONENT_LOCAL_STORAGE_URL env variable
+- add function to validate url or file in cli
+- add `--local-storage-url` param to idf.py
+- use pydantic types for validation
+- read env variables in ProfileItem
+- create mermaid workflow diagrams
+- Add optional path to ChecksumsManager dump method
+
+### Fix
+
+- cache message about skipped dependency
+- better error message when manifest validation failed
+- Allow to delete a yanked version
+- Cassette when yanking
+- Minor documentation fix
+- ignore if clauses with kconfig options with unsupported idf version
+- catch all MissingKconfigError exception
+- fix checking max name length
+
+### Refactor
+
+- reformat all rst files using docstrfmt
+
 ## v2.2.2 (2025-06-12)
 
 ### Feat
@@ -377,7 +406,7 @@ This changelog is managed with commitizen tool, don't update it manually.
 - Only expand environment variables in the manifest files during CMake execution
 - Manifest dumping with non-expanded environment variables
 
-## \[1.4.1\] - 2023-10-02
+## [1.4.1] - 2023-10-02
 
 ### Fixed
 
@@ -389,7 +418,7 @@ This changelog is managed with commitizen tool, don't update it manually.
 - Fix processing of `rules` and `matches` for components from the registry
 - Fix processing handling of `require` field for components from the registry
 
-## \[1.4.0\] - 2023-09-15
+## [1.4.0] - 2023-09-15
 
 ### Added
 
@@ -418,20 +447,20 @@ This changelog is managed with commitizen tool, don't update it manually.
 - Fixed issue where `compote component upload` command ignored `default_namespace` parameter from the profile
 - The component manager no longer accesses the API to get the storage URL for the default registry URL
 
-## \[1.3.2\] - 2023-07-05
+## [1.3.2] - 2023-07-05
 
 ### Fixed
 
 - Keep original if statement in the `IfClause` object
 - Git source dependencies with `version` field work again
 
-## \[1.3.1\] - 2023-07-03
+## [1.3.1] - 2023-07-03
 
 ### Fixed
 
 - Fetch the same version as the lock file does while checking solved dependencies
 
-## \[1.3.0\] - 2023-06-30
+## [1.3.0] - 2023-06-30
 
 ### Changed
 
@@ -480,7 +509,7 @@ This changelog is managed with commitizen tool, don't update it manually.
 - Fixed a bug where it was required to set IDF version and target for non-IDF dependent actions
 - Fix checks for targets in manifest validator, to make sure newer targets don't cause errors on older ESP-IDF versions
 
-## \[1.2.3\] - 2023-05-25
+## [1.2.3] - 2023-05-25
 
 ### Fixed
 
@@ -491,7 +520,7 @@ This changelog is managed with commitizen tool, don't update it manually.
 - Fix manifest hash calculation for dependencies from git repositories
 - Keep local components non-hashable
 
-## \[1.2.2\] - 2023-01-17
+## [1.2.2] - 2023-01-17
 
 ### Fixed
 
@@ -501,14 +530,14 @@ This changelog is managed with commitizen tool, don't update it manually.
 - Fix nondeterministic order of components passed to IDF build system (https://github.com/espressif/esp-idf/issues/10419)
 - Fix hash validation for components uploaded with older versions of the component manager
 
-## \[1.2.1\] - 2022-12-12
+## [1.2.1] - 2022-12-12
 
 ### Fixed
 
 - Fix `idf.py add-dependency` crash for any argument
 - Fix regression in `python -m idf_component_manager upload-component` command
 
-## \[1.2.0\] - 2022-12-08 \[YANKED\]
+## [1.2.0] - 2022-12-08 [YANKED]
 
 ### Fixed
 
@@ -516,7 +545,7 @@ This changelog is managed with commitizen tool, don't update it manually.
 - Set default API responses cache time to 5 minutes
 - Fix support of python 3.4
 
-## \[1.2.0-rc0\] - 2022-12-02
+## [1.2.0-rc0] - 2022-12-02
 
 ### Added
 
@@ -551,13 +580,13 @@ This changelog is managed with commitizen tool, don't update it manually.
 - Dump manifest file inconsistency with escaped dollar sign
 - Fix schema validation of the `idf_component_manager.yml` config file
 
-## \[1.1.4\] - 2022-07-04
+## [1.1.4] - 2022-07-04
 
 ### Fixed
 
 - Loose the restrictions for pyyaml on python 2.7 and 3.4
 
-## \[1.1.3\] - 2022-06-21
+## [1.1.3] - 2022-06-21
 
 ### Fixed
 
@@ -565,7 +594,7 @@ This changelog is managed with commitizen tool, don't update it manually.
 - colorama version incompatible with python 3.4
 - pyyaml version incompatible with python 3.4
 
-## \[1.1.2\] - 2022-06-10
+## [1.1.2] - 2022-06-10
 
 ### Added
 
@@ -576,7 +605,7 @@ This changelog is managed with commitizen tool, don't update it manually.
 - Fix crash on malformed env variables
 - Support revision numbers in `version` and `dependencies` -> `version`
 
-## \[1.1.1\] - 2022-05-31
+## [1.1.1] - 2022-05-31
 
 ### Added
 
@@ -587,7 +616,7 @@ This changelog is managed with commitizen tool, don't update it manually.
 - Fix expansion of environment variables in manifest for `rules`
 - Fix inject optional dependencies even if they are excluded
 
-## \[1.1.0\] - 2022-05-19
+## [1.1.0] - 2022-05-19
 
 ### Added
 
@@ -628,7 +657,7 @@ This changelog is managed with commitizen tool, don't update it manually.
 - Fix support of REQUIRES by the project's main component
 - Allow transient dependencies for the main component
 
-## \[1.0.1\] - 2022-01-12
+## [1.0.1] - 2022-01-12
 
 ### Fixed
 
@@ -637,7 +666,7 @@ This changelog is managed with commitizen tool, don't update it manually.
 - Fix error message when the directory didn't find in a git repository
 - Get the list of known targets from ESP-IDF, when possible
 
-## \[1.0.0\] - 2021-12-21
+## [1.0.0] - 2021-12-21
 
 ### Added
 
@@ -655,4 +684,4 @@ This changelog is managed with commitizen tool, don't update it manually.
 - Copy filtered paths for git source
 - Fix local source missing dependencies
 
-## \[0.3.2-beta\] - 2021-10-22
+## [0.3.2-beta] - 2021-10-22
