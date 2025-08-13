@@ -3,6 +3,7 @@
 import typing as t
 import warnings
 from copy import deepcopy
+from functools import lru_cache
 
 from pydantic import (
     AfterValidator,
@@ -221,6 +222,11 @@ class DependencyItem(BaseModel):
         return True
 
 
+@lru_cache(maxsize=None)
+def _notice_skipped_dependency(name: str) -> None:
+    notice(f'Skipping optional dependency: {name}')
+
+
 class ComponentRequirement(DependencyItem):
     name: str
 
@@ -325,7 +331,7 @@ class ComponentRequirement(DependencyItem):
             ):
                 return True
 
-            notice('Skipping optional dependency: {}'.format(self.name))
+            _notice_skipped_dependency(self.name)
             return False
         except MissingKconfigError as e:
             KCONFIG_CONTEXT.get().set_missed_kconfig(str(e), self)
