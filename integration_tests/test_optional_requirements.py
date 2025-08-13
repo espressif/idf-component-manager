@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import logging
 import os
@@ -33,7 +33,10 @@ from .integration_test_helpers import current_idf_in_the_list, fixtures_path, pr
 )
 def test_inject_requirements_with_optional_dependency(project):
     res = project_action(project, 'reconfigure')
-    assert 'Skipping optional dependency: cmp' in res
+    # 'Skipping optional dependencies' is printed two times,
+    # because reconfigure command execute 2 commands from component manager -
+    # prepare_components and inject_requirements
+    assert res.count('Skipping optional dependency: cmp') == 2
     assert '[1/1] idf' in res
     assert 'cmake failed with exit code 1' not in res
 
