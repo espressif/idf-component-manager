@@ -14,6 +14,7 @@ from idf_component_manager.cli.validations import (
     validate_registry_component,
     validate_sha,
     validate_url,
+    validate_url_or_file,
     validate_version,
 )
 
@@ -58,7 +59,7 @@ def test_validate_existing_dir_invalid_input(invalid_dir):
 
 
 def test_validate_url():
-    assert validate_url(None, None, 'https://hostname') == 'https://hostname'
+    assert validate_url(None, None, 'https://hostname') == 'https://hostname/'
 
 
 @pytest.mark.parametrize(
@@ -74,7 +75,24 @@ def test_validate_url():
 def test_validate_url_invalid_input(invalid_url):
     with pytest.raises(click.BadParameter) as exc_info:
         validate_url(None, None, invalid_url)
-    assert 'Invalid URL.' in str(exc_info.value)
+    assert 'Input should be a valid URL' in str(exc_info.value)
+
+
+def test_validate_url_or_file():
+    assert validate_url_or_file(None, None, 'file:///path/to/file') == 'file:///path/to/file'
+
+
+@pytest.mark.parametrize(
+    'invalid_url',
+    [
+        'invalid-url',  # Missing scheme
+        'http://',  # Valid scheme but missing netloc
+        'ftp://',  # Unsupported scheme
+    ],
+)
+def test_validate_url_or_file_invalid_input(invalid_url):
+    with pytest.raises(click.BadParameter):
+        validate_url_or_file(None, None, invalid_url)
 
 
 def test_validate_sha():

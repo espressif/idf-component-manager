@@ -6,13 +6,7 @@ import os
 
 import pytest
 
-from idf_component_tools.config import (
-    ConfigError,
-    ConfigManager,
-    ProfileItem,
-    get_registry_url,
-    get_storage_urls,
-)
+from idf_component_tools.config import ConfigError, ConfigManager, ProfileItem
 
 
 def test_config_validation():
@@ -117,23 +111,34 @@ def test_dump_non_existing_dir(tmp_path):
 
 def test_component_registry_url_storage_env(monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'https://storage.com/')
-    assert ['https://storage.com/'] == get_storage_urls()
+    assert ['https://storage.com/'] == ProfileItem().storage_urls
 
 
 def test_component_registry_url_multiple_storage_env(monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_STORAGE_URL', 'https://storage.com/;https://test.com/')
-    assert ['https://storage.com/', 'https://test.com/'] == get_storage_urls()
+    assert ['https://storage.com/', 'https://test.com/'] == ProfileItem().storage_urls
+
+
+def test_component_registry_url_local_storage_env(monkeypatch):
+    monkeypatch.setenv('IDF_COMPONENT_LOCAL_STORAGE_URL', 'https://localstorage.com/')
+    assert ['https://localstorage.com/'] == ProfileItem().local_storage_urls
+
+
+def test_component_registry_url_multiple_local_storage_env(monkeypatch):
+    monkeypatch.setenv(
+        'IDF_COMPONENT_LOCAL_STORAGE_URL', 'https://localstorage.com/;https://test.com/'
+    )
+    assert ['https://localstorage.com/', 'https://test.com/'] == ProfileItem().local_storage_urls
 
 
 def test_component_registry_url_registry_api_env(monkeypatch):
     monkeypatch.setenv('DEFAULT_COMPONENT_SERVICE_URL', 'https://registry.com/api/')
-
-    assert 'https://registry.com/api/' == get_registry_url()
+    assert 'https://registry.com/api/' == ProfileItem().registry_url
 
 
 def test_component_registry_url_registry_env(monkeypatch):
     monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', 'https://registry.com/')
-    assert 'https://registry.com/' == get_registry_url()
+    assert 'https://registry.com/' == ProfileItem().registry_url
 
 
 @pytest.mark.parametrize(
@@ -141,11 +146,6 @@ def test_component_registry_url_registry_env(monkeypatch):
     [
         (
             {},
-            'https://components.espressif.com/',
-            [],
-        ),
-        (
-            None,
             'https://components.espressif.com/',
             [],
         ),
@@ -190,10 +190,21 @@ def test_component_registry_url_registry_env(monkeypatch):
     ],
 )
 def test_component_registry_url_profile(profile, registry_url, storage_urls):
-    profile = ProfileItem(**profile) if profile else None
+    profile = ProfileItem(**profile)
+    assert profile.get_registry_url() == registry_url
+    assert profile.storage_urls == storage_urls
 
-    assert get_registry_url(profile) == registry_url
-    assert get_storage_urls(profile) == storage_urls
+
+def test_component_local_storage_urls_profile():
+    profile = ProfileItem(local_storage_url=['http://localstorage.com', 'https://test.com'])
+
+    assert profile.local_storage_urls == ['http://localstorage.com/', 'https://test.com/']
+
+
+def test_component_local_storage_urls_profile_env(monkeypatch):
+    monkeypatch.setenv('IDF_COMPONENT_LOCAL_STORAGE_URL', 'http://localstorage_env.com/')
+    profile = ProfileItem(local_storage_url=['http://localstorage.com', 'https://test.com'])
+    assert profile.local_storage_urls == ['http://localstorage_env.com/']
 
 
 def test_config_dump_keeping_comments(tmp_path):

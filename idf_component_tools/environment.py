@@ -210,8 +210,19 @@ class ComponentManagerSettings(BaseSettings):
     STORAGE_URL: t.Optional[str] = Field(
         None,
         description="""
-            | URL of the default file storage server.
+            | URL of the file storage server.
+            | To set multiple URLs, use semicolon (;) to separate them:
+            | `<url1>;<url2>;...`
             | **Default:** https://components-file.espressif.com/
+        """,
+    )
+
+    LOCAL_STORAGE_URL: t.Optional[str] = Field(
+        None,
+        description="""
+            | URL of the mirror.
+            | To set multiple URLs, use semicolon (;) to separate them:
+            | `<url1>;<url2>;...`
         """,
     )
 

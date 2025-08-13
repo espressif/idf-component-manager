@@ -9,9 +9,11 @@ from pathlib import Path
 
 from pydantic import (
     Discriminator,
+    Field,
     Tag,
     ValidationError,
     field_validator,
+    model_validator,
 )
 from ruamel.yaml import YAML, CommentedMap, YAMLError
 
@@ -50,7 +52,7 @@ StorageUrlField = Annotated[
     t.Union[
         Annotated[Literal['default'], Tag('__default__')],
         Annotated[UrlOrFileField, Tag('__str__')],
-        Annotated[t.List[UrlOrFileField], Tag('__list__')],
+        Annotated[t.List[t.Union[Literal['default'], UrlOrFileField]], Tag('__list__')],
         Annotated[None, Tag('__none__')],
     ],
     Discriminator(
@@ -70,34 +72,91 @@ LocalStorageUrlField = Annotated[
 
 
 class ProfileItem(BaseModel):
-    registry_url: RegistryUrlField = None
-    storage_url: StorageUrlField = None
-    local_storage_url: LocalStorageUrlField = None
+    registry_url: RegistryUrlField = Field(None, json_schema_extra=({'use_env': True}))
+    storage_url: StorageUrlField = Field(None, json_schema_extra=({'use_env': True}))
+    local_storage_url: LocalStorageUrlField = Field(None, json_schema_extra=({'use_env': True}))
     default_namespace: str = None  # type: ignore
     api_token: t.Optional[str] = None
+
+    @model_validator(mode='before')
+    @classmethod
+    def validate_profile_item(cls, data: t.Any) -> t.Any:
+        # Trying to read values from environment variables
+        if isinstance(data, dict):
+            for field, field_info in cls.model_fields.items():
+                env_value = None
+                field_extra_params = field_info.json_schema_extra or {}
+
+                if not isinstance(field_extra_params, dict):
+                    continue
+
+                if field_extra_params.get('use_env'):
+                    env_value = getattr(ComponentManagerSettings(), field.upper())
+
+                if env_value:
+                    if field in ['storage_url', 'local_storage_url']:
+                        values = env_value.split(';')
+                        data[field] = values[0] if len(values) == 1 else values
+                    else:
+                        data[field] = env_value
+
+        return data
 
     @field_validator('registry_url')
     @classmethod
     def validate_registry_url(cls, v):
+        """Validate the registry URL.
+        Triggered when `registry_url` is provided to a profile item, e.g.:
+
+            ProfileItem(registry_url="default")
+        """
         if v == 'default' or not v:
             return IDF_COMPONENT_REGISTRY_URL
 
         return v
 
+    def get_registry_url(self) -> str:
+        """Get the registry URL for the profile.
+
+        :return: The registry URL. If not set, returns the default registry URL.
+        """
+        return self.registry_url if self.registry_url else IDF_COMPONENT_REGISTRY_URL
+
     @property
     def storage_urls(self) -> t.List[str]:
-        _storage_urls: t.Set[str] = set()
         if isinstance(self.storage_url, list):
-            return self.storage_url
+            storage_urls = self.storage_url
+        else:
+            storage_urls = [self.storage_url] if self.storage_url else []
 
-        return [self.storage_url] if self.storage_url else []
+        res = []
+
+        for url in storage_urls:
+            if url == 'default':
+                _url = IDF_COMPONENT_STORAGE_URL
+            else:
+                _url = url
+
+            # Remove duplicates
+            if _url not in res:
+                res.append(_url)
+
+        return res
 
     @property
     def local_storage_urls(self) -> t.List[str]:
         if isinstance(self.local_storage_url, list):
-            return self.local_storage_url
+            local_storage_urls = self.local_storage_url
+        else:
+            local_storage_urls = [self.local_storage_url] if self.local_storage_url else []
 
-        return [self.local_storage_url] if self.local_storage_url else []
+        res = []
+
+        # Remove duplicates
+        for url in local_storage_urls:
+            if url not in res:
+                res.append(url)
+        return res
 
 
 class Config(BaseModel):
@@ -225,43 +284,3 @@ def get_profile(
     raise NoSuchProfile(
         f'Profile "{_profile_name}" not found in config file: {config_manager.config_path}'
     )
-
-
-def get_registry_url(profile: t.Optional[ProfileItem] = None) -> str:
-    """
-    Env var > profile settings > default
-    """
-    if profile is None:
-        profile = get_profile()
-
-    return (
-        ComponentManagerSettings().REGISTRY_URL
-        or (profile.registry_url if profile else IDF_COMPONENT_REGISTRY_URL)
-        or IDF_COMPONENT_REGISTRY_URL
-    )
-
-
-def get_storage_urls(profile: t.Optional[ProfileItem] = None) -> t.List[str]:
-    """
-    Env var > profile settings > default
-    """
-    if profile is None:
-        profile = get_profile()
-
-    storage_url_env = ComponentManagerSettings().STORAGE_URL  # fool mypy
-    if storage_url_env:
-        storage_urls = storage_url_env.split(';')
-    else:
-        storage_urls = profile.storage_urls or []
-
-    res = []  # sequence matters, the first url goes first
-    for url in storage_urls:
-        url = url.strip()
-        if url == 'default':
-            _url = IDF_COMPONENT_STORAGE_URL
-        else:
-            _url = url
-
-        if _url not in res:
-            res.append(_url)
-    return res

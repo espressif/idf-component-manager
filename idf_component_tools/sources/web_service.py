@@ -18,7 +18,7 @@ from idf_component_tools.archive_tools import (
     get_archive_extension,
     unpack_archive,
 )
-from idf_component_tools.config import get_registry_url
+from idf_component_tools.config import get_profile
 from idf_component_tools.constants import (
     DEFAULT_NAMESPACE,
     IDF_COMPONENT_REGISTRY_URL,
@@ -136,6 +136,11 @@ def download_archive(url: str, download_dir: str, save_original_filename: bool =
         use_original_extension=True,
         get_extension_cb=get_archive_extension,
     )
+
+
+def get_registry_url() -> str:
+    profile = get_profile()
+    return profile.get_registry_url()
 
 
 class WebServiceSource(BaseSource):

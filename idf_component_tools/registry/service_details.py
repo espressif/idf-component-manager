@@ -6,7 +6,10 @@
 import typing as t
 
 from idf_component_tools import ComponentManagerSettings
-from idf_component_tools.config import ProfileItem, get_profile, get_registry_url, get_storage_urls
+from idf_component_tools.config import (
+    ProfileItem,
+    get_profile,
+)
 
 from .api_client import APIClient
 from .multi_storage_client import MultiStorageClient
@@ -30,11 +33,10 @@ def get_api_client(
     - registry_url, if specified
     - get_registry_url()
     """
-    if profile is None:
-        profile = get_profile(profile_name, config_path)
+    profile = profile or get_profile(profile_name, config_path)
 
     return APIClient(
-        registry_url=registry_url or get_registry_url(profile),
+        registry_url=registry_url or profile.get_registry_url(),
         api_token=ComponentManagerSettings().API_TOKEN or (profile.api_token if profile else None),
         default_namespace=namespace or (profile.default_namespace if profile else None),
     )
@@ -63,16 +65,15 @@ def get_storage_client(
     - get_storage_urls()
     - get_registry_url()
     """
-    if profile is None:
-        profile = get_profile(profile_name, config_path)
+    profile = profile or get_profile(profile_name, config_path)
 
-    _registry_url = registry_url or get_registry_url(profile)
+    _registry_url = registry_url or profile.get_registry_url()
 
-    _storage_urls = get_storage_urls(profile) if profile else []
+    _storage_urls = profile.storage_urls
     if storage_urls:
         _storage_urls += storage_urls
 
-    _local_storage_urls = (profile.local_storage_urls or []) if profile else []
+    _local_storage_urls = profile.local_storage_urls
     if local_storage_urls:
         _local_storage_urls += local_storage_urls
 

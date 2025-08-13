@@ -11,7 +11,7 @@ from requests import Response
 
 from idf_component_tools import LOGGING_NAMESPACE
 from idf_component_tools.__version__ import __version__
-from idf_component_tools.config import get_registry_url, get_storage_urls
+from idf_component_tools.config import ProfileItem
 from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL
 from idf_component_tools.registry.api_client import APIClient
 from idf_component_tools.registry.base_client import user_agent
@@ -118,8 +118,7 @@ class TestAPIClient:
 
     def test_no_registry_token_error(self, monkeypatch, tmp_path):
         monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', 'http://localhost:9000')
-
-        client = APIClient(registry_url=get_registry_url())
+        client = APIClient(registry_url=ProfileItem().get_registry_url())
 
         file_path = str(tmp_path / 'cmp.tgz')
         with open(file_path, 'w+') as f:
@@ -133,17 +132,16 @@ class TestAPIClient:
         monkeypatch.setenv('IDF_COMPONENT_REGISTRY_URL', '')
         monkeypatch.setenv('IDF_COMPONENT_API_TOKEN', '')
 
-        registry_url = get_registry_url()
-        storage_urls = get_storage_urls()
-        assert registry_url == IDF_COMPONENT_REGISTRY_URL
-        assert storage_urls == []
+        profile = ProfileItem()
+        assert profile.get_registry_url() == IDF_COMPONENT_REGISTRY_URL
+        assert profile.storage_urls == []
 
     @use_vcr_or_real_env(
         'tests/fixtures/vcr_cassettes/test_no_registry_url_use_static.yaml',
     )
     @pytest.mark.network
     def test_no_registry_url_use_static(self, mock_storage):  # noqa: ARG002
-        storage_urls = get_storage_urls()
+        storage_urls = ProfileItem().storage_urls
         client = MultiStorageClient(storage_urls=storage_urls)
         client.component(component_name='test_component_manager/cmp')  # no errors
 

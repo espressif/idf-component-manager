@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 from integration_tests.integration_test_helpers import project_action
 
@@ -77,3 +77,32 @@ def test_create_project_from_example_project_dir(tmp_path):
     assert 'successfully downloaded' in res
     assert example_path.is_dir()
     assert (example_path / 'CMakeLists.txt').is_file()
+
+
+def test_create_project_from_example_set_storage_url(tmp_path):
+    example_name = 'cmp_ex'
+    res = project_action(
+        str(tmp_path),
+        '--storage-url',
+        'https://components-file.espressif.com',
+        'create-project-from-example',
+        f'example/cmp=3.3.8:{example_name}',
+    )
+
+    example_path = tmp_path / example_name
+    assert 'successfully downloaded' in res
+    assert example_path.is_dir()
+    assert (example_path / 'CMakeLists.txt').is_file()
+
+
+def test_create_project_from_example_set_invalid_storage_url(tmp_path):
+    example_name = 'cmp_ex'
+    res = project_action(
+        str(tmp_path),
+        '--storage-url',
+        'http://not-existing-url.test',
+        'create-project-from-example',
+        f'example/cmp=3.3.8:{example_name}',
+    )
+
+    assert 'Cannot establish a connection to the component registry.' in res
