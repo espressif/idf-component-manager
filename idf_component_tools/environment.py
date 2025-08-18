@@ -9,7 +9,7 @@ import typing as t
 import warnings
 from functools import lru_cache
 
-from pydantic import AliasChoices, Field, create_model, field_validator
+from pydantic import AliasChoices, Field, computed_field, create_model, field_validator
 from pydantic_core.core_schema import ValidationInfo, ValidatorFunctionWrapHandler
 from pydantic_settings import (
     BaseSettings,
@@ -17,6 +17,8 @@ from pydantic_settings import (
     SettingsConfigDict,
 )
 
+from idf_component_manager.version_solver.mixology.range import Range
+from idf_component_manager.version_solver.mixology.union import Union
 from idf_component_tools.messages import UserDeprecationWarning
 
 KNOWN_CI_ENVIRONMENTS = {
@@ -264,6 +266,24 @@ class ComponentManagerSettings(BaseSettings):
     # version solver
     CHECK_NEW_VERSION: bool = Field(True, description='Check for new versions of components.')
 
+    CONSTRAINT_FILES: t.Optional[str] = Field(
+        None,
+        description="""
+            | Constraint files for component version solving.
+            | To specify multiple files, use semicolons to separate them:
+            | `/path/to/file1;/path/to/file2,...`
+        """,
+    )
+
+    CONSTRAINTS: t.Optional[str] = Field(
+        None,
+        description="""
+            | Direct constraint definitions for component version solving.
+            | To specify multiple constraints, use semicolons to separate them:
+            | `namespace/component_name>=version;component_name>=version;...`
+        """,
+    )
+
     @field_validator('*', mode='wrap')
     @classmethod
     def fallback_to_default(
@@ -306,6 +326,27 @@ class ComponentManagerSettings(BaseSettings):
     ) -> t.Tuple[PydanticBaseSettingsSource, ...]:
         # we only want to use the env_settings
         return (env_settings,)
+
+    @computed_field  # type: ignore
+    @property
+    def constraints(self) -> t.Dict[str, t.Union[Union, Range]]:
+        from idf_component_manager.version_solver.constraint_file import (
+            parse_constraint_file,
+            parse_constraint_string,
+        )
+
+        merged_constraints = {}
+
+        # First, load constraints from files
+        if self.CONSTRAINT_FILES:
+            for fp in [path.strip() for path in self.CONSTRAINT_FILES.split(';') if path]:
+                merged_constraints.update(parse_constraint_file(fp))
+
+        # Then, load direct constraints (can override file constraints)
+        if self.CONSTRAINTS:
+            merged_constraints.update(parse_constraint_string(self.CONSTRAINTS))
+
+        return merged_constraints
 
     @classmethod
     @lru_cache(1)

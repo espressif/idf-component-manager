@@ -66,3 +66,77 @@ If newer versions are found, they will be displayed in the console, but the ``de
 To disable this automatic version check, set the following environment variable ``IDF_COMPONENT_CHECK_NEW_VERSION`` to ``0``.
 
 For instructions on explicitly updating dependencies, refer to the :ref:`update-dependencies` section.
+
+``IDF_COMPONENT_CONSTRAINT_FILES``
+++++++++++++++++++++++++++++++++++
+
+You can use constraint files to limit the versions of components that the version solver considers during dependency resolution.
+
+When constraint files are specified, the version solver will check the version range not only from the ``dependencies`` section in the manifest files, but also from the constraint files.
+
+To use constraint files, set the ``IDF_COMPONENT_CONSTRAINT_FILES`` environment variable to one or more constraint file paths separated by semicolons:
+
+.. code-block:: console
+
+    # Single constraint file
+    $ export IDF_COMPONENT_CONSTRAINT_FILES="/path/to/constraints.txt"
+
+    # Multiple constraint files (semicolon-separated)
+    $ export IDF_COMPONENT_CONSTRAINT_FILES="/path/to/base_constraints.txt;/path/to/project_constraints.txt"
+
+Constraint File Format
+......................
+
+Constraint files use a simple text format where each line specifies a component name and version constraint:
+
+.. code-block:: text
+
+    # This is a comment
+    espressif/esp_timer>=1.0.0
+    wifi_provisioning~=2.1.0
+    my_namespace/custom_component>=0.5.0,<1.0.0
+
+    # Components without namespace default to espressif namespace
+    led_strip==1.2.0
+
+Version constraints follow the same format as dependency specifications in manifest files. For detailed information about supported version constraint formats, see :ref:`version-range-specifications`.
+
+Multiple Constraint Files
+.........................
+
+When multiple constraint files are specified, they are processed in order and later files override constraints from earlier files for the same component.
+
+.. code-block:: console
+
+    # Example: base constraints + project overrides
+    $ export IDF_COMPONENT_CONSTRAINT_FILES="org_constraints.txt;project_constraints.txt"
+
+If ``org_constraints.txt`` contains ``example/cmp>=1.0.0`` and ``project_constraints.txt`` contains ``example/cmp==1.2.3``, the final constraint will be ``example/cmp==1.2.3``.
+
+``IDF_COMPONENT_CONSTRAINTS``
++++++++++++++++++++++++++++++
+
+Moreover, you can specify component constraints directly in the environment variable ``IDF_COMPONENT_CONSTRAINTS``. This allows you to define version constraints without needing to create a separate constraint file.
+
+.. note::
+
+    The ``IDF_COMPONENT_CONSTRAINTS`` environment variable has higher priority than the ``IDF_COMPONENT_CONSTRAINT_FILES`` variable. If both are set, the constraints in ``IDF_COMPONENT_CONSTRAINTS`` will override those specified in the constraint files if the same component is listed in both.
+
+.. note::
+
+    The ``IDF_COMPONENT_CONSTRAINTS`` environment variable does NOT support comments.
+
+.. code-block:: console
+
+    # Single constraint
+    $ export IDF_COMPONENT_CONSTRAINTS="espressif/esp_timer>=1.0.0"
+
+    # Multiple constraints (separated by newlines or semicolons)
+    $ export IDF_COMPONENT_CONSTRAINTS="espressif/esp_timer>=1.0.0;wifi_provisioning~=2.1.0"
+
+    # Using newlines (in shell)
+    $ export IDF_COMPONENT_CONSTRAINTS="espressif/esp_timer>=1.0.0
+    wifi_provisioning~=2.1.0
+    my_namespace/custom_component>=0.5.0,<1.0.0"
+
+The constraint format is the same as in constraint files. Components without a namespace default to the ``espressif`` namespace.
