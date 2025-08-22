@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from functools import total_ordering
 from string import Template
+from typing import Annotated, Literal  # noqa
 
 from pydantic import (
     AfterValidator,
@@ -36,16 +37,6 @@ from .semver import Version
 
 if t.TYPE_CHECKING:
     from idf_component_tools.manifest import ComponentRequirement, Manifest
-
-if sys.version_info < (3, 8):
-    from typing_extensions import Literal
-else:
-    from typing import Any, Literal  # noqa
-
-if sys.version_info < (3, 9):
-    from typing_extensions import Annotated
-else:
-    from typing import Annotated  # noqa
 
 if sys.version_info < (3, 11):
     from typing_extensions import Self

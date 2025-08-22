@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 # SPDX-FileCopyrightText: 2016 Python-SemanticVersion project
 # SPDX-License-Identifier: BSD 2-Clause License
-# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2025 Espressif Systems (Shanghai) CO LTD
 """Test the various functions from 'base'."""
 
-import sys
 import unittest
 
 from idf_component_tools.semver import base
@@ -12,13 +11,6 @@ from idf_component_tools.semver import base
 
 class TopLevelTestCase(unittest.TestCase):
     """Test module-level functions."""
-
-    if sys.version_info[0] <= 2:
-        import contextlib
-
-        @contextlib.contextmanager
-        def subTest(self, **kwargs):
-            yield
 
     versions = (
         ('0.1.0', '0.1.1', -1),
@@ -112,13 +104,6 @@ class TopLevelTestCase(unittest.TestCase):
 
 
 class VersionTestCase(unittest.TestCase):
-    if sys.version_info[0] <= 2:
-        import contextlib
-
-        @contextlib.contextmanager
-        def subTest(self, **kwargs):
-            yield
-
     versions = {
         '1.0.0-alpha': (1, 0, 0, 0, ('alpha',), ()),
         '1.0.0-alpha.1': (1, 0, 0, 0, ('alpha', '1'), ()),
@@ -189,7 +174,6 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(1, len({base.Version('0.1.0'), base.Version('0.1.0~0')}))
         self.assertEqual(1, len({base.Version('0.1.0~2'), base.Version('0.1.0~2')}))
 
-    @unittest.skipIf(sys.version_info[0] <= 2, "Comparisons don't raise TypeError in Python 2")
     def test_invalid_comparisons(self):
         v = base.Version('0.1.0')
         with self.assertRaises(TypeError):
@@ -376,13 +360,6 @@ class VersionTestCase(unittest.TestCase):
 
 
 class CoerceTestCase(unittest.TestCase):
-    if sys.version_info[0] <= 2:
-        import contextlib
-
-        @contextlib.contextmanager
-        def subTest(self, **kwargs):
-            yield
-
     examples = {
         # Dict of target: [list of equivalents]
         '0.0.0': ('0', '0.0', '0.0.0', '0.0.0+', '0-', '0~'),

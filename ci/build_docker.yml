@@ -9,12 +9,6 @@ build:
   timeout: 2h
   parallel:
     matrix:
-      - IDF_BRANCH_TAG: [release-v5.0, release-v5.1]
-        PYTHON_IMAGE_TAG: ["3.7", "3.13"]
-      - IDF_BRANCH_TAG: [release-v5.2, release-v5.3, release-v5.4]
-        PYTHON_IMAGE_TAG: ["3.8", "3.13"]
-      - IDF_BRANCH_TAG: [release-v5.5]
-        PYTHON_IMAGE_TAG: ["3.9", "3.13"]
       - IDF_BRANCH_TAG: [master]
         PYTHON_IMAGE_TAG: ["3.10", "3.13"]
   script:
