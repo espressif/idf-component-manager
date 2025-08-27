@@ -1,9 +1,10 @@
-# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 from pytest import mark
 
 from idf_component_tools.environment import (
     KNOWN_CI_ENVIRONMENTS,
+    ComponentManagerSettings,
     _env_to_bool,
     _env_to_bool_or_string,
     detect_ci,
@@ -73,3 +74,53 @@ def test_detect_ci(monkeypatch):
 )
 def test_env_to_bool_or_string(value, expected):
     assert _env_to_bool_or_string(value) == expected
+
+
+class TestComponentManagerSettings:
+    def test_get_constraint_files_none(self):
+        assert ComponentManagerSettings().constraints == {}
+
+    def test_get_constraint_files_empty_string(self, monkeypatch):
+        monkeypatch.setenv('IDF_COMPONENT_CONSTRAINT_FILES', '')
+        assert ComponentManagerSettings().constraints == {}
+
+    def test_get_constraint_files_non_existing(self, monkeypatch):
+        monkeypatch.setenv(
+            'IDF_COMPONENT_CONSTRAINT_FILES', '/path/to/file1.txt;;    /path/to/file2.txt'
+        )
+        assert ComponentManagerSettings().constraints == {}
+
+    def test_constraints_property_files_only(self, monkeypatch, tmp_path):
+        (tmp_path / 'constraints.txt').write_text('esp_timer>=1.0.0\nwifi_provisioning==2.0.0')
+
+        monkeypatch.setenv('IDF_COMPONENT_CONSTRAINT_FILES', str(tmp_path / 'constraints.txt'))
+
+        constraints = ComponentManagerSettings().constraints
+        assert len(constraints) == 2
+        assert 'espressif/esp_timer' in constraints
+        assert 'espressif/wifi_provisioning' in constraints
+
+    def test_constraints_property_string_only(self, monkeypatch):
+        monkeypatch.setenv(
+            'IDF_COMPONENT_CONSTRAINTS', 'esp_timer>=1.0.0; wifi_provisioning==2.0.0'
+        )
+
+        constraints = ComponentManagerSettings().constraints
+        assert len(constraints) == 2
+        assert 'espressif/esp_timer' in constraints
+        assert 'espressif/wifi_provisioning' in constraints
+
+    def test_constraints_property_string_overrides_files(self, monkeypatch, tmp_path):
+        (tmp_path / 'constraints.txt').write_text('esp_timer>=1.0.0\nwifi_provisioning==1.0.0')
+
+        monkeypatch.setenv('IDF_COMPONENT_CONSTRAINT_FILES', str(tmp_path / 'constraints.txt'))
+        monkeypatch.setenv('IDF_COMPONENT_CONSTRAINTS', 'wifi_provisioning==2.0.0')
+
+        constraints = ComponentManagerSettings().constraints
+        assert len(constraints) == 2
+        assert 'espressif/esp_timer' in constraints
+        assert 'espressif/wifi_provisioning' in constraints
+        # String constraint should override file constraint
+        from idf_component_manager.version_solver.mixology.range import Range
+
+        assert constraints['espressif/wifi_provisioning'] == Range('2.0.0', '2.0.0', True, True)

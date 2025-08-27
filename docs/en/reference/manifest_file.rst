@@ -349,7 +349,7 @@ These attributes are optional and supported across all dependency types.
 Specifies component visibility. Possible values:
 
 - ``private`` *(default)*: The required component is added as a private dependency. This is equivalent to adding the component to the ``PRIV_REQUIRES`` argument of ``idf_component_register`` in the component's ``CMakeLists.txt`` file.
-- ``public``: Marks the component as a transient dependency. This is equivalent to adding the component to the ``REQUIRES`` argument of ``idf_component_register`` in the component's ``CMakeLists.txt`` file.
+- ``public``: Marks the component as a transitive dependency. This is equivalent to adding the component to the ``REQUIRES`` argument of ``idf_component_register`` in the component's ``CMakeLists.txt`` file.
 - ``no``: Downloads the component without adding it as a requirement.
 
 Example:

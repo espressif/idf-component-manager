@@ -37,7 +37,7 @@ def _generate_lock_file(project_dir: Path, yaml_str: str, build_dir: str = 'buil
 def test_dependencies_with_registry_url(tmp_path, monkeypatch):
     monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
     monkeypatch.setenv('IDF_TARGET', 'esp32')
-    monkeypatch.setenv('IDF_PATH', '/tmp')
+    monkeypatch.setenv('IDF_PATH', str(tmp_path))
 
     _generate_lock_file(
         tmp_path,
@@ -64,7 +64,7 @@ def test_dependencies_with_registry_url(tmp_path, monkeypatch):
 def test_dependencies_with_different_source(tmp_path, monkeypatch):
     monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
     monkeypatch.setenv('IDF_TARGET', 'esp32')
-    monkeypatch.setenv('IDF_PATH', '/tmp')
+    monkeypatch.setenv('IDF_PATH', str(tmp_path))
 
     _generate_lock_file(
         tmp_path,
@@ -107,7 +107,7 @@ def test_dependencies_with_different_source(tmp_path, monkeypatch):
 def test_removing_dependency_with_env_var(tmp_path, monkeypatch):
     monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
     monkeypatch.setenv('IDF_TARGET', 'esp32')
-    monkeypatch.setenv('IDF_PATH', '/tmp')
+    monkeypatch.setenv('IDF_PATH', str(tmp_path))
     monkeypatch.setenv('BUILD_BOARD', 'esp-box')
     monkeypatch.setenv('IDF_TARGET', 'esp32s3')
 
@@ -135,7 +135,7 @@ def test_removing_dependency_with_env_var(tmp_path, monkeypatch):
 def test_dependencies_with_partial_mirror(tmp_path, monkeypatch):
     monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
     monkeypatch.setenv('IDF_TARGET', 'esp32')
-    monkeypatch.setenv('IDF_PATH', '/tmp')
+    monkeypatch.setenv('IDF_PATH', str(tmp_path))
 
     ComponentManager('.').sync_registry('default', '/tmp/cache', components=['example/cmp==3.0.3'])
 
@@ -222,7 +222,7 @@ def test_dependencies_with_partial_mirror(tmp_path, monkeypatch):
 def test_dependencies_case_normalization(tmp_path, monkeypatch):
     monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
     monkeypatch.setenv('IDF_TARGET', 'esp32')
-    monkeypatch.setenv('IDF_PATH', '/tmp')
+    monkeypatch.setenv('IDF_PATH', str(tmp_path))
 
     _generate_lock_file(
         tmp_path,
@@ -236,3 +236,79 @@ def test_dependencies_case_normalization(tmp_path, monkeypatch):
     )
 
     assert (tmp_path / 'dependencies.lock').exists()
+
+
+def test_dependencies_with_constraint_files(tmp_path, monkeypatch):
+    """Test dependency resolution with constraint files applied via environment variable."""
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32')
+    monkeypatch.setenv('IDF_PATH', str(tmp_path))
+
+    constraint1 = tmp_path / 'constraints1.txt'
+    constraint2 = tmp_path / 'constraints2.txt'
+    constraint1.write_text(
+        textwrap.dedent("""
+        # Primary constraints
+        example/cmp==3.3.4
+        somethingrandom<1
+    """).strip()
+    )
+    constraint2.write_text(
+        textwrap.dedent("""
+        # Override constraints (takes precedence)
+        example/cmp==3.3.5
+    """).strip()
+    )
+
+    monkeypatch.setenv('IDF_COMPONENT_CONSTRAINT_FILES', f'{constraint1};{constraint2}')
+
+    _generate_lock_file(
+        tmp_path,
+        """
+        dependencies:
+            example/cmp:
+                version: '*'
+        """,
+    )
+
+    assert (tmp_path / 'dependencies.lock').exists()
+    with open(tmp_path / 'dependencies.lock') as f:
+        lock_data = YAML(typ='safe').load(f)
+
+    resolved_version = lock_data['dependencies']['example/cmp']['version']
+    assert resolved_version == '3.3.5'
+
+
+def test_dependencies_with_constraint_files_and_strings(tmp_path, monkeypatch):
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32')
+    monkeypatch.setenv('IDF_PATH', str(tmp_path))
+
+    # Create a single constraint file
+    constraint_file = tmp_path / 'constraints.txt'
+    constraint_file.write_text(
+        textwrap.dedent("""
+        somethingrandom<1
+        # Single constraint file
+        led_strip==2.5.5
+    """).strip()
+    )
+
+    # Set single constraint file
+    monkeypatch.setenv('IDF_COMPONENT_CONSTRAINT_FILES', str(constraint_file))
+    monkeypatch.setenv('IDF_COMPONENT_CONSTRAINTS', 'led_strip<2.5.5')
+    _generate_lock_file(
+        tmp_path,
+        """
+        dependencies:
+            espressif/led_strip:
+                version: '*'
+        """,
+    )
+
+    assert (tmp_path / 'dependencies.lock').exists()
+    with open(tmp_path / 'dependencies.lock') as f:
+        lock_data = YAML(typ='safe').load(f)
+
+    # Check that exact version from constraint was used
+    assert lock_data['dependencies']['espressif/led_strip']['version'] == '2.5.4'

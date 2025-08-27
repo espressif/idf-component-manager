@@ -1,8 +1,8 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import typing as t
 
-from idf_component_tools import debug
+from idf_component_tools import ComponentManagerSettings, debug
 from idf_component_tools.semver import Range as SemverRange
 from idf_component_tools.semver import SimpleSpec
 from idf_component_tools.utils import HashedComponentVersion
@@ -76,6 +76,7 @@ class PackageSource(BasePackageSource):
         self._root_version = HashedComponentVersion('0.0.0')
         self._root_dependencies: t.List[Dependency] = []
         self._packages: t.Dict[Package, t.Dict[HashedComponentVersion, t.List[Dependency]]] = {}
+        self._constraints = ComponentManagerSettings().constraints
 
         super().__init__()
 
@@ -138,8 +139,22 @@ class PackageSource(BasePackageSource):
 
         versions = []
         for version in self._packages[package].keys():
-            if not constraint or constraint.allows_any(Range(version, version, True, True)):
-                versions.append(version)
+            version_range = Range(version, version, True, True)
+
+            # Apply the given constraint
+            if constraint and not constraint.allows_any(version_range):
+                continue
+
+            # Apply constraint file constraints
+            if package.name in self._constraints:
+                constraint_file_constraint = self._constraints[package.name]
+                if not constraint_file_constraint.allows_any(version_range):
+                    debug(
+                        f'Version {version} of {package.name} filtered by constraint file: {constraint_file_constraint}'
+                    )
+                    continue
+
+            versions.append(version)
 
         return sorted(versions, reverse=True)
 
