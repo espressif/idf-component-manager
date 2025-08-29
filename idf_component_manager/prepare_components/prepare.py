@@ -146,11 +146,6 @@ def main():
         {
             'name': 'inject_requirements',
         },
-        {
-            # Workaround for the typo in idf 4.1-4.2 (Remove after ESP-IDF 4.3 EOL)
-            'name': 'inject_requrements',
-            'extra_help': ' (alias)',
-        },
     ]
 
     for step in inject_step_data:

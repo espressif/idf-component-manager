@@ -408,7 +408,6 @@ def download_project_dependencies(
     project_requirements: ProjectRequirements,
     lock_path: str,
     managed_components_path: str,
-    is_idf_root_dependencies: bool = False,
 ) -> t.Set[DownloadedComponent]:
     """
     Solves dependencies and download components (only talk about resolve-required scenario)
@@ -503,7 +502,7 @@ def download_project_dependencies(
         ):
             requirement_dependencies.append(component)
 
-    if os.path.exists(managed_components_path) and is_idf_root_dependencies is False:
+    if os.path.exists(managed_components_path):
         detect_unused_components(requirement_dependencies, managed_components_path)
 
     if requirement_dependencies:

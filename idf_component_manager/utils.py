@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import enum
@@ -19,6 +19,7 @@ CLICK_SUPPORTS_SHOW_DEFAULT = Version(click.__version__) >= Version('7.1.0')
 class ComponentSource(str, enum.Enum):
     # These double-quotes are coming from the build system
     IDF_COMPONENTS = '"idf_components"'
+    IDF_MANAGED_COMPONENTS = '"idf_managed_components"'
     PROJECT_MANAGED_COMPONENTS = '"project_managed_components"'
     PROJECT_EXTRA_COMPONENTS = '"project_extra_components"'
     PROJECT_COMPONENTS = '"project_components"'
@@ -28,9 +29,10 @@ class ComponentSource(str, enum.Enum):
     def order(cls):
         return {
             cls.IDF_COMPONENTS: 0,
-            cls.PROJECT_MANAGED_COMPONENTS: 1,
-            cls.PROJECT_EXTRA_COMPONENTS: 2,
-            cls.PROJECT_COMPONENTS: 3,
+            cls.IDF_MANAGED_COMPONENTS: 1,
+            cls.PROJECT_MANAGED_COMPONENTS: 2,
+            cls.PROJECT_EXTRA_COMPONENTS: 3,
+            cls.PROJECT_COMPONENTS: 4,
         }
 
     def __hash__(self):

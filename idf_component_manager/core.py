@@ -23,7 +23,7 @@ from ruamel.yaml import YAML, CommentedMap
 from idf_component_manager.utils import ComponentSource, VersionSolverResolution
 from idf_component_tools import ComponentManagerSettings, debug
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
-from idf_component_tools.build_system_tools import build_name, is_component
+from idf_component_tools.build_system_tools import build_name, get_idf_path, is_component
 from idf_component_tools.config import root_managed_components_dir
 from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.debugger import KCONFIG_CONTEXT
@@ -201,6 +201,8 @@ class ComponentManager:
     @property
     @lru_cache(1)
     def root_managed_components_dir(self) -> str:
+        os.makedirs(root_managed_components_dir(), exist_ok=True)
+
         return str(root_managed_components_dir())
 
     @property
@@ -691,25 +693,23 @@ class ComponentManager:
         managed_components_list_file,
         component_list_file,
         local_components_list_file=None,
-        sdkconfig_json_file=None,
     ):
         """Process all manifests and download all dependencies"""
         # root core components
-        root_manifest_filepath = root_managed_components_dir() / MANIFEST_FILENAME
-        if root_manifest_filepath.is_file():
-            root_managed_components = download_project_dependencies(
+        # root deps are only downloaded, but not doing anything else
+        # let the build system decide what to do with them
+        root_manifest_filepath = os.path.join(get_idf_path(), 'tools', 'idf_extra_components.yml')
+        if os.path.isfile(root_manifest_filepath):
+            download_project_dependencies(
                 ProjectRequirements([
                     ManifestManager(
-                        self.root_managed_components_dir,
+                        root_manifest_filepath,
                         'root',
                     ).load()
                 ]),
                 self.root_managed_components_lock_path,
                 self.root_managed_components_dir,
-                is_idf_root_dependencies=True,
             )
-        else:
-            root_managed_components = []
 
         # Find all components
         local_components = []
@@ -747,9 +747,8 @@ class ComponentManager:
             project_requirements = ProjectRequirements(manifests)
             downloaded_components = download_project_dependencies(
                 project_requirements,
-                self.lock_path,
-                self.managed_components_path,
-                sdkconfig_json_file,
+                str(self.lock_path),
+                str(self.managed_components_path),
             )
 
         # Exclude requirements paths
@@ -762,8 +761,6 @@ class ComponentManager:
         # Include managed components in project directory
         # order is important, since kconfig items are processed in order
         downloaded_components = sorted(downloaded_components)
-        root_managed_components = sorted(root_managed_components)
-        all_managed_components = sorted(set(downloaded_components + root_managed_components))
 
         with open(managed_components_list_file, mode='w', encoding='utf-8') as file:
             # Set versions for manifests in requierements too
@@ -775,29 +772,28 @@ class ComponentManager:
                         f'idf_component_set_property({requirement.name} COMPONENT_VERSION "{requirement.version}")\n'
                     )
 
-            for is_root, group in enumerate([downloaded_components, root_managed_components]):
-                for downloaded_component in group:
-                    file.write(
-                        f'idf_build_component("{downloaded_component.abs_posix_path}" "{"idf_components" if is_root == 1 else "project_managed_components"}")\n'
-                    )
+            for downloaded_component in downloaded_components:
+                file.write(
+                    f'idf_build_component("{downloaded_component.abs_posix_path}" "project_managed_components")\n'
+                )
 
-                    file.write(
-                        f'idf_component_set_property({downloaded_component.name} COMPONENT_VERSION "{downloaded_component.version}")\n'
-                    )
+                file.write(
+                    f'idf_component_set_property({downloaded_component.name} COMPONENT_VERSION "{downloaded_component.version}")\n'
+                )
 
-                    if downloaded_component.targets:
-                        file.write(
-                            f'idf_component_set_property({downloaded_component.name} REQUIRED_IDF_TARGETS "{" ".join(downloaded_component.targets)}")\n'
-                        )
+                if downloaded_component.targets:
+                    file.write(
+                        f'idf_component_set_property({downloaded_component.name} REQUIRED_IDF_TARGETS "{" ".join(downloaded_component.targets)}")\n'
+                    )
 
             file.write(
                 'set(managed_components "%s")\n'
-                % ';'.join(component.name for component in all_managed_components)
+                % ';'.join(component.name for component in downloaded_components)
             )
 
         # Saving list of all components with manifests for use on requirements injection step
         all_components = sorted(
-            {component.abs_path for component in all_managed_components}.union(
+            {component.abs_path for component in downloaded_components}.union(
                 component['path'] for component in local_components
             )
         )
@@ -904,12 +900,15 @@ class ComponentManager:
         in the `prepare_dep_dirs` step
         """
         idf_components = OrderedDict()
+        idf_managed_components = OrderedDict()
         project_managed_components = OrderedDict()
         project_extra_components = OrderedDict()
         project_components = OrderedDict()
         for comp_name, props in requirements.items():
             if props['__COMPONENT_SOURCE'] == ComponentSource.IDF_COMPONENTS:
                 idf_components[comp_name] = props
+            elif props['__COMPONENT_SOURCE'] == ComponentSource.IDF_MANAGED_COMPONENTS:
+                idf_managed_components[comp_name] = props
             elif props['__COMPONENT_SOURCE'] == ComponentSource.PROJECT_MANAGED_COMPONENTS:
                 project_managed_components[comp_name] = props
             elif props['__COMPONENT_SOURCE'] == ComponentSource.PROJECT_EXTRA_COMPONENTS:
@@ -924,6 +923,7 @@ class ComponentManager:
         for component_group in [
             project_extra_components,
             project_managed_components,
+            idf_managed_components,
             idf_components,
         ]:
             for comp_name, props in component_group.items():
