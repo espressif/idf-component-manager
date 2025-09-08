@@ -40,6 +40,7 @@ DEFAULT_KNOWN_TARGETS = [
     'esp32h21',
     'esp32h4',
     'esp32p4',
+    'esp32s31',
     'linux',
 ]
 

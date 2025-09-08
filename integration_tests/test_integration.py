@@ -8,11 +8,9 @@ from pathlib import Path
 import pytest
 from ruamel.yaml import YAML
 
-from idf_component_tools.build_system_tools import get_idf_version
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manager import ManifestManager
 from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS
-from idf_component_tools.semver import Version
 
 from .integration_test_helpers import (
     fixtures_path,
@@ -45,10 +43,6 @@ def test_git_folder_does_not_exists(project):
     assert "pathspec 'folder-not-exist' did not match any file(s) known to git" in res
 
 
-@pytest.mark.skipif(
-    (os.getenv('IDF_BRANCH', 'master') or 'master') != 'master',
-    reason='only test it for the master branch',
-)
 def test_known_targets():
     idf_path = os.environ['IDF_PATH']
     sys.path.append(os.path.join(idf_path, 'tools'))
@@ -278,9 +272,6 @@ def test_idf_reconfigure_dependency_doesnt_exist(project):
         ('cmp', 'cmp'),  # also short name
     ],
 )
-@pytest.mark.skipif(
-    Version(get_idf_version()) < Version('5.3.0'), reason='only 5.3 and later support this'
-)
 def test_idf_build_inject_dependencies_even_with_set_components(
     project,
     component_name,
@@ -337,9 +328,6 @@ def test_idf_build_inject_dependencies_even_with_set_components(
         },
     ],
     indirect=True,
-)
-@pytest.mark.skipif(
-    Version(get_idf_version()) < Version('5.0.0'), reason='mdns 1.0.7 supports idf >= 5.0'
 )
 def test_idf_reconfigure_fixed_order_sdkconfig(project):
     project_action(project, 'reconfigure')

@@ -12,10 +12,6 @@ from integration_tests.integration_test_helpers import fixtures_path, project_ac
 idf_version = Version.coerce(os.getenv('ESP_IDF_VERSION'))
 
 
-@pytest.mark.skipif(
-    idf_version < Version.coerce('5.3'),
-    reason='KConfig variables in the manifest are not supported in ESP-IDF < 5.3',
-)
 @pytest.mark.parametrize(
     'project',
     [

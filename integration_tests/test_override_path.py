@@ -95,18 +95,18 @@ def test_reconfigure_with_override_path_not_a_folder(project):
             'components': {
                 'main': {
                     'dependencies': {
-                        'test/diamond_dependency_b': {
-                            'version': '2.0.0',
+                        'test/override_path_some_dep': {
+                            'version': '1.0.0',
                         },
                     }
                 },
                 'test__override_path': {
                     'dependencies': {
-                        'test/diamond_dependency_c': {
-                            'version': '3.0.0',
+                        'test/override_path_common_dep': {
+                            'version': '1.0.0',
                         }
                     },
-                    'version': '2.0.0',
+                    'version': '3.0.0',
                 },
             }
         },
@@ -118,8 +118,8 @@ def test_copy_paste_managed_components_then_override_within_other_components(pro
     assert 'Configuring done' in res
 
     shutil.copytree(
-        os.path.join(project, 'managed_components', 'test__diamond_dependency_c'),
-        os.path.join(project, 'components', 'test__diamond_dependency_c'),
+        os.path.join(project, 'managed_components', 'test__override_path_common_dep'),
+        os.path.join(project, 'components', 'test__override_path_common_dep'),
     )
 
     with open(
@@ -129,10 +129,10 @@ def test_copy_paste_managed_components_then_override_within_other_components(pro
             textwrap.dedent(
                 """
                 dependencies:
-                  test/diamond_dependency_c:
-                    version: 3.0.0
-                    override_path: "../test__diamond_dependency_c"
-                version: "2.0.0"  # required to reproduce the bug, can't reproduce without "version"
+                  test/override_path_common_dep:
+                    version: 1.0.0
+                    override_path: "../test__override_path_common_dep"
+                version: "3.0.0"  # required to reproduce the bug, can't reproduce without "version"
                 """
             )
         )
