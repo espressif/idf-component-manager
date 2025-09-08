@@ -245,7 +245,9 @@ def mock_registry(request, mock_registry_without_token, mock_storage, mock_token
 @skip_on_real_environment
 def mock_yank_404(request, monkeypatch):  # noqa: ARG001
     def f(*_, **__):
-        raise VersionNotFound('Version "1.2.0" of component "cmp" was not found in the registry.')
+        raise VersionNotFound(
+            'The version "1.2.0" of the component "test_component_manager/cmp" was not found in the registry'
+        )
 
     monkeypatch.setattr(APIClient, 'yank_version', f)
 

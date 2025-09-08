@@ -48,6 +48,7 @@ def test_yank_component_version(
 def test_yank_component_version_not_exists(mock_yank_404, tmp_path):  # noqa: ARG001
     manager = ComponentManager(path=str(tmp_path))
     with pytest.raises(
-        FatalError, match='Version "1.2.0" of component "cmp" was not found in the registry.'
+        FatalError,
+        match='The version "1.2.0" of the component "test_component_manager/cmp" was not found in the registry',
     ):
         manager.yank_version('cmp', '1.2.0', 'critical test', namespace='test_component_manager')
