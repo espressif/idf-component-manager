@@ -77,10 +77,6 @@ def should_run_integration_tests() -> bool:
         if 'integration_tests' in modified_files:
             return True
 
-        # If version was bumped during release preparation
-        if 'CHANGELOG.md' in modified_files:
-            return True
-
     return False
 
 
