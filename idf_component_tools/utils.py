@@ -8,7 +8,6 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from functools import total_ordering
 from string import Template
-from typing import Annotated, Literal  # noqa
 
 from pydantic import (
     AfterValidator,
@@ -59,15 +58,15 @@ else:
 # pydantic HttpUrl and FileUrl are not string
 # so we need to convert them to string
 _http_url_adapter = TypeAdapter(HttpUrl)
-UrlField = Annotated[
+UrlField = t.Annotated[
     # return with trailing slash
     str, BeforeValidator(lambda value: str(_http_url_adapter.validate_python(value)))
 ]
 
 _file_url_adapter = TypeAdapter(FileUrl)
 UrlOrFileField = t.Union[
-    Annotated[str, BeforeValidator(lambda value: str(_http_url_adapter.validate_python(value)))],
-    Annotated[str, BeforeValidator(lambda value: str(_file_url_adapter.validate_python(value)))],
+    t.Annotated[str, BeforeValidator(lambda value: str(_http_url_adapter.validate_python(value)))],
+    t.Annotated[str, BeforeValidator(lambda value: str(_file_url_adapter.validate_python(value)))],
 ]
 
 
@@ -84,13 +83,13 @@ def _validate_unique_list_of_str(v: t.List[str]) -> t.List[str]:
     return v
 
 
-UniqueStrListField = Annotated[
+UniqueStrListField = t.Annotated[
     t.List[str],
     AfterValidator(_validate_unique_list_of_str),
     Field(json_schema_extra={'uniqueItems': True}),
 ]
-UniqueTagListField = Annotated[
-    t.List[Annotated[str, Field(pattern=r'^[A-Za-z0-9\_\-]{3,32}$')]],
+UniqueTagListField = t.Annotated[
+    t.List[t.Annotated[str, Field(pattern=r'^[A-Za-z0-9\_\-]{3,32}$')]],
     AfterValidator(_validate_unique_list_of_str),
     Field(json_schema_extra={'uniqueItems': True}),
 ]

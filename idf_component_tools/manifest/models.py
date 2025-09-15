@@ -49,10 +49,8 @@ from idf_component_tools.utils import (
     BOOL_MARKER,
     DICT_MARKER,
     STR_MARKER,
-    Annotated,
     BaseModel,
     ComponentVersion,
-    Literal,
     UniqueStrListField,
     UniqueTagListField,
     UrlField,
@@ -164,10 +162,10 @@ class DependencyItem(BaseModel):
     rules: t.List[OptionalDependency] = None  # type: ignore
     matches: t.List[OptionalDependency] = None  # type: ignore
     override_path: str = None  # type: ignore
-    require: Annotated[
+    require: t.Annotated[
         t.Union[
-            Annotated[Literal['public', 'private', 'no'], Tag(STR_MARKER)],
-            Annotated[Literal[False], Tag(BOOL_MARKER)],
+            t.Annotated[t.Literal['public', 'private', 'no'], Tag(STR_MARKER)],
+            t.Annotated[t.Literal[False], Tag(BOOL_MARKER)],
         ],
         Discriminator(
             bool_str_discriminator,
@@ -373,7 +371,7 @@ class FilesField(BaseModel):
 
 
 class RepositoryInfoField(BaseModel):
-    commit_sha: Annotated[str, Field(pattern=COMMIT_ID_RE)] = None  # type: ignore
+    commit_sha: t.Annotated[str, Field(pattern=COMMIT_ID_RE)] = None  # type: ignore
     path: str = None  # type: ignore
 
 
@@ -393,7 +391,7 @@ def _check_git_url(v: str) -> str:
     raise ValueError('Invalid git URL: {}'.format(v))
 
 
-GIT_URL_FIELD = Annotated[str, AfterValidator(_check_git_url)]
+GIT_URL_FIELD = t.Annotated[str, AfterValidator(_check_git_url)]
 
 
 class Manifest(BaseModel):
@@ -406,10 +404,10 @@ class Manifest(BaseModel):
     tags: UniqueTagListField = []
     dependencies: t.Dict[
         str,
-        Annotated[
+        t.Annotated[
             t.Union[
-                Annotated[str, Tag(STR_MARKER)],
-                Annotated[DependencyItem, Tag(DICT_MARKER)],
+                t.Annotated[str, Tag(STR_MARKER)],
+                t.Annotated[DependencyItem, Tag(DICT_MARKER)],
             ],
             Discriminator(
                 str_dict_discriminator,
@@ -739,7 +737,7 @@ class SolvedComponent(BaseModel):
 class SolvedManifest(BaseModel):
     direct_dependencies: UniqueStrListField = None  # type: ignore
     dependencies: t.List[SolvedComponent] = []
-    manifest_hash: Annotated[str, Field(min_length=64, max_length=64)] = None  # type: ignore
+    manifest_hash: t.Annotated[str, Field(min_length=64, max_length=64)] = None  # type: ignore
     target: str = None  # type: ignore
 
     @field_validator('dependencies')

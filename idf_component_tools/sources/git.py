@@ -18,7 +18,6 @@ from idf_component_tools.utils import (
     ComponentVersion,
     ComponentWithVersions,
     HashedComponentVersion,
-    Literal,
     subst_vars_in_str,
 )
 
@@ -33,7 +32,7 @@ BRANCH_TAG_RE = re.compile(
 
 
 class GitSource(BaseSource):
-    type: Literal['git'] = 'git'  # type: ignore
+    type: t.Literal['git'] = 'git'  # type: ignore
     git: str
     path: str = '.'
 

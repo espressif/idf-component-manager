@@ -23,9 +23,7 @@ from idf_component_tools.constants import (
 )
 from idf_component_tools.errors import FatalError, NoSuchProfile
 from idf_component_tools.utils import (
-    Annotated,
     BaseModel,
-    Literal,
     UrlField,
     UrlOrFileField,
     default_or_str_or_list_or_none_discriminator,
@@ -37,33 +35,33 @@ from idf_component_tools.utils import (
 from .build_system_tools import get_idf_version
 from .environment import ComponentManagerSettings
 
-RegistryUrlField = Annotated[
+RegistryUrlField = t.Annotated[
     t.Union[
-        Annotated[Literal['default'], Tag('__default__')],
-        Annotated[UrlField, Tag('__str__')],
-        Annotated[None, Tag('__none__')],
+        t.Annotated[t.Literal['default'], Tag('__default__')],
+        t.Annotated[UrlField, Tag('__str__')],
+        t.Annotated[None, Tag('__none__')],
     ],
     Discriminator(
         default_or_str_or_none_discriminator,
     ),
 ]
 
-StorageUrlField = Annotated[
+StorageUrlField = t.Annotated[
     t.Union[
-        Annotated[Literal['default'], Tag('__default__')],
-        Annotated[UrlOrFileField, Tag('__str__')],
-        Annotated[t.List[t.Union[Literal['default'], UrlOrFileField]], Tag('__list__')],
-        Annotated[None, Tag('__none__')],
+        t.Annotated[t.Literal['default'], Tag('__default__')],
+        t.Annotated[UrlOrFileField, Tag('__str__')],
+        t.Annotated[t.List[t.Union[t.Literal['default'], UrlOrFileField]], Tag('__list__')],
+        t.Annotated[None, Tag('__none__')],
     ],
     Discriminator(
         default_or_str_or_list_or_none_discriminator,
     ),
 ]
-LocalStorageUrlField = Annotated[
+LocalStorageUrlField = t.Annotated[
     t.Union[
-        Annotated[UrlOrFileField, Tag('__str__')],
-        Annotated[t.List[UrlOrFileField], Tag('__list__')],
-        Annotated[None, Tag('__none__')],
+        t.Annotated[UrlOrFileField, Tag('__str__')],
+        t.Annotated[t.List[UrlOrFileField], Tag('__list__')],
+        t.Annotated[None, Tag('__none__')],
     ],
     Discriminator(
         str_or_list_or_none_discriminator,

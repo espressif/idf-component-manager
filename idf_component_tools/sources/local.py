@@ -16,7 +16,6 @@ from idf_component_tools.messages import warn
 from idf_component_tools.utils import (
     ComponentWithVersions,
     HashedComponentVersion,
-    Literal,
     subst_vars_in_str,
 )
 
@@ -36,7 +35,7 @@ class SourcePathError(SourceError):
 
 
 class LocalSource(BaseSource):
-    type: Literal['local'] = 'local'  # type: ignore
+    type: t.Literal['local'] = 'local'  # type: ignore
     path: t.Optional[str] = None
     override_path: t.Optional[str] = None
 

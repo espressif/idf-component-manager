@@ -6,7 +6,7 @@ import typing as t
 from idf_component_tools.build_system_tools import get_idf_path, get_idf_version
 from idf_component_tools.hash_tools.checksums import ChecksumsModel
 from idf_component_tools.semver import match
-from idf_component_tools.utils import ComponentWithVersions, HashedComponentVersion, Literal
+from idf_component_tools.utils import ComponentWithVersions, HashedComponentVersion
 
 from .base import BaseSource
 
@@ -15,7 +15,7 @@ if t.TYPE_CHECKING:
 
 
 class IDFSource(BaseSource):
-    type: Literal['idf'] = 'idf'  # type: ignore
+    type: t.Literal['idf'] = 'idf'  # type: ignore
 
     @property
     def meta(self):
