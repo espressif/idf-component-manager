@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.4.0 (2025-09-15)
+
+### Feat
+
+- support idf root deps, handle it in idf build system
+- support constraint file
+
+### Fix
+
+- Error message regex in yank test
+
 ## v2.3.0 (2025-08-13)
 
 ### Feat
