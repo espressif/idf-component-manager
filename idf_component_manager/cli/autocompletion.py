@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+
 import os
 import subprocess  # noqa: S404
 import typing as t
@@ -9,8 +10,9 @@ import click
 from idf_component_tools.errors import FatalError
 from idf_component_tools.semver import Version
 
+from ..utils import CLICK_VERSION
+
 CLI_NAME = 'compote'
-CLICK_VERSION = Version.coerce(click.__version__)
 
 
 def _get_shell_completion(shell: str) -> str:
