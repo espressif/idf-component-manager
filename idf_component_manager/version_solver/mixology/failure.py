@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2025 Espressif Systems (Shanghai) CO LTD
 
 import typing as t
 
@@ -32,44 +32,33 @@ class _Writer:
     def write(self):
         buffer = []
 
-        required_python_version = None
-
-        if required_python_version is not None:
-            buffer.append(f'The current supported Python versions are {required_python_version}')
-            buffer.append('')
-
         if isinstance(self._root.cause, ConflictCause):
+            buffer.append('Version solving failed:')
+
+            # Collect all facts leading to the conflict from both sides of the cause (tree)
+            buffer.extend(self._collect_facts(self._root.cause.conflict))
+            buffer.extend(self._collect_facts(self._root.cause.other))
+
             self._visit(self._root, {})
+
+            # Take message from the last line added by _visit
+            # This is the reason for the failure
+            if self._lines:
+                buffer.append(f'Result: {self._lines[-1][0]}')
         else:
-            self._write(self._root, f'Because {self._root}, version solving failed.')
-
-        padding = (
-            0
-            if not self._line_numbers
-            else len('({}) '.format(list(self._line_numbers.values())[-1]))
-        )
-
-        last_was_empty = False
-        for line in self._lines:
-            message = line[0]
-            if not message:
-                if not last_was_empty:
-                    buffer.append('')
-
-                last_was_empty = True
-                continue
-
-            last_was_empty = False
-
-            number = line[-1]
-            if number is not None:
-                message = '({})'.format(number).ljust(padding) + message
-            else:
-                message = ' ' * padding + message
-
-            buffer.append(message)
+            buffer.append('Version solving failed.')
 
         return '\n'.join(buffer)
+
+    def _collect_facts(self, incompatibility: Incompatibility) -> t.List[str]:
+        prefix = '  ' * 2 + '- '
+
+        if isinstance(incompatibility.cause, ConflictCause):
+            return self._collect_facts(incompatibility.cause.conflict) + self._collect_facts(
+                incompatibility.cause.other
+            )
+        else:
+            return [f'{prefix}{incompatibility}']
 
     def _write(
         self, incompatibility: Incompatibility, message: str, numbered: bool = False
@@ -84,11 +73,10 @@ class _Writer:
     def _visit(
         self,
         incompatibility: Incompatibility,
-        details_for_incompatibility: t.Dict,
         conclusion: bool = False,
     ) -> None:
         numbered = conclusion or self._derivations[incompatibility] > 1
-        conjunction = 'So,' if conclusion or incompatibility == self._root else 'And'
+        conjunction = 'Because'
         incompatibility_string = str(incompatibility)
 
         cause: ConflictCause = incompatibility.cause
@@ -102,7 +90,8 @@ class _Writer:
             if conflict_line is not None and other_line is not None:
                 self._write(
                     incompatibility,
-                    'Because {}, {}.'.format(
+                    '{} {}, {}.'.format(
+                        conjunction,
                         cause.conflict.and_to_string(
                             cause.other, details_for_cause, conflict_line, other_line
                         ),
@@ -123,7 +112,7 @@ class _Writer:
                 self._visit(without_line, details_for_cause)
                 self._write(
                     incompatibility,
-                    '{} because {} ({}), {}.'.format(
+                    '{} {} ({}), {}.'.format(
                         conjunction, str(with_line), line, incompatibility_string
                     ),
                     numbered=numbered,
@@ -150,7 +139,7 @@ class _Writer:
 
                     self._write(
                         incompatibility,
-                        '{} because {} ({}), {}'.format(
+                        '{} {} ({}), {}'.format(
                             conjunction,
                             str(cause.conflict),
                             self._line_numbers[cause.conflict],
@@ -170,7 +159,8 @@ class _Writer:
             if derived_line is not None:
                 self._write(
                     incompatibility,
-                    'Because {}, {}.'.format(
+                    '{} {}, {}.'.format(
+                        conjunction,
                         ext.and_to_string(derived, details_for_cause, None, derived_line),
                         incompatibility_string,
                     ),
@@ -193,7 +183,7 @@ class _Writer:
                 self._visit(collapsed_derived, details_for_cause)
                 self._write(
                     incompatibility,
-                    '{} because {}, {}.'.format(
+                    '{} {}, {}.'.format(
                         conjunction,
                         collapsed_ext.and_to_string(ext, details_for_cause, None, None),
                         incompatibility_string,
@@ -204,13 +194,14 @@ class _Writer:
                 self._visit(derived, details_for_cause)
                 self._write(
                     incompatibility,
-                    f'{conjunction} because {str(ext)}, {incompatibility_string}.',
+                    f'{conjunction} {str(ext)}, {incompatibility_string}.',
                     numbered=numbered,
                 )
         else:
             self._write(
                 incompatibility,
-                'Because {}, {}.'.format(
+                '{} {}, {}.'.format(
+                    conjunction,
                     cause.conflict.and_to_string(cause.other, details_for_cause, None, None),
                     incompatibility_string,
                 ),
