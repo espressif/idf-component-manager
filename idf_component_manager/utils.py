@@ -2,13 +2,18 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import enum
+import sys
 from enum import Enum
-
-import click
 
 from idf_component_tools.semver import Version
 
-CLICK_SUPPORTS_SHOW_DEFAULT = Version(click.__version__) >= Version('7.1.0')
+if sys.version_info < (3, 8):
+    import importlib_metadata
+else:
+    import importlib.metadata as importlib_metadata
+
+CLICK_VERSION = Version.coerce(importlib_metadata.version('click'))
+CLICK_SUPPORTS_SHOW_DEFAULT = CLICK_VERSION >= Version('7.1.0')
 
 
 # total_ordering will raise an error in python 2.7 with enum34

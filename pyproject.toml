@@ -47,7 +47,8 @@ dependencies = [
     "pydantic-core",
     "pydantic-settings",
     "typing-extensions; python_version < '3.12'",
-    "truststore; python_version >= '3.10'"
+    "truststore; python_version >= '3.10'",
+    "importlib-metadata; python_version < '3.8'",
 ]
 
 [project.optional-dependencies]
