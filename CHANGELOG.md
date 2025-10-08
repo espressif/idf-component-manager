@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.4.1 (2025-10-08)
+
+### Fix
+
+- Do not install pydantic 2.12.0 as dependency due to bug
+- remove deprecated `click.__version__`
+
 ## v2.4.0 (2025-09-15)
 
 ### Feat
