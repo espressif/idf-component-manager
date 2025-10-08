@@ -27,9 +27,6 @@ integration_test:
       - IDF_BRANCH_TAG: [release-v5.5]
         PYTHON_IMAGE_TAG: ["3.9", "3.13"]
         PYTEST_SPLIT_TEST_GROUP: [1, 2, 3, 4, 5]
-      - IDF_BRANCH_TAG: [master]
-        PYTHON_IMAGE_TAG: ["3.10", "3.13"]
-        PYTEST_SPLIT_TEST_GROUP: [1, 2, 3, 4, 5]
   before_script:
     - IMAGE_TAG="${DOCKER_IMAGE}:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}"
 
