@@ -43,7 +43,7 @@ dependencies = [
     "requests-toolbelt",
     "tqdm",
     "jsonref",
-    "pydantic",
+    "pydantic!=2.12.0",
     "pydantic-core",
     "pydantic-settings",
     "typing-extensions; python_version < '3.12'",
