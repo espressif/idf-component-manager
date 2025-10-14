@@ -31,7 +31,8 @@ sdkconfig
 dependencies.lock
 
 #Configs
-.env
+.env*
+!.env.example
 
 # Development experiments
 notebooks
