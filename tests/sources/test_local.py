@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import logging
 import os
@@ -116,3 +116,29 @@ def test_local_path_name_no_warning(release_component_path, caplog):
         source.download(component, 'test')
 
         assert not caplog.records
+
+
+def test_local_source_hash_key_equivalence(tmp_path):
+    # Setup directory structure
+    project = tmp_path / 'project'
+    main, com1, com2 = (project / p for p in ['main', 'com/com1', 'com/com2'])
+    for d in (main, com1, com2):
+        d.mkdir(parents=True)
+
+    # Create dummy manifests and CMakeLists.txt to make them valid components
+    (main / 'idf_component.yml').write_text('')
+    (com2 / 'idf_component.yml').write_text('')
+    (com1 / 'CMakeLists.txt').write_text('')
+    (com2 / 'CMakeLists.txt').write_text('')
+
+    # Define local sources with different relative override paths using from_dict
+    src_main = LocalSource(
+        override_path='../com/com1',
+        manifest_manager=ManifestManager(str(main / 'idf_component.yml'), 'main'),
+    )
+    src_com2 = LocalSource(
+        override_path='../com1',
+        manifest_manager=ManifestManager(str(com2 / 'idf_component.yml'), 'com2'),
+    )
+    # They should resolve to the same target and thus have equal hash keys
+    assert src_main.hash_key == src_com2.hash_key
