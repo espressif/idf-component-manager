@@ -122,7 +122,14 @@ class LocalSource(BaseSource):
 
     @property
     def hash_key(self) -> str:
-        return self.path or self.override_path  # type: ignore
+        # Use resolved absolute path for hash_key to ensure
+        # different relative paths pointing to the same location
+        # are considered identical
+        try:
+            return str(self._get_raw_path())
+        except ManifestContextError:
+            # Fallback to raw path if context is missing
+            return self.path or self.override_path  # type: ignore
 
     @property
     def volatile(self) -> bool:
