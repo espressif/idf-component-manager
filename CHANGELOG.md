@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.4.2 (2025-10-20)
+
+### Fix
+
+- Local dependency hash key equivalence
+
 ## v2.4.1 (2025-10-08)
 
 ### Fix
