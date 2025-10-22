@@ -575,8 +575,10 @@ Local Directory Dependencies
 
 If you are working on a component that is not yet published to the ESP Component Registry, you can add it as a dependency from a local directory. To specify a local dependency, at least one of the following attributes must be provided:
 
-``path`` (local)
-++++++++++++++++
+``path`` (local development)
+++++++++++++++++++++++++++++
+
+Use this field when working with components that are **not published** to the ESP Component Registry. This is for purely local components that you're developing or components that exist only on your local filesystem.
 
 The path to the local directory containing the dependency. You can use either a path relative to the ``idf_component.yml`` manifest file or an absolute path.
 
@@ -587,13 +589,17 @@ Example:
 .. code-block:: yaml
 
     dependencies:
-      some_local_component:
-        path: ../../projects/some_local_component
+      my_unpublished_component:
+        path: ../../projects/my_unpublished_component
 
-``override_path``
-+++++++++++++++++
+``override_path`` (registry override)
++++++++++++++++++++++++++++++++++++++
 
-Use this field to override the component from the registry with a local one — for example, to define :ref:`example projects inside components <add-example-projects>`.
+Use this field to temporarily override a component that **exists in the ESP Component Registry** with a local version. This is commonly used for:
+
+- Creating example projects that will be uploaded with published components (see :ref:`example projects inside components <add-example-projects>`)
+- Testing local modifications of published components
+- Development scenarios where you need to use a local version instead of the registry version
 
 This field also supports `environment variables`_.
 
@@ -602,8 +608,9 @@ Example:
 .. code-block:: yaml
 
     dependencies:
-      some_local_component:
-        override_path: ../../projects/some_local_component
+      # This component exists in the ESP Component Registry, but we want to use a local version
+      published_component:
+        override_path: ../../projects/local_version_of_published_component
 
 .. _git-source:
 
