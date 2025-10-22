@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import typing as t
 import warnings
@@ -8,6 +8,7 @@ from http import HTTPStatus
 import requests
 from pydantic import ValidationError
 from requests import Response
+from requests.exceptions import JSONDecodeError
 
 from idf_component_tools import ComponentManagerSettings, debug
 
@@ -133,7 +134,14 @@ def handle_response_errors(
             status_code=response.status_code,
         )
 
-    return response.json()
+    try:
+        return response.json()
+    except JSONDecodeError as e:
+        # Handle cases where server returns empty/invalid JSON even for successful responses
+        raise APIClientError(
+            'Server returned invalid or empty JSON in response',
+            endpoint=endpoint,
+        ) from e
 
 
 def handle_4xx_error(response: requests.Response) -> None:
@@ -146,7 +154,16 @@ def handle_4xx_error(response: requests.Response) -> None:
         )
 
     if response.status_code == HTTPStatus.FORBIDDEN:
-        raise APIClientError(' '.join(response.json()['messages']) + f'\nURL: {response.url}')
+        try:
+            messages = response.json()['messages']
+            raise APIClientError(' '.join(messages) + f'\nURL: {response.url}')
+        except (JSONDecodeError, KeyError) as e:
+            # Handle cases where API returns empty/invalid JSON or missing 'messages' field
+            raise APIClientError(
+                'Access forbidden',
+                endpoint=response.url,
+                status_code=response.status_code,
+            ) from e
 
     try:
         error = ErrorResponse.model_validate(response.json())
