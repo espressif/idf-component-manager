@@ -609,8 +609,13 @@ Example:
 
     dependencies:
       # This component exists in the ESP Component Registry, but we want to use a local version
-      published_component:
-        override_path: ../../projects/local_version_of_published_component
+      example/cmp:
+        override_path: ../../projects/local_version_of/example__cmp
+        # Alternative: ../../projects/local_version_of/cmp
+
+.. note::
+
+    The dependency name (``example/cmp`` in the example above) should match the directory name at the end of the override path. The ESP-IDF build system uses the `directory name as the component name <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/build-system.html#cmake-component-properties>`_, so the directory of the override_path should match the component name. If you want to specify the full name of the component with the namespace, replace `/` in the component name with `__`.
 
 .. _git-source:
 
