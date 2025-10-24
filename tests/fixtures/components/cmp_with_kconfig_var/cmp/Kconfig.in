@@ -1,0 +1,11 @@
+menu "Device Support"
+
+config ESP_BOARD_DEV_AUDIO_CODEC_SUPPORT
+    bool "Device 'audio_codec' support"
+    default y
+    help
+        Enable audio_codec device support.
+        This option enables the audio_codec device driver.
+        The driver is located at: devices/dev_audio_codec
+
+endmenu

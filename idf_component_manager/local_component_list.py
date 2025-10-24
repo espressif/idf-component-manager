@@ -20,10 +20,16 @@ class LocalComponentList(BaseModel):
     components: t.List[LocalComponent]
 
 
-def parse_component_list(path: str) -> t.List[t.Dict[str, str]]:
-    with open(path, encoding='utf-8') as f:
-        try:
-            components = LocalComponentList.fromdict(YAML(typ='safe').load(f))
-            return [c for c in components.components]  # type: ignore
-        except (YAMLError, ValidationError):
-            raise ProcessingError('Cannot parse components list file.')
+def parse_component_list(path: str) -> t.List[LocalComponent]:
+    """
+    Parse component list from YAML file.
+    """
+
+    try:
+        with open(path, encoding='utf-8') as f:
+            data = YAML(typ='safe').load(f)
+        components = LocalComponentList.fromdict(data)
+    except (YAMLError, ValidationError):
+        raise ProcessingError('Cannot parse components list file.')
+
+    return components.components
