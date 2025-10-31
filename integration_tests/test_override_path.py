@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import shutil
@@ -95,15 +95,15 @@ def test_reconfigure_with_override_path_not_a_folder(project):
             'components': {
                 'main': {
                     'dependencies': {
-                        'espressif/esp_rainmaker': {
-                            'version': '1.0.0',
+                        'espressif/esp_insights': {
+                            'version': '1.2.8',
                         },
                     }
                 },
                 'espressif__esp_schedule': {
                     'dependencies': {
                         'espressif/rmaker_common': {
-                            'version': '~1.4.2',
+                            'version': '~1.4.0',
                         }
                     },
                     'version': '1.1.0',
@@ -130,7 +130,7 @@ def test_copy_paste_managed_components_then_override_within_other_components(pro
                 """
                 dependencies:
                   espressif/rmaker_common:
-                    version: ~1.4.2
+                    version: ~1.4.0
                     override_path: "../espressif__rmaker_common"
                 version: "1.1.0"  # required to reproduce the bug, can't reproduce without "version"
                 """
