@@ -119,7 +119,7 @@ def test_set_component_version(project):
                 'main': {
                     'dependencies': {
                         'idf': {
-                            'version': '^6.1',
+                            'version': '^4.9',
                         }
                     }
                 },
@@ -127,7 +127,7 @@ def test_set_component_version(project):
                     'version': '1.0.0',
                     'dependencies': {
                         'idf': {
-                            'version': '^6.1',
+                            'version': '^4.9',
                         }
                     },
                 },
@@ -138,7 +138,7 @@ def test_set_component_version(project):
 )
 def test_root_dep_failed(project):
     res = project_action(project, 'reconfigure')
-    assert "Result: Because project depends on idf (^6.1) which doesn't match any" in res
+    assert "Result: Because project depends on idf (^4.9) which doesn't match any" in res
     assert 'versions, version solving failed.' in res
     assert 'Please check manifest file of the following component(s): main,' in res
     assert 'component_foo' in res

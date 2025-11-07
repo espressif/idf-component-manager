@@ -8,8 +8,10 @@
 
 import argparse
 import os
+import shutil
 import sys
 import typing as t
+from pathlib import Path
 
 from idf_component_manager.core import ComponentManager
 from idf_component_tools import error, setup_logging, warn
@@ -23,11 +25,42 @@ def _component_list_file(build_dir):
     return os.path.join(build_dir, 'components_with_manifests_list.temp')
 
 
+def _get_ppid_file_path(local_component_list_file: t.Optional[str]) -> Path:
+    return Path(f'{local_component_list_file}.{os.getppid()}')
+
+
+def _get_component_list_file(local_components_list_file):
+    """
+    Get the appropriate component list file, preferring the PPID version
+    if it exists from a parent CMake run.
+
+    Args:
+        args: Command line arguments containing local_components_list_file
+
+    Returns:
+        Path to the component list file to use, or None if not configured
+    """
+    if not local_components_list_file:
+        return None
+
+    component_list_parent_pid = _get_ppid_file_path(local_components_list_file)
+    # Always use local component list file from the first execution of the component manager
+    # (component_list_parent_pid) during one CMake run,
+    # to be sure that it doesn't contain components introduced by the component manager.
+    if component_list_parent_pid.exists():
+        return component_list_parent_pid
+    else:
+        return local_components_list_file
+
+
 def prepare_dep_dirs(args):
     if args.sdkconfig_json_file:
         KCONFIG_CONTEXT.get().update_from_file(args.sdkconfig_json_file)
 
     build_dir = args.build_dir or os.path.dirname(args.managed_components_list_file)
+
+    local_components_list_file = _get_component_list_file(args.local_components_list_file)
+
     ComponentManager(
         args.project_dir,
         lock_path=args.lock_path,
@@ -35,7 +68,7 @@ def prepare_dep_dirs(args):
     ).prepare_dep_dirs(
         managed_components_list_file=args.managed_components_list_file,
         component_list_file=_component_list_file(build_dir),
-        local_components_list_file=args.local_components_list_file,
+        local_components_list_file=local_components_list_file,
     )
 
     kconfig_ctx = KCONFIG_CONTEXT.get()
@@ -67,7 +100,26 @@ def prepare_dep_dirs(args):
             f'but not found in any Kconfig file:\n'
             f'{_nl.join(sorted(debug_strs))}\n'
         )
-        exit(10)
+
+        # Copy local component list file for next run of CMake before exiting
+        if args.local_components_list_file:
+            ppid_file = _get_ppid_file_path(args.local_components_list_file)
+
+            if not Path(ppid_file).exists():
+                try:
+                    shutil.copyfile(args.local_components_list_file, ppid_file)
+                except (OSError, IOError) as e:
+                    raise FatalError(
+                        f"Failed to copy '{args.local_components_list_file}' → '{ppid_file}': {e}"
+                    ) from e
+        # Exiting with code 10 to signal CMake to re-run component discovery due to missing KConfig options
+        sys.exit(10)
+
+    # Clean up PPID file on successful completion
+    if args.local_components_list_file:
+        ppid_file_path = Path(_get_ppid_file_path(args.local_components_list_file))
+        if ppid_file_path.exists():
+            ppid_file_path.unlink()
 
 
 def inject_requirements(args):
