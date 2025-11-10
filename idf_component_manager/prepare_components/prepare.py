@@ -53,9 +53,25 @@ def _get_component_list_file(local_components_list_file):
         return local_components_list_file
 
 
-def prepare_dep_dirs(args):
+def _get_sdkconfig_json_file_path(args) -> t.Optional[Path]:
+    """
+    Returns the path to the sdkconfig.json file if found, None otherwise.
+    `sdkconfig_json_file` argument is not provided in some ESP-IDF versions (5.5.0, 5.5.1,...) when injecting deps
+    so there's a fallback to the default known location.
+    """
     if args.sdkconfig_json_file:
-        KCONFIG_CONTEXT.get().update_from_file(args.sdkconfig_json_file)
+        return Path(args.sdkconfig_json_file)
+    elif args.interface_version >= 4 and args.build_dir:
+        return Path(args.build_dir) / 'config' / 'sdkconfig.json'
+
+    return None
+
+
+def prepare_dep_dirs(args):
+    sdk_config_json_path = _get_sdkconfig_json_file_path(args)
+
+    if sdk_config_json_path:
+        KCONFIG_CONTEXT.get().update_from_file(sdk_config_json_path)
 
     build_dir = args.build_dir or os.path.dirname(args.managed_components_list_file)
 
@@ -123,8 +139,10 @@ def prepare_dep_dirs(args):
 
 
 def inject_requirements(args):
-    if args.sdkconfig_json_file:
-        KCONFIG_CONTEXT.get().update_from_file(args.sdkconfig_json_file)
+    sdk_config_json_path = _get_sdkconfig_json_file_path(args)
+
+    if sdk_config_json_path:
+        KCONFIG_CONTEXT.get().update_from_file(sdk_config_json_path)
 
     ComponentManager(
         args.project_dir,
