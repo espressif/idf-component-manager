@@ -87,7 +87,7 @@ This changelog is managed with commitizen tool, don't update it manually.
 - Use include/exclude file filters with .gitiignore
 - Use system TLS certificate store when available (py3.10 or newer)
 - add esp32h4 known target
-- Remove responsibility for checking version existance when yanking
+- Remove responsibility for checking version existence when yanking
 - Add option to run network tests against the real environment
 
 ### Fix
@@ -146,11 +146,11 @@ This changelog is managed with commitizen tool, don't update it manually.
 ### Fix
 
 - hash value of ComponentRequirement for register_url
-- compote registry sync keep same folder structure as the registry
+- component registry sync keeps the same folder structure as the registry
 - Fix caching during uploading of components
 - default storage url without fetching from registry
 - only show debug hints when version solver failed
-- unify 1.x 2.x generated parital sync metatdata file
+- unify 1.x 2.x generated partial sync metadata file
 - accept registry_url from api
 - Use utf-8 encoding for all text file operations
 - recreate lock file when missing env var
@@ -497,7 +497,7 @@ This changelog is managed with commitizen tool, don't update it manually.
 - Add `--install` flag to `compote autocomplete` to create the completion files and append the sourcing code into the rc files. By default, print the completion functions to the console.
 - Add `--dry-run` flag to `compote autocomplete --install` to simulate the install script.
 - Add `--dry-run` flag to `compote component upload` to simulate the upload process
-- Print message with the reason why the component manager desided to solve dependencies again
+- Print message with the reason why the component manager decided to solve dependencies again
 - Add `update-dependencies` command to `idf.py` for updating dependencies of the project
 - Add manifest format reference to the documentation
 - Add `compote component yank` CLI command to yank version of the component from the registry
@@ -512,7 +512,7 @@ This changelog is managed with commitizen tool, don't update it manually.
 - Fix regular expression for repository URL validation
 - Stop injecting shell config files by default in `compote autocomplete`
 - Prevent possible DNS spoof when `dependencies.lock` file exists and no need to be updated.
-- Always add `idf` as a dependency to `dependencies.lock` file even without explict declaration.
+- Always add `idf` as a dependency to `dependencies.lock` file even without explicit declaration.
 - Fix git submodule update error when using submodule exists in the `path` field specified in the corresponding git dependency
 - Fixed a bug where dependencies of the component weren't updating when local component changed
 - Fix mixed slashes in paths on Windows

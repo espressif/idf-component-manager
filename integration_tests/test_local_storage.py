@@ -24,7 +24,7 @@ def test_local_storage_url_argument(tmp_path, fixtures_path):
     """)
     )
 
-    # Run reconfigure with default registy URL
+    # Run reconfigure with default registry URL
     res = project_action(
         project_path,
         'reconfigure',

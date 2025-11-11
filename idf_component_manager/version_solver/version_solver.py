@@ -49,7 +49,7 @@ class VersionSolver:
 
     def _init(self):
         # put all the intermediate generated attrs here
-        # to reset them when the solver is re-used
+        # to reset them when the solver is reused
         self._source = PackageSource()
         self._solver = Solver(self._source)
         self._target = None

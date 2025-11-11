@@ -12,7 +12,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Resources
 
-- [Offical Documentation at docs.espressif.com](https://docs.espressif.com/projects/idf-component-manager/en/latest/)
+- [Official Documentation at docs.espressif.com](https://docs.espressif.com/projects/idf-component-manager/en/latest/)
 - The Python Package Index project page https://pypi.org/project/idf-component-manager/
 - The Component Manager section in the [ESP-IDF Programming Guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/tools/idf-component-manager.html)
 

@@ -103,7 +103,7 @@ def filtered_paths(
     If `exclude` is set, it will be used to exclude files by default before applying `.gitignore` patterns.
     Option `exclude_default` is ignored in this case.
 
-    2. Overwise, `include` and `exclude` will be used to filter files.
+    2. Otherwise, `include` and `exclude` will be used to filter files.
     If `exclude_default` is True, then default patterns will also be applied.
     """
 

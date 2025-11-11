@@ -763,7 +763,7 @@ class ComponentManager:
         downloaded_components = sorted(downloaded_components)
 
         with open(managed_components_list_file, mode='w', encoding='utf-8') as file:
-            # Set versions for manifests in requierements too
+            # Set versions for manifests in requirements too
             # It's useful in the case when the component was moved from `managed_components`
             # to `components`
             for requirement in manifests:
@@ -957,7 +957,7 @@ class ComponentManager:
                         f'Requirement {name_matched_before.name} and requirement {comp_name.name} are both added as {props["__COMPONENT_SOURCE"]}. '
                         "Can't decide which one to pick."
                     )
-                # Give user an info when same name components got overriden
+                # Give user an info when same name components got overridden
                 else:
                     notice(
                         '{} overrides {} since {} type got higher priority than {}'.format(

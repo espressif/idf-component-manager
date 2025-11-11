@@ -1,4 +1,4 @@
 [codespell]
-skip = build,*.drawio,*.svg,*.pdf
-ignore-words-list = laf,OT
+skip = html_output
+ignore-words-list = iterm,oT,wasn\'t
 write-changes = true
