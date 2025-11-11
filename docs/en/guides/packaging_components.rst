@@ -187,7 +187,7 @@ Your ``idf_component.yml`` manifest may have ``files`` section with ``include`` 
        include:
           - "**/.DS_Store"  # Include files excluded by default
 
-Files and directories that are excluded by default are listed `here <https://github.com/espressif/idf-component-manager/blob/main/idf_component_tools/file_tools.py#L16>`_.
+By default, certain files and directories are excluded from the component archive. The full list can be found `here <https://github.com/espressif/idf-component-manager/blob/main/idf_component_tools/file_tools.py#L16>`_. Apart from these exclusions, the archive preserves the same file and directory structure as in your component.
 
 .gitignore File
 +++++++++++++++
@@ -254,6 +254,10 @@ Add Example Projects
 You may want to provide example projects to help users get started with your component. By default, the ``examples`` directory is located within the component directory, and all example projects are discovered recursively. To customize the path to the examples directory, you can specify it in the :ref:`manifest file <manifest-examples>`.
 
 When an archive containing the component is uploaded to the registry, all examples are repackaged into individual archives. Therefore, each example must be self-contained—meaning it should not depend on any files outside its own directory within the ``examples`` folder. For convenience, the entire ``examples`` directory is also included in the component archive.
+
+.. note::
+
+    Component archive will not contain any examples located outside of the component root directory.
 
 Adding Dependency on the Component for Examples
 +++++++++++++++++++++++++++++++++++++++++++++++
