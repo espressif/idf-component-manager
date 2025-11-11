@@ -163,7 +163,7 @@ def validate_add_dependency(ctx, param, value):  # noqa: ARG001
     return value
 
 
-# Function to combine multiple callback, order sensetive - each callback will be executed in the order in which it was passed
+# Function to combine multiple callback, order sensitive - each callback will be executed in the order in which it was passed
 # If passed callback terminate command execution, it will terminate execution of loop as well
 def combined_callback(*callbacks):
     def wrapper(ctx, param, value):

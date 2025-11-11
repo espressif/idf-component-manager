@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2016 Python-SemanticVersion project
 # SPDX-License-Identifier: BSD 2-Clause License
-# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2025 Espressif Systems (Shanghai) CO LTD
 from __future__ import annotations
 
 import functools
@@ -447,7 +447,7 @@ def match(spec, version):
 
 
 def validate(version_string):
-    """Validates a version string againt the SemVer specification."""
+    """Validates a version string against the SemVer specification."""
     try:
         Version.parse(version_string)
         return True
@@ -722,7 +722,7 @@ class Matcher(Clause):
 class Never(Matcher):
     __slots__: t.List[str] = []
 
-    def match(self, version):
+    def match(self, version):  # noqa: ARG002
         return False
 
     def __hash__(self):
@@ -744,7 +744,7 @@ class Never(Matcher):
 class Always(Matcher):
     __slots__: t.List[str] = []
 
-    def match(self, version):
+    def match(self, version):  # noqa: ARG002
         return True
 
     def __hash__(self):

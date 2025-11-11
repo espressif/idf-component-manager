@@ -91,7 +91,7 @@ When the version solver compares two different version numbers, it determines th
     - - ``0.1.2-a0.9`` < ``0.1.2-a0.10``
       - - The ``major``, ``minor``, ``update`` fields are equal.
         - The first identifiers of the prerelease fields are equal.
-        - The second identifers of the prerelease fields only include the numeric digits. Compare them in numerical order. 9 < 10.
+        - The second identifiers of the prerelease fields only include the numeric digits. Compare them in numerical order. 9 < 10.
     - - ``0.1.2-a0`` > ``0.1.2-1000``
       - - The ``major``, ``minor``, ``update`` fields are equal.
         - Non-numeric identifier has higher precedence than numeric identifier. ``a0`` > ``1000``.
