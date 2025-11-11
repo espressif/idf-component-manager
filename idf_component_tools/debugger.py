@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: Apache-2.0
 import contextvars
 import json
-import os.path
 import typing as t
 from collections import defaultdict
+from pathlib import Path
 
 if t.TYPE_CHECKING:
     from idf_component_tools.manifest import ComponentRequirement
@@ -27,11 +27,12 @@ class SdkconfigContext:
         self.sdkconfig: t.Dict[str, t.Any] = {}
         self.missed_keys: t.Dict[str, t.Set['ComponentRequirement']] = defaultdict(set)
 
-    def update_from_file(self, file_path: str):
-        if not os.path.isfile(file_path):
+    def update_from_file(self, file_path: t.Union[str, Path]):
+        path = Path(file_path)
+        if not path.is_file():
             return
 
-        with open(file_path, encoding='utf8') as f:
+        with path.open(encoding='utf8') as f:
             self.sdkconfig.update(json.load(f))
 
     def set_missed_kconfig(self, key: str, req: 'ComponentRequirement'):
