@@ -2,7 +2,7 @@ variables:
   FF_TIMESTAMPS: true
 
 default:
-  image: python:3.11.9-bookworm
+  image: python:3.14-trixie
 
 stages:
   - check

@@ -10,7 +10,7 @@ build:
   parallel:
     matrix:
       - IDF_BRANCH_TAG: [master]
-        PYTHON_IMAGE_TAG: ["3.10", "3.13"]
+        PYTHON_IMAGE_TAG: ["3.10", "3.14"]
   script:
     - BRANCH_NAME=$(echo $IDF_BRANCH_TAG | sed -e "s/release-v/release\/v/g")
     - |
