@@ -46,6 +46,33 @@ def response_403(messages: t.List[str], *_, **__):
     return response
 
 
+def response_403_malformed_json(*_, **__):
+    """Mock 403 response with malformed JSON that raises JSONDecodeError when parsed."""
+    from requests.exceptions import JSONDecodeError
+
+    def raise_json_error():
+        raise JSONDecodeError('Expecting value', '', 0)
+
+    response = Response()
+    response.status_code = 403
+    response.url = 'http://test.com/api/endpoint'
+    response.json = raise_json_error
+    return response
+
+
+def response_200_malformed_json(*_, **__):
+    """Mock 200 response with malformed JSON that raises JSONDecodeError when parsed."""
+    from requests.exceptions import JSONDecodeError
+
+    def raise_json_error():
+        raise JSONDecodeError('Expecting value', '', 0)
+
+    response = Response()
+    response.status_code = 200
+    response.json = raise_json_error
+    return response
+
+
 def raise_SSLEOFError(*_, **__):
     raise SSLEOFError()
 
@@ -336,3 +363,28 @@ class TestAPIClient:
                 file_path=tmp_path / 'cmp.tgz',
             )
         assert str(e.value).startswith('The component archive exceeds the maximum allowed size')
+
+    def test_handle_4xx_error_malformed_json_403(self):
+        """Test that 403 errors with malformed JSON are handled gracefully."""
+        from idf_component_tools.registry.request_processor import handle_4xx_error
+
+        response = response_403_malformed_json()
+
+        with pytest.raises(APIClientError) as e:
+            handle_4xx_error(response)
+
+        assert 'Access forbidden' in str(e.value)
+        assert e.value.endpoint == 'http://test.com/api/endpoint'
+        assert e.value.status_code == 403
+
+    def test_handle_response_errors_malformed_json_success(self):
+        """Test that successful responses with malformed JSON are handled gracefully."""
+        from idf_component_tools.registry.request_processor import handle_response_errors
+
+        response = response_200_malformed_json()
+
+        with pytest.raises(APIClientError) as e:
+            handle_response_errors(response, 'http://test.com/api/endpoint', False)
+
+        assert 'Server returned invalid or empty JSON in response' in str(e.value)
+        assert e.value.endpoint == 'http://test.com/api/endpoint'
