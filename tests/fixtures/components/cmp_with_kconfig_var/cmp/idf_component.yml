@@ -1,0 +1,11 @@
+version: '1.0.0'
+targets:
+  - esp32
+maintainers:
+  - 'Test Tester <test@example.com>'
+dependencies:
+  espressif/esp_codec_dev:
+    matches:
+      - if: $CONFIG{ESP_BOARD_DEV_AUDIO_CODEC_SUPPORT} == True
+    require: public
+    version: 1.5.0
