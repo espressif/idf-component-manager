@@ -1,8 +1,9 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
 import shutil
+import tarfile
 import tempfile
 from filecmp import dircmp
 
@@ -12,6 +13,7 @@ from idf_component_tools.archive_tools import (
     ArchiveError,
     get_format_from_path,
     is_known_format,
+    pack_archive,
     unpack_archive,
     unpack_tar,
     unpack_zip,
@@ -76,3 +78,19 @@ class TestUtilsArchive:
 
         finally:
             shutil.rmtree(tempdir)
+
+    def test_pack_archive_creates_valid_relative_tar(self, tmp_path):
+        source_dir = tmp_path / 'test_component'
+        source_dir.mkdir()
+        (source_dir / 'file.txt').touch()
+        archive_file = tmp_path / 'archive'
+        pack_archive(source_dir, archive_file)
+
+        assert archive_file.exists()
+
+        with tarfile.open(archive_file, 'r:gz') as tar:
+            names = tar.getnames()
+
+        # Verify: no absolute paths, files stored at top-level (relative './')
+        assert all(not n.startswith('/') for n in names)
+        assert './file.txt' in names
