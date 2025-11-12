@@ -137,4 +137,4 @@ class TestComponentWebServiceSource:
 
 
 def test_webservice_normalized_name():
-    assert WebServiceSource().normalized_name('cmp') == 'espressif/cmp'
+    assert WebServiceSource().normalized_name('cMp') == 'espressif/cmp'

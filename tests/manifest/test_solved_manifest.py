@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -50,3 +50,12 @@ class TestSolverResult:
         # name is the field from the manifest, don't touch it
         assert manifest.requirements[0].name == 'espressif/pest'
         assert manifest.requirements[1].name == 'espressif/test'
+
+    def test_solve_mixed_case_web_dependency(self, release_component_path):
+        manifest_manager = ManifestManager(release_component_path, 'test')
+        manifest_manager.manifest.dependencies = {
+            'EsPrEsSiF/DeP_CmP': {'version': '3.2.1', 'registry_url': 'https://repo.example.com'},
+        }
+        manifest_with_mixed_case = manifest_manager.load()
+
+        assert manifest_with_mixed_case.requirements[0].name == 'espressif/dep_cmp'
