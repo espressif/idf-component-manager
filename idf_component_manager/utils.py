@@ -2,15 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import enum
-import sys
+import importlib.metadata as importlib_metadata
 from enum import Enum
 
 from idf_component_tools.semver import Version
-
-if sys.version_info < (3, 8):
-    import importlib_metadata
-else:
-    import importlib.metadata as importlib_metadata
 
 CLICK_VERSION = Version.coerce(importlib_metadata.version('click'))
 CLICK_SUPPORTS_SHOW_DEFAULT = CLICK_VERSION >= Version('7.1.0')
