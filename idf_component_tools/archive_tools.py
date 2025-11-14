@@ -114,6 +114,6 @@ def pack_archive(source_dir: t.Union[str, Path], archive_filepath: str) -> None:
     """Create tar+gzip archive"""
     try:
         with tarfile.open(archive_filepath, 'w:gz') as archive:
-            archive.add(source_dir, arcname='')
+            archive.add(source_dir, arcname='./')
     except tarfile.TarError:
         raise ArchiveError(f'{archive_filepath} is not a valid tar archive')
