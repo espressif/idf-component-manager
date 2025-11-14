@@ -18,7 +18,6 @@ from idf_component_tools.utils import (
     ComponentVersion,
     ComponentWithVersions,
     HashedComponentVersion,
-    Literal,
     subst_vars_in_str,
 )
 
@@ -33,7 +32,7 @@ BRANCH_TAG_RE = re.compile(
 
 
 class GitSource(BaseSource):
-    type: Literal['git'] = 'git'  # type: ignore
+    type: t.Literal['git'] = 'git'  # type: ignore
     git: str
     path: str = '.'
 
@@ -103,7 +102,7 @@ class GitSource(BaseSource):
             source_path = os.path.join(str(temp_dir), self.repo_path)
             if not os.path.isdir(source_path):
                 raise FetchingError(
-                    'Directory {} wasn\'t found for the commit id "{}" of the '
+                    'Directory {} was not found for the commit id "{}" of the '
                     'git repository "{}"'.format(self.repo_path, component.version, self.repo)
                 )
 
@@ -148,7 +147,7 @@ class GitSource(BaseSource):
                         version, dependency_description
                     )
                 raise FetchingError(
-                    'Directory {} wasn\'t found for the {} of the git repository "{}"'.format(
+                    'Directory {} was not found for the {} of the git repository "{}"'.format(
                         self.repo_path, dependency_description, self.repo
                     )
                 )

@@ -12,3 +12,5 @@ a5e85486930ea416406ed1b3b24e7b22aeaeb2cc
 430927cb495aa44462473697f4561bf2d5d28d1e
 # Reformat all rst files using docstrfmt
 a002d37f54c3e3d9132916590f2b65b96079b78c
+# Remove re-export of `Annotated` and `Literal` from utils
+c60cc0a817c0649ca025f8d79483843c03f35ff4

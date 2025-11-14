@@ -37,16 +37,6 @@ from .semver import Version
 if t.TYPE_CHECKING:
     from idf_component_tools.manifest import ComponentRequirement, Manifest
 
-if sys.version_info < (3, 8):
-    from typing_extensions import Literal
-else:
-    from typing import Any, Literal  # noqa
-
-if sys.version_info < (3, 9):
-    from typing_extensions import Annotated
-else:
-    from typing import Annotated  # noqa
-
 if sys.version_info < (3, 11):
     from typing_extensions import Self
 else:
@@ -68,15 +58,15 @@ else:
 # pydantic HttpUrl and FileUrl are not string
 # so we need to convert them to string
 _http_url_adapter = TypeAdapter(HttpUrl)
-UrlField = Annotated[
+UrlField = t.Annotated[
     # return with trailing slash
     str, BeforeValidator(lambda value: str(_http_url_adapter.validate_python(value)))
 ]
 
 _file_url_adapter = TypeAdapter(FileUrl)
 UrlOrFileField = t.Union[
-    Annotated[str, BeforeValidator(lambda value: str(_http_url_adapter.validate_python(value)))],
-    Annotated[str, BeforeValidator(lambda value: str(_file_url_adapter.validate_python(value)))],
+    t.Annotated[str, BeforeValidator(lambda value: str(_http_url_adapter.validate_python(value)))],
+    t.Annotated[str, BeforeValidator(lambda value: str(_file_url_adapter.validate_python(value)))],
 ]
 
 
@@ -93,13 +83,13 @@ def _validate_unique_list_of_str(v: t.List[str]) -> t.List[str]:
     return v
 
 
-UniqueStrListField = Annotated[
+UniqueStrListField = t.Annotated[
     t.List[str],
     AfterValidator(_validate_unique_list_of_str),
     Field(json_schema_extra={'uniqueItems': True}),
 ]
-UniqueTagListField = Annotated[
-    t.List[Annotated[str, Field(pattern=r'^[A-Za-z0-9\_\-]{3,32}$')]],
+UniqueTagListField = t.Annotated[
+    t.List[t.Annotated[str, Field(pattern=r'^[A-Za-z0-9\_\-]{3,32}$')]],
     AfterValidator(_validate_unique_list_of_str),
     Field(json_schema_extra={'uniqueItems': True}),
 ]

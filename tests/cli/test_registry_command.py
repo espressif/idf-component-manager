@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: 2024-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import sys
 
 import requests_mock
 
@@ -145,10 +144,7 @@ def test_logout_from_registry_revoked_token(monkeypatch, tmp_path, invoke_cli):
         output = invoke_cli('registry', 'logout', env={'IDF_TOOLS_PATH': str(tmp_path)})
 
     assert 'Successfully logged out' in output.stdout
-    if sys.version_info < (3, 10):
-        assert 'Failed to revoke token from the registry' in output.stdout
-    else:
-        assert 'Failed to revoke token from the registry' in output.stderr
+    assert 'Failed to revoke token from the registry' in output.stderr
 
 
 def test_logout_from_registry_no_revoke(monkeypatch, tmp_path, invoke_cli):

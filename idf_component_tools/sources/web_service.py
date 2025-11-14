@@ -35,7 +35,6 @@ from idf_component_tools.hash_tools.validate import (
     validate_hash_eq_hashdir,
 )
 from idf_component_tools.semver import SimpleSpec
-from idf_component_tools.utils import Literal
 
 from .base import BaseSource
 
@@ -151,7 +150,7 @@ class WebServiceSource(BaseSource):
             'service_url',
         ),
     )  # type: ignore
-    type: Literal['service'] = 'service'  # type: ignore
+    type: t.Literal['service'] = 'service'  # type: ignore
     pre_release: bool = None  # type: ignore
 
     def __repr__(self) -> str:

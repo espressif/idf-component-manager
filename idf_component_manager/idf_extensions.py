@@ -16,7 +16,7 @@ from idf_component_manager.utils import (
 )
 from idf_component_tools import error, setup_logging
 from idf_component_tools.errors import FatalError
-from idf_component_tools.utils import Literal, UrlField, UrlOrFileField
+from idf_component_tools.utils import UrlField, UrlOrFileField
 
 from .core import ComponentManager
 
@@ -37,7 +37,7 @@ REGISTRY_URL: t.List[t.Dict[str, t.Any]] = [
         'help': 'URL of the Component Registry.'
         ' IDF_COMPONENT_REGISTRY_URL environment variable can be used to set the default value.',
         'default': None,
-        'callback': validate_from_type(t.Union[Literal['default'], UrlField]),
+        'callback': validate_from_type(t.Union[t.Literal['default'], UrlField]),
         'scope': 'global',  # Defined for action, but also available as a global option
     }
 ]
@@ -50,7 +50,7 @@ STORAGE_URL: t.List[t.Dict[str, t.Any]] = [
         ' IDF_COMPONENT_STORAGE_URL environment variable can be used to set the default value.',
         'default': None,
         'multiple': True,
-        'callback': validate_from_type(t.Tuple[t.Union[Literal['default'], UrlOrFileField], ...]),
+        'callback': validate_from_type(t.Tuple[t.Union[t.Literal['default'], UrlOrFileField], ...]),
         'scope': 'global',  # Defined for action, but also available as a global option
     }
 ]

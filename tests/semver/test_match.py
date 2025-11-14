@@ -1,22 +1,14 @@
 #!/usr/bin/env python
 # SPDX-FileCopyrightText: 2016 Python-SemanticVersion project
 # SPDX-License-Identifier: BSD 2-Clause License
-# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2025 Espressif Systems (Shanghai) CO LTD
 
-import sys
 import unittest
 
 from idf_component_tools import semver
 
 
 class MatchTestCase(unittest.TestCase):
-    if sys.version_info[0] <= 2:
-        import contextlib
-
-        @contextlib.contextmanager
-        def subTest(self, **kwargs):
-            yield
-
     invalid_specs = [
         '',
         '!0.1',

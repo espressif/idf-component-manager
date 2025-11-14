@@ -11,7 +11,7 @@ build_wheel:
   stage: build
   tags:
     - internet
-  image: python:3.13-bookworm
+  image: python:3.14-trixie
   script:
     - pip install build wheel
     - python -m build
@@ -26,7 +26,7 @@ build_wheel:
     - internet
   parallel:
     matrix:
-      - PYTHON_IMAGE_TAG: [3.7-buster, 3.13-bookworm]
+      - PYTHON_IMAGE_TAG: [3.10-bullseye, 3.14-trixie]
   image: python:${PYTHON_IMAGE_TAG}
 
 test:

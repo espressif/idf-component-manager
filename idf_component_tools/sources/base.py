@@ -8,14 +8,14 @@ from abc import abstractmethod
 from idf_component_tools.file_cache import FileCache
 from idf_component_tools.hash_tools.checksums import ChecksumsModel
 from idf_component_tools.semver import SimpleSpec
-from idf_component_tools.utils import BaseModel, ComponentWithVersions, Literal
+from idf_component_tools.utils import BaseModel, ComponentWithVersions
 
 if t.TYPE_CHECKING:
     from idf_component_tools.manifest import SolvedComponent
 
 
 class BaseSource(BaseModel):
-    type: Literal['base'] = 'base'  # type: ignore
+    type: t.Literal['base'] = 'base'  # type: ignore
 
     _hash_key = None
 
