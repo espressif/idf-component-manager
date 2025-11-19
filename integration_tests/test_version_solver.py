@@ -254,8 +254,8 @@ def test_version_solver_on_local_components_basic(project):
             'components': {
                 'main': {
                     'dependencies': {
-                        'es8311': {
-                            'version': '^0.0.2-alpha',
+                        'example/cmp': {
+                            'version': '^3.3.9-testcm2',
                         }
                     },
                 }
@@ -266,7 +266,7 @@ def test_version_solver_on_local_components_basic(project):
 )
 def test_version_solver_with_caret_and_prerelease(project):
     real_result = project_action(project, 'fullclean', 'reconfigure')
-    for line in ['[1/2] espressif/es8311', '[2/2] idf']:
+    for line in ['[1/2] example/cmp', '[2/2] idf']:
         assert line in real_result
 
 
@@ -497,7 +497,7 @@ def test_multiple_storage_urls(project, monkeypatch, debug_mode):  # noqa: ARG00
                 },
                 'foo': {
                     'dependencies': {
-                        'espressif/esp_wrover_kit': {
+                        'test/optional_dependency': {
                             'version': '*',
                             'rules': [
                                 {'if': 'target in [esp32]'},
@@ -529,7 +529,7 @@ def test_optional_dependencies_version_solving(project):
             'idf',
         ]
 
-        assert 'espressif/esp_wrover_kit' in d['dependencies']
+        assert 'test/optional_dependency' in d['dependencies']
 
     # reconfigure with s3
     output = project_action(project, 'set-target', 'esp32s3', 'reconfigure')
@@ -543,7 +543,7 @@ def test_optional_dependencies_version_solving(project):
             'idf',
         ]
 
-        assert 'espressif/esp_wrover_kit' not in d['dependencies']
+        assert 'test/optional_dependency' not in d['dependencies']
 
 
 @pytest.mark.parametrize(
@@ -559,7 +559,7 @@ def test_optional_dependencies_version_solving(project):
                 },
                 'foo': {
                     'dependencies': {
-                        'espressif/esp_wrover_kit': {
+                        'test/optional_dependency': {
                             'version': '*',
                             'rules': [
                                 {'if': 'target in [esp32]'},
@@ -591,7 +591,7 @@ def test_optional_dependencies_unmet_first_then_met(project):
             'idf',
         ]
 
-        assert 'espressif/esp_wrover_kit' not in d['dependencies']
+        assert 'test/optional_dependency' not in d['dependencies']
 
     # reconfigure with esp32
     output = project_action(project, 'set-target', 'esp32', 'reconfigure')
@@ -605,7 +605,7 @@ def test_optional_dependencies_unmet_first_then_met(project):
             'idf',
         ]
 
-        assert 'espressif/esp_wrover_kit' in d['dependencies']
+        assert 'test/optional_dependency' in d['dependencies']
 
 
 @pytest.mark.parametrize(
@@ -618,7 +618,7 @@ def test_optional_dependencies_unmet_first_then_met(project):
                         'idf': {
                             'version': '>=4.3',
                         },
-                        'espressif/rmaker_common': {
+                        'example/cmp': {
                             'version': '*',
                         },
                     }
@@ -637,10 +637,10 @@ def test_major_version_changed_with_existing_lock(project, monkeypatch):
         YAML(typ='safe').dump(
             {
                 'dependencies': {
-                    'espressif/rmaker_common': {
+                    'example/cmp': {
                         # pragma: allowlist nextline secret
-                        'component_hash': 'ea9a31452ba0f21209376d30f8f97a41c36287cfd729ad400606ad63c62313c5',
-                        'version': '1.0.0',
+                        'component_hash': '8644358a11a35a986b0ce4d325ba3d1aa9491b9518111acd4ea9447f11dc47c1',
+                        'version': '3.3.7',
                         'source': {
                             'type': 'service',
                         },
@@ -662,7 +662,7 @@ def test_major_version_changed_with_existing_lock(project, monkeypatch):
 
     res = project_action(project, 'reconfigure')
     assert 'Configuring done' in res
-    assert_dependency_version(project, 'espressif/rmaker_common', '1.0.0')
+    assert_dependency_version(project, 'example/cmp', '3.3.7')
 
 
 @pytest.mark.parametrize(
@@ -675,7 +675,7 @@ def test_major_version_changed_with_existing_lock(project, monkeypatch):
                         'idf': {
                             'version': '>=4.3',
                         },
-                        'espressif/rmaker_common': {
+                        'example/cmp': {
                             'version': '*',
                         },
                     }
@@ -694,10 +694,10 @@ def test_major_version_changed_with_incomplete_existing_lock(project, monkeypatc
         YAML(typ='safe').dump(
             {
                 'dependencies': {
-                    'espressif/rmaker_common': {
+                    'example/cmp': {
                         # pragma: allowlist nextline secret
-                        'component_hash': 'ea9a31452ba0f21209376d30f8f97a41c36287cfd729ad400606ad63c62313c5',
-                        'version': '1.0.0',
+                        'component_hash': '8644358a11a35a986b0ce4d325ba3d1aa9491b9518111acd4ea9447f11dc47c1',
+                        'version': '3.3.7',
                         'source': {
                             'type': 'service',
                         },
@@ -715,7 +715,7 @@ def test_major_version_changed_with_incomplete_existing_lock(project, monkeypatc
     res = project_action(project, 'reconfigure')
     assert 'Configuring done' in res
 
-    assert_dependency_version(project, 'espressif/rmaker_common', '1.0.0')
+    assert_dependency_version(project, 'example/cmp', '3.3.7')
 
 
 @pytest.mark.parametrize(

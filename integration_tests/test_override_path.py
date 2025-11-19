@@ -95,18 +95,18 @@ def test_reconfigure_with_override_path_not_a_folder(project):
             'components': {
                 'main': {
                     'dependencies': {
-                        'espressif/esp_insights': {
-                            'version': '1.2.8',
+                        'test/diamond_dependency_b': {
+                            'version': '2.0.0',
                         },
                     }
                 },
-                'espressif__esp_schedule': {
+                'test__override_path': {
                     'dependencies': {
-                        'espressif/rmaker_common': {
-                            'version': '~1.4.0',
+                        'test/diamond_dependency_c': {
+                            'version': '3.0.0',
                         }
                     },
-                    'version': '1.1.0',
+                    'version': '2.0.0',
                 },
             }
         },
@@ -118,21 +118,21 @@ def test_copy_paste_managed_components_then_override_within_other_components(pro
     assert 'Configuring done' in res
 
     shutil.copytree(
-        os.path.join(project, 'managed_components', 'espressif__rmaker_common'),
-        os.path.join(project, 'components', 'espressif__rmaker_common'),
+        os.path.join(project, 'managed_components', 'test__diamond_dependency_c'),
+        os.path.join(project, 'components', 'test__diamond_dependency_c'),
     )
 
     with open(
-        os.path.join(project, 'components', 'espressif__esp_schedule', 'idf_component.yml'), 'w'
+        os.path.join(project, 'components', 'test__override_path', 'idf_component.yml'), 'w'
     ) as fw:
         fw.write(
             textwrap.dedent(
                 """
                 dependencies:
-                  espressif/rmaker_common:
-                    version: ~1.4.0
-                    override_path: "../espressif__rmaker_common"
-                version: "1.1.0"  # required to reproduce the bug, can't reproduce without "version"
+                  test/diamond_dependency_c:
+                    version: 3.0.0
+                    override_path: "../test__diamond_dependency_c"
+                version: "2.0.0"  # required to reproduce the bug, can't reproduce without "version"
                 """
             )
         )

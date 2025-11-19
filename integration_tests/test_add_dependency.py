@@ -20,14 +20,14 @@ def test_add_dependency(project):
 def test_add_dependency_with_path(project):
     path = os.path.join(project, 'project', 'src')
     os.makedirs(path)
-    res = project_action(project, 'add-dependency', '--path', path, 'lvgl/lvgl>=8.*')
-    assert 'Successfully added dependency "lvgl/lvgl": ">=8.*" to component "src"' in res
+    res = project_action(project, 'add-dependency', '--path', path, 'example/cmp>=3.*')
+    assert 'Successfully added dependency "example/cmp": ">=3.*" to component "src"' in res
 
 
 @pytest.mark.parametrize('project', [{}], indirect=True)
 def test_add_dependency_with_not_existing_path(project):
     path = os.path.join(project, 'not_existing_path')
-    res = project_action(project, 'add-dependency', '--path', path, 'lvgl/lvgl>=8.*')
+    res = project_action(project, 'add-dependency', '--path', path, 'example/cmp>=3.*')
     assert f'"{path}" directory does not exist.' in res
 
 
