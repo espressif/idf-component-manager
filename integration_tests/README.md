@@ -51,6 +51,9 @@ To create an integration test scenario add the declaration of the test case into
 contain the test declaration and check some assertion. Variable `project` contains path to the project with declared
 structure.
 
+Please try to avoid using real components in integration tests if it is not strictly necessary.
+There is a namespace [test](https://components.espressif.com/components?q=namespace%3Atest) with a collection of components for testing.
+
 ```python
 @pytest.mark.parametrize(
     'project',
