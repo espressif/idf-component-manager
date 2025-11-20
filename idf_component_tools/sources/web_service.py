@@ -276,7 +276,7 @@ class WebServiceSource(BaseSource):
         if '/' not in name:
             name = '/'.join([DEFAULT_NAMESPACE, name])
 
-        return name
+        return name.lower()
 
     def download(self, component: 'SolvedComponent', download_path: str) -> str:
         """Download component from the web service.
