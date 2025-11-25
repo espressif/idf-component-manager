@@ -45,5 +45,6 @@ def test_is_not_component(tmp_path):
     assert not is_component(tmp_path)
 
     # CMakeLists.txt with CMAKE_PROJECT_LINE is a project
-    open(os.path.join(tempdir, 'CMakeLists.txt'), 'w').write(CMAKE_PROJECT_LINE)
-    assert not is_component(tmp_path)
+    for proj_line in CMAKE_PROJECT_LINE:
+        open(os.path.join(tempdir, 'CMakeLists.txt'), 'w').write(proj_line)
+        assert not is_component(tmp_path)
