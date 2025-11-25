@@ -14,7 +14,10 @@ from .semver import Version
 
 IDF_VERSION_REGEX = re.compile(r'v(\d+\.\d+(?:\.\d+)?)')
 
-CMAKE_PROJECT_LINE = r'include($ENV{IDF_PATH}/tools/cmake/project.cmake)'
+CMAKE_PROJECT_LINE = [
+    r'include($ENV{IDF_PATH}/tools/cmake/project.cmake)',
+    r'include($ENV{IDF_PATH}/tools/cmakev2/idf.cmake)',
+]
 
 
 def build_name(name: str) -> str:
@@ -121,7 +124,7 @@ def is_component(path: Path) -> bool:
 
     with open(str(cmakelists_path), encoding='utf-8') as f:
         for line in f:
-            if CMAKE_PROJECT_LINE in line:
+            if any(proj_line in line for proj_line in CMAKE_PROJECT_LINE):
                 return False
 
     return True
