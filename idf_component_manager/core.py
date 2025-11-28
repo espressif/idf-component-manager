@@ -805,6 +805,7 @@ class ComponentManager:
         self,
         component_requires_file: t.Union[Path, str],
         component_list_file: t.Union[Path, str],
+        cm_run_counter: int,
     ):
         """Set build dependencies for components with manifests"""
         requirements_manager = CMakeRequirementsManager(component_requires_file)
@@ -883,6 +884,14 @@ class ComponentManager:
 
         handle_project_requirements(new_requirements)
         requirements_manager.dump(new_requirements)
+
+        # In case of the CM second run when dealing with KConfig Variables
+        # We need to overwrite the retried to 0 to run CM the third time
+        # It's needed due to reason that in sdkconfig.json there will be
+        # correct values for configs of downloaded deps
+        if cm_run_counter == 1:
+            with open(requirements_manager.path, 'a', encoding='utf-8') as f:
+                f.write('set(retried 0 PARENT_SCOPE)\n')
 
     @staticmethod
     def _override_requirements_by_component_sources(

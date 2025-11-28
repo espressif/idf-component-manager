@@ -25,6 +25,43 @@ def _component_list_file(build_dir):
     return os.path.join(build_dir, 'components_with_manifests_list.temp')
 
 
+class RunCounter:
+    def __init__(self, build_dir: t.Union[str, Path]):
+        self._file_path = Path(build_dir) / f'component_manager_run_counter.{os.getppid()}'
+
+        if not self._file_path.exists():
+            self._file_path.write_text('0')
+
+    @property
+    def value(self) -> int:
+        """
+        Current value of the counter.
+        """
+        try:
+            return int(self._file_path.read_text().strip())
+        except (FileNotFoundError, ValueError):
+            # Fallback if file was deleted externally or contains garbage
+            return 0
+
+    def increase(self) -> None:
+        """
+        Increments the counter by 1.
+        """
+        # Since __init__ guarantees creation, we can simply update logic.
+        # We still catch FileNotFoundError in case it was deleted externally.
+        if not self._file_path.exists():
+            return
+
+        self._file_path.write_text(str(self.value + 1))
+
+    def cleanup(self) -> None:
+        """
+        Removes the counter file.
+        """
+        if self._file_path.exists():
+            self._file_path.unlink()
+
+
 def _get_ppid_file_path(local_component_list_file: t.Optional[str]) -> Path:
     return Path(f'{local_component_list_file}.{os.getppid()}')
 
@@ -53,7 +90,7 @@ def _get_component_list_file(local_components_list_file):
         return local_components_list_file
 
 
-def _get_sdkconfig_json_file_path(args) -> t.Optional[Path]:
+def _get_sdkconfig_json_file_path(args, build_dir) -> t.Optional[Path]:
     """
     Returns the path to the sdkconfig.json file if found, None otherwise.
     `sdkconfig_json_file` argument is not provided in some ESP-IDF versions (5.5.0, 5.5.1,...) when injecting deps
@@ -61,19 +98,19 @@ def _get_sdkconfig_json_file_path(args) -> t.Optional[Path]:
     """
     if args.sdkconfig_json_file:
         return Path(args.sdkconfig_json_file)
-    elif args.interface_version >= 4 and args.build_dir:
-        return Path(args.build_dir) / 'config' / 'sdkconfig.json'
+    elif args.interface_version >= 4 and build_dir:
+        return Path(build_dir) / 'config' / 'sdkconfig.json'
 
     return None
 
 
 def prepare_dep_dirs(args):
-    sdk_config_json_path = _get_sdkconfig_json_file_path(args)
-
-    if sdk_config_json_path:
-        KCONFIG_CONTEXT.get().update_from_file(sdk_config_json_path)
-
     build_dir = args.build_dir or os.path.dirname(args.managed_components_list_file)
+
+    # If the Component Manager has been run before, we need to update the Kconfig context with the sdkconfig.json file
+    sdk_config_json_path = _get_sdkconfig_json_file_path(args, build_dir)
+    if sdk_config_json_path and RunCounter(build_dir).value > 0:
+        KCONFIG_CONTEXT.get().update_from_file(sdk_config_json_path)
 
     local_components_list_file = _get_component_list_file(args.local_components_list_file)
 
@@ -128,6 +165,7 @@ def prepare_dep_dirs(args):
                     raise FatalError(
                         f"Failed to copy '{args.local_components_list_file}' → '{ppid_file}': {e}"
                     ) from e
+
         # Exiting with code 10 to signal CMake to re-run component discovery due to missing KConfig options
         sys.exit(10)
 
@@ -139,9 +177,9 @@ def prepare_dep_dirs(args):
 
 
 def inject_requirements(args):
-    sdk_config_json_path = _get_sdkconfig_json_file_path(args)
+    sdk_config_json_path = _get_sdkconfig_json_file_path(args, args.build_dir)
 
-    if sdk_config_json_path:
+    if sdk_config_json_path and RunCounter(args.build_dir).value > 0:
         KCONFIG_CONTEXT.get().update_from_file(sdk_config_json_path)
 
     ComponentManager(
@@ -151,7 +189,15 @@ def inject_requirements(args):
     ).inject_requirements(
         component_requires_file=args.component_requires_file,
         component_list_file=_component_list_file(args.build_dir),
+        cm_run_counter=RunCounter(args.build_dir).value,
     )
+
+    # Last run of prepare_dep_dirs was successful
+    # Clean up CM Run counter
+    if not Path(_get_ppid_file_path(f'{args.build_dir}/local_components_list.temp.yml')).exists():
+        RunCounter(args.build_dir).cleanup()
+    else:
+        RunCounter(args.build_dir).increase()
 
 
 def main():
