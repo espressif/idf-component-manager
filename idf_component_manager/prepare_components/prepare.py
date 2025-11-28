@@ -14,7 +14,7 @@ import typing as t
 from pathlib import Path
 
 from idf_component_manager.core import ComponentManager
-from idf_component_tools import error, setup_logging, warn
+from idf_component_tools import error, notice, setup_logging, warn
 from idf_component_tools.build_system_tools import get_idf_version
 from idf_component_tools.debugger import KCONFIG_CONTEXT
 from idf_component_tools.errors import FatalError
@@ -103,7 +103,7 @@ def prepare_dep_dirs(args):
 
         _nl = '\n'
         if args.interface_version < 4:
-            warn(
+            notice(
                 f'The following Kconfig variables were used in "if" clauses, '
                 f'but not supported by your ESP-IDF version {get_idf_version()}. '
                 f'Ignoring these if-clauses:\n'
