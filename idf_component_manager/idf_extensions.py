@@ -235,7 +235,7 @@ def action_extensions(base_actions, project_path):  # noqa: ARG001
                 task.action_args['registry_url'] = global_args['registry_url']
             elif task.name == 'remove-dependency' and Version.coerce(
                 os.getenv('ESP_IDF_VERSION')
-            ) >= Version.coerce('6.0'):
+            ) >= Version.coerce('6.0.1'):
                 try:
                     sys.path.append(os.path.join(os.environ['IDF_PATH'], 'tools'))
                     from idf_py_actions.tools import ensure_build_directory
@@ -387,7 +387,7 @@ def action_extensions(base_actions, project_path):  # noqa: ARG001
         },
     }
 
-    if Version.coerce(os.getenv('ESP_IDF_VERSION')) >= Version.coerce('6.0'):
+    if Version.coerce(os.getenv('ESP_IDF_VERSION')) >= Version.coerce('6.0.1'):
         actions['remove-dependency'] = {
             'callback': remove_dependency_callback,
             'help': (
