@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.4.3 (2025-12-01)
+
+### Feat
+
+- improve solver errors
+
+### Fix
+
+- Kconfig build system
+- Add esp32s31 to default known targets
+- Kconfig not showing message on unsupported ESP-IDF
+- empty name directory in archive
+- Take sdkconfig.json from known location instead injecting from CMake
+- **tests**: integration tests issues
+- **kconfig**: transitive dependencies incorrect source on second CMake run
+- handle malformed JSON in API responses
+
 ## v2.4.2 (2025-10-20)
 
 ### Fix
