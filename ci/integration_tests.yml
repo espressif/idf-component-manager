@@ -1,4 +1,4 @@
-integration_test:
+.integration_test_template:
   image: ${DOCKER_IMAGE}:${PYTHON_IMAGE_TAG}-${IDF_BRANCH_TAG}
   stage: integration_test
   tags:
@@ -18,7 +18,7 @@ integration_test:
   parallel:
     matrix:
       # PYTEST_SPLIT_TEST_GROUP: Split integration tests into parallel jobs. The number of groups has to be reflected in the pytest invocation
-      - IDF_BRANCH_TAG: [master]
+      - IDF_BRANCH_TAG: ["release-v6.0","master"]
         PYTHON_IMAGE_TAG: ["3.10", "3.14"]
         PYTEST_SPLIT_TEST_GROUP: [1, 2, 3, 4, 5]
   before_script:
@@ -35,7 +35,7 @@ integration_test:
     # We want to do so, to make sure that all dependencies are installed carefully
     - |
       if [ "${IDF_BRANCH_TAG}" = "master" ]; then
-        export CONSTRAINT_FILE_VERSION="v6.0"
+        export CONSTRAINT_FILE_VERSION="v6.1"
       else
         export CONSTRAINT_FILE_VERSION=$(echo $IDF_BRANCH_TAG | sed -e "s/release-v/v/g")
       fi
@@ -56,3 +56,13 @@ integration_test:
       --log-cli-level=INFO \
       --splits 5 \
       --group ${PYTEST_SPLIT_TEST_GROUP}
+
+integration_test:
+  extends: .integration_test_template
+
+integration_test_build_system_v2:
+  extends: .integration_test_template
+  variables:
+    IDF_COMPONENT_TESTS_BUILD_SYSTEM_VERSION: 2
+  rules:
+    - when: manual

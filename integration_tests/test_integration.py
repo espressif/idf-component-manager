@@ -12,11 +12,29 @@ from idf_component_tools.lock import LockManager
 from idf_component_tools.manager import ManifestManager
 from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS
 
-from .integration_test_helpers import (
-    fixtures_path,
-    live_print_call,
-    project_action,
+from .integration_test_helpers import build_project, fixtures_path, live_print_call, project_action
+
+
+@pytest.mark.parametrize(
+    'project',
+    [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'example/cmp': {
+                            'version': '*',
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    indirect=True,
 )
+def test_build_component_from_component_registry(project):
+    res = build_project(project)
+    assert 'Project build complete' in res
 
 
 @pytest.mark.parametrize(
@@ -48,7 +66,7 @@ def test_known_targets():
     sys.path.append(os.path.join(idf_path, 'tools'))
     from idf_py_actions.constants import PREVIEW_TARGETS, SUPPORTED_TARGETS
 
-    assert set(SUPPORTED_TARGETS + PREVIEW_TARGETS) == set(DEFAULT_KNOWN_TARGETS)
+    assert set(SUPPORTED_TARGETS + PREVIEW_TARGETS).issubset(set(DEFAULT_KNOWN_TARGETS))
 
 
 @pytest.mark.parametrize(

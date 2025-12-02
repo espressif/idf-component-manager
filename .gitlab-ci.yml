@@ -124,7 +124,7 @@ tests:
   needs:
     - prepare_tests
   trigger:
-    strategy: depend
+    strategy: mirror
     include:
       - artifact: ci/tests.yml
         job: prepare_tests
