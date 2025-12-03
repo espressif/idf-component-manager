@@ -512,3 +512,46 @@ class TestLockManager(object):
             f.write('File Changed')
 
         assert not is_solve_required(project_requirements, solution)
+
+    def test_target_change_with_kconfig_dependency(self, monkeypatch, caplog):
+        """Test that changing target triggers re-solve when dependencies have KConfig options"""
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
+
+        manifest = Manifest.fromdict({})
+        project_requirements = ProjectRequirements([manifest])
+
+        # Component with dependency that has KConfig option in matches
+        components = [
+            SolvedComponent(
+                name='espressif/test_cmp',
+                version=ComponentVersion('1.0.0'),
+                source=WebServiceSource(registry_url='https://repo.example.com'),
+                # pragma: allowlist nextline secret
+                component_hash='f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b',
+                targets=['esp32', 'esp32s2', 'esp32s3'],
+                dependencies=[
+                    ComponentRequirement(
+                        name='espressif/ethernet',
+                        version='*',
+                        matches=[{'if': '$CONFIG{ETHERNET_SPI_USE_CH390} == 1'}],
+                    )
+                ],
+            ),
+        ]
+
+        solution = SolvedManifest(
+            dependencies=components,
+            manifest_hash=project_requirements.manifest_hash,
+            target='esp32',
+            direct_dependencies=['idf'],
+        )
+
+        # Target change should trigger re-solve because dependency has KConfig option
+        monkeypatch.setenv('IDF_TARGET', 'esp32s2')
+        caplog.clear()
+        with caplog.at_level(logging.INFO, logger=LOGGING_NAMESPACE):
+            assert is_solve_required(ProjectRequirements([manifest]), solution)
+            assert len(caplog.records) == 1
+            assert 'Target changed from esp32 to esp32s2' in caplog.records[0].message
+            assert 'has a dependency using KConfig options' in caplog.records[0].message
+            assert 'espressif/test_cmp' in caplog.records[0].message

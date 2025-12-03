@@ -30,6 +30,7 @@ from idf_component_tools.constants import (
     COMPILED_GIT_URL_RE,
     DEFAULT_NAMESPACE,
     IDF_COMPONENT_REGISTRY_URL,
+    KCONFIG_VAR_REGEX,
 )
 from idf_component_tools.debugger import KCONFIG_CONTEXT
 from idf_component_tools.errors import (
@@ -106,6 +107,21 @@ class OptionalDependency(BaseModel):
 class OptionalRequirement(BaseModel):
     matches: t.List[OptionalDependency] = []
     rules: t.List[OptionalDependency] = []
+
+    @property
+    def has_kconfig_option(self) -> bool:
+        """
+        Check if any of the matches contain KConfig options.
+
+        KConfig options are identified by the pattern $CONFIG{...}
+
+        :return: True if any match or rule contains a KConfig option, False otherwise
+        """
+        for optional_dependency in self.matches:
+            if KCONFIG_VAR_REGEX.search(optional_dependency.if_clause):
+                return True
+
+        return False
 
     def version_spec_if_meet_conditions(self, default_version_spec: str) -> t.Optional[str]:
         """
