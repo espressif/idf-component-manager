@@ -128,6 +128,17 @@ def is_solve_required(project_requirements: ProjectRequirements, solution: Solve
                 )
                 return True
 
+            if comp.dependencies and any(
+                dep.optional_requirement.has_kconfig_option for dep in comp.dependencies
+            ):
+                notice(
+                    'Target changed from {} to {}, and component "{}" has a dependency using KConfig options'
+                    ' solving dependencies.'.format(
+                        solution.target, project_requirements.target, comp.name
+                    )
+                )
+                return True
+
     # check if the idf version has changed
     # if so, check if the components are compatible with the new idf version
     cur_idf_version = get_idf_version()
