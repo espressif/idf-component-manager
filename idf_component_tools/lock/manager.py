@@ -3,6 +3,7 @@
 import os
 import typing as t
 from io import StringIO
+from pathlib import Path
 
 from pydantic import ValidationError
 from ruamel.yaml import YAML, YAMLError
@@ -14,7 +15,7 @@ from idf_component_tools.messages import notice
 from idf_component_tools.sources import IDFSource
 from idf_component_tools.utils import ComponentVersion
 
-FORMAT_VERSION = '2.0.0'
+FORMAT_VERSION = '3.0.0'
 
 
 class LockFile(SolvedManifest):
@@ -56,12 +57,18 @@ class LockManager:
 
         try:
             with StringIO() as new_lock:
-                # inject lock file version and current target
-                lock = LockFile(**solution.model_dump())
+                # Local source path in dependencies lock file should be relative to the lock file path
+                context = {
+                    'lock_path': Path(self._path).parent,
+                    'use_relative_path': True,
+                }
+
+                # Inject lock file version and current target
+                lock = LockFile(**solution.model_dump(context=context))
                 lock.target = get_env_idf_target()
 
                 self._yaml.dump(
-                    data=lock.model_dump(),
+                    data=lock.model_dump(context=context),
                     stream=new_lock,
                 )
                 new_lock.seek(0)
@@ -94,7 +101,7 @@ class LockManager:
             else:
                 lock = LockFile.fromdict(yaml_dict)
 
-            lock_dict = lock.model_dump()
+            lock_dict = lock.model_dump(context={'lock_path': Path(self._path).parent})
             version = lock_dict.pop('version')
             if version != FORMAT_VERSION:
                 notice(

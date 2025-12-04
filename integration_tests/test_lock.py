@@ -103,4 +103,4 @@ def test_lock_version_mismatch(monkeypatch, project):
     with open(lock_path) as fr:
         lock = YAML(typ='safe').load(fr)
 
-    assert lock['version'] == '2.0.0'
+    assert lock['version'] == '3.0.0'

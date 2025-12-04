@@ -301,7 +301,7 @@ def test_idf_build_inject_dependencies_even_with_set_components(
 
     assert namespace_name in lock['dependencies']
     assert lock['dependencies'][namespace_name]['source']['path'] == os.path.join(
-        project, 'components', component_name
+        'components', component_name
     )
     assert lock['dependencies'][namespace_name]['source']['type'] == 'local'
 
@@ -373,10 +373,10 @@ def test_circular_dependency(project):
         lock = YAML(typ='safe').load(fr)
 
     assert lock['dependencies']['component_a']['source']['path'] == os.path.join(
-        project, 'components', 'component_a'
+        'components', 'component_a'
     )
     assert lock['dependencies']['component_a']['source']['type'] == 'local'
     assert lock['dependencies']['component_b']['source']['path'] == os.path.join(
-        project, 'components', 'component_b'
+        'components', 'component_b'
     )
     assert lock['dependencies']['component_b']['source']['type'] == 'local'
