@@ -37,6 +37,14 @@ idf_version = Version.coerce(os.getenv('ESP_IDF_VERSION'))
     ],
     indirect=True,
 )
+@pytest.mark.xfail(
+    os.getenv('IDF_COMPONENT_TESTS_BUILD_SYSTEM_VERSION') == '2',
+    reason=(
+        'CMake V2 injects managed dependencies after add_subdirectory() returns, '
+        'so CMake functions from managed dependencies are not available during '
+        "a component's CMakeLists.txt evaluation."
+    ),
+)
 def test_kconfig_gated_cmake_function_dependency(project):
     """
     Test that a Kconfig-gated dependency with a transitive CMake function works on first build.

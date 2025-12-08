@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import shutil
@@ -127,23 +127,29 @@ def test_version_solver(project, result):
                 }
             }
         },
-        {
-            'components': {
-                'main': {
-                    'dependencies': {
-                        'new+compo.nent': {
-                            'include': 'new+compo.nent.h',
+        pytest.param(
+            {
+                'components': {
+                    'main': {
+                        'dependencies': {
+                            'new+compo.nent': {
+                                'include': 'new+compo.nent.h',
+                            },
+                            'example/cmp': {'version': '^3.3.0', 'include': 'cmp.h'},
+                        }
+                    },
+                    'new+compo.nent': {
+                        'cmake_lists': {
+                            'priv_requires': 'cmp',
                         },
-                        'example/cmp': {'version': '^3.3.0', 'include': 'cmp.h'},
-                    }
-                },
-                'new+compo.nent': {
-                    'cmake_lists': {
-                        'priv_requires': 'cmp',
                     },
                 },
             },
-        },
+            marks=pytest.mark.xfail(
+                os.getenv('IDF_COMPONENT_TESTS_BUILD_SYSTEM_VERSION') == '2',
+                reason='CMake V2 requires explicit REQUIRES for local component includes',
+            ),
+        ),
     ],
     indirect=True,
 )

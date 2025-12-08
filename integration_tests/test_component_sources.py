@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import json
 import os
@@ -33,6 +33,10 @@ class TestComponentSources:
             },
         ],
         indirect=True,
+    )
+    @pytest.mark.xfail(
+        os.getenv('IDF_COMPONENT_TESTS_BUILD_SYSTEM_VERSION') == '2',
+        reason='Not all discovered components are available during injection in CMake V2',
     )
     def test_component_override_priority_basic(self, project):
         res = project_action(project, 'reconfigure')
@@ -91,6 +95,10 @@ class TestComponentSources:
             },
         ],
         indirect=True,
+    )
+    @pytest.mark.xfail(
+        os.getenv('IDF_COMPONENT_TESTS_BUILD_SYSTEM_VERSION') == '2',
+        reason='Not all discovered components are available during injection in CMake V2',
     )
     def test_component_override_fail_with_same_component_source(self, project):
         res = project_action(project, 'reconfigure')

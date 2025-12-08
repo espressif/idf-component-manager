@@ -26,6 +26,10 @@ from .integration_test_helpers import project_action
     ],
     indirect=True,
 )
+@pytest.mark.xfail(
+    os.getenv('IDF_COMPONENT_TESTS_BUILD_SYSTEM_VERSION') == '2',
+    reason='Not all discovered components are available during injection in CMake V2',
+)
 def test_changes_in_component(project, monkeypatch):
     res = project_action(project, 'reconfigure')
     assert 'Build files have been written to' in res

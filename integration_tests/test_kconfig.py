@@ -1,15 +1,15 @@
 # SPDX-FileCopyrightText: 2025-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import os
+from os import getenv
 from pathlib import Path
 
 import pytest
 from ruamel.yaml import YAML
 
-from idf_component_tools.semver.base import Version
+from idf_component_tools.semver import Version
 from integration_tests.integration_test_helpers import fixtures_path, project_action
 
-idf_version = Version.coerce(os.getenv('ESP_IDF_VERSION'))
+idf_version = Version.coerce(getenv('ESP_IDF_VERSION'))
 
 
 @pytest.mark.skipif(
@@ -92,7 +92,7 @@ def test_three_runs_cm_kconfig(project):
     # Count how many times "Processing X dependencies" appears in the output
     # This indicates how many times Component Manager has been run
     processing_count = res.count('NOTICE: Processing')
-    build_system_ver = os.environ.get('IDF_COMPONENT_TESTS_BUILD_SYSTEM_VERSION')
+    build_system_ver = getenv('IDF_COMPONENT_TESTS_BUILD_SYSTEM_VERSION')
     if build_system_ver == '2':
         # CMake v2 only needs 2 runs of Component Manager, as it generates
         # sdkconfig.json before the first run
