@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2025-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 from pathlib import Path
 
@@ -80,7 +80,13 @@ def test_three_runs_cm_kconfig(project):
     # Count how many times "Processing X dependencies" appears in the output
     # This indicates how many times Component Manager has been run
     processing_count = res.count('NOTICE: Processing')
-    assert processing_count == 3
+    build_system_ver = os.environ.get('IDF_COMPONENT_TESTS_BUILD_SYSTEM_VERSION')
+    if build_system_ver == '2':
+        # CMake v2 only needs 2 runs of Component Manager, as it generates
+        # sdkconfig.json before the first run
+        assert processing_count == 2
+    else:
+        assert processing_count == 3
 
     assert 'Configuring done' in res
     lock = YAML().load(Path(project) / 'dependencies.lock')
