@@ -9,12 +9,12 @@ from idf_component_tools.semver import Version
 from .integration_test_helpers import project_action
 
 idf_version = Version.coerce(os.getenv('ESP_IDF_VERSION'))
+compatible_version = Version.coerce('6.0.1')
 
 
-@pytest.mark.xfail(reason='ESP-IDF MR')
 @pytest.mark.skipif(
-    idf_version < Version.coerce('6.0'),
-    reason='remove-dependency is only available with ESP-IDF >= 6.0',
+    idf_version < compatible_version,
+    reason='remove-dependency is only available with ESP-IDF >= 6.0.1',
 )
 @pytest.mark.parametrize(
     'project',
@@ -26,10 +26,9 @@ def test_remove_main_dependency(project):
     assert 'Successfully removed dependency "example/cmp"' in res
 
 
-@pytest.mark.xfail(reason='ESP-IDF MR')
 @pytest.mark.skipif(
-    idf_version < Version.coerce('6.0'),
-    reason='remove-dependency is only available with ESP-IDF >= 6.0',
+    idf_version < compatible_version,
+    reason='remove-dependency is only available with ESP-IDF >= 6.0.1',
 )
 @pytest.mark.parametrize(
     'project',
@@ -41,11 +40,10 @@ def test_remove_dependency_does_not_exist(project):
     assert 'Dependency "ns/someabsolutelyoutrageouscomponent" not found in any component' in res
 
 
-@pytest.mark.xfail(reason='ESP-IDF MR')
 @pytest.mark.parametrize('project', [{}], indirect=True)
 def test_remove_dependency_not_in_old_idf_versions(project):
     res = project_action(project, 'remove-dependency', 'example/cmp')
-    if idf_version < Version.coerce('6.0'):
+    if idf_version < compatible_version:
         assert 'command "remove-dependency" is not known to idf.py' in res
     else:
         assert 'Dependency "example/cmp" not found in any component' in res
