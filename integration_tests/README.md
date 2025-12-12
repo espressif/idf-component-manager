@@ -16,15 +16,15 @@ This `pytest` plugin enables dividing the test suite for a specific combination 
 5. Navigate to the `integration_tests` directory.
 6. Run the integration tests locally with the following command
    ```
-   pytest -c "../pytest_integration.ini" --log-cli-level=INFO
+   python -m pytest -c "../pytest_integration.ini" --log-cli-level=INFO
    ```
    1. To run tests from specific file run:
       ```
-      pytest file_name.py -c "../pytest_integration.ini" --log-cli-level=INFO
+      python -m pytest file_name.py -c "../pytest_integration.ini" --log-cli-level=INFO
       ```
    2. To run specific test case run:
       ```
-      pytest -k 'name_of_test_case' -c "../pytest_integration.ini" --log-cli-level=INFO
+      python -m pytest -k 'name_of_test_case' -c "../pytest_integration.ini" --log-cli-level=INFO
       ```
 
 ## Configure integration tests in the CI/CD pipeline
@@ -38,11 +38,13 @@ Configure the Gitlab CI/CD pipeline with the `integration_tests.yml` pipeline de
 2. Enter a number of groups in `<number_of_groups>` and configure the pipeline to run the following command. The number of the splits have to be the same as the number of the groups defined in the `PYTEST_SPLIT_TEST_GROUP` list:
 
    ```sh
-   pytest -c "pytest_integration.ini" \
+   python -m pytest -c "pytest_integration.ini" \
    --log-cli-level=INFO \
    --splits <number_of_groups> \
    --group ${PYTEST_SPLIT_TEST_GROUP}
    ```
+
+If you want to run all integration tests with ESP-IDF CMake build system v2, set `IDF_COMPONENT_TESTS_BUILD_SYSTEM_VERSION` environment variable to `2`. There is also a manual job for running integration tests with build system v2.
 
 ## Create an integration test
 
@@ -131,6 +133,19 @@ tmp7F1Ssf
 |       └── include
 |           ├── some_component.h
 └── CMakeLists.txt
+```
+
+You can also choose version of ESP-IDF build system.
+By default, all projects are using V1 of ESP-IDF Cmake build system, but you can add `build_system_version`
+
+```python
+@pytest.mark.parametrize(
+    'project',
+    [{'build_system_version': 2}],
+    indirect=True,
+)
+def test_build_system_v2(project):
+    assert some_action_with_project(project)
 ```
 
 ## Examples of integration tests
