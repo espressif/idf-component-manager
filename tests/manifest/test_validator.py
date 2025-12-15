@@ -11,7 +11,6 @@ from idf_component_tools import LOGGING_NAMESPACE
 from idf_component_tools.debugger import KCONFIG_CONTEXT
 from idf_component_tools.manager import ManifestManager, UploadMode
 from idf_component_tools.manifest import SLUG_REGEX, OptionalRequirement, SolvedComponent
-from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS, known_targets
 from idf_component_tools.manifest.if_parser import parse_if_clause
 from idf_component_tools.manifest.models import Manifest, OptionalDependency
 from idf_component_tools.sources import LocalSource
@@ -106,17 +105,6 @@ class TestManifestValidator:
         assert errors == [
             'Invalid field "dependencies:test-component:version": Invalid version specification "~=1a.2.3"'
         ]
-
-    def test_validate_targets_unknown(self, valid_manifest):
-        valid_manifest['targets'] = ['esp123', 'esp32', 'asdf']
-        errors = Manifest.validate_manifest(valid_manifest)
-
-        assert not errors
-
-        with validation_context({'upload_mode': UploadMode.component}):
-            errors = Manifest.validate_manifest(valid_manifest)
-
-        assert errors == ['Invalid field "targets". Unknown targets: "asdf,esp123"']
 
     @pytest.mark.parametrize(
         'name',
@@ -217,29 +205,6 @@ class TestManifestValidator:
         errors = Manifest.validate_manifest(valid_manifest)
 
         assert errors == [f'Invalid field "{key}": List must be unique. Duplicate value: "{value}"']
-
-    def test_known_targets_env(self, monkeypatch):
-        monkeypatch.setenv(
-            'IDF_COMPONENT_MANAGER_KNOWN_TARGETS',
-            'esp32,test,esp32s2,esp32s3,esp32c3,esp32h4,linux,esp32c2',
-        )
-        result = known_targets()
-
-        assert len(result) == 8
-        assert 'test' in result
-
-    def test_known_targets_idf(self, monkeypatch, fixtures_path):
-        monkeypatch.setenv('IDF_PATH', os.path.join(fixtures_path, 'fake_idf'))
-        result = known_targets()
-
-        assert len(result) == 8
-        assert 'test' in result
-
-    def test_known_targets_default(self, monkeypatch):
-        monkeypatch.delenv('IDF_PATH', raising=False)
-        result = known_targets()
-
-        assert result == DEFAULT_KNOWN_TARGETS
 
     def test_no_unused_components(self, tmp_managed_components):
         project_requirements = [

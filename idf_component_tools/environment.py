@@ -103,22 +103,6 @@ class ComponentManagerSettings(BaseSettings):
         """,
     )
 
-    KNOWN_TARGETS: t.Optional[str] = Field(
-        default=None,
-        validation_alias=AliasChoices(
-            'IDF_COMPONENT_KNOWN_TARGETS',
-            'IDF_COMPONENT_MANAGER_KNOWN_TARGETS',
-        ),
-        description="""
-            Targets that are known to the Component Manager.
-
-            Aliases:
-
-            - ``IDF_COMPONENT_KNOWN_TARGETS``
-            - ``IDF_COMPONENT_MANAGER_KNOWN_TARGETS`` (**deprecated**)
-        """,
-    )
-
     # NETWORK
 
     VERSION_PROCESS_TIMEOUT: int = Field(
