@@ -59,9 +59,10 @@
 
 integration_test:
   extends: .integration_test_template
+
 integration_test_build_system_v2:
   extends: .integration_test_template
   variables:
     IDF_COMPONENT_TESTS_BUILD_SYSTEM_VERSION: 2
   rules:
-    - when: manual
+    - if: $CI_MERGE_REQUEST_LABELS =~ /build_system_v2/

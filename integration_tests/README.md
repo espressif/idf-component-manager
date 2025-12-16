@@ -61,6 +61,7 @@ You can also use GitLab merge request labels to control pipeline behavior:
 - `run_integration_tests` - Force running integration tests
 - `skip_integration_tests` - Skip integration tests
 - `build_docker` - Force building Docker images
+- `build_system_v2` - Run integration tests with ESP-IDF CMake build system v2
 
 ## Create an integration test
 
