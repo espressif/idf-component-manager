@@ -64,6 +64,8 @@ pre-commit-mr:
 
 prepare_tests:
   extends: .check
+  before_script:
+    - pip install jinja2
   script:
     - python ci/prepare_tests.py
   artifacts:

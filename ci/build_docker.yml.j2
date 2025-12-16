@@ -9,8 +9,8 @@ build:
   timeout: 2h
   parallel:
     matrix:
-      - IDF_BRANCH_TAG: ["release-v6.0", "master"]
-        PYTHON_IMAGE_TAG: ["3.10", "3.14"]
+      - IDF_BRANCH_TAG: {{ idf_branches | tojson }}
+        PYTHON_IMAGE_TAG: {{ python_versions | tojson }}
   script:
     - BRANCH_NAME=$(echo $IDF_BRANCH_TAG | sed -e "s/release-v/release\/v/g")
     - |
