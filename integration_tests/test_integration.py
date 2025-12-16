@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 import os
 import shutil
-import sys
 from pathlib import Path
 
 import pytest
@@ -10,7 +9,6 @@ from ruamel.yaml import YAML
 
 from idf_component_tools.lock import LockManager
 from idf_component_tools.manager import ManifestManager
-from idf_component_tools.manifest.constants import DEFAULT_KNOWN_TARGETS
 
 from .integration_test_helpers import build_project, fixtures_path, live_print_call, project_action
 
@@ -59,14 +57,6 @@ def test_build_component_from_component_registry(project):
 def test_git_folder_does_not_exists(project):
     res = project_action(project, 'reconfigure')
     assert "pathspec 'folder-not-exist' did not match any file(s) known to git" in res
-
-
-def test_known_targets():
-    idf_path = os.environ['IDF_PATH']
-    sys.path.append(os.path.join(idf_path, 'tools'))
-    from idf_py_actions.constants import PREVIEW_TARGETS, SUPPORTED_TARGETS
-
-    assert set(SUPPORTED_TARGETS + PREVIEW_TARGETS).issubset(set(DEFAULT_KNOWN_TARGETS))
 
 
 @pytest.mark.parametrize(

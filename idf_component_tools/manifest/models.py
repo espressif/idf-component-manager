@@ -63,7 +63,7 @@ from idf_component_tools.utils import (
     validation_error_to_str,
 )
 
-from .constants import COMPILED_FULL_SLUG_REGEX, known_targets
+from .constants import COMPILED_FULL_SLUG_REGEX
 from .if_parser import IfClause, parse_if_clause
 
 
@@ -551,12 +551,6 @@ class Manifest(BaseModel):
             raise ValueError(
                 'Invalid field "version". '
                 'Must follow semantic versioning while uploading component to the registry'
-            )
-
-        unknown_targets = sorted(set(self.targets) - set(known_targets()))
-        if unknown_targets:
-            raise ValueError(
-                f'Invalid field "targets". Unknown targets: "{",".join(unknown_targets)}"'
             )
 
     @classmethod

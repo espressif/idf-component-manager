@@ -5,7 +5,6 @@ from .constants import (
     FULL_SLUG_REGEX,
     SLUG_REGEX,
     WEB_DEPENDENCY_REGEX,
-    known_targets,
 )
 from .metadata import Metadata
 from .models import (
@@ -28,7 +27,6 @@ __all__ = [
     'ComponentRequirement',
     'FULL_SLUG_REGEX',
     'INFO_METADATA_KEYS',
-    'known_targets',
     'Manifest',
     'MANIFEST_JSON_SCHEMA',
     'OptionalDependency',
