@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import re
@@ -109,41 +109,6 @@ class CMakeRequirementsManager:
                     requirement[prop.prop] = value
 
         return requirements
-
-
-def check_requirements_name_collisions(
-    requirements: t.Dict[ComponentName, t.Dict[str, t.Union[t.List[str], str]]],
-) -> None:
-    """
-    DEPRECATE: This function is deprecated since interface_version 3,
-        Remove it after ESP-IDF 5.1 EOL
-    """
-    # Pay attention only to components without namespaces
-    name_variants: t.Dict[str, t.Set[str]] = {
-        cmp.name: {cmp.name}
-        for cmp in requirements.keys()
-        if cmp.name == cmp.name_without_namespace
-    }
-
-    for cmp in requirements.keys():
-        if cmp.name_without_namespace not in name_variants:
-            continue
-
-        name_variants[cmp.name_without_namespace].add(cmp.name)
-
-    non_unique_names = {key: names for key, names in name_variants.items() if len(names) > 1}
-
-    if non_unique_names:
-        descriptions = [
-            '  requirement: "{}" candidates: "{}"'.format(key, ', '.join(names))
-            for key, names in non_unique_names.items()
-        ]
-        raise RequirementsProcessingError(
-            'Cannot process component requirements. '
-            'Multiple candidates to satisfy project requirements:\n{}'.format(
-                '\n'.join(descriptions)
-            )
-        )
 
 
 def _choose_component(component: str, known_components: t.List[str]) -> str:

@@ -72,7 +72,6 @@ from .cmake_component_requirements import (
     CMakeRequirementsManager,
     ComponentName,
     RequirementsProcessingError,
-    check_requirements_name_collisions,
     handle_project_requirements,
 )
 from .core_utils import (
@@ -135,7 +134,7 @@ class ComponentManager:
         path: str,
         lock_path: t.Optional[str] = None,
         manifest_path: t.Optional[str] = None,
-        interface_version: int = 0,
+        interface_version: int = 4,
         sdkconfig_json_file: t.Optional[str] = None,
     ) -> None:
         # Working directory
@@ -824,7 +823,6 @@ class ComponentManager:
                 'Please make sure this script is executed from CMake'
             )
 
-        add_all_components_to_main = False
         for component in components_with_manifests:
             component = component.strip()
             name = os.path.basename(component)
@@ -856,34 +854,7 @@ class ComponentManager:
                 managed_requirement_key = f'MANAGED_{requirement_key}'
                 add_req(managed_requirement_key)
 
-                # In interface v0, component_requires_file contains also common requirements
-                if self.interface_version == 0 and name_key == ComponentName('idf', 'main'):
-                    add_all_components_to_main = True
-
-        # If there are dependencies added to the `main` component,
-        # and common components were included to the requirements file
-        # then add every other component to it dependencies
-        # to reproduce convenience behavior
-        # for the standard project defined in IDF's `project.cmake`
-        # For ESP-IDF < 5.0 (Remove after ESP-IDF 4.4 EOL)
-        if add_all_components_to_main:
-            main_reqs = requirements[ComponentName('idf', 'main')]['REQUIRES']
-            for requirement in requirements.keys():
-                name = requirement.name
-                if name not in main_reqs and name != 'main' and isinstance(main_reqs, list):
-                    main_reqs.append(name)
-
-        if self.interface_version >= 3:
-            new_requirements = self._override_requirements_by_component_sources(requirements)
-        else:
-            new_requirements = requirements
-            # we still use this function to check name collisions before 5.2
-            # The behavior is different when
-            #   two components with the same name but have different namespaces
-            # before IDF interface 3, we consider them acceptable, and choose the first one
-            # after IDF interface 3, we raise an requirement conflict error
-            #   if they are under the same component type
-            check_requirements_name_collisions(new_requirements)
+        new_requirements = self._override_requirements_by_component_sources(requirements)
 
         handle_project_requirements(new_requirements)
         requirements_manager.dump(new_requirements)

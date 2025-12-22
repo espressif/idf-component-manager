@@ -26,7 +26,7 @@ def _generate_lock_file(project_dir: Path, yaml_str: str, build_dir: str = 'buil
     os.makedirs(project_dir / build_dir, exist_ok=True)
     ComponentManager(
         path=str(project_dir),
-        interface_version=2,
+        interface_version=4,
     ).prepare_dep_dirs(
         managed_components_list_file=str(managed_components_list_file),
         component_list_file=_component_list_file(project_dir / build_dir),

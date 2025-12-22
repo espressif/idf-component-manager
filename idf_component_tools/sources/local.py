@@ -114,7 +114,7 @@ class LocalSource(BaseSource):
         else:
             field_name = 'path'
 
-        if not path.is_dir():  # for Python > 3.6, where .resolve(strict=False)
+        if not path.is_dir():
             raise SourcePathError(
                 f'The "{field_name}" field in the manifest file "{path / MANIFEST_FILENAME}" '
                 'does not point to a directory. '

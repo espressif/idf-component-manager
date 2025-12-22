@@ -1,21 +1,13 @@
 # SPDX-FileCopyrightText: 2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import os
 from pathlib import Path
 
 import pytest
 from ruamel.yaml import YAML
 
-from idf_component_tools.semver.base import Version
 from integration_tests.integration_test_helpers import fixtures_path, project_action
 
-idf_version = Version.coerce(os.getenv('ESP_IDF_VERSION'))
 
-
-@pytest.mark.skipif(
-    idf_version < Version.coerce('5.3'),
-    reason='KConfig variables in the manifest are not supported in ESP-IDF < 5.3',
-)
 @pytest.mark.parametrize(
     'project',
     [
@@ -57,10 +49,6 @@ def test_prepare_dep_dirs_with_kconfig(project):
     assert 'service' in lock['dependencies']['espressif/esp_codec_dev']['source']['type']
 
 
-@pytest.mark.skipif(
-    idf_version < Version.coerce('5.3'),
-    reason='KConfig variables in the manifest are not supported in ESP-IDF < 5.3',
-)
 @pytest.mark.parametrize(
     'project',
     [

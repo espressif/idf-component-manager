@@ -1,7 +1,5 @@
 # SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-
-import enum
 import importlib.metadata as importlib_metadata
 from enum import Enum
 
@@ -16,7 +14,7 @@ CLICK_SUPPORTS_SHOW_DEFAULT = CLICK_VERSION >= Version('7.1.0')
 # The reason is that the `dir()` behavior is different,
 # ___eq__, __lt__, __hash__ are not in the dir() result.
 # define all six operators here
-class ComponentSource(str, enum.Enum):
+class ComponentSource(str, Enum):
     # These double-quotes are coming from the build system
     IDF_COMPONENTS = '"idf_components"'
     IDF_MANAGED_COMPONENTS = '"idf_managed_components"'
