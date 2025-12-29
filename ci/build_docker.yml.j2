@@ -23,16 +23,15 @@ build:
 
     - echo "Using esp-idf branch - ${BRANCH_NAME}"
     - echo "Creating docker image - ${IMAGE_TAG}"
+    - echo "Using esp-idf git url - ${IDF_GIT_URL}"
 
     - mkdir -p /kaniko/.docker
     - echo "${DOCKER_AUTH_CONFIG}" > /kaniko/.docker/config.json
     - /kaniko/executor
       --dockerfile "ci/Dockerfile"
       --destination "${IMAGE_TAG}"
-      --build-arg IDF_GIT_URL=${GITLAB_HTTPS_SERVER}/espressif/esp-idf.git
-      --build-arg API_TOKEN="${IDF_API_TOKEN}"
+      --build-arg IDF_GIT_URL=${IDF_GIT_URL}
       --build-arg PYTHON_IMAGE_TAG="${PYTHON_IMAGE_TAG}"
       --build-arg IDF_BRANCH="${BRANCH_NAME}"
-      --build-arg IDF_VERSION="${IDF_VERSION}"
       --cache=true
       --cache-ttl=720h

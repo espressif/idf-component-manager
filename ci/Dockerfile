@@ -2,10 +2,8 @@ ARG PYTHON_IMAGE_TAG=3.10-bullseye
 
 FROM python:${PYTHON_IMAGE_TAG}
 
-ARG API_TOKEN=
 ARG IDF_BRANCH=master
-ARG IDF_PROJ_ID=
-ARG IDF_GIT_URL=
+ARG IDF_GIT_URL=https://github.com/espressif/esp-idf.git
 
 WORKDIR /esp-idf
 
@@ -20,7 +18,7 @@ ENV IDF_BRANCH=${IDF_BRANCH}
 # Clone the IDF repository
 RUN set -e \
     && git init \
-    && git remote add origin https://github.com/espressif/esp-idf.git \
+    && git remote add origin ${IDF_GIT_URL} \
     && git fetch --depth 1 origin ${IDF_BRANCH} \
     && git checkout FETCH_HEAD \
     && git submodule update --init --depth 1 --recursive
