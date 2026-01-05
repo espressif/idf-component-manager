@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import sys
@@ -13,9 +13,6 @@ from idf_component_manager.cli.validations import (
     validate_path_for_project,
 )
 from idf_component_manager.core import remove_dependency_from_project
-from idf_component_manager.utils import (
-    CLICK_SUPPORTS_SHOW_DEFAULT,
-)
 from idf_component_tools import error, setup_logging
 from idf_component_tools.errors import FatalError
 from idf_component_tools.semver import Version
@@ -121,8 +118,6 @@ LOCAL_MANIFEST_OPTIONS: t.List[t.Dict[str, t.Any]] = [
     },
 ]
 
-if CLICK_SUPPORTS_SHOW_DEFAULT:
-    LOCAL_MANIFEST_OPTIONS[0]['show_default'] = True
 
 VERSION_PARAMETER = [
     {

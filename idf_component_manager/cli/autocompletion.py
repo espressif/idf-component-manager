@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -7,21 +7,7 @@ import typing as t
 
 import click
 
-from idf_component_tools.errors import FatalError
-from idf_component_tools.semver import Version
-
-from ..utils import CLICK_VERSION
-
 CLI_NAME = 'compote'
-
-
-def _get_shell_completion(shell: str) -> str:
-    if CLICK_VERSION.major == 7:
-        return 'source_' + shell
-    elif CLICK_VERSION.major > 7:
-        return shell + '_source'
-    else:
-        raise NotImplementedError
 
 
 def _append_text_line(
@@ -147,23 +133,13 @@ def init_autocomplete():
     )
     @_doc(_DOC_STRSTRING)
     def autocomplete(shell, install, dry_run):
-        if shell == 'fish':
-            if CLICK_VERSION < Version('7.1.0'):  # fish support was added in 7.1
-                raise FatalError(
-                    'Autocomplete for the fish shell is only supported by '
-                    'library `click` version 7.1 and higher. An older version '
-                    'is installed on your machine due to an outdated version of python. '
-                    'We recommend using python 3.7 and higher with compote CLI.'
-                )
-
         # the return code could be 1 even succeeded
         # use || true to swallow the return code
         autocomplete_script_str = subprocess.check_output(  # noqa: S602
-            '_{}_COMPLETE={} {} || true'.format(
-                CLI_NAME.upper(), _get_shell_completion(shell), CLI_NAME
-            ),
+            '_{}_COMPLETE={} {} || true'.format(CLI_NAME.upper(), f'{shell}_source', CLI_NAME),
             shell=True,
-        ).decode('utf8')
+            text=True,
+        )
 
         if not install:  # print the autocomplete script only
             print(autocomplete_script_str)

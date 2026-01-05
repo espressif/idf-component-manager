@@ -1,12 +1,6 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import importlib.metadata as importlib_metadata
 from enum import Enum
-
-from idf_component_tools.semver import Version
-
-CLICK_VERSION = Version.coerce(importlib_metadata.version('click'))
-CLICK_SUPPORTS_SHOW_DEFAULT = CLICK_VERSION >= Version('7.1.0')
 
 
 # total_ordering will raise an error in python 2.7 with enum34
