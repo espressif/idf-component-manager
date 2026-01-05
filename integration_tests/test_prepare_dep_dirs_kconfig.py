@@ -49,35 +49,3 @@ def test_prepare_dep_dirs_with_kconfig(project):
         in lock['dependencies']['cmp']['dependencies'][0]['matches'][0]['if']
     )
     assert 'service' in lock['dependencies']['espressif/esp_codec_dev']['source']['type']
-
-
-@pytest.mark.skipif(
-    idf_version >= Version.coerce('5.3'),
-    reason='The notice is only displayed when ESP-IDF version is less than 5.3',
-)
-@pytest.mark.parametrize(
-    'project',
-    [
-        {
-            'components': {
-                'main': {
-                    'dependencies': {
-                        'cmp': {
-                            'override_path': fixtures_path(
-                                'components', 'cmp_with_kconfig_var', 'cmp'
-                            ),
-                        },
-                    },
-                },
-            },
-        },
-    ],
-    indirect=True,
-)
-def test_kconfig_when_unsupported_idf(project):
-    output = project_action(
-        project,
-        'reconfigure',
-    )
-
-    assert 'not supported by your ESP-IDF version' in output

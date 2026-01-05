@@ -1,17 +1,13 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import filecmp
 import os
 import shutil
 
-import pytest
-
 from idf_component_manager.cmake_component_requirements import (
     CMakeRequirementsManager,
     ComponentName,
-    RequirementsProcessingError,
-    check_requirements_name_collisions,
     handle_project_requirements,
 )
 
@@ -19,26 +15,6 @@ from idf_component_manager.cmake_component_requirements import (
 def test_component_name_without_namespace():
     assert ComponentName('idf', 'some__component').name_without_namespace == 'component'
     assert ComponentName('idf', 'component').name_without_namespace == 'component'
-
-
-def test_check_requirements_name_collisions_raises():
-    reqs = {
-        ComponentName('idf', 'ns__cmp'): {},
-        ComponentName('idf', 'cmp'): {},
-    }
-
-    with pytest.raises(RequirementsProcessingError):
-        check_requirements_name_collisions(reqs)
-
-
-def test_check_requirements_name_collisions_ok():
-    reqs = {
-        ComponentName('idf', 'ns__cmp'): {},
-        ComponentName('idf', 'ns2__cmp'): {},
-        ComponentName('idf', 'ns__cmp2'): {},
-    }
-
-    check_requirements_name_collisions(reqs)
 
 
 def test_e2e_cmake_requirements(tmp_path, fixtures_path):

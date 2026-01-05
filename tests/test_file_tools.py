@@ -26,9 +26,8 @@ def create_gitignore(path: t.Union[str, Path], patterns: t.List[str]):
 @pytest.fixture
 def assets_path(tmp_path, fixtures_path):
     templatepath = Path(fixtures_path) / 'hash_examples' / 'component_4'
-    # Avoid `dirs_exist_ok=True` missing in python 2
     subdir = tmp_path / 'sub'
-    shutil.copytree(templatepath.as_posix(), subdir.as_posix())
+    shutil.copytree(templatepath, subdir, dirs_exist_ok=True)
     return subdir
 
 
