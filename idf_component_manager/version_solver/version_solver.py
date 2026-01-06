@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -61,7 +61,9 @@ class VersionSolver:
         self._solved_requirements: t.Set[ComponentRequirement] = set()
 
     def _parse_local_root_requirements(self) -> None:
-        # scan all LocalSource dependencies
+        # scan all LocalSource dependencies and add all local components to _local_root_requirements
+        # This ensures that when we process dependencies in the second pass,
+        # all local components are already available for matching
         for manifest in self.requirements.manifests:
             for requirement in manifest.requirements:
                 if isinstance(requirement.source, LocalSource):
@@ -79,7 +81,21 @@ class VersionSolver:
                     else:
                         self._local_root_requirements[requirement.build_name] = requirement
 
-        # add all local components, except [0] -> main component
+        # First pass: add all local components to _local_root_requirements
+        # This ensures that when we process dependencies in the second pass,
+        # all local components are already available for matching
+        # Add all local components, except [0] -> main component
+        for manifest in self.requirements.manifests[1:]:
+            if manifest.real_name and manifest.version and manifest._manifest_manager:
+                self._local_root_requirements[manifest.real_name] = ComponentRequirement(
+                    name=manifest.real_name,
+                    path=os.path.dirname(manifest.path),
+                    version=str(manifest.version),
+                    manifest_manager=manifest._manifest_manager,
+                )
+
+        # Second pass: add local components to the solver with their dependencies
+        # Now _local_root_requirements is fully populated, so dependencies can be resolved correctly
         for manifest in self.requirements.manifests[1:]:
             # add itself as highest priority component
             if manifest.real_name and manifest.version and manifest._manifest_manager:
@@ -93,13 +109,6 @@ class VersionSolver:
                     deps=self._component_dependencies_with_local_precedence(
                         manifest.requirements, manifest.real_name
                     ),
-                )
-
-                self._local_root_requirements[manifest.real_name] = ComponentRequirement(
-                    name=manifest.real_name,
-                    path=os.path.dirname(manifest.path),
-                    version=str(manifest.version),
-                    manifest_manager=manifest._manifest_manager,
                 )
 
     def _solve(self, cur_solution: t.Optional[SolvedManifest] = None) -> SolvedManifest:
