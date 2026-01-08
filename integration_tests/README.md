@@ -46,6 +46,23 @@ Configure the Gitlab CI/CD pipeline with the `integration_tests.yml` pipeline de
 
 If you want to run all integration tests with ESP-IDF CMake build system v2, set `IDF_COMPONENT_TESTS_BUILD_SYSTEM_VERSION` environment variable to `2`. There is also a manual job for running integration tests with build system v2.
 
+## Environment variables for CI/CD pipeline
+
+The following environment variables can be used to control the CI/CD pipeline behavior:
+
+| Variable                | Description                                                                                                                                                                                                                                                                                              |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `IDF_BRANCHES`          | Comma-separated list of ESP-IDF branches to test against. Overrides the default branches defined in `ci/prepare_tests.py`. You can use branch names (e.g., `master`, `release-v6.0`) or commit SHAs. Example: `IDF_BRANCHES="release-v5.3,release-v6.0,master"` or `IDF_BRANCHES="abc1234,release-v6.0"` |
+| `RUN_INTEGRATION_TESTS` | Set to `1` to force running integration tests, or `0` to skip them. By default, integration tests run on the main branch, release branches, scheduled pipelines, or when `integration_tests` files are modified.                                                                                         |
+| `BUILD_DOCKER_IMAGE`    | Set to `1` to force building Docker images. By default, Docker images are built when the Dockerfile is modified or the `build_docker` label is applied to the merge request.                                                                                                                             |
+
+You can also use GitLab merge request labels to control pipeline behavior:
+
+- `run_integration_tests` - Force running integration tests
+- `skip_integration_tests` - Skip integration tests
+- `build_docker` - Force building Docker images
+- `build_system_v2` - Run integration tests with ESP-IDF CMake build system v2
+
 ## Create an integration test
 
 To create an integration test scenario add the declaration of the test case into the file with prefix
