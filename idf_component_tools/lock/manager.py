@@ -29,6 +29,7 @@ class LockManager:
         self._path = path
         self._yaml = YAML(typ='safe')
         self._yaml.default_flow_style = False
+        self._yaml.width = 2048  # Prevent wrapping long strings (hashes...)
 
     def exists(self):
         return os.path.isfile(self._path)
