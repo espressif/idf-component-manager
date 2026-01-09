@@ -1,0 +1,6 @@
+version: '1.0.0'
+description: 'Test component that is Kconfig-gated and depends on cmp_cmake_function'
+dependencies:
+  cmp_cmake_function:
+    version: '*'
+    override_path: '../cmp_cmake_function'
