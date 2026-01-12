@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Core module of component manager"""
 
@@ -892,6 +892,19 @@ class ComponentManager:
         if cm_run_counter == 1:
             with open(requirements_manager.path, 'a', encoding='utf-8') as f:
                 f.write('set(retried 0 PARENT_SCOPE)\n')
+        if cm_run_counter >= 1:
+            with open(requirements_manager.path, 'a', encoding='utf-8') as f:
+                # HACK: Clear all build properties so the order of dependencies is correct.
+                # This fixes the issue where Kconfig-gated dependencies that provide
+                # CMake functions are not available when main's CMakeLists.txt is processed.
+                f.write("""
+                    idf_build_unset_property(__BUILD_COMPONENT_TARGETS)
+                    idf_build_unset_property(__COMPONENT_TARGETS_SEEN)
+                    idf_build_unset_property(__BUILD_COMPONENTS)
+                    idf_build_unset_property(BUILD_COMPONENT_ALIASES)
+                    idf_build_unset_property(BUILD_COMPONENTS)
+                    idf_build_unset_property(__BUILD_COMPONENT_DEPGRAPH)
+                """)
 
     @staticmethod
     def _override_requirements_by_component_sources(
