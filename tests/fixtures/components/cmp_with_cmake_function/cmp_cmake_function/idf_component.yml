@@ -1,0 +1,4 @@
+version: '1.0.0'
+description: 'Test component that provides a CMake function'
+maintainers:
+  - 'Test Tester <test@example.com>'
