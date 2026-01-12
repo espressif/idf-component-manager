@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.4.4 (2026-01-12)
+
+### Fix
+
+- Clear build component targets during Kconfig retry
+- Lock tests - wrapping long strings in yaml
+- WebSource components pulled in when local available
+
 ## v2.4.3 (2025-12-01)
 
 ### Feat
