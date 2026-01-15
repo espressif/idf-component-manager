@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import shutil
@@ -96,6 +96,10 @@ def test_local_dependency_with_env_var_path(project, monkeypatch):
     ],
     indirect=True,
 )
+@pytest.mark.xfail(
+    os.getenv('IDF_COMPONENT_TESTS_BUILD_SYSTEM_VERSION') == '2',
+    reason='Not all discovered components are available during injection in CMake V2',
+)
 def test_local_dependency_main_requires(project):
     res = build_project(project)
     assert 'Project build complete.' in res
@@ -118,6 +122,10 @@ def test_local_dependency_main_requires(project):
         },
     ],
     indirect=True,
+)
+@pytest.mark.xfail(
+    os.getenv('IDF_COMPONENT_TESTS_BUILD_SYSTEM_VERSION') == '2',
+    reason='Not all discovered components are available during injection in CMake V2',
 )
 def test_local_dependency_reconfigure_non_existing(project):
     project_action(project, 'create-component', 'example__cmp')

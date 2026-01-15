@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 
@@ -27,11 +27,13 @@ from .integration_test_helpers import set_target
 def test_changing_target(project):
     lock_path = os.path.join(project, 'dependencies.lock')
     res = set_target(project, 'esp32')
-    assert 'Building ESP-IDF components for target esp32' in res
+    assert 'Set Target to: esp32' in res
+    assert 'Configuring done' in res
     with open(lock_path, encoding='utf-8') as f:
         assert 'esp32\n' in f.read()
     res = set_target(project, 'esp32s2')
-    assert 'Building ESP-IDF components for target esp32s2' in res
+    assert 'Set Target to: esp32s2' in res
+    assert 'Configuring done' in res
     assert 'Updating lock file at {}'.format(lock_path) in res
     assert 'solving dependencies' not in res  # since the current solution is working
     with open(lock_path, encoding='utf-8') as f:
