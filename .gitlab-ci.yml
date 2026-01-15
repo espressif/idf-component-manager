@@ -88,7 +88,9 @@ prepare_tests:
     when: always
     expire_in: 4 days
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"' # Include this job in merge request pipelines, only
+    - if: '$CI_MERGE_REQUEST_LABELS =~ /skip_docs/'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 build-preview-docs:
   extends: .build-docs
@@ -119,7 +121,9 @@ diff-docs:
     expire_in: 4 days
     expose_as: docs_diff
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"' # Include this job in merge request pipelines, only
+    - if: '$CI_MERGE_REQUEST_LABELS =~ /skip_docs/'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 tests:
   stage: test
