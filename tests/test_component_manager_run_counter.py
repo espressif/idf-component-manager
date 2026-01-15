@@ -1,8 +1,7 @@
-# SPDX-FileCopyrightText: 2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2025-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import os
 
-from idf_component_manager.prepare_components.prepare import RunCounter
+from idf_component_manager.prepare_components.prepare import RunCounter, get_cmake_pid
 
 
 def test_create_counter_file_with_zero(tmp_path):
@@ -14,7 +13,7 @@ def test_create_counter_file_with_zero(tmp_path):
 
 def test_file_path_includes_ppid(tmp_path):
     counter = RunCounter(tmp_path)
-    expected_filename = f'component_manager_run_counter.{os.getppid()}'
+    expected_filename = f'component_manager_run_counter.{get_cmake_pid()}'
     assert counter._file_path.name == expected_filename
 
 

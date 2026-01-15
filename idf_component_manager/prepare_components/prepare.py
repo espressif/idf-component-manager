@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# SPDX-FileCopyrightText: 2019-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2019-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 #
 # 'prepare.py' is a tool to be used by CMake build system to prepare components
@@ -12,6 +12,8 @@ import shutil
 import sys
 import typing as t
 from pathlib import Path
+
+import psutil
 
 from idf_component_manager.core import ComponentManager
 from idf_component_tools import error, notice, setup_logging, warn
@@ -25,9 +27,39 @@ def _component_list_file(build_dir):
     return os.path.join(build_dir, 'components_with_manifests_list.temp')
 
 
+def get_cmake_pid():
+    """
+    Find the PID of the CMake process that initiated this build.
+
+    This script is invoked multiple times during a single CMake build
+    (prepare_dependencies, inject_requirements). On Linux and macOS,
+    os.getppid() consistently returns the same parent PID across invocations.
+
+    On Windows, however, each invocation of this script is spawned through a
+    new intermediate process (e.g. cmd.exe), so os.getppid() returns a different
+    PID each time. This causes multiple state files to be created instead of
+    sharing one per CMake build, breaking the run counter and component list logic.
+
+    This function walks up the process tree to find the CMake process itself,
+    which remains constant throughout the build, ensuring consistent state file
+    naming across all invocations.
+
+    Returns:
+        The PID of the CMake parent process, or os.getppid() as a fallback
+        if no CMake process is found in the ancestry.
+    """
+    current = psutil.Process()
+    while current.parent():
+        parent = current.parent()
+        if 'cmake' in parent.name().lower():
+            return parent.pid
+        current = parent
+    return os.getppid()
+
+
 class RunCounter:
     def __init__(self, build_dir: t.Union[str, Path]):
-        self._file_path = Path(build_dir) / f'component_manager_run_counter.{os.getppid()}'
+        self._file_path = Path(build_dir) / f'component_manager_run_counter.{get_cmake_pid()}'
 
         if not self._file_path.exists():
             self._file_path.write_text('0')
@@ -63,7 +95,7 @@ class RunCounter:
 
 
 def _get_ppid_file_path(local_component_list_file: t.Optional[str]) -> Path:
-    return Path(f'{local_component_list_file}.{os.getppid()}')
+    return Path(f'{local_component_list_file}.{get_cmake_pid()}')
 
 
 def _get_component_list_file(local_components_list_file):
