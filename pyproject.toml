@@ -34,6 +34,7 @@ classifiers = [
     'Programming Language :: Python :: Implementation :: CPython',
 ]
 dependencies = [
+    "psutil",
     "click",
     "colorama",
     "pyparsing",
@@ -59,7 +60,8 @@ docs = [
     "sphinx-rtd-theme",
     "sphinx-tabs",
     "sphinx_collapse",
-    "autodoc_pydantic"
+    "autodoc_pydantic",
+    "docutils<0.22",  # sphinx-tabs 3.4.7 incompatible with docutils 0.22+
 ]
 
 test = [
