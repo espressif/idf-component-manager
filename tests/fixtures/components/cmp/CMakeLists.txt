@@ -1,6 +1,4 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(COMPONENT_SRCDIRS .)
-set(COMPONENT_ADD_INCLUDEDIRS "include")
-
-register_component()
+idf_component_register(SRCS "cmp.c"
+                       INCLUDE_DIRS "include")

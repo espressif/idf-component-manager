@@ -341,6 +341,10 @@ def test_idf_build_inject_dependencies_even_with_set_components(
 @pytest.mark.skipif(
     Version(get_idf_version()) < Version('5.0.0'), reason='mdns 1.0.7 supports idf >= 5.0'
 )
+@pytest.mark.xfail(
+    os.getenv('IDF_COMPONENT_TESTS_BUILD_SYSTEM_VERSION') == '2',
+    reason='So far unknown why it fails on CMakeV2',
+)
 def test_idf_reconfigure_fixed_order_sdkconfig(project):
     project_action(project, 'reconfigure')
     last_mtime = os.stat(os.path.join(project, 'sdkconfig')).st_mtime

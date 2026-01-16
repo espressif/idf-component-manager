@@ -22,6 +22,8 @@ from idf_component_tools.debugger import KCONFIG_CONTEXT
 from idf_component_tools.errors import FatalError
 from idf_component_tools.manifest import ComponentRequirement
 
+CMAKEV2 = os.environ.get('IDF_BUILD_V2', 'n') == 'y'
+
 
 def _component_list_file(build_dir):
     return os.path.join(build_dir, 'components_with_manifests_list.temp')
@@ -141,7 +143,8 @@ def prepare_dep_dirs(args):
 
     # If the Component Manager has been run before, we need to update the Kconfig context with the sdkconfig.json file
     sdk_config_json_path = _get_sdkconfig_json_file_path(args, build_dir)
-    if sdk_config_json_path and RunCounter(build_dir).value > 0:
+    # CMake V2 has valid sdkconfig.json right away
+    if sdk_config_json_path and (RunCounter(build_dir).value > 0 or CMAKEV2):
         KCONFIG_CONTEXT.get().update_from_file(sdk_config_json_path)
 
     local_components_list_file = _get_component_list_file(args.local_components_list_file)
@@ -211,7 +214,7 @@ def prepare_dep_dirs(args):
 def inject_requirements(args):
     sdk_config_json_path = _get_sdkconfig_json_file_path(args, args.build_dir)
 
-    if sdk_config_json_path and RunCounter(args.build_dir).value > 0:
+    if sdk_config_json_path and (RunCounter(args.build_dir).value > 0 or CMAKEV2):
         KCONFIG_CONTEXT.get().update_from_file(sdk_config_json_path)
 
     ComponentManager(
@@ -224,12 +227,15 @@ def inject_requirements(args):
         cm_run_counter=RunCounter(args.build_dir).value,
     )
 
-    # Last run of prepare_dep_dirs was successful
-    # Clean up CM Run counter
-    if not Path(_get_ppid_file_path(f'{args.build_dir}/local_components_list.temp.yml')).exists():
-        RunCounter(args.build_dir).cleanup()
-    else:
-        RunCounter(args.build_dir).increase()
+    # Last run of prepare_dep_dirs was successful -> Clean up CM Run counter
+    # If we're running CMakeV2, do not take counter into consideration
+    if not CMAKEV2:
+        if not Path(
+            _get_ppid_file_path(f'{args.build_dir}/local_components_list.temp.yml')
+        ).exists():
+            RunCounter(args.build_dir).cleanup()
+        else:
+            RunCounter(args.build_dir).increase()
 
 
 def main():
