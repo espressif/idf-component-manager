@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.4.5 (2026-01-16)
+
+### Fix
+
+- kconfig build system for CMake v2
+- pin docutils\<0.22 to keep sphinx-tabs compatibility
+- Getting parent CMake process PPID on Windows
+
 ## v2.4.4 (2026-01-12)
 
 ### Fix
