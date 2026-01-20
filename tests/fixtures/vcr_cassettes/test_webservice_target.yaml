@@ -9,25 +9,26 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
-        python/3.11.10)
+      - idf-component-manager/2.4.0 (Linux/6.6.87.2-microsoft-standard-WSL2 x86_64;
+        python/3.14.2)
     method: GET
     uri: http://localhost:9000/test-public/components/test_component_manager/pre.json
   response:
     body:
       string: '{"name": "pre", "namespace": "test_component_manager", "created_at":
-        "2025-03-21T13:49:38.868780+00:00", "featured": false, "versions": [{"id":
-        "75c04f75-6419-4c63-81e2-ff8734092708", "version": "0.0.5-alpha1", "created_at":
-        "2025-03-21T13:49:39.825277+00:00", "description": "This component is a pre-release
-        example, to be used for testing.", "component_hash": "f6af04018778f30803f770b050a893a7476b73f90a8955ed0d6be103a76b1b40",
+        "2026-01-20T12:06:24.158656+00:00", "featured": false, "versions": [{"id":
+        "35ec0d85-13ae-4919-bb0d-b806045816c4", "version": "0.0.5-alpha1", "created_at":
+        "2026-01-20T12:06:24.633745+00:00", "description": "This component is a pre-release
+        example, to be used for testing.", "component_hash": "e9860af62e11be29c6dbba3c45b78a7238ef217f16369a83a1e14d9287c3aff5",
         "url": "components/test_component_manager/pre/0.0.5-alpha1/test_component_manager__pre-v0.0.5-alpha1.zip",
         "targets": ["esp32"], "maintainers": [], "docs": {"readme": "components/test_component_manager/pre/0.0.5-alpha1/readme.md"},
         "dependencies": [], "license": {"name": "Custom", "url": "components/test_component_manager/pre/0.0.5-alpha1/license.txt"},
         "homepage": "https://github.com/somewhere_over_the_rainbow", "documentation":
         null, "repository": null, "issues": null, "discussion": null, "examples":
-        [{"id": "36c727ec-9162-49d7-a6d6-f1c623076e16", "name": "cmp_ex", "url": "ad5aaefa-1816-48e0-8b45-c19be8d2be07/examples/36c727ec-9162-49d7-a6d6-f1c623076e16.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/pre/0.0.5-alpha1/CHECKSUMS.json",
-        "yanked_at": null, "yanked_message": null, "build_metadata_keys": ["targets-type:array-type:string",
+        [{"id": "4087a8d2-9b59-4739-8255-361fbb488fdf", "name": "cmp_ex", "url": "a8ac1c37-a198-4fba-9ffe-393477057a24/examples/4087a8d2-9b59-4739-8255-361fbb488fdf.tgz",
+        "docs": {}, "description": null}], "tags": [], "downloads_total": 0, "checksums":
+        "components/test_component_manager/pre/0.0.5-alpha1/CHECKSUMS.json", "yanked_at":
+        null, "yanked_message": null, "build_metadata_keys": ["targets-type:array-type:string",
         "version-type:string"], "info_metadata_keys": ["description-type:string",
         "url-type:string"]}]}'
     headers:
@@ -36,15 +37,15 @@ interactions:
       Cache-Control:
       - max-age=300
       Content-Length:
-      - '1427'
+      - '1448'
       Content-Type:
       - binary/octet-stream
       Date:
-      - Fri, 21 Mar 2025 14:18:04 GMT
+      - Tue, 20 Jan 2026 12:46:33 GMT
       ETag:
-      - '"c63260e929a1430874ab16d62e910b34"'
+      - '"d308453a2f2c5990ebc1455e72d6e88e"'
       Last-Modified:
-      - Fri, 21 Mar 2025 13:49:39 GMT
+      - Tue, 20 Jan 2026 12:06:24 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -55,13 +56,13 @@ interactions:
       X-Amz-Id-2:
       - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
       X-Amz-Request-Id:
-      - 182ED72AB79FA863
+      - 188C712D59DB9662
       X-Content-Type-Options:
       - nosniff
       X-Ratelimit-Limit:
-      - '4958'
+      - '4752'
       X-Ratelimit-Remaining:
-      - '4958'
+      - '4752'
       X-Xss-Protection:
       - 1; mode=block
     status:

@@ -9,17 +9,17 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
-        python/3.11.10)
+      - idf-component-manager/2.4.0 (Linux/6.6.87.2-microsoft-standard-WSL2 x86_64;
+        python/3.14.2)
     method: GET
     uri: http://localhost:9000/test-public/components/test_component_manager/cmp.json
   response:
     body:
       string: '{"name": "cmp", "namespace": "test_component_manager", "created_at":
-        "2025-03-21T13:53:49.905305+00:00", "featured": false, "versions": [{"id":
-        "672f672b-9f51-489c-92e8-a6785126db80", "version": "2.0.0-alpha1", "created_at":
-        "2025-03-21T13:53:58.487330+00:00", "description": "This component is an example,
-        to be used for testing.", "component_hash": "ad776a87dfae6f5aef2715d950a1639cf2daa2b20d23892df628ce1c91b9815d",
+        "2026-01-20T12:06:14.320368+00:00", "featured": false, "versions": [{"id":
+        "1a614869-b60d-4534-b0dc-9cc7fe51118f", "version": "2.0.0-alpha1", "created_at":
+        "2026-01-20T12:06:21.412660+00:00", "description": "This component is an example,
+        to be used for testing.", "component_hash": "71b4c92016dcaffd1debac0a0218f73bd8d10b300548e92d56f53f30fa364589",
         "url": "components/test_component_manager/cmp/2.0.0-alpha1/test_component_manager__cmp-v2.0.0-alpha1.zip",
         "targets": [], "maintainers": [], "docs": {"readme": "components/test_component_manager/cmp/2.0.0-alpha1/readme.md"},
         "dependencies": [{"spec": ">=4.4.0", "source": "idf", "registry_url": null,
@@ -27,14 +27,15 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/cmp/2.0.0-alpha1/license.txt"},
         "homepage": "https://github.com/somewhere_over_the_rainbow", "documentation":
         null, "repository": null, "issues": null, "discussion": null, "examples":
-        [{"id": "6552ea59-a878-48a9-9d62-4848866e3dbe", "name": "cmp_ex", "url": "28c5ec38-962e-4afc-8cbe-363591265805/examples/6552ea59-a878-48a9-9d62-4848866e3dbe.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/cmp/2.0.0-alpha1/CHECKSUMS.json",
-        "yanked_at": null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-type:string",
+        [{"id": "9ebc152b-c91a-4497-97ed-3938a9e11472", "name": "cmp_ex", "url": "76adde82-2926-4bb3-85ea-cd0b7cddd229/examples/9ebc152b-c91a-4497-97ed-3938a9e11472.tgz",
+        "docs": {}, "description": null}], "tags": [], "downloads_total": 0, "checksums":
+        "components/test_component_manager/cmp/2.0.0-alpha1/CHECKSUMS.json", "yanked_at":
+        null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-type:string",
         "version-type:string"], "info_metadata_keys": ["description-type:string",
-        "url-type:string"]}, {"id": "7d3ad432-713a-4b60-a7cb-67e378e4dec4", "version":
-        "1.0.1", "created_at": "2025-03-21T13:53:54.041100+00:00", "description":
+        "url-type:string"]}, {"id": "ec06a258-380d-42a6-8ebd-6db08fa09ebd", "version":
+        "1.0.1", "created_at": "2026-01-20T12:06:18.025257+00:00", "description":
         "This component is an example, to be used for testing.", "component_hash":
-        "76f4b9074f855f24e82b902edcb2b1a9f2231bad828c63c5cfc8362d0d1aace8", "url":
+        "f441dcb07bbd33207517672e45dbb9eac365ca23a2926ab2b57d24eeadd9c56a", "url":
         "components/test_component_manager/cmp/1.0.1/test_component_manager__cmp-v1.0.1.zip",
         "targets": [], "maintainers": [], "docs": {"readme": "components/test_component_manager/cmp/1.0.1/readme.md"},
         "dependencies": [{"spec": ">=4.4.0", "source": "idf", "registry_url": null,
@@ -45,14 +46,15 @@ interactions:
         {"name": "Custom", "url": "components/test_component_manager/cmp/1.0.1/license.txt"},
         "homepage": "https://github.com/somewhere_over_the_rainbow", "documentation":
         null, "repository": null, "issues": null, "discussion": null, "examples":
-        [{"id": "79c39ae8-de98-46f6-a7a8-57d166e139d4", "name": "cmp_ex", "url": "4951b6f4-870d-403c-b087-f2464780183f/examples/79c39ae8-de98-46f6-a7a8-57d166e139d4.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/cmp/1.0.1/CHECKSUMS.json",
-        "yanked_at": null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-registry_url-type:string",
+        [{"id": "8cb8eed9-2a99-4cc2-83f7-0ad3ae2bfff5", "name": "cmp_ex", "url": "2827919e-adc6-42fa-9eec-a566c652f003/examples/8cb8eed9-2a99-4cc2-83f7-0ad3ae2bfff5.tgz",
+        "docs": {}, "description": null}], "tags": [], "downloads_total": 0, "checksums":
+        "components/test_component_manager/cmp/1.0.1/CHECKSUMS.json", "yanked_at":
+        null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-registry_url-type:string",
         "dependencies-*-type:string", "dependencies-*-version-type:string", "version-type:string"],
         "info_metadata_keys": ["description-type:string", "url-type:string"]}, {"id":
-        "9c3d7e82-37d2-4fa7-9567-2383902b2402", "version": "1.0.0", "created_at":
-        "2025-03-21T13:53:50.855342+00:00", "description": "This component is an example,
-        to be used for testing.", "component_hash": "b341989ac67a6415769d22bb8c983010a046ddbdd467d5e2eb6b5c9b57ac7368",
+        "0ebd1e93-0b44-4c98-8a76-c0136701d327", "version": "1.0.0", "created_at":
+        "2026-01-20T12:06:14.825782+00:00", "description": "This component is an example,
+        to be used for testing.", "component_hash": "e65dd0cf2377e0f566b88736f9a7441e6654ccacae128f0e81f5fb980099c7c1",
         "url": "components/test_component_manager/cmp/1.0.0/test_component_manager__cmp-v1.0.0.zip",
         "targets": [], "maintainers": [], "docs": {"readme": "components/test_component_manager/cmp/1.0.0/readme.md"},
         "dependencies": [{"spec": ">=4.4.0", "source": "idf", "registry_url": null,
@@ -63,9 +65,10 @@ interactions:
         {"name": "Custom", "url": "components/test_component_manager/cmp/1.0.0/license.txt"},
         "homepage": "https://github.com/somewhere_over_the_rainbow", "documentation":
         null, "repository": null, "issues": null, "discussion": null, "examples":
-        [{"id": "5374fe37-27c1-4e68-b9e5-221991b18e1d", "name": "cmp_ex", "url": "138a313e-e796-4592-aed6-696d7af11b16/examples/5374fe37-27c1-4e68-b9e5-221991b18e1d.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/cmp/1.0.0/CHECKSUMS.json",
-        "yanked_at": null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-registry_url-type:string",
+        [{"id": "40a7705f-0f3b-4d8b-927a-7f3fc99be90f", "name": "cmp_ex", "url": "0035ee3d-a38a-48f1-9f6b-94ed41761c1d/examples/40a7705f-0f3b-4d8b-927a-7f3fc99be90f.tgz",
+        "docs": {}, "description": null}], "tags": [], "downloads_total": 0, "checksums":
+        "components/test_component_manager/cmp/1.0.0/CHECKSUMS.json", "yanked_at":
+        null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-registry_url-type:string",
         "dependencies-*-type:string", "dependencies-*-version-type:string", "version-type:string"],
         "info_metadata_keys": ["description-type:string", "url-type:string"]}]}'
     headers:
@@ -74,15 +77,15 @@ interactions:
       Cache-Control:
       - max-age=300
       Content-Length:
-      - '4891'
+      - '4954'
       Content-Type:
       - binary/octet-stream
       Date:
-      - Fri, 21 Mar 2025 14:17:55 GMT
+      - Tue, 20 Jan 2026 12:46:17 GMT
       ETag:
-      - '"4e6dc6f236a75fb42582ba6c63c277ab"'
+      - '"da50dcbe32e2ba38567590565ed42c79"'
       Last-Modified:
-      - Fri, 21 Mar 2025 13:53:58 GMT
+      - Tue, 20 Jan 2026 12:06:21 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -93,13 +96,13 @@ interactions:
       X-Amz-Id-2:
       - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
       X-Amz-Request-Id:
-      - 182ED7289AC94E21
+      - 188C712996563322
       X-Content-Type-Options:
       - nosniff
       X-Ratelimit-Limit:
-      - '4958'
+      - '4752'
       X-Ratelimit-Remaining:
-      - '4958'
+      - '4752'
       X-Xss-Protection:
       - 1; mode=block
     status:

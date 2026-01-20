@@ -9,17 +9,17 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
-        python/3.11.10)
+      - idf-component-manager/2.4.0 (Linux/6.6.87.2-microsoft-standard-WSL2 x86_64;
+        python/3.14.2)
     method: GET
     uri: http://localhost:9000/test-public/components/test_component_manager/ynk.json
   response:
     body:
       string: '{"name": "ynk", "namespace": "test_component_manager", "created_at":
-        "2025-03-21T13:49:42.219977+00:00", "featured": false, "versions": [{"id":
-        "d072da77-eeb0-4cba-9e33-6a8a8a94be57", "version": "1.0.0", "created_at":
-        "2025-03-21T13:49:43.646876+00:00", "description": "This component is an example,
-        to be used with the IDF component manager.", "component_hash": "6aa92cea9fc3c109d000105a7762864e3e5433ebb7a177d15b35d879cef78aa4",
+        "2026-01-20T12:06:27.426191+00:00", "featured": false, "versions": [{"id":
+        "b25e73f2-f28f-4df8-a4be-7c62033b3517", "version": "1.0.0", "created_at":
+        "2026-01-20T12:06:28.269287+00:00", "description": "This component is an example,
+        to be used with the IDF component manager.", "component_hash": "e53e59a5ae91450b19a0ab7080d2913d16a6558be2cc4244e71af64e2268fc0e",
         "url": "components/test_component_manager/ynk/1.0.0/test_component_manager__ynk-v1.0.0.zip",
         "targets": [], "maintainers": [], "docs": {"readme": "components/test_component_manager/ynk/1.0.0/readme.md"},
         "dependencies": [{"spec": ">=4.1", "source": "idf", "registry_url": null,
@@ -27,11 +27,12 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/ynk/1.0.0/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "fee9b03e-2f98-4171-9b59-bb6f234825cf", "name": "cmp_ex",
-        "url": "0aae1891-dd2c-4036-9e29-ce21546b0286/examples/fee9b03e-2f98-4171-9b59-bb6f234825cf.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/ynk/1.0.0/CHECKSUMS.json",
-        "yanked_at": "2025-03-21T13:49:45.707170+00:00", "yanked_message": "Yanking
-        a test version", "build_metadata_keys": ["dependencies-*-type:string", "version-type:string"],
+        "examples": [{"id": "af3598a0-be25-476a-bb0c-bbc357b41059", "name": "cmp_ex",
+        "url": "047531ca-8877-406d-8bfc-1bb0c55a633a/examples/af3598a0-be25-476a-bb0c-bbc357b41059.tgz",
+        "docs": {}, "description": null}], "tags": [], "downloads_total": 0, "checksums":
+        "components/test_component_manager/ynk/1.0.0/CHECKSUMS.json", "yanked_at":
+        "2026-01-20T12:06:30.629504+00:00", "yanked_message": "Yanking a test version",
+        "build_metadata_keys": ["dependencies-*-type:string", "version-type:string"],
         "info_metadata_keys": ["description-type:string", "url-type:string"]}]}'
     headers:
       Accept-Ranges:
@@ -39,15 +40,15 @@ interactions:
       Cache-Control:
       - max-age=300
       Content-Length:
-      - '1602'
+      - '1623'
       Content-Type:
       - binary/octet-stream
       Date:
-      - Fri, 21 Mar 2025 14:17:51 GMT
+      - Tue, 20 Jan 2026 12:46:03 GMT
       ETag:
-      - '"cdf9d4a8bd490ac7edf0b5f24bfd8dab"'
+      - '"1a83a7f1c8de5ff849988b3af30a559d"'
       Last-Modified:
-      - Fri, 21 Mar 2025 13:49:45 GMT
+      - Tue, 20 Jan 2026 12:06:30 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -58,13 +59,13 @@ interactions:
       X-Amz-Id-2:
       - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
       X-Amz-Request-Id:
-      - 182ED727C587A571
+      - 188C71264FE2D9A4
       X-Content-Type-Options:
       - nosniff
       X-Ratelimit-Limit:
-      - '4958'
+      - '4752'
       X-Ratelimit-Remaining:
-      - '4958'
+      - '4752'
       X-Xss-Protection:
       - 1; mode=block
     status:

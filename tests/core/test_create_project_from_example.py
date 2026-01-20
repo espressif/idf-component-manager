@@ -9,7 +9,7 @@ from tests.network_test_utils import use_vcr_or_real_env
 
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_create_example_component_not_exist.yaml')
 @pytest.mark.network
-def test_create_example_component_not_exist(tmp_path):
+def test_create_example_component_not_exist(mock_registry, tmp_path):  # noqa: ARG001
     manager = ComponentManager(path=str(tmp_path))
     with pytest.raises(
         FatalError, match='Component "test_component_manager/non-existent" not found'
