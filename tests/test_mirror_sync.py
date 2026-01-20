@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import json
 import os
@@ -201,8 +201,9 @@ def test_update_existing_local_mirror(tmp_path, capsys):
             'example/cmp==3.3.9-testcm2',
         ],
     )
-    with open(tmp_path / 'components' / 'example' / 'cmp.json') as f:
-        data = json.load(f)
+    cmp_json = tmp_path / 'components' / 'example' / 'cmp.json'
+    data = json.loads(cmp_json.read_bytes())
+
     assert len(data['versions']) == 3
     assert sorted([v['version'] for v in data['versions']]) == ['3.0.3', '3.3.8', '3.3.9-testcm2']
 
@@ -244,10 +245,26 @@ def test_registry_sync_latest_with_two_requirements(tmp_path):
     )
 
     cmp_json = tmp_path / 'cache' / 'components' / 'example' / 'cmp.json'
-    with open(cmp_json) as f:
-        data = json.load(f)
+    data = json.loads(cmp_json.read_bytes())
     assert len(data['versions']) == 2
     assert sorted([v['version'] for v in data['versions']]) == ['3.0.3', '3.3.7']
+
+
+def test_collect_component_versions_merges_multiple_specs(tmp_path):
+    component_specs = [
+        'lvgl/lvgl==9.2.0',
+        'lvgl/lvgl==9.2.2',
+    ]
+    manager = ComponentManager(path=str(tmp_path))
+    manager.sync_registry(
+        'default',
+        str(tmp_path / 'cache'),
+        components=component_specs,
+        recursive=True,
+    )
+    cmp_json = tmp_path / 'cache' / 'components' / 'lvgl' / 'lvgl.json'
+    data = json.loads(cmp_json.read_bytes())
+    assert len(data['versions']) == 2
 
 
 # this yaml includes
@@ -264,8 +281,8 @@ def test_registry_sync_latest_but_only_got_prerelease(tmp_path, mock_registry, c
         resolution=VersionSolverResolution.LATEST,
     )
     cmp_json = tmp_path / 'cache' / 'components' / 'test_component_manager' / 'pre_and_ynk.json'
-    with open(cmp_json) as f:
-        data = json.load(f)
+    data = json.loads(cmp_json.read_bytes())
+
     assert len(data['versions']) == 1
     assert sorted([v['version'] for v in data['versions']]) == ['2.0.0-alpha1']
     assert 'No stable versions found. Using pre-release versions.' in caplog.text
@@ -288,8 +305,7 @@ def test_registry_sync_latest_but_latest_is_prerelease(tmp_path, mock_registry):
     cmp_json = (
         tmp_path / 'cache' / 'components' / 'test_component_manager' / 'stb_and_ynk_and_pre.json'
     )
-    with open(cmp_json) as f:
-        data = json.load(f)
+    data = json.loads(cmp_json.read_bytes())
     assert len(data['versions']) == 1
     assert sorted([v['version'] for v in data['versions']]) == ['1.0.1']
 
@@ -303,8 +319,7 @@ def test_registry_sync_latest_but_latest_is_prerelease(tmp_path, mock_registry):
     cmp_json = (
         tmp_path / 'cache2' / 'components' / 'test_component_manager' / 'stb_and_ynk_and_pre.json'
     )
-    with open(cmp_json) as f:
-        data = json.load(f)
+    data = json.loads(cmp_json.read_bytes())
     assert len(data['versions']) == 1
     assert sorted([v['version'] for v in data['versions']]) == ['1.0.1']
 
@@ -318,8 +333,7 @@ def test_registry_sync_latest_but_latest_is_prerelease(tmp_path, mock_registry):
     cmp_json = (
         tmp_path / 'cache3' / 'components' / 'test_component_manager' / 'stb_and_ynk_and_pre.json'
     )
-    with open(cmp_json) as f:
-        data = json.load(f)
+    data = json.loads(cmp_json.read_bytes())
     assert len(data['versions']) == 1
     assert sorted([v['version'] for v in data['versions']]) == ['2.0.0-alpha1']
 
@@ -336,8 +350,7 @@ def test_registry_sync_but_only_got_yanked(tmp_path, caplog, mock_registry):  # 
         components=['test_component_manager/ynk==1.0.0'],
     )
     cmp_json = tmp_path / 'cache' / 'components' / 'test_component_manager' / 'ynk.json'
-    with open(cmp_json) as f:
-        data = json.load(f)
+    data = json.loads(cmp_json.read_bytes())
     assert len(data['versions']) == 1
     assert sorted([v['version'] for v in data['versions']]) == ['1.0.0']
     assert (

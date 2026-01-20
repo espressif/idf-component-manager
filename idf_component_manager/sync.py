@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import errno
 import json
@@ -273,6 +273,7 @@ def collect_component_versions(
 
     if component_specs:
         dependencies = []
+        res = PartialMirror()
         for component_requirements in component_specs:
             namespace, component, spec = parse_component_name_spec(
                 component_requirements, client.default_namespace
@@ -285,13 +286,15 @@ def collect_component_versions(
                 )
             )
             with logging_redirect_tqdm(loggers=[LOGGER]):
-                res = prepare_component_versions(
-                    client,
-                    dependencies,
-                    progress_bar=progress_bar,
-                    resolution=resolution,
-                    solved_requirements_cache=solved_requirements_cache,
-                    recorded_versions_cache=recorded_versions_cache,
+                res.merge(
+                    prepare_component_versions(
+                        client,
+                        dependencies,
+                        progress_bar=progress_bar,
+                        resolution=resolution,
+                        solved_requirements_cache=solved_requirements_cache,
+                        recorded_versions_cache=recorded_versions_cache,
+                    )
                 )
     else:
         paths = [path]
