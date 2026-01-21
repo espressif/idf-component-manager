@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import re
 import typing as t
@@ -34,6 +34,15 @@ def validate_existing_dir(ctx, param, value):  # noqa: ARG001
     if value is not None:
         if not value or not Path(value).is_dir():
             raise click.BadParameter(f'"{value}" directory does not exist.')
+    return value
+
+
+def validate_profile(ctx, param, value):  # noqa: ARG001
+    if value is not None:
+        # Normalize whitespace
+        value = value.strip()
+        if not value:
+            raise click.BadParameter('Profile name cannot be empty.')
     return value
 
 
