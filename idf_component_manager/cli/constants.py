@@ -10,6 +10,7 @@ from idf_component_manager.cli.validations import (
     combined_callback,
     validate_existing_dir,
     validate_name,
+    validate_profile,
 )
 from idf_component_manager.core import ComponentManager
 
@@ -36,6 +37,7 @@ def get_profile_option() -> t.List[FC]:
             'profile_name',
             envvar='IDF_COMPONENT_PROFILE',
             default='default',
+            callback=validate_profile,
             help=(
                 'Specifies the profile to use for this command. '
                 'Alias "--service-profile" is deprecated and will be removed.'
