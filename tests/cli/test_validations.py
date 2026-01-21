@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import click
@@ -11,6 +11,7 @@ from idf_component_manager.cli.validations import (
     validate_if_archive,
     validate_name,
     validate_path_for_project,
+    validate_profile,
     validate_registry_component,
     validate_sha,
     validate_url,
@@ -230,3 +231,19 @@ def test_validate_add_dependency_with_git_empty_name():
     with pytest.raises(click.BadParameter) as exc_info:
         validate_add_dependency(ctx, None, '')
     assert 'Name of the dependency can not be an empty string' in str(exc_info.value)
+
+
+def test_validate_profile_normal_value():
+    assert validate_profile(None, None, 'myprofile') == 'myprofile'
+
+
+def test_validate_profile_empty_string():
+    with pytest.raises(click.BadParameter) as exc_info:
+        validate_profile(None, None, '')
+    assert 'Profile name cannot be empty' in str(exc_info.value)
+
+
+def test_validate_profile_whitespace_only():
+    with pytest.raises(click.BadParameter) as exc_info:
+        validate_profile(None, None, '   ')
+    assert 'Profile name cannot be empty' in str(exc_info.value)
