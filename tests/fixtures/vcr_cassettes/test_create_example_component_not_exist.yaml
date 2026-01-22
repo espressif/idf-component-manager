@@ -17,7 +17,7 @@ interactions:
     body:
       string: '<?xml version="1.0" encoding="UTF-8"?>
 
-        <Error><Code>NoSuchKey</Code><Message>The specified key does not exist.</Message><Key>components/test_component_manager/non-existent.json</Key><BucketName>test-public</BucketName><Resource>/test-public/components/test_component_manager/non-existent.json</Resource><RequestId>188C712660A0B772</RequestId><HostId>dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8</HostId></Error>'
+        <Error><Code>NoSuchKey</Code><Message>The specified key does not exist.</Message><Key>components/test_component_manager/non-existent.json</Key><BucketName>test-public</BucketName><Resource>/test-public/components/test_component_manager/non-existent.json</Resource><RequestId>188D12C64870C517</RequestId><HostId>dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8</HostId></Error>'
     headers:
       Accept-Ranges:
       - bytes
@@ -26,7 +26,7 @@ interactions:
       Content-Type:
       - application/xml
       Date:
-      - Tue, 20 Jan 2026 12:46:03 GMT
+      - Thu, 22 Jan 2026 14:07:51 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -37,13 +37,13 @@ interactions:
       X-Amz-Id-2:
       - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
       X-Amz-Request-Id:
-      - 188C712660A0B772
+      - 188D12C64870C517
       X-Content-Type-Options:
       - nosniff
       X-Ratelimit-Limit:
-      - '4752'
+      - '4586'
       X-Ratelimit-Remaining:
-      - '4752'
+      - '4586'
       X-Xss-Protection:
       - 1; mode=block
     status:
@@ -81,7 +81,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 20 Jan 2026 12:46:03 GMT
+      - Thu, 22 Jan 2026 14:07:51 GMT
       Server:
       - Werkzeug/3.1.4 Python/3.14.2
       Strict-Transport-Security:
@@ -91,54 +91,4 @@ interactions:
     status:
       code: 200
       message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Connection:
-      - keep-alive
-      User-Agent:
-      - idf-component-manager/2.4.0 (Linux/6.6.87.2-microsoft-standard-WSL2 x86_64;
-        python/3.14.2)
-    method: GET
-    uri: http://localhost:9000/test-public/components/test_component_manager/non-existent.json
-  response:
-    body:
-      string: '<?xml version="1.0" encoding="UTF-8"?>
-
-        <Error><Code>NoSuchKey</Code><Message>The specified key does not exist.</Message><Key>components/test_component_manager/non-existent.json</Key><BucketName>test-public</BucketName><Resource>/test-public/components/test_component_manager/non-existent.json</Resource><RequestId>188C7126614AF04F</RequestId><HostId>dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8</HostId></Error>'
-    headers:
-      Accept-Ranges:
-      - bytes
-      Content-Length:
-      - '431'
-      Content-Type:
-      - application/xml
-      Date:
-      - Tue, 20 Jan 2026 12:46:03 GMT
-      Server:
-      - MinIO
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubDomains
-      Vary:
-      - Origin
-      - Accept-Encoding
-      X-Amz-Id-2:
-      - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
-      X-Amz-Request-Id:
-      - 188C7126614AF04F
-      X-Content-Type-Options:
-      - nosniff
-      X-Ratelimit-Limit:
-      - '4752'
-      X-Ratelimit-Remaining:
-      - '4752'
-      X-Xss-Protection:
-      - 1; mode=block
-    status:
-      code: 404
-      message: Not Found
 version: 1

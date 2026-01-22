@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Classes to work with ESP Component Registry"""
 
@@ -51,6 +51,19 @@ class MultiStorageClient:
 
         self.local_first_mode = local_first_mode
 
+    @staticmethod
+    def _normalize_storage_url(url: str) -> str:
+        """
+        Normalize storage URL for comparison.
+
+        Removes trailing slashes and normalizes the URL to ensure
+        'http://example.com/' and 'http://example.com' are treated as the same.
+
+        :param url: Storage URL to normalize
+        :return: Normalized URL (without trailing slash)
+        """
+        return url.rstrip('/')
+
     @property
     @lru_cache(1)
     def registry_storage_url(self) -> t.Optional[str]:
@@ -84,10 +97,35 @@ class MultiStorageClient:
     @property
     @lru_cache(1)
     def storage_clients(self):
-        yield from self.local_storage_clients
-        yield from self.profile_storage_clients
+        """
+        Yield storage clients in priority order (local → profile → registry),
+        deduplicating URLs to avoid trying the same storage endpoint twice.
+
+        Note: This property deduplicates at the URL level before yielding clients,
+        ensuring that even if profile_storage_clients and registry_storage_client
+        point to the same URL, only one client is yielded.
+        """
+        seen_urls = set()
+
+        # 1. Local storage clients
+        for client in self.local_storage_clients:
+            normalized = self._normalize_storage_url(client.storage_url)
+            if normalized not in seen_urls:
+                seen_urls.add(normalized)
+                yield client
+
+        # 2. Profile storage clients
+        for client in self.profile_storage_clients:
+            normalized = self._normalize_storage_url(client.storage_url)
+            if normalized not in seen_urls:
+                seen_urls.add(normalized)
+                yield client
+
+        # 3. Registry storage client
         if self.registry_storage_client:
-            yield self.registry_storage_client
+            normalized = self._normalize_storage_url(self.registry_storage_client.storage_url)
+            if normalized not in seen_urls:
+                yield self.registry_storage_client
 
     def versions(self, component_name: str, spec: str = '*') -> ComponentWithVersions:
         component_name = component_name.lower()
@@ -157,9 +195,19 @@ class MultiStorageClient:
         :return: (ComponentWithVersions, storage_url)
         """
         # local_storage_urls shall not be used when create partial mirror
-        _clients = self.profile_storage_clients.copy()
+        seen_urls = set()
+        _clients = []
+
+        for client in self.profile_storage_clients:
+            normalized = self._normalize_storage_url(client.storage_url)
+            if normalized not in seen_urls:
+                seen_urls.add(normalized)
+                _clients.append(client)
+
         if self.registry_storage_client:
-            _clients.append(self.registry_storage_client)
+            normalized = self._normalize_storage_url(self.registry_storage_client.storage_url)
+            if normalized not in seen_urls:
+                _clients.append(self.registry_storage_client)
 
         error_message = ''
 

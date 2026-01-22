@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import json
@@ -16,6 +16,7 @@ from idf_component_tools.constants import (
 from idf_component_tools.errors import NoSuchProfile
 from idf_component_tools.messages import UserDeprecationWarning
 from idf_component_tools.registry.client_errors import APIClientError
+from idf_component_tools.registry.multi_storage_client import MultiStorageClient
 from idf_component_tools.registry.service_details import (
     get_api_client,
     get_storage_client,
@@ -210,3 +211,63 @@ class TestMultiStorageClient:
                 'components_base_url'
             ]
         )
+
+    def test_storage_clients_deduplicate_same_url(self):
+        same_storage_url = 'http://localhost:9000/test-public'
+
+        # Create client with same URL in both local and profile storage
+        client = MultiStorageClient(
+            local_storage_urls=[same_storage_url],
+            storage_urls=[same_storage_url],
+        )
+
+        storage_clients = list(client.storage_clients)
+        storage_urls = [c.storage_url for c in storage_clients]
+
+        assert len(storage_urls) == 1
+        assert storage_urls[0] == same_storage_url
+
+    def test_storage_clients_deduplicate_trailing_slash(self):
+        url1 = 'http://example.com/storage'
+        url2 = 'http://example.com/storage/'
+
+        client = MultiStorageClient(
+            storage_urls=[url1],
+            local_storage_urls=[url2],  # Same URL with trailing slash
+        )
+
+        storage_clients = list(client.storage_clients)
+        storage_urls = [c.storage_url for c in storage_clients]
+
+        assert len(storage_urls) == 1
+        assert storage_urls[0] == url2
+
+    def test_storage_clients_deduplicate_multiple_profile_urls(self):
+        url1 = 'http://example.com/storage'
+        url2 = 'http://example.com/storage/'  # Same URL with trailing slash
+        url3 = 'http://example.com/other'
+
+        client = MultiStorageClient(storage_urls=[url1, url2, url3])
+
+        storage_clients = list(client.storage_clients)
+        storage_urls = [c.storage_url for c in storage_clients]
+
+        assert len(storage_urls) == 2
+        assert url1 in storage_urls or url2 in storage_urls
+        assert url3 in storage_urls
+
+    def test_storage_clients_preserves_priority_order(self):
+        local_url = 'file://local'
+        profile_url = 'http://profile'
+
+        client = MultiStorageClient(
+            local_storage_urls=[local_url],
+            storage_urls=[profile_url],
+        )
+
+        storage_clients = list(client.storage_clients)
+        storage_urls = [c.storage_url for c in storage_clients]
+
+        assert len(storage_urls) == 2
+        assert storage_urls[0] == local_url
+        assert storage_urls[1] == profile_url
