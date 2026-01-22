@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.4.6 (2026-01-22)
+
+### Fix
+
+- Merge results from multiple --component flags in registry sync
+- Profile argument validation
+
 ## v2.4.5 (2026-01-16)
 
 ### Fix
