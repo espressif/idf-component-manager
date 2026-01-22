@@ -9,17 +9,17 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
-        python/3.11.10)
+      - idf-component-manager/2.4.0 (Linux/6.6.87.2-microsoft-standard-WSL2 x86_64;
+        python/3.14.2)
     method: GET
     uri: http://localhost:9000/test-public/components/test_component_manager/stb_and_ynk.json
   response:
     body:
       string: '{"name": "stb_and_ynk", "namespace": "test_component_manager", "created_at":
-        "2025-03-21T13:53:59.974203+00:00", "featured": false, "versions": [{"id":
-        "771f7a27-6913-4032-9d34-93cd83640da9", "version": "1.0.1", "created_at":
-        "2025-03-21T13:54:04.077964+00:00", "description": "This component is an example,
-        to be used with the IDF component manager.", "component_hash": "e8bcd12eaac473865a664e01627ed8548a4b9f1479e5c4dedb852b7edb28356f",
+        "2026-01-20T12:06:30.819947+00:00", "featured": false, "versions": [{"id":
+        "c9468485-8ff3-453a-893b-18538f1890ed", "version": "1.0.1", "created_at":
+        "2026-01-20T12:06:34.670798+00:00", "description": "This component is an example,
+        to be used with the IDF component manager.", "component_hash": "2971276f7b45c05e57a0f3f97652e0460ddb19b059645a91c96ce872421298ea",
         "url": "components/test_component_manager/stb_and_ynk/1.0.1/test_component_manager__stb_and_ynk-v1.0.1.zip",
         "targets": [], "maintainers": [], "docs": {"readme": "components/test_component_manager/stb_and_ynk/1.0.1/readme.md"},
         "dependencies": [{"spec": ">=4.1", "source": "idf", "registry_url": null,
@@ -27,15 +27,16 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk/1.0.1/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "d924aeb9-192c-4f14-8454-7473b4ed66ac", "name": "cmp_ex",
-        "url": "1783ca6a-4452-4ac9-b937-62462bea6f54/examples/d924aeb9-192c-4f14-8454-7473b4ed66ac.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk/1.0.1/CHECKSUMS.json",
-        "yanked_at": null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-type:string",
+        "examples": [{"id": "d59149fd-376b-4830-afe7-0e728a834734", "name": "cmp_ex",
+        "url": "7a46a6a1-a1a6-4b62-aec8-d3c916bed2b6/examples/d59149fd-376b-4830-afe7-0e728a834734.tgz",
+        "docs": {}, "description": null}], "tags": [], "downloads_total": 0, "checksums":
+        "components/test_component_manager/stb_and_ynk/1.0.1/CHECKSUMS.json", "yanked_at":
+        null, "yanked_message": null, "build_metadata_keys": ["dependencies-*-type:string",
         "version-type:string"], "info_metadata_keys": ["description-type:string",
-        "url-type:string"]}, {"id": "1e30a21a-f778-41da-8506-8dccf7cbfc82", "version":
-        "1.0.0", "created_at": "2025-03-21T13:54:00.922500+00:00", "description":
+        "url-type:string"]}, {"id": "83806b06-01ee-4772-9b63-1e0d7225004a", "version":
+        "1.0.0", "created_at": "2026-01-20T12:06:31.258343+00:00", "description":
         "This component is an example, to be used with the IDF component manager.",
-        "component_hash": "6aa92cea9fc3c109d000105a7762864e3e5433ebb7a177d15b35d879cef78aa4",
+        "component_hash": "e53e59a5ae91450b19a0ab7080d2913d16a6558be2cc4244e71af64e2268fc0e",
         "url": "components/test_component_manager/stb_and_ynk/1.0.0/test_component_manager__stb_and_ynk-v1.0.0.zip",
         "targets": [], "maintainers": [], "docs": {"readme": "components/test_component_manager/stb_and_ynk/1.0.0/readme.md"},
         "dependencies": [{"spec": ">=4.1", "source": "idf", "registry_url": null,
@@ -43,11 +44,12 @@ interactions:
         [], "matches": []}], "license": {"name": "Custom", "url": "components/test_component_manager/stb_and_ynk/1.0.0/license.txt"},
         "homepage": "https://github.com/espressif/example_components/tree/main/cmp",
         "documentation": null, "repository": null, "issues": null, "discussion": null,
-        "examples": [{"id": "526b13fb-b4fb-4b2c-98bb-c6a158d54401", "name": "cmp_ex",
-        "url": "f607e982-ae7c-4f96-98be-07a3bd1b4d57/examples/526b13fb-b4fb-4b2c-98bb-c6a158d54401.tgz",
-        "docs": {}}], "tags": [], "downloads_total": 0, "checksums": "components/test_component_manager/stb_and_ynk/1.0.0/CHECKSUMS.json",
-        "yanked_at": "2025-03-21T13:54:03.192631+00:00", "yanked_message": "Yanking
-        a test version", "build_metadata_keys": ["dependencies-*-type:string", "version-type:string"],
+        "examples": [{"id": "38c367cb-2f9a-4ab6-8948-7817d98a1f71", "name": "cmp_ex",
+        "url": "3a0c554e-9229-499f-934e-6be47086d72e/examples/38c367cb-2f9a-4ab6-8948-7817d98a1f71.tgz",
+        "docs": {}, "description": null}], "tags": [], "downloads_total": 0, "checksums":
+        "components/test_component_manager/stb_and_ynk/1.0.0/CHECKSUMS.json", "yanked_at":
+        "2026-01-20T12:06:34.020182+00:00", "yanked_message": "Yanking a test version",
+        "build_metadata_keys": ["dependencies-*-type:string", "version-type:string"],
         "info_metadata_keys": ["description-type:string", "url-type:string"]}]}'
     headers:
       Accept-Ranges:
@@ -55,15 +57,15 @@ interactions:
       Cache-Control:
       - max-age=300
       Content-Length:
-      - '3105'
+      - '3147'
       Content-Type:
       - binary/octet-stream
       Date:
-      - Fri, 21 Mar 2025 14:17:55 GMT
+      - Tue, 20 Jan 2026 12:46:17 GMT
       ETag:
-      - '"69bb23eacbf87e49720b06b0efda8a93"'
+      - '"acf8628690cfda62bca786fe72a6a397"'
       Last-Modified:
-      - Fri, 21 Mar 2025 13:54:04 GMT
+      - Tue, 20 Jan 2026 12:06:34 GMT
       Server:
       - MinIO
       Strict-Transport-Security:
@@ -74,13 +76,13 @@ interactions:
       X-Amz-Id-2:
       - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
       X-Amz-Request-Id:
-      - 182ED728A6C5D55F
+      - 188C71299C038C8D
       X-Content-Type-Options:
       - nosniff
       X-Ratelimit-Limit:
-      - '4958'
+      - '4752'
       X-Ratelimit-Remaining:
-      - '4958'
+      - '4752'
       X-Xss-Protection:
       - 1; mode=block
     status:

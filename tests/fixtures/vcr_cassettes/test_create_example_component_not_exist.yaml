@@ -9,34 +9,135 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.1.2 (Linux/5.15.167.4-microsoft-standard-WSL2 x86_64;
-        python/3.11.10)
+      - idf-component-manager/2.4.0 (Linux/6.6.87.2-microsoft-standard-WSL2 x86_64;
+        python/3.14.2)
     method: GET
-    uri: https://components-file.espressif.com/components/test_component_manager/non-existent.json
+    uri: http://localhost:9000/test-public/components/test_component_manager/non-existent.json
   response:
     body:
       string: '<?xml version="1.0" encoding="UTF-8"?>
 
-        <Error><Code>NoSuchKey</Code><Message>The specified key does not exist.</Message><Key>components/test_component_manager/non-existent.json</Key><RequestId>P2V0WAN9V327SX57</RequestId><HostId>4/ZbnVvZp4pHiymwT7M7yuFiPYLfdyXsGmymbZASEiAfHdI4P9q5UOu8k2hYZbuEHVxXpWROvQRM0UWfmcBiAz5XXhpVMB3e</HostId></Error>'
+        <Error><Code>NoSuchKey</Code><Message>The specified key does not exist.</Message><Key>components/test_component_manager/non-existent.json</Key><BucketName>test-public</BucketName><Resource>/test-public/components/test_component_manager/non-existent.json</Resource><RequestId>188C712660A0B772</RequestId><HostId>dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8</HostId></Error>'
     headers:
-      Connection:
-      - keep-alive
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '431'
       Content-Type:
       - application/xml
       Date:
-      - Fri, 21 Mar 2025 14:16:16 GMT
+      - Tue, 20 Jan 2026 12:46:03 GMT
       Server:
-      - AmazonS3
-      Transfer-Encoding:
-      - chunked
-      Via:
-      - 1.1 91afcef6d5c7e90d0a4bb2c3a456c690.cloudfront.net (CloudFront)
-      X-Amz-Cf-Id:
-      - owNQXCvK7FIK53C70_2PDI4aEw8dD3HxrzD9stpTIEaYMevb3W2_Kw==
-      X-Amz-Cf-Pop:
-      - PRG50-C1
-      X-Cache:
-      - Error from cloudfront
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      - Accept-Encoding
+      X-Amz-Id-2:
+      - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
+      X-Amz-Request-Id:
+      - 188C712660A0B772
+      X-Content-Type-Options:
+      - nosniff
+      X-Ratelimit-Limit:
+      - '4752'
+      X-Ratelimit-Remaining:
+      - '4752'
+      X-Xss-Protection:
+      - 1; mode=block
+    status:
+      code: 404
+      message: Not Found
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/2.4.0 (Linux/6.6.87.2-microsoft-standard-WSL2 x86_64;
+        python/3.14.2)
+    method: GET
+    uri: http://localhost:5000/api
+  response:
+    body:
+      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",\n
+        \ \"info\": \"ESP Component Registry API\",\n  \"status\": \"ok\",\n  \"version\":
+        \"1.5.0\"\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '145'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 20 Jan 2026 12:46:03 GMT
+      Server:
+      - Werkzeug/3.1.4 Python/3.14.2
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/2.4.0 (Linux/6.6.87.2-microsoft-standard-WSL2 x86_64;
+        python/3.14.2)
+    method: GET
+    uri: http://localhost:9000/test-public/components/test_component_manager/non-existent.json
+  response:
+    body:
+      string: '<?xml version="1.0" encoding="UTF-8"?>
+
+        <Error><Code>NoSuchKey</Code><Message>The specified key does not exist.</Message><Key>components/test_component_manager/non-existent.json</Key><BucketName>test-public</BucketName><Resource>/test-public/components/test_component_manager/non-existent.json</Resource><RequestId>188C7126614AF04F</RequestId><HostId>dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8</HostId></Error>'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '431'
+      Content-Type:
+      - application/xml
+      Date:
+      - Tue, 20 Jan 2026 12:46:03 GMT
+      Server:
+      - MinIO
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      Vary:
+      - Origin
+      - Accept-Encoding
+      X-Amz-Id-2:
+      - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
+      X-Amz-Request-Id:
+      - 188C7126614AF04F
+      X-Content-Type-Options:
+      - nosniff
+      X-Ratelimit-Limit:
+      - '4752'
+      X-Ratelimit-Remaining:
+      - '4752'
+      X-Xss-Protection:
+      - 1; mode=block
     status:
       code: 404
       message: Not Found

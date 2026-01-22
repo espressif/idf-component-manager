@@ -33,6 +33,7 @@ dependencies.lock
 #Configs
 .env*
 !.env.example
+!.env.vcr
 
 # Development experiments
 notebooks

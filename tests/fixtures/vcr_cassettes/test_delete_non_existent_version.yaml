@@ -11,7 +11,8 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
+      - idf-component-manager/2.4.0 (Linux/6.6.87.2-microsoft-standard-WSL2 x86_64;
+        python/3.14.2)
     method: GET
     uri: http://localhost:5000/api/components/test_component_manager/test_deletable_wrong_ver
   response:
@@ -31,9 +32,9 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 20 Jun 2025 14:58:53 GMT
+      - Tue, 20 Jan 2026 12:46:10 GMT
       Server:
-      - Werkzeug/3.1.3 Python/3.13.0
+      - Werkzeug/3.1.4 Python/3.14.2
       Strict-Transport-Security:
       - max-age=1209600; includeSubDomains
       X-Content-Type-Options:
@@ -53,7 +54,8 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
+      - idf-component-manager/2.4.0 (Linux/6.6.87.2-microsoft-standard-WSL2 x86_64;
+        python/3.14.2)
     method: GET
     uri: http://localhost:5000/api/components/test_component_manager/test_deletable_wrong_ver
   response:
@@ -73,9 +75,9 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 20 Jun 2025 14:58:53 GMT
+      - Tue, 20 Jan 2026 12:46:10 GMT
       Server:
-      - Werkzeug/3.1.3 Python/3.13.0
+      - Werkzeug/3.1.4 Python/3.14.2
       Strict-Transport-Security:
       - max-age=1209600; includeSubDomains
       X-Content-Type-Options:
@@ -87,36 +89,35 @@ interactions:
     body: !!python/object/new:_io.BytesIO
       state: !!python/tuple
       - !!binary |
-        LS1kNjcwZGY3MWFjNzA0NzA1OGRjYzc4NTE2NmExMGU1OQ0KQ29udGVudC1EaXNwb3NpdGlvbjog
+        LS03NDc2NTY0NWY1NDM0MjU3YTg0ZTc0ZDZjMGNhOWI0Yw0KQ29udGVudC1EaXNwb3NpdGlvbjog
         Zm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9InRlc3RfZGVsZXRhYmxlX3dyb25nX3Zl
         cl8xLjAuMC50Z3oiDQpDb250ZW50LVR5cGU6IGFwcGxpY2F0aW9uL29jdGV0LXN0cmVhbQ0KDQof
-        iwgILXdVaAL/dGVzdF9kZWxldGFibGVfd3JvbmdfdmVyXzEuMC4wLnRnegDtXV1P20gUzbN/xd2w
-        UpNqsT3+DOm22ioJaiRKEWGrfVgpMvYknq3tcceTFlT1v+/YCQmktIiKGFTfowgntjOD8Nxz5t45
-        NrqhG3+dBBdvaBBR0doJzCW+tzVN29m8L/cT0yJWCy5aNWBRyECo7lvNhNWDVLKUviS+azo2cW1b
-        t0mv5/mO1kL88jBq6KMMat91l1tvuTWtmzFPXNNyLd92yvMIsUyvBW6d8R8FGaNJHiyS289Tp81m
-        v971158E/9vf8j9B/q+F//01/zsHxFY/fJ3YxCQu0n8TMHgbfKBHrJCFLi/k7uLfc5zv8j/xnIr/
-        FQ84auyp+Lc912yBWWf8N5T/w1Rd/2nKMpYu0qmgHxdM0KjzfnQ6Gb87Blt3u1ou+H80lJ2T5fY4
-        SGlXY9FsGvI05xnNpPriXI0hKjqT08EE2mGa62EbxseDo7+Ho+lwfKp2sixMFhFtdzHqUP8x/3ty
-        +d8N/e+5Hk4AGoCj8WB0PBntPP/7kf6reN/Sf4uYNup/HUhYSLOCYqyj/qP+o/5f6b/d87AA0ASc
-        jl4P3470NHpM/besbf23Pcz/a8FZzApQrwCEUoCU6hj1qP+o/03Xf8c9QP1vAqpK7Y77uEv/bcvd
-        1n+1D/W/DhjPNXgOk5PhP/uHLKEDnl8KNo/lGb2QfbDUZYJRkQtaFGwGk8tC0rSAziQOsnkcsC4M
-        3sHR2VC1sW7maFlR2B9HNJNsxqjow+s8CGO6b+mmOs3Q9lZLAfBnISPG9fiVpn3iLAI1GqcxTRLe
-        KT92tS8arJALlslZp/2mPAozwVOgF0GaJxTWqxC//Zu1uy+0r0hcqP+o//fW/2v+L9/zHfR/NQEr
-        Ei126QO7v//L8h0X/V/I/8j/j8T/B8Txkf+bxP/l1JteGLuK//vxv2NZJvJ/c/gf/b+Pxv+3+389
-        gvafRvL/LvzAd9X/XNffqv+p9NPH+l8d2INDLiDlggLLZlykgWQ8g+CcLyScL1gSQVFV/aCgVNuD
-        WMq86BtGxMNCp1eVQT3kqbGyCReG2r3PoplBMyMJJC2kEeRsf75gkRpnVZv7yzb1WKaJavQspjDj
-        ScI/s2wOM/aJQsIyWgCfwTlnCRV52RDEgToiOZyXvyxc8oWAVafPCtXMZuyWh2W5sqmGdyiBC6Vt
-        qgcBld25bOIzFx8g5EKoLyeX2p02aOJ1NW1Vtuz8Pjp+/2U8PJyevD5789WQnCdlAKkmrv4IevVp
-        Y51eRlf36XEq6j/q/y33fzo9gvrfRP1PA5YZO4j/++V/LlHTBcz/sP6H/F9f/e96/ueTHiaAjeX/
-        B04C77z/k2z7P3zPI5j/1YG7buNUY0IP22sbxnXcvLtTb3eRMFD/Uf9/Df3vWej/bKz+X/H+A8b/
-        j/Tf8rbv//RcB/W/Fjyu/7N6UETcXrk/gzyfluPvhvlzYwlFayfqP+p/Pfrfcw56GGtN1f8bSaF+
-        mSY7zv+9rfVfy3R8XP+tBXt7MB4ewuDqasPbIAvmVJRbNqOFhHJaoEU0p5kS9JDRoq90eTVsylHT
-        r2T6ExUF41kf2rZu6mRZMeBqr2ARneaBjNUhXalN+WojtaD+o/4/Mf3frP9aptmzsf7fBDyw1P+U
-        /tvkG/+v4+PzH2rBWreJkm1T6XwRCpbLalf1bIj14KieEpFdKf8fKx/WoqARfGYyBhnTaiqx+YKa
-        A6TL2YT+zQRCjbs+PHv10tHJM20hkv7aWTZXjS3OK0fZ2l9mrHrdDNXCkILSdbkKuQr1H/X/ofSf
-        9A4sz8aYaoL+LyuxO/03AD9x/6frWuj/Qv5H/q+R/6/Vfy2T2Mj/TeL/aiFuh/z/w/VfYm8//99x
-        Pcz/6sCjrP/e9qyfF0g3CAQCgUAgEAjErvE/vTQZ9gB4AAANCi0tZDY3MGRmNzFhYzcwNDcwNThk
-        Y2M3ODUxNjZhMTBlNTktLQ0K
+        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
       - 0
       - null
     headers:
@@ -129,17 +130,18 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '1671'
+      - '1633'
       Content-Type:
-      - multipart/form-data; boundary=d670df71ac7047058dcc785166a10e59
+      - multipart/form-data; boundary=74765645f5434257a84e74d6c0ca9b4c
       User-Agent:
-      - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
+      - idf-component-manager/2.4.0 (Linux/6.6.87.2-microsoft-standard-WSL2 x86_64;
+        python/3.14.2)
     method: POST
     uri: http://localhost:5000/api/components/test_component_manager/test_deletable_wrong_ver/versions
   response:
     body:
-      string: "{\n  \"job_id\": \"62d98eeb-4c3a-4147-9552-54122bca3c0b\",\n  \"upload_format\":
-        \"tgz\",\n  \"upload_id\": \"e70ea394-e2ff-421a-8291-8686f06c98f9\"\n}\n"
+      string: "{\n  \"job_id\": \"0e4e8e83-b809-4630-b98a-3fbf5dc3250a\",\n  \"upload_format\":
+        \"tgz\",\n  \"upload_id\": \"e5bc29b8-b7e7-4a2b-9adf-8a639966bcf2\"\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
@@ -153,9 +155,9 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 20 Jun 2025 14:58:53 GMT
+      - Tue, 20 Jan 2026 12:46:10 GMT
       Server:
-      - Werkzeug/3.1.3 Python/3.13.0
+      - Werkzeug/3.1.4 Python/3.14.2
       Strict-Transport-Security:
       - max-age=1209600; includeSubDomains
       Vary:
@@ -177,30 +179,31 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
+      - idf-component-manager/2.4.0 (Linux/6.6.87.2-microsoft-standard-WSL2 x86_64;
+        python/3.14.2)
     method: GET
-    uri: http://localhost:5000/api/tasks/62d98eeb-4c3a-4147-9552-54122bca3c0b
+    uri: http://localhost:5000/api/tasks/0e4e8e83-b809-4630-b98a-3fbf5dc3250a
   response:
     body:
-      string: "{\n  \"id\": \"62d98eeb-4c3a-4147-9552-54122bca3c0b\",\n  \"message\":
-        \"Pending...\",\n  \"progress\": 0.0,\n  \"status\": \"pending\",\n  \"warnings\":
-        []\n}\n"
+      string: "{\n  \"id\": \"0e4e8e83-b809-4630-b98a-3fbf5dc3250a\",\n  \"message\":
+        \"Check manifest\",\n  \"progress\": 25.0,\n  \"status\": \"processing\",\n
+        \ \"warnings\": []\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '138'
+      - '146'
       Content-Security-Policy:
       - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
         font-src 'self';
       Content-Type:
       - application/json
       Date:
-      - Fri, 20 Jun 2025 14:58:53 GMT
+      - Tue, 20 Jan 2026 12:46:10 GMT
       Server:
-      - Werkzeug/3.1.3 Python/3.13.0
+      - Werkzeug/3.1.4 Python/3.14.2
       Strict-Transport-Security:
       - max-age=1209600; includeSubDomains
       X-Content-Type-Options:
@@ -220,12 +223,13 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
+      - idf-component-manager/2.4.0 (Linux/6.6.87.2-microsoft-standard-WSL2 x86_64;
+        python/3.14.2)
     method: GET
-    uri: http://localhost:5000/api/tasks/62d98eeb-4c3a-4147-9552-54122bca3c0b
+    uri: http://localhost:5000/api/tasks/0e4e8e83-b809-4630-b98a-3fbf5dc3250a
   response:
     body:
-      string: "{\n  \"id\": \"62d98eeb-4c3a-4147-9552-54122bca3c0b\",\n  \"message\":
+      string: "{\n  \"id\": \"0e4e8e83-b809-4630-b98a-3fbf5dc3250a\",\n  \"message\":
         \"The uploaded component was successfully processed. It may take up to 5 minutes
         for the new version to be available globally.\\nView at: http://localhost:5000/components/test_component_manager/test_deletable_wrong_ver/versions/1.0.0\",\n
         \ \"progress\": 100.0,\n  \"status\": \"success\",\n  \"warnings\": []\n}\n"
@@ -242,9 +246,9 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 20 Jun 2025 14:58:56 GMT
+      - Tue, 20 Jan 2026 12:46:13 GMT
       Server:
-      - Werkzeug/3.1.3 Python/3.13.0
+      - Werkzeug/3.1.4 Python/3.14.2
       Strict-Transport-Security:
       - max-age=1209600; includeSubDomains
       X-Content-Type-Options:
@@ -266,30 +270,31 @@ interactions:
       Content-Length:
       - '0'
       User-Agent:
-      - idf-component-manager/2.2.2 (Darwin/24.5.0 arm64; python/3.13.3)
+      - idf-component-manager/2.4.0 (Linux/6.6.87.2-microsoft-standard-WSL2 x86_64;
+        python/3.14.2)
     method: DELETE
     uri: http://localhost:5000/api/components/test_component_manager/test_deletable_wrong_ver/100.100.100
   response:
     body:
-      string: "{\n  \"error\": \"VersionNotFoundError\",\n  \"messages\": [\n    \"Version
-        \\\"100.100.100\\\" of component \\\"test_deletable_wrong_ver\\\" was not
-        found in the registry.\"\n  ]\n}\n"
+      string: "{\n  \"error\": \"VersionNotFoundError\",\n  \"messages\": [\n    \"The
+        version \\\"None\\\" of the component \\\"test_component_manager/test_deletable_wrong_ver\\\"
+        was not found in the registry\"\n  ]\n}\n"
     headers:
       Access-Control-Allow-Origin:
       - '*'
       Connection:
       - close
       Content-Length:
-      - '162'
+      - '185'
       Content-Security-Policy:
       - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
         font-src 'self';
       Content-Type:
       - application/json
       Date:
-      - Fri, 20 Jun 2025 14:58:56 GMT
+      - Tue, 20 Jan 2026 12:46:13 GMT
       Server:
-      - Werkzeug/3.1.3 Python/3.13.0
+      - Werkzeug/3.1.4 Python/3.14.2
       Strict-Transport-Security:
       - max-age=1209600; includeSubDomains
       Vary:
