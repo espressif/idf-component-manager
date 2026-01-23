@@ -17,7 +17,7 @@ from idf_component_tools.utils import ComponentWithVersions
 from ..manifest import ComponentRequirement
 from ..semver import Version
 from .api_client import APIClient
-from .client_errors import ComponentNotFound, VersionNotFound
+from .client_errors import ComponentNotFound, NetworkConnectionError, VersionNotFound
 from .storage_client import StorageClient
 
 
@@ -51,19 +51,6 @@ class MultiStorageClient:
 
         self.local_first_mode = local_first_mode
 
-    @staticmethod
-    def _normalize_storage_url(url: str) -> str:
-        """
-        Normalize storage URL for comparison.
-
-        Removes trailing slashes and normalizes the URL to ensure
-        'http://example.com/' and 'http://example.com' are treated as the same.
-
-        :param url: Storage URL to normalize
-        :return: Normalized URL (without trailing slash)
-        """
-        return url.rstrip('/')
-
     @property
     @lru_cache(1)
     def registry_storage_url(self) -> t.Optional[str]:
@@ -72,7 +59,12 @@ class MultiStorageClient:
         ):
             return IDF_COMPONENT_STORAGE_URL
         elif self.registry_url:
-            return APIClient(self.registry_url).api_information()['components_base_url']
+            try:
+                return APIClient(self.registry_url).api_information()['components_base_url']
+            except NetworkConnectionError:
+                # If registry is unreachable, return None to skip registry storage client
+                # This allows local/profile storage to work even when registry is down
+                return None
 
         return None
 
@@ -98,40 +90,42 @@ class MultiStorageClient:
     @lru_cache(1)
     def storage_clients(self):
         """
-        Yield storage clients in priority order (local → profile → registry),
-        deduplicating URLs to avoid trying the same storage endpoint twice.
+        Return storage clients in priority order (local → profile → registry),
+        deduplicating clients to avoid trying the same storage endpoint twice.
 
-        Note: This property deduplicates at the URL level before yielding clients,
-        ensuring that even if profile_storage_clients and registry_storage_client
-        point to the same URL, only one client is yielded.
+        Note: This property uses StorageClient's __eq__ and __hash__ methods to deduplicate,
+        ensuring that even if storage_clients point to the same URL, only one client is returned.
         """
-        seen_urls = set()
+        # Dictionary to simulate ordered set
+        seen: t.Dict[StorageClient, None] = {}
 
-        # 1. Local storage clients
         for client in self.local_storage_clients:
-            normalized = self._normalize_storage_url(client.storage_url)
-            if normalized not in seen_urls:
-                seen_urls.add(normalized)
-                yield client
+            seen[client] = None
 
-        # 2. Profile storage clients
         for client in self.profile_storage_clients:
-            normalized = self._normalize_storage_url(client.storage_url)
-            if normalized not in seen_urls:
-                seen_urls.add(normalized)
-                yield client
+            seen[client] = None
 
-        # 3. Registry storage client
         if self.registry_storage_client:
-            normalized = self._normalize_storage_url(self.registry_storage_client.storage_url)
-            if normalized not in seen_urls:
-                yield self.registry_storage_client
+            seen[self.registry_storage_client] = None
+
+        return list(seen.keys())
 
     def versions(self, component_name: str, spec: str = '*') -> ComponentWithVersions:
         component_name = component_name.lower()
         cmp_with_versions = ComponentWithVersions(component_name, [])
 
-        for storage_client in self.storage_clients:
+        storage_clients_list = list(self.storage_clients)
+
+        # If we have a registry_url but no storage clients (registry unreachable and no local/profile),
+        # raise NetworkConnectionError to match expected behavior
+        if not storage_clients_list and self.registry_url and not self.registry_storage_client:
+            # Registry was unreachable and there are no other storage options
+            raise NetworkConnectionError(
+                f'Cannot establish a connection to the component registry at {self.registry_url}',
+                endpoint=f'{self.registry_url}/api',
+            )
+
+        for storage_client in storage_clients_list:
             try:
                 debug(
                     'Fetching versions of component "%s" with spec "%s" from %s',
@@ -195,19 +189,16 @@ class MultiStorageClient:
         :return: (ComponentWithVersions, storage_url)
         """
         # local_storage_urls shall not be used when create partial mirror
-        seen_urls = set()
-        _clients = []
+        # Dictionary to simulate ordered set
+        seen: t.Dict[StorageClient, None] = {}
 
         for client in self.profile_storage_clients:
-            normalized = self._normalize_storage_url(client.storage_url)
-            if normalized not in seen_urls:
-                seen_urls.add(normalized)
-                _clients.append(client)
+            seen[client] = None
 
         if self.registry_storage_client:
-            normalized = self._normalize_storage_url(self.registry_storage_client.storage_url)
-            if normalized not in seen_urls:
-                _clients.append(self.registry_storage_client)
+            seen[self.registry_storage_client] = None
+
+        _clients = list(seen.keys())
 
         error_message = ''
 

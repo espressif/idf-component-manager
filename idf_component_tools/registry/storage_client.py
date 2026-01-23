@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import typing as t
 from functools import wraps
@@ -6,7 +6,7 @@ from functools import wraps
 from .api_models import ApiBaseModel, ComponentResponse
 from .base_client import BaseClient, create_session, filter_versions
 from .client_errors import ComponentNotFound, StorageFileNotFound, VersionNotFound
-from .request_processor import base_request, join_url
+from .request_processor import base_request, join_url, normalize_storage_url
 
 
 class StorageClient(BaseClient):
@@ -14,6 +14,16 @@ class StorageClient(BaseClient):
         super().__init__(default_namespace=default_namespace)
 
         self.storage_url = storage_url
+
+    def __eq__(self, other: t.Any) -> bool:
+        """Compare StorageClient instances by their normalized storage URL."""
+        if not isinstance(other, StorageClient):
+            return False
+        return normalize_storage_url(self.storage_url) == normalize_storage_url(other.storage_url)
+
+    def __hash__(self) -> int:
+        """Hash StorageClient by its normalized storage URL."""
+        return hash(normalize_storage_url(self.storage_url))
 
     def _request(f: t.Callable[..., t.Any]) -> t.Callable:  # type: ignore
         @wraps(f)  # type: ignore

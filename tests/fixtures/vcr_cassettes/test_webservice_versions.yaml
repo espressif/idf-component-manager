@@ -12,6 +12,48 @@ interactions:
       - idf-component-manager/2.4.0 (Linux/6.6.87.2-microsoft-standard-WSL2 x86_64;
         python/3.14.2)
     method: GET
+    uri: http://localhost:5000/api
+  response:
+    body:
+      string: "{\n  \"components_base_url\": \"http://localhost:9000/test-public\",\n
+        \ \"info\": \"ESP Component Registry API\",\n  \"status\": \"ok\",\n  \"version\":
+        \"1.5.0\"\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '145'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Jan 2026 13:52:07 GMT
+      Server:
+      - Werkzeug/3.1.4 Python/3.14.2
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/2.4.0 (Linux/6.6.87.2-microsoft-standard-WSL2 x86_64;
+        python/3.14.2)
+    method: GET
     uri: http://localhost:9000/test-public/components/test_component_manager/cmp.json
   response:
     body:
@@ -81,7 +123,7 @@ interactions:
       Content-Type:
       - binary/octet-stream
       Date:
-      - Tue, 20 Jan 2026 12:46:17 GMT
+      - Fri, 23 Jan 2026 13:52:07 GMT
       ETag:
       - '"da50dcbe32e2ba38567590565ed42c79"'
       Last-Modified:
@@ -96,13 +138,13 @@ interactions:
       X-Amz-Id-2:
       - dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8
       X-Amz-Request-Id:
-      - 188C712996563322
+      - 188D607F10DAB8FF
       X-Content-Type-Options:
       - nosniff
       X-Ratelimit-Limit:
-      - '4752'
+      - '4704'
       X-Ratelimit-Remaining:
-      - '4752'
+      - '4704'
       X-Xss-Protection:
       - 1; mode=block
     status:

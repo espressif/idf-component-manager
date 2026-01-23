@@ -271,3 +271,24 @@ class TestMultiStorageClient:
         assert len(storage_urls) == 2
         assert storage_urls[0] == local_url
         assert storage_urls[1] == profile_url
+
+    def test_storage_clients_can_be_iterated_multiple_times(self):
+        """Test that storage_clients can be iterated multiple times"""
+        client = MultiStorageClient(
+            local_storage_urls=['file://local1', 'file://local2'],
+            storage_urls=['http://profile1'],
+        )
+
+        # First iteration
+        first_iteration = list(client.storage_clients)
+        assert len(first_iteration) == 3
+
+        # Second iteration - should work (not exhausted)
+        second_iteration = list(client.storage_clients)
+        assert len(second_iteration) == 3
+        assert len(second_iteration) == len(first_iteration)
+
+        # Third iteration - should still work
+        third_iteration = [c.storage_url for c in client.storage_clients]
+        assert len(third_iteration) == 3
+        assert third_iteration == [c.storage_url for c in first_iteration]
