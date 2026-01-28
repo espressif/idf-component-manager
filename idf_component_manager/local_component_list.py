@@ -6,6 +6,7 @@ import typing as t
 
 from pydantic import ValidationError
 from ruamel.yaml import YAML, YAMLError
+from typing_extensions import NotRequired
 
 from idf_component_tools.errors import ProcessingError
 from idf_component_tools.utils import BaseModel, TypedDict
@@ -14,6 +15,7 @@ from idf_component_tools.utils import BaseModel, TypedDict
 class LocalComponent(TypedDict):
     name: str
     path: str
+    source: NotRequired[str]  # Not required to maintain backwards compatibility
 
 
 class LocalComponentList(BaseModel):

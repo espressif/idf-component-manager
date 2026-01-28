@@ -12,7 +12,9 @@ build:
       - IDF_BRANCH_TAG: {{ idf_branches | tojson }}
         PYTHON_IMAGE_TAG: {{ python_versions | tojson }}
   script:
-    - BRANCH_NAME=$(echo $IDF_BRANCH_TAG | sed -e "s/release-v/release\/v/g")
+    # Convert sanitized branch tag back to actual branch name
+    # release-v -> release/v, feat- -> feat/, fix- -> fix/
+    - BRANCH_NAME=$(echo $IDF_BRANCH_TAG | sed -e "s/release-v/release\/v/g" -e "s/feat-/feat\//g" -e "s/fix-/fix\//g")
     - |
       if [ -n "${MASTER_RELEASE_CUSTOM_TAG:-}" ]; then
         BRANCH_NAME=${MASTER_RELEASE_CUSTOM_TAG/-//}

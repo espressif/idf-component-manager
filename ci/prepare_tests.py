@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import re
@@ -17,11 +17,20 @@ DEFAULT_PYTEST_SPLIT_GROUPS = [1, 2, 3, 4, 5]
 MASTER_CONSTRAINT_VERSION = 'v6.1'
 
 
+def sanitize_branch_for_docker_tag(branch: str) -> str:
+    """Sanitize branch name for use in Docker image tags.
+    Docker tags cannot contain '/'. Replace with '-'.
+    """
+    return branch.replace('/', '-')
+
+
 def get_template_config() -> dict:
     """Get template configuration, allowing env var overrides."""
     idf_branches_env = getenv('IDF_BRANCHES')
     if idf_branches_env:
-        idf_branches = [b.strip() for b in idf_branches_env.split(',')]
+        idf_branches = [
+            sanitize_branch_for_docker_tag(b.strip()) for b in idf_branches_env.split(',')
+        ]
     else:
         idf_branches = DEFAULT_IDF_BRANCHES
 

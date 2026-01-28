@@ -99,7 +99,7 @@ def _get_ppid_file_path(local_component_list_file: t.Optional[str]) -> Path:
     return Path(f'{local_component_list_file}.{get_cmake_pid()}')
 
 
-def _get_component_list_file(local_components_list_file):
+def _get_component_list_file(local_components_list_file, interface_version):
     """
     Get the appropriate component list file, preferring the PPID version
     if it exists from a parent CMake run.
@@ -112,6 +112,9 @@ def _get_component_list_file(local_components_list_file):
     """
     if not local_components_list_file:
         return None
+
+    if interface_version != 4:
+        return local_components_list_file
 
     component_list_parent_pid = _get_ppid_file_path(local_components_list_file)
     # Always use local component list file from the first execution of the component manager
@@ -137,16 +140,27 @@ def _get_sdkconfig_json_file_path(args, build_dir) -> t.Optional[Path]:
     return None
 
 
+def should_load_sdkconfig(args, build_dir, sdk_config_json_path) -> bool:
+    if not sdk_config_json_path:
+        return False
+
+    if args.interface_version == 4:
+        return RunCounter(build_dir).value > 0 or CMAKEV2
+
+    return bool(args.use_sdk_json)
+
+
 def prepare_dep_dirs(args):
     build_dir = args.build_dir or os.path.dirname(args.managed_components_list_file)
 
     # If the Component Manager has been run before, we need to update the Kconfig context with the sdkconfig.json file
     sdk_config_json_path = _get_sdkconfig_json_file_path(args, build_dir)
-    # CMake V2 has valid sdkconfig.json right away
-    if sdk_config_json_path and (RunCounter(build_dir).value > 0 or CMAKEV2):
-        KCONFIG_CONTEXT.get().update_from_file(sdk_config_json_path)
+    if should_load_sdkconfig(args, build_dir, sdk_config_json_path):
+        KCONFIG_CONTEXT.get().update_from_file(sdk_config_json_path)  # type: ignore
 
-    local_components_list_file = _get_component_list_file(args.local_components_list_file)
+    local_components_list_file = _get_component_list_file(
+        args.local_components_list_file, args.interface_version
+    )
 
     ComponentManager(
         args.project_dir,
@@ -180,33 +194,35 @@ def prepare_dep_dirs(args):
             f'{_nl.join(sorted(debug_strs))}\n'
         )
 
-        # Copy local component list file for next run of CMake before exiting
-        if args.local_components_list_file:
-            ppid_file = _get_ppid_file_path(args.local_components_list_file)
+        if args.interface_version == 4:
+            # Copy local component list file for next run of CMake before exiting
+            if args.local_components_list_file:
+                ppid_file = _get_ppid_file_path(args.local_components_list_file)
 
-            if not Path(ppid_file).exists():
-                try:
-                    shutil.copyfile(args.local_components_list_file, ppid_file)
-                except (OSError, IOError) as e:
-                    raise FatalError(
-                        f"Failed to copy '{args.local_components_list_file}' → '{ppid_file}': {e}"
-                    ) from e
+                if not Path(ppid_file).exists():
+                    try:
+                        shutil.copyfile(args.local_components_list_file, ppid_file)
+                    except (OSError, IOError) as e:
+                        raise FatalError(
+                            f"Failed to copy '{args.local_components_list_file}' → '{ppid_file}': {e}"
+                        ) from e
 
         # Exiting with code 10 to signal CMake to re-run component discovery due to missing KConfig options
         sys.exit(10)
 
-    # Clean up PPID file on successful completion
-    if args.local_components_list_file:
-        ppid_file_path = Path(_get_ppid_file_path(args.local_components_list_file))
-        if ppid_file_path.exists():
-            ppid_file_path.unlink()
+    if args.interface_version == 4:
+        # Clean up PPID file on successful completion
+        if args.local_components_list_file:
+            ppid_file_path = Path(_get_ppid_file_path(args.local_components_list_file))
+            if ppid_file_path.exists():
+                ppid_file_path.unlink()
 
 
 def inject_requirements(args):
     sdk_config_json_path = _get_sdkconfig_json_file_path(args, args.build_dir)
 
-    if sdk_config_json_path and (RunCounter(args.build_dir).value > 0 or CMAKEV2):
-        KCONFIG_CONTEXT.get().update_from_file(sdk_config_json_path)
+    if should_load_sdkconfig(args, args.build_dir, sdk_config_json_path):
+        KCONFIG_CONTEXT.get().update_from_file(sdk_config_json_path)  # type: ignore
 
     ComponentManager(
         args.project_dir,
@@ -220,7 +236,7 @@ def inject_requirements(args):
 
     # Last run of prepare_dep_dirs was successful -> Clean up CM Run counter
     # If we're running CMakeV2, do not take counter into consideration
-    if not CMAKEV2:
+    if args.interface_version == 4 and not CMAKEV2:
         if not Path(
             _get_ppid_file_path(f'{args.build_dir}/local_components_list.temp.yml')
         ).exists():
@@ -241,13 +257,14 @@ def main():
 
     # Interface versions support:
     # *4* starting ESP-IDF 6.0
+    # *5* starting ESP-IDF 6.0.1
 
     parser.add_argument(
         '--interface_version',
         help='Version of ESP-IDF build system integration',
         default=4,
         type=int,
-        choices=[4],
+        choices=[4, 5],
     )
 
     parser.add_argument('--lock_path', help='lock file path relative to the project path')
@@ -255,6 +272,9 @@ def main():
         '--sdkconfig_json_file',
         required=False,
         help='Path to file with sdkconfig.json, used for parsing kconfig in if clauses',
+    )
+    parser.add_argument(
+        '--use_sdk_json', required=False, help='Flag whether the solver should load sdkconfig.json'
     )
     subparsers = parser.add_subparsers(dest='step')
     subparsers.required = True

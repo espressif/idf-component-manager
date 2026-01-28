@@ -733,6 +733,7 @@ class ComponentManager:
             for component in local_components
             if os.path.isfile(os.path.join(component['path'], 'CMakeLists.txt'))
             and os.path.isfile(os.path.join(component['path'], MANIFEST_FILENAME))
+            and component.get('source', '') != 'project_managed_components'
         ]
 
         downloaded_components = set()
