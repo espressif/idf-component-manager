@@ -4,7 +4,7 @@ default_install_hook_types: [pre-commit, commit-msg]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-yaml
         exclude: tests
@@ -18,7 +18,7 @@ repos:
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
-    rev: v0.12.7
+    rev: v0.15.0
     hooks:
       # Run the linter.
       - id: ruff
@@ -28,7 +28,7 @@ repos:
         args: ['--preview']
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.17.0
+    rev: v1.19.1
     hooks:
       - id: mypy
         additional_dependencies:
@@ -49,12 +49,12 @@ repos:
           ]
 
   - repo: https://github.com/fpgmaas/deptry.git
-    rev: "0.23.0"
+    rev: "0.24.0"
     hooks:
       - id: deptry
 
   - repo: https://github.com/espressif/conventional-precommit-linter
-    rev: v1.10.0
+    rev: v1.11.0
     hooks:
       - id: conventional-precommit-linter
         stages: [commit-msg]
@@ -63,14 +63,14 @@ repos:
           - --allow-breaking
 
   - repo: https://github.com/LilSpazJoekp/docstrfmt
-    rev: v1.10.0
+    rev: v2.0.1
     hooks:
       - id: docstrfmt
         types: [rst]
         args: ['-l', '99999999999999999999999'] # Set a very high line length limit to avoid wrapping lines in docstrings.
 
   - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.22
+    rev: 1.0.0
     hooks:
       - id: mdformat
         args: [--number] # Keep numbering for ordered lists
