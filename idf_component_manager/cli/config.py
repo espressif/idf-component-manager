@@ -50,7 +50,8 @@ def init_config():
         """
         List all profiles with tokens hidden.
 
-        If the config file looks like this:
+        If the config file looks like this::
+
             profiles:
                 default:
                     default_namespace: namespace
@@ -59,6 +60,7 @@ def init_config():
                     default_namespace: another_namespace
                 some_other_profile:
                     aaa: bbb
+
         The 'empty_profile' and 'some_other_profile' will not be printed.
         """
         config = ConfigManager().load()

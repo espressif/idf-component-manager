@@ -1,12 +1,14 @@
-Versioning
-==========
+############
+ Versioning
+############
 
 The IDF Component Manager enforces a strict versioning scheme on all components it manages. Component versioning allows ESP-IDF applications to have more fine-grained control over which features and bug fixes are included in a particular managed component. Additionally, the IDF Component Manager implements a version solver that allows ESP-IDF applications to specify a range of acceptable versions for a component dependency. The version solver will automatically select the most appropriate version of the component based on predefined rules. This document describes the versioning scheme and the rules used by the version solver.
 
 .. _versioning-scheme:
 
-Versioning Scheme
------------------
+*******************
+ Versioning Scheme
+*******************
 
 A managed component’s version number contains the following fields:
 
@@ -60,8 +62,9 @@ A full version number with all fields, such as ``0.1.2~3-dev4.7+git5.66``, would
 
     CLI commands ``compote component pack`` and ``compote component upload`` accept ``--version=git`` to read the version from the current Git tag. However, ``~`` is not allowed in Git tags. Therefore, if your version contains a revision, you must replace ``~`` with ``.`` in the Git tag. For example, for version ``0.1.2~3``, use the Git tag ``0.1.2.3`` or ``v0.1.2.3``.
 
-Version Precedence
-------------------
+********************
+ Version Precedence
+********************
 
 When the version solver compares two different version numbers, it determines the higher version by comparing each field from left to right. The version with the first larger (leftmost) field is considered the higher version. For example:
 
@@ -110,8 +113,9 @@ When the version solver compares two different version numbers, it determines th
 
 .. _version-range-specifications:
 
-Range Specifications
---------------------
+**********************
+ Range Specifications
+**********************
 
 When specifying a version range for a dependency (in `idf_component.yml`), the specification must be:
 
@@ -119,19 +123,19 @@ When specifying a version range for a dependency (in `idf_component.yml`), the s
 - A comma-separated list of clauses (no extra spaces).
 
 Clauses
-~~~~~~~
+=======
 
 A typical clause includes one operator and one version number. If a clause does not specify an operator, it defaults to the ``==`` operator. For example, the clause ``1.2.3`` is equivalent to ``==1.2.3``.
 
 Comparison Clause
-+++++++++++++++++
+-----------------
 
 Comparison clauses use one of the following operators: ``>=``, ``>``, ``==``, ``<``, ``<=``, or ``!=``.
 
 For more detailed information about comparing two version numbers, refer to `the earlier section <#version-precedence>`__.
 
 Wildcard Clause
-+++++++++++++++
+---------------
 
 A wildcard clause uses the symbol ``*`` in one or more fields of the version number. Typically, the ``*`` symbol means that any value is acceptable in that field.
 
@@ -148,7 +152,7 @@ You can also use the wildcard symbol in comparison clauses, turning them into wi
 - ``*``, ``==*``, or ``>=*`` is equivalent to ``>=0.0.0``.
 
 Compatible Release Clause
-+++++++++++++++++++++++++
+-------------------------
 
 Compatible release clauses always use the ``~=`` operator. They match versions that are expected to be compatible with the specified version.
 
@@ -160,7 +164,7 @@ For example:
 - ``~=1`` is equivalent to ``>=1.0,==1.*``.
 
 Compatible Minor Release Clause
-+++++++++++++++++++++++++++++++
+-------------------------------
 
 Compatible minor release clauses always use the ``~`` operator. They usually allow patch-level changes, but also allow minor-level changes if only the major version is specified.
 
@@ -172,7 +176,7 @@ For example:
 - ``~1`` is equivalent to ``>=1.0,==1.*``.
 
 Compatible Major Release Clause
-+++++++++++++++++++++++++++++++
+-------------------------------
 
 Compatible major release clauses always use the ``^`` operator. They allow changes that do not modify the left-most non-zero version field.
 

@@ -1,5 +1,6 @@
-Partial Mirror
-==============
+######################################
+ How to Create and Use Partial Mirror
+######################################
 
 .. note::
 
@@ -7,8 +8,9 @@ Partial Mirror
 
 A partial mirror contains only a subset of the components available in the main mirror. This is useful when you have limited network connectivity or bandwidth, or when you want to restrict which versions of components are available to your developers.
 
-Sync from Component Registry
-----------------------------
+******************************
+ Sync from Component Registry
+******************************
 
 To sync from the component registry, use the following command:
 
@@ -23,7 +25,7 @@ For example, to sync the ``example/cmp`` component, use the command:
     compote registry sync --component example/cmp /path/to/mirror
 
 Sync with a Version Range
-~~~~~~~~~~~~~~~~~~~~~~~~~
+=========================
 
 This command downloads all versions of the ``example/cmp`` component to the specified path.
 
@@ -36,7 +38,7 @@ To sync only specific versions of the component, provide a version range:
 You can find detailed version range syntax in the :ref:`version-range-specifications` section.
 
 Sync Only the Latest Version
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+============================
 
 To minimize the mirror size, you can sync only the latest version of the component:
 
@@ -47,7 +49,7 @@ To minimize the mirror size, you can sync only the latest version of the compone
 This command downloads only the most recent version of the ``example/cmp`` component to the specified path.
 
 Sync All Components Required by a Project
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=========================================
 
 To sync all components required by a project, specify the project directory instead of individual components:
 
@@ -73,10 +75,11 @@ You can also use it with the ``--resolution latest`` option to sync only the lat
 
     For example, if project A requires ``example/cmp<3.1`` and project B requires ``example/cmp<4``, then both versions ``3.0.3`` and ``3.3.9~1`` will be downloaded to the mirror to fulfill the dependencies.
 
-Apply to Configuration File ``idf_component_manager.yml``
----------------------------------------------------------
+***********************************************************
+ Apply to Configuration File ``idf_component_manager.yml``
+***********************************************************
 
-After creating the partial mirror, apply it to a profile in the :doc:`../reference/config_file` by adding the mirror URL to the ``local_storage_url`` field. For example, if your mirror is located at ``/opt/compote-mirror``, update the configuration file like this:
+After creating the partial mirror, apply it to a profile in the :doc:`../../reference/config_file` by adding the mirror URL to the ``local_storage_url`` field. For example, if your mirror is located at ``/opt/compote-mirror``, update the configuration file like this:
 
 .. code-block:: yaml
 

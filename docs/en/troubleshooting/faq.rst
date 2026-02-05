@@ -1,12 +1,16 @@
-FAQ
-===
+#####
+ FAQ
+#####
+
+If you need to contact support, see :doc:`getting_help`.
 
 .. contents:: Questions
     :local:
     :depth: 1
 
-Why can't I access the Component Registry?
-------------------------------------------
+********************************************
+ Why can't I access the Component Registry?
+********************************************
 
 While building ESP-IDF project during dependency resolution, you may see an error message like:
 
@@ -85,8 +89,9 @@ If the certificate is different, there are several ways to resolve the issue:
 - You can specify custom CA certificates for verifying HTTPS connections to the Component Registry by setting the ``IDF_COMPONENT_VERIFY_SSL`` environment variable. If you have the root certificate from your IT team in ``.pem`` format, you can save it somewhere on your machine and then set the path to the ``.pem`` file to this environment variable. The component manager will then use the root certificates from the supplied files.
 - As a temporary measure, you can disable certificate validation by setting the same ``IDF_COMPONENT_VERIFY_SSL`` to ``0``. However, this option is not recommended for security reasons.
 
-How do I modify a managed component?
-------------------------------------
+**************************************
+ How do I modify a managed component?
+**************************************
 
 If you want to modify a component that is managed by the Component Manager, the simplest way is to move it from the ``managed_components`` directory to the ``components`` directory.
 
@@ -104,8 +109,9 @@ You can also omit the namespace when moving the component. For example:
 
     mv managed_components/namespace__my_component components/my_component
 
-Should I commit the ``managed_components`` directory and ``dependencies.lock`` file?
-------------------------------------------------------------------------------------
+**************************************************************************************
+ Should I commit the ``managed_components`` directory and ``dependencies.lock`` file?
+**************************************************************************************
 
 It is recommended to add the ``managed_components`` directory to your ``.gitignore`` file. The Component Manager will automatically download the required components based on the ``idf_component.yml`` manifest and the ``dependencies.lock`` file.
 

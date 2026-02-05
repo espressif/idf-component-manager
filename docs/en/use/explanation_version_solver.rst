@@ -1,10 +1,12 @@
-Version Solver
-==============
+###################################
+ Explanation of the Version Solver
+###################################
 
 This document describes how the version solver works in the IDF Component Manager. The version solver is responsible for determining the best component versions that satisfy the constraints defined in your project.
 
-Version Solving
----------------
+*****************
+ Version Solving
+*****************
 
 An ESP-IDF project declares its component dependencies through one or more manifest files (e.g., ``idf_component.yml``), where each dependency specifies a version or version range.
 
@@ -15,19 +17,19 @@ Version solving is the process of analyzing all component dependencies and deter
 3. Recursively collect all available versions for each root dependency.
 4. Calculate the final set of resolved component versions.
 
-The IDF Component Manager uses the `PubGrub <https://github.com/dart-lang/pub/blob/master/doc/solver.md>`_ algorithm to perform version solving. Once completed, the solver generates a :doc:`../reference/dependencies_lock` file that records the exact versions of the components selected by the version solver.
+The IDF Component Manager uses the `PubGrub <https://github.com/dart-lang/pub/blob/master/doc/solver.md>`_ algorithm to perform version solving. Once completed, the solver generates a :doc:`../../reference/dependencies_lock` file that records the exact versions of the components selected by the version solver.
 
 When Will the Version Solver Run?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=================================
 
 The version solver is triggered by the ESP-IDF build system (e.g., via ``idf.py reconfigure``) under the following conditions:
 
 1. When there is no ``dependencies.lock`` file in the project root.
-2. When the :ref:`manifest-hash` in the existing :doc:`../reference/dependencies_lock` file does not match the current manifest hash.
+2. When the :ref:`manifest-hash` in the existing :doc:`../../reference/dependencies_lock` file does not match the current manifest hash.
 
    This can happen when components are added or removed, or when a manifest is modified.
 
-3. When the :ref:`dependencies-lock-target` in the :doc:`../reference/dependencies_lock` does not match the current manifest target.
+3. When the :ref:`dependencies-lock-target` in the :doc:`../../reference/dependencies_lock` does not match the current manifest target.
 
    A common case is when the user runs ``idf.py set-target`` to change the target.
 
@@ -39,7 +41,7 @@ Note: The ``dependencies.lock`` file will only be updated if the version solver 
 .. _update-dependencies:
 
 Update Dependencies
-~~~~~~~~~~~~~~~~~~~
+===================
 
 By default, the version solver prefers to reuse component versions that already satisfy the constraints. This speeds up solving and reduces network usage.
 
@@ -52,12 +54,12 @@ To manually update all dependencies, run:
     $ idf.py update-dependencies
 
 Environment Variables for the Version Solver
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+============================================
 
 Some environment variables can be used to control the behavior of the version solver.
 
 ``IDF_COMPONENT_CHECK_NEW_VERSION``
-+++++++++++++++++++++++++++++++++++
+-----------------------------------
 
 By default, the IDF Component Manager checks for new versions of dependencies during the ESP-IDF project build process, even if the version solver is not triggered.
 
@@ -68,7 +70,7 @@ To disable this automatic version check, set the following environment variable 
 For instructions on explicitly updating dependencies, refer to the :ref:`update-dependencies` section.
 
 ``IDF_COMPONENT_CONSTRAINT_FILES``
-++++++++++++++++++++++++++++++++++
+----------------------------------
 
 You can use constraint files to limit the versions of components that the version solver considers during dependency resolution.
 
@@ -85,7 +87,7 @@ To use constraint files, set the ``IDF_COMPONENT_CONSTRAINT_FILES`` environment 
     $ export IDF_COMPONENT_CONSTRAINT_FILES="/path/to/base_constraints.txt;/path/to/project_constraints.txt"
 
 Constraint File Format
-......................
+^^^^^^^^^^^^^^^^^^^^^^
 
 Constraint files use a simple text format where each line specifies a component name and version constraint:
 
@@ -102,7 +104,7 @@ Constraint files use a simple text format where each line specifies a component 
 Version constraints follow the same format as dependency specifications in manifest files. For detailed information about supported version constraint formats, see :ref:`version-range-specifications`.
 
 Multiple Constraint Files
-.........................
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 When multiple constraint files are specified, they are processed in order and later files override constraints from earlier files for the same component.
 
@@ -114,7 +116,7 @@ When multiple constraint files are specified, they are processed in order and la
 If ``org_constraints.txt`` contains ``example/cmp>=1.0.0`` and ``project_constraints.txt`` contains ``example/cmp==1.2.3``, the final constraint will be ``example/cmp==1.2.3``.
 
 ``IDF_COMPONENT_CONSTRAINTS``
-+++++++++++++++++++++++++++++
+-----------------------------
 
 Moreover, you can specify component constraints directly in the environment variable ``IDF_COMPONENT_CONSTRAINTS``. This allows you to define version constraints without needing to create a separate constraint file.
 

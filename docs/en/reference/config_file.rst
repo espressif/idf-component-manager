@@ -1,5 +1,6 @@
-``idf_component_manager.yml`` Configuration File
-================================================
+##################################################
+ ``idf_component_manager.yml`` Configuration File
+##################################################
 
 The IDF Component Manager configuration file, named ``idf_component_manager.yml``, is a YAML file that defines a set of profiles. Each profile is a collection of configurations that determines where components are uploaded from or downloaded to.
 
@@ -21,8 +22,9 @@ By default, the configuration file is located in the following paths:
 
 You can also override the path by setting the ``IDF_TOOLS_PATH`` environment variable.
 
-Configuration File
-------------------
+********************
+ Configuration File
+********************
 
 .. versionadded:: 2.1
 
@@ -100,7 +102,7 @@ For users in China, we recommend using the following `storage_url` to improve do
         storage_url:
           - "https://components-file.espressif.cn"
 
-If you have a :doc:`local mirror set <../guides/partial_mirror>`, you can also define the `local_storage_url` in the configuration file:
+If you have a :doc:`local mirror set <../use/how_to_partial_mirror>`, you can also define the `local_storage_url` in the configuration file:
 
 .. code-block:: yaml
 
@@ -113,8 +115,9 @@ If you have a :doc:`local mirror set <../guides/partial_mirror>`, you can also d
 
 .. _url_precedence:
 
-URL Precedence During Version Solving
--------------------------------------
+***************************************
+ URL Precedence During Version Solving
+***************************************
 
 When solving versions, the resolver checks sources in the following order:
 
@@ -147,32 +150,8 @@ The version solver will check sources in this order:
 - c.com
 - a.com
 
-.. _login-via-cli:
+***************
+ Login via CLI
+***************
 
-Login via CLI
--------------
-
-To log in to the registry server, use the following command:
-
-.. code-block:: shell
-
-    compote registry login --profile "default" --registry-url "https://components.espressif.com" --default-namespace <your_github_username>
-
-This command will open a browser window where you can authenticate with your GitHub account. After logging in, you’ll be redirected to a page displaying your token. Copy and paste it into the terminal.
-
-Passing the ``--default-namespace`` option is recommended to avoid specifying the namespace on every upload. By default, your GitHub username will be used as the namespace and you will be given permission to upload components to that namespace.
-
-The token will be stored in the configuration file automatically, so you don't have to create it manually..
-
-.. _login-staging-registry:
-
-Login to Staging Registry
--------------------------
-
-To log in to the staging registry, use the command:
-
-.. code-block:: shell
-
-    compote registry login --profile "staging" --registry-url "https://components-staging.espressif.com" --default-namespace <your-github-username>
-
-After logging in, the configuration will be saved under the ``staging`` profile.
+The ``api_token`` and ``default_namespace`` fields are populated automatically when you log in via the CLI. For login instructions (both production and staging), see :doc:`/publish/how_to_authenticate`.
