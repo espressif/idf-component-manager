@@ -81,7 +81,7 @@ prepare_tests:
     - pip install '.[docs]'
     - sphinx-build docs/en ${OUTPUT_DIR}
   after_script:
-    - 'echo "preview link: ${GITLAB_PAGE_HTTPS_URL}/-/idf-component-manager/-/jobs/${CI_JOB_ID}/artifacts/html_output/index.html"'
+    - 'echo "preview link: ${GITLAB_PAGE_HTTPS_URL}/-/idf-component-manager/-/jobs/${CI_JOB_ID}/artifacts/html_output_preview/index.html"'
   artifacts:
     paths:
       - $OUTPUT_DIR/
