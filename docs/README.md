@@ -34,3 +34,33 @@ If you are using WSL, simply start the web server:
 ```sh
 python -m http.server --directory docs/html_output
 ```
+
+## Redirects (keeping old links working)
+
+When you move or rename documentation pages, add redirects so existing links do not break.
+
+This documentation uses Sphinx HTML redirects via the `sphinxext-rediraffe` extension, configured in `docs/en/conf.py` in the `rediraffe_redirects` mapping.
+
+### How to add a redirect
+
+1. Identify the old page and the new page.
+
+   - Use **docnames**: paths relative to `docs/en/` without the `.rst` extension.
+   - Example: `guides/faq` corresponds to the old file `docs/en/guides/faq.rst`.
+
+2. Add a mapping entry from the old docname to the new docname.
+
+Example redirect entry:
+
+```python
+rediraffe_redirects = {
+    'guides/faq': 'troubleshooting/faq',
+}
+```
+
+3. Build the docs locally and verify Sphinx prints redirect output like:
+
+```
+Writing redirects...
+(good) guides/faq.html --> troubleshooting/faq.html
+```

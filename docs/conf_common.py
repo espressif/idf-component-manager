@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 # Configuration file for the Sphinx documentation builder.
 #
@@ -28,10 +28,23 @@ extensions = [
     'sphinx_tabs.tabs',
     'sphinx_click',
     'sphinxcontrib.autodoc_pydantic',
+    'sphinxext.rediraffe',
 ]
 smartquotes = False
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
+# Map old document paths (without file extensions) to new ones.
+# Note: These are Sphinx "docnames" relative to this language root (docs/en/).
+# Example: `guides/faq` used to live at `docs/en/guides/faq.rst`.
+rediraffe_redirects = {
+    # Guides -> Getting Started
+    'guides/updating_component_manager': 'getting_started/updating_component_manager',
+    # Guides -> Troubleshooting
+    'guides/faq': 'troubleshooting/faq',
+    # Guides -> Use (How-to)
+    'guides/partial_mirror': 'use/how_to_partial_mirror',
+    'guides/version_solver': 'use/explanation_version_solver',
+}
 # Make sure the target is unique
 autosectionlabel_prefix_document = True
 
