@@ -17,6 +17,7 @@ COMPILED_COMMIT_ID_RE = re.compile(COMMIT_ID_RE)
 # Registry related constants
 DEFAULT_NAMESPACE = 'espressif'
 IDF_COMPONENT_REGISTRY_URL = 'https://components.espressif.com/'
+NORMALIZED_IDF_COMPONENT_REGISTRY_URL = 'https://components.espressif.com'
 IDF_COMPONENT_STORAGE_URL = 'https://components-file.espressif.com/'
 IDF_COMPONENT_STAGING_REGISTRY_URL = 'https://components-staging.espressif.com'
 

@@ -8,10 +8,11 @@ from functools import lru_cache
 from idf_component_manager.utils import VersionSolverResolution
 from idf_component_tools.constants import (
     DEFAULT_NAMESPACE,
-    IDF_COMPONENT_REGISTRY_URL,
     IDF_COMPONENT_STORAGE_URL,
+    NORMALIZED_IDF_COMPONENT_REGISTRY_URL,
 )
 from idf_component_tools.messages import debug, warn
+from idf_component_tools.registry.request_processor import normalize_storage_url
 from idf_component_tools.utils import ComponentWithVersions
 
 from ..manifest import ComponentRequirement
@@ -54,19 +55,18 @@ class MultiStorageClient:
     @property
     @lru_cache(1)
     def registry_storage_url(self) -> t.Optional[str]:
-        if self.registry_url and self.registry_url.rstrip('/') == IDF_COMPONENT_REGISTRY_URL.rstrip(
-            '/'
-        ):
-            return IDF_COMPONENT_STORAGE_URL
-        elif self.registry_url:
-            try:
-                return APIClient(self.registry_url).api_information()['components_base_url']
-            except NetworkConnectionError:
-                # If registry is unreachable, return None to skip registry storage client
-                # This allows local/profile storage to work even when registry is down
-                return None
+        if not self.registry_url:
+            return None
 
-        return None
+        if normalize_storage_url(self.registry_url) == NORMALIZED_IDF_COMPONENT_REGISTRY_URL:
+            return IDF_COMPONENT_STORAGE_URL
+
+        try:
+            return APIClient(self.registry_url).api_information()['components_base_url']
+        except NetworkConnectionError:
+            # Registry can be unreachable in valid offline workflows.
+            # Silently skip registry storage and continue with local/profile sources.
+            return None
 
     @property
     @lru_cache(1)
@@ -108,22 +108,24 @@ class MultiStorageClient:
         if self.registry_storage_client:
             seen[self.registry_storage_client] = None
 
-        return list(seen.keys())
+        storage_clients = list(seen.keys())
+
+        # If we have a registry_url but no storage clients (registry unreachable and no local/profile),
+        # raise NetworkConnectionError to match expected behavior
+        if not storage_clients and self.registry_url and not self.registry_storage_client:
+            # Registry was unreachable and there are no other storage options
+            raise NetworkConnectionError(
+                f'Cannot establish a connection to the component registry at {self.registry_url}',
+                endpoint=f'{self.registry_url}/api',
+            )
+
+        return storage_clients
 
     def versions(self, component_name: str, spec: str = '*') -> ComponentWithVersions:
         component_name = component_name.lower()
         cmp_with_versions = ComponentWithVersions(component_name, [])
 
         storage_clients_list = list(self.storage_clients)
-
-        # If we have a registry_url but no storage clients (registry unreachable and no local/profile),
-        # raise NetworkConnectionError to match expected behavior
-        if not storage_clients_list and self.registry_url and not self.registry_storage_client:
-            # Registry was unreachable and there are no other storage options
-            raise NetworkConnectionError(
-                f'Cannot establish a connection to the component registry at {self.registry_url}',
-                endpoint=f'{self.registry_url}/api',
-            )
 
         for storage_client in storage_clients_list:
             try:

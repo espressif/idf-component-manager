@@ -15,7 +15,7 @@ from idf_component_tools.constants import (
 )
 from idf_component_tools.errors import NoSuchProfile
 from idf_component_tools.messages import UserDeprecationWarning
-from idf_component_tools.registry.client_errors import APIClientError
+from idf_component_tools.registry.client_errors import APIClientError, NetworkConnectionError
 from idf_component_tools.registry.multi_storage_client import MultiStorageClient
 from idf_component_tools.registry.service_details import (
     get_api_client,
@@ -292,3 +292,35 @@ class TestMultiStorageClient:
         third_iteration = [c.storage_url for c in client.storage_clients]
         assert len(third_iteration) == 3
         assert third_iteration == [c.storage_url for c in first_iteration]
+
+    def test_registry_unreachable_falls_back(self, caplog):
+        """When a non-default registry is unreachable and fallback storages are available,
+        local/profile storage clients are returned."""
+        custom_registry = 'https://my-custom-registry.example.com'
+
+        client = MultiStorageClient(
+            registry_url=custom_registry,
+            storage_urls=['http://profile-storage'],
+            local_storage_urls=['file://local-storage'],
+        )
+
+        assert client.registry_storage_url is None
+
+        assert f'Cannot reach component registry at {custom_registry}' not in caplog.text
+
+        # Local and profile storage clients should still be available
+        storage_clients = list(client.storage_clients)
+        storage_urls = [c.storage_url for c in storage_clients]
+        assert 'file://local-storage' in storage_urls
+        assert 'http://profile-storage' in storage_urls
+        assert len(storage_urls) == 2
+
+    def test_registry_unreachable_no_fallback_raises(self):
+        """When a non-default registry is unreachable and there are no
+        local/profile storage clients, NetworkConnectionError is raised."""
+        custom_registry = 'https://my-custom-registry.example.com'
+
+        client = MultiStorageClient(registry_url=custom_registry)
+
+        with raises(NetworkConnectionError, match='Cannot establish a connection'):
+            list(client.storage_clients)
