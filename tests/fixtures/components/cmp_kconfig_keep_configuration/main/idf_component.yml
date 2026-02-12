@@ -1,0 +1,6 @@
+dependencies:
+  espressif/esp_video:
+    require: public
+    version: "*"
+    matches:
+      - if: "$CONFIG{ESP_BOARD_DEV_CAMERA_SUPPORT} == True"

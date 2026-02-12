@@ -885,6 +885,21 @@ class ComponentManager:
         handle_project_requirements(new_requirements)
         requirements_manager.dump(new_requirements)
 
+        if self.interface_version == 4 and cm_run_counter == 0:
+            # Back up the sdkconfig file before kconfgen overwrites it.
+            # On the first pass, managed components aren't downloaded yet, so their
+            # Kconfig symbols are unknown and kconfgen strips user-set values for them.
+            with open(requirements_manager.path, 'a', encoding='utf-8') as f:
+                f.write("""
+                    idf_build_get_property(__cm_sdkconfig SDKCONFIG)
+                    idf_build_get_property(__cm_build_dir BUILD_DIR)
+                    if(EXISTS "${__cm_sdkconfig}")
+                        file(COPY_FILE "${__cm_sdkconfig}" "${__cm_build_dir}/sdkconfig.cm")
+                    else()
+                        file(REMOVE "${__cm_build_dir}/sdkconfig.cm")
+                    endif()
+                """)
+
         # In case of the CM second run when dealing with KConfig Variables
         # We need to overwrite the retried to 0 to run CM the third time
         # It's needed due to reason that in sdkconfig.json there will be
@@ -904,6 +919,15 @@ class ComponentManager:
                     idf_build_unset_property(BUILD_COMPONENT_ALIASES)
                     idf_build_unset_property(BUILD_COMPONENTS)
                     idf_build_unset_property(__BUILD_COMPONENT_DEPGRAPH)
+                """)
+                # Restore the original sdkconfig from backup so kconfgen can
+                # re-read the user's values now that all Kconfig files are loaded.
+                f.write("""
+                    idf_build_get_property(__cm_sdkconfig SDKCONFIG)
+                    idf_build_get_property(__cm_build_dir BUILD_DIR)
+                    if(EXISTS "${__cm_build_dir}/sdkconfig.cm")
+                        file(COPY_FILE "${__cm_build_dir}/sdkconfig.cm" "${__cm_sdkconfig}")
+                    endif()
                 """)
 
     @staticmethod
