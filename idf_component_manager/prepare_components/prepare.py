@@ -13,49 +13,19 @@ import sys
 import typing as t
 from pathlib import Path
 
-import psutil
-
 from idf_component_manager.core import ComponentManager
 from idf_component_tools import error, setup_logging, warn
 from idf_component_tools.debugger import KCONFIG_CONTEXT
 from idf_component_tools.errors import FatalError
 from idf_component_tools.manifest import ComponentRequirement
 
+from .cmake_pid import get_cmake_pid
+
 CMAKEV2 = os.environ.get('IDF_BUILD_V2', 'n') == 'y'
 
 
 def _component_list_file(build_dir):
     return os.path.join(build_dir, 'components_with_manifests_list.temp')
-
-
-def get_cmake_pid():
-    """
-    Find the PID of the CMake process that initiated this build.
-
-    This script is invoked multiple times during a single CMake build
-    (prepare_dependencies, inject_requirements). On Linux and macOS,
-    os.getppid() consistently returns the same parent PID across invocations.
-
-    On Windows, however, each invocation of this script is spawned through a
-    new intermediate process (e.g. cmd.exe), so os.getppid() returns a different
-    PID each time. This causes multiple state files to be created instead of
-    sharing one per CMake build, breaking the run counter and component list logic.
-
-    This function walks up the process tree to find the CMake process itself,
-    which remains constant throughout the build, ensuring consistent state file
-    naming across all invocations.
-
-    Returns:
-        The PID of the CMake parent process, or os.getppid() as a fallback
-        if no CMake process is found in the ancestry.
-    """
-    current = psutil.Process()
-    while current.parent():
-        parent = current.parent()
-        if 'cmake' in parent.name().lower():
-            return parent.pid
-        current = parent
-    return os.getppid()
 
 
 class RunCounter:
@@ -99,6 +69,22 @@ def _get_ppid_file_path(local_component_list_file: t.Optional[str]) -> Path:
     return Path(f'{local_component_list_file}.{get_cmake_pid()}')
 
 
+def _get_build_dir(args) -> str:
+    return args.build_dir or os.path.dirname(args.managed_components_list_file)
+
+
+def _copyfile_or_raise(
+    src: t.Union[str, Path],
+    dst: t.Union[str, Path],
+    *,
+    action: str,
+) -> None:
+    try:
+        shutil.copyfile(src, dst)
+    except (OSError, IOError) as e:
+        raise FatalError(f"Failed to {action} '{src}' → '{dst}': {e}") from e
+
+
 def _get_component_list_file(local_components_list_file, interface_version):
     """
     Get the appropriate component list file, preferring the PPID version
@@ -126,7 +112,7 @@ def _get_component_list_file(local_components_list_file, interface_version):
         return local_components_list_file
 
 
-def _get_sdkconfig_json_file_path(args, build_dir) -> t.Optional[Path]:
+def _get_sdkconfig_json_file_path(args, build_dir: t.Optional[str]) -> t.Optional[Path]:
     """
     Returns the path to the sdkconfig.json file if found, None otherwise.
     `sdkconfig_json_file` argument is not provided in some ESP-IDF versions (5.5.0, 5.5.1,...) when injecting deps
@@ -140,7 +126,9 @@ def _get_sdkconfig_json_file_path(args, build_dir) -> t.Optional[Path]:
     return None
 
 
-def should_load_sdkconfig(args, build_dir, sdk_config_json_path) -> bool:
+def should_load_sdkconfig_json(
+    args, build_dir: str, sdk_config_json_path: t.Optional[Path]
+) -> bool:
     if not sdk_config_json_path:
         return False
 
@@ -151,11 +139,11 @@ def should_load_sdkconfig(args, build_dir, sdk_config_json_path) -> bool:
 
 
 def prepare_dep_dirs(args):
-    build_dir = args.build_dir or os.path.dirname(args.managed_components_list_file)
+    build_dir = _get_build_dir(args)
 
     # If the Component Manager has been run before, we need to update the Kconfig context with the sdkconfig.json file
     sdk_config_json_path = _get_sdkconfig_json_file_path(args, build_dir)
-    if should_load_sdkconfig(args, build_dir, sdk_config_json_path):
+    if sdk_config_json_path and should_load_sdkconfig_json(args, build_dir, sdk_config_json_path):
         KCONFIG_CONTEXT.get().update_from_file(sdk_config_json_path)  # type: ignore
 
     local_components_list_file = _get_component_list_file(
@@ -205,18 +193,17 @@ def prepare_dep_dirs(args):
                 ppid_file = _get_ppid_file_path(args.local_components_list_file)
 
                 if not Path(ppid_file).exists():
-                    try:
-                        shutil.copyfile(args.local_components_list_file, ppid_file)
-                    except (OSError, IOError) as e:
-                        raise FatalError(
-                            f"Failed to copy '{args.local_components_list_file}' → '{ppid_file}': {e}"
-                        ) from e
+                    _copyfile_or_raise(
+                        args.local_components_list_file,
+                        ppid_file,
+                        action='copy',
+                    )
 
         # Exiting with code 10 to signal CMake to re-run component discovery due to missing KConfig options
         sys.exit(10)
 
     if args.interface_version == 4:
-        # Clean up PPID file on successful completion
+        # Clean up PPID files on successful completion
         if args.local_components_list_file:
             ppid_file_path = Path(_get_ppid_file_path(args.local_components_list_file))
             if ppid_file_path.exists():
@@ -226,7 +213,9 @@ def prepare_dep_dirs(args):
 def inject_requirements(args):
     sdk_config_json_path = _get_sdkconfig_json_file_path(args, args.build_dir)
 
-    if should_load_sdkconfig(args, args.build_dir, sdk_config_json_path):
+    if sdk_config_json_path and should_load_sdkconfig_json(
+        args, args.build_dir, sdk_config_json_path
+    ):
         KCONFIG_CONTEXT.get().update_from_file(sdk_config_json_path)  # type: ignore
 
     ComponentManager(
@@ -239,13 +228,22 @@ def inject_requirements(args):
         cm_run_counter=RunCounter(args.build_dir).value,
     )
 
-    # Last run of prepare_dep_dirs was successful -> Clean up CM Run counter
+    # Last run of prepare_dep_dirs was successful
+    # -> Clean up CM Run counter
+    # -> Clean up the sdkconfig.cm backup
     # If we're running CMakeV2, do not take counter into consideration
     if args.interface_version == 4 and not CMAKEV2:
         if not Path(
             _get_ppid_file_path(f'{args.build_dir}/local_components_list.temp.yml')
         ).exists():
             RunCounter(args.build_dir).cleanup()
+            # Injecting clean up of sdkconfig.cm file has to be done here
+            # As we don't know inside the inject_requirements whether it's the 2nd of 3rd run of CM
+            with open(args.component_requires_file, 'a', encoding='utf-8') as f:
+                f.write("""
+                    idf_build_get_property(__cm_build_dir BUILD_DIR)
+                    file(REMOVE "${__cm_build_dir}/sdkconfig.cm")
+                """)
         else:
             RunCounter(args.build_dir).increase()
 
