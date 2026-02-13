@@ -96,3 +96,37 @@ def test_three_runs_cm_kconfig(project):
     lock = YAML().load(Path(project) / 'dependencies.lock')
     assert 'cmp' in lock['dependencies']
     assert 'espressif/esp_codec_dev' in lock['dependencies']
+
+
+@pytest.mark.parametrize(
+    'project',
+    [
+        {
+            'components': {
+                'main': {
+                    'dependencies': {
+                        'cmp': {
+                            'matches': [{'if': '$CONFIG{ADC} == True'}],
+                            'override_path': fixtures_path(
+                                'components', 'cmp_with_kconfig_var', 'cmp'
+                            ),
+                        },
+                    },
+                },
+            },
+        },
+    ],
+    indirect=True,
+)
+@pytest.mark.xfail(
+    getenv('IDF_COMPONENT_TESTS_BUILD_SYSTEM_VERSION') == '2',
+    reason='CMakeV2 does not constraint the warning printing from CM',
+)
+def test_kconfig_warning(project):
+    res = project_action(
+        project,
+        'reconfigure',
+    )
+
+    assert res.count('NOTICE: Processing') == 3
+    assert res.count('WARNING: The following Kconfig variables were used in "if" clauses') == 1
