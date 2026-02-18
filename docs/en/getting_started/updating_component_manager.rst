@@ -1,5 +1,6 @@
-Installing and Updating the IDF Component Manager
-=================================================
+###################################################
+ Installing and Updating the IDF Component Manager
+###################################################
 
 To update the IDF Component Manager to the latest version, run the following commands.
 

@@ -1,10 +1,20 @@
-Getting Started
-===============
+#################
+ Getting Started
+#################
 
 The IDF Component Manager comes pre-installed and enabled by default in all `supported ESP-IDF versions <https://docs.espressif.com/projects/esp-idf/en/latest/esp32/versions.html>`_.
 
-Checking the IDF Component Manager Version
-------------------------------------------
+******************
+ Where to go next
+******************
+
+- Add and manage dependencies: :doc:`/use/index`
+- Publish a component to the registry: :doc:`/publish/index`
+- Explore advanced/standalone CLI commands: :doc:`/reference/compote_cli`
+
+********************************************
+ Checking the IDF Component Manager Version
+********************************************
 
 If you're unsure which version of the IDF Component Manager is included in your ESP-IDF installation, you can check it using a CLI command.
 
@@ -40,4 +50,10 @@ First, activate the `ESP-IDF environment <https://docs.espressif.com/projects/es
           $ . $IDF_PATH/export.fish
           $ compote version
 
-If you're using an older version of the Component Manager, the ``compote version`` command might not be available. In that case, consider upgrading to the latest version. For details, see :doc:`Upgrading the IDF Component Manager <../guides/updating_component_manager>`.
+If you're using an older version of the Component Manager, the ``compote version`` command might not be available. In that case, consider upgrading to the latest version. For details, see :doc:`Upgrading the IDF Component Manager <updating_component_manager>`.
+
+.. toctree::
+    :hidden:
+    :maxdepth: 1
+
+    updating_component_manager

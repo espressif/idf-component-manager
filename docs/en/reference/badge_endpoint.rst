@@ -1,5 +1,6 @@
-ESP Component Registry Badge Endpoint
-=====================================
+#######################################
+ ESP Component Registry Badge Endpoint
+#######################################
 
 The ESP Component Registry provides an endpoint for generating a badge that displays the version of uploaded components. These badges are useful for documentation and other resources to indicate the version status of a component.
 
@@ -15,8 +16,9 @@ Example:
     :target: https://components.espressif.com/components/example/cmp
     :alt: Example Component Registry Badge
 
-Query Parameters
-----------------
+******************
+ Query Parameters
+******************
 
 The badge endpoint supports the following query parameters:
 
@@ -42,8 +44,9 @@ The badge endpoint supports the following query parameters:
 
    If there are no newer pre-release versions than the latest stable release, the badge defaults to showing the latest stable version.
 
-Additional Notes on Badge Display Behavior
-------------------------------------------
+********************************************
+ Additional Notes on Badge Display Behavior
+********************************************
 
 - **Stable versions**: Displayed by default, if available.
 - **Pre-release versions**: Displayed if explicitly requested via the ``prerelease`` parameter or when no stable versions exist.
