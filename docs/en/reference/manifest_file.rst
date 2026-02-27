@@ -452,7 +452,7 @@ The following table outlines the supported comparison types for the ``if`` field
 
     If you use an `environment variables`_ as the left value of an ``if`` clause and it is not set, an error will be raised.
 
-    If you specified `kconfig options`_ as the left value of the if clause, but the kconfig is included in your project, or components, an error will be raised.
+    If you specified `kconfig options`_ as the left value of the if clause, but the kconfig is not included in your project or direct dependency components, an error will be raised.
 
 To create complex boolean expressions, use parentheses along with the boolean operators ``&&`` and ``||``.
 
@@ -466,6 +466,34 @@ To create complex boolean expressions, use parentheses along with the boolean op
          - if: target in ["esp32", "esp32c3"]
          # The above two conditions are equivalent to:
          - if: idf_version >=3.3,<5.0 && target in ["esp32", "esp32c3"]
+
+Short‑circuit evaluation and missing options
+--------------------------------------------
+
+Boolean expressions use short‑circuit semantics:
+
+- ``A && B`` — evaluate ``B`` only if ``A`` is truthy.
+- ``A || B`` — evaluate ``B`` only if ``A`` is falsy.
+
+Because of this interaction, seemingly symmetric conditions can behave asymmetrically depending on which side is evaluated.
+
+This is especially important with `kconfig options`_. In Kconfig, some symbols are only visible/defined when prerequisite options are enabled. If a symbol is not visible in the current configuration, referencing it directly in an ``if`` expression is not evaluable.
+
+Use ``&&`` (or ``||``) to *guard* access to such symbols, and put the prerequisite check on the left side so the right side is only evaluated when the symbol is expected to exist.
+
+.. code-block:: yaml
+
+    # Example: an option only exists when a parent feature is enabled
+    dependencies:
+      example/optional_component:
+        version: "*"
+        matches:
+          # This may not be evaluable when FEATURE_SUPPORT is not enabled
+          # - if: "$CONFIG{FEATURE_OPTION} == True"
+          # Guard the access instead:
+          - if: "$CONFIG{FEATURE_SUPPORT} == True && $CONFIG{FEATURE_OPTION} == True"
+
+For background on how Kconfig symbols become visible, see the Kconfig language reference: https://docs.kernel.org/kbuild/kconfig-language.html
 
 .. hint::
 
@@ -526,7 +554,12 @@ You can use Kconfig options for attributes that support them. All Kconfig option
 
 For example, to compare with the Kconfig option ``CONFIG_MY_OPTION``, use ``$CONFIG{MY_OPTION}``.
 
-Only Kconfig options defined in the ESP-IDF project or its direct dependency components are supported. For example:
+Only Kconfig options defined in the ESP-IDF project or its direct dependency components are supported. In other words options defined in component are not reachable transitively through another component
+
+For Example
+-----------
+
+1. Option defined in the main project (visible):
 
 .. code-block:: yaml
 
@@ -538,6 +571,8 @@ Only Kconfig options defined in the ESP-IDF project or its direct dependency com
 
 This works, because ``CONFIG_BOOTLOADER_LOG_LEVEL_WARN`` is defined in the ESP-IDF project.
 
+2. Option not present in the project:
+
 .. code-block:: yaml
 
     dependencies:
@@ -547,6 +582,8 @@ This works, because ``CONFIG_BOOTLOADER_LOG_LEVEL_WARN`` is defined in the ESP-I
            - if: "$CONFIG{MY_OPTION} == True"
 
 This does not work, because ``CONFIG_MY_OPTION`` is not defined in the ESP-IDF project.
+
+3. Option defined in a direct dependency component:
 
 .. code-block:: yaml
 
@@ -559,7 +596,9 @@ This does not work, because ``CONFIG_MY_OPTION`` is not defined in the ESP-IDF p
          matches:
            - if: "$CONFIG{MDNS_MAX_SERVICES} == 10"
 
-This works, because ``CONFIG_MDNS_MAX_SERVICES`` is defined in the ``espressif/mdns`` component, which is a direct dependency of your project.
+This works, because ``CONFIG_MDNS_MAX_SERVICES`` is defined in the ``espressif/mdns`` component, which is a direct dependency of a project.
+
+4. Option present in the transitive dependency of the project:
 
 .. code-block:: yaml
 
@@ -572,7 +611,16 @@ This works, because ``CONFIG_MDNS_MAX_SERVICES`` is defined in the ``espressif/m
          matches:
            - if: "$CONFIG{OPTION_FROM_CMP_B} == True"
 
-This does not work, even if ``CONFIG_OPTION_FROM_CMP_B`` is defined in the ``cmp_b`` component and ``cmp_a`` depends on ``cmp_b``, because ``cmp_b`` is not a direct dependency of your project.
+This does not work, because ``CONFIG_OPTION_FROM_CMP_B`` is defined in the ``cmp_b`` component and ``cmp_a`` depends on ``cmp_b`` - ``cmp_b`` is not a direct dependency of your project.
+
+How Kconfig Options Become Visible to the IDF Component Manager
+===============================================================
+
+The Component Manager evaluates ``$CONFIG{...}`` expressions in ``idf_component.yml`` manifest files (e.g. for conditional dependencies using ``matches`` / ``rules``). It reads these values from the project's effective Kconfig configuration — specifically from the files generated during the CMake configuration phase (``sdkconfig``, and internally ``sdkconfig.json`` which the build system writes and reads). To make sure these values are all available, the Component Manager can run up to three times (to avoid stale ``sdkconfig.json``, resolve and load the KConfig options of direct dependencies). A Kconfig symbol is only usable in ``$CONFIG{...}`` if it is **defined and visible** at configuration time of the last run of Component Manager.
+
+.. note::
+
+    ``sdkconfig.json`` is an internal file generated by the build system. It is *not* the same as ``sdkconfig``. You do not edit it directly; the build system derives it from ``sdkconfig`` and the active Kconfig tree. The Component Manager reads from this representation when evaluating manifest conditions.
 
 Local Directory Dependencies
 ============================
