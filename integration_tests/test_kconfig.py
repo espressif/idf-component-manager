@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2025-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+import shutil
 from os import getenv
 from pathlib import Path
 
@@ -130,3 +131,39 @@ def test_kconfig_warning(project):
 
     assert res.count('NOTICE: Processing') == 3
     assert res.count('WARNING: The following Kconfig variables were used in "if" clauses') == 1
+
+
+@pytest.mark.parametrize(
+    'project',
+    [
+        {
+            'fixture_project_dir': fixtures_path('components', 'cmp_kconfig_keep_configuration'),
+        }
+    ],
+    indirect=True,
+)
+def test_keep_sdkconfig_configuration_after_build(project: str) -> None:
+    res = project_action(
+        project,
+        'set-target',
+        'esp32p4',
+    )
+    assert 'Configuring done' in res
+
+    # Simulate idf.py menuconfig
+    sdkconfig_path = Path(project) / 'test' / 'sdkconfig.test'
+    sdkconfig_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy(Path(project) / 'sdkconfig', sdkconfig_path)
+
+    with sdkconfig_path.open('a') as f:
+        f.write('CONFIG_CAMERA_OV2710=y')
+
+    res = project_action(project, 'build', '-DSDKCONFIG=test/sdkconfig.test')
+
+    assert 'Configuring done' in res
+    assert 'CONFIG_CAMERA_OV2710=y' in sdkconfig_path.read_text()
+    assert (
+        '"CAMERA_OV2710": true,'
+        in (Path(project) / 'build' / 'config' / 'sdkconfig.json').read_text()
+    )
+    assert not (Path(project) / 'build' / 'sdkconfig.cm').exists()
