@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -27,9 +27,24 @@ def project(request, tmpdir_factory):
     project_path = str(tmpdir_factory.mktemp('project'))
     file_loader = FileSystemLoader(os.path.join(os.path.dirname(__file__), 'fixtures', 'templates'))
     env = Environment(loader=file_loader)
-    generate_from_template(
-        os.path.join(project_path, 'CMakeLists.txt'), env.get_template('CMakeLists.txt')
-    )
+
+    fixture_project_dir = request.param.get('fixture_project_dir')
+    if fixture_project_dir:
+        shutil.copytree(fixture_project_dir, project_path, dirs_exist_ok=True)
+        yield os.path.abspath(project_path)
+        return
+
+    env_build_system_version = os.getenv('IDF_COMPONENT_TESTS_BUILD_SYSTEM_VERSION', '1')
+    build_system_version = int(request.param.get('build_system_version', env_build_system_version))
+
+    if build_system_version == 1:
+        template = env.get_template('CMakeLists.txt')
+    elif build_system_version == 2:
+        template = env.get_template('CMakeLists_v2.txt')
+    else:
+        raise ValueError(f'Unsupported build_system_version: {build_system_version}')
+
+    generate_from_template(os.path.join(project_path, 'CMakeLists.txt'), template=template)
 
     # create idf root dependencies
     root_dependencies = request.param.get('root_dependencies', {})
