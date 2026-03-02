@@ -174,6 +174,16 @@ def prepare_dep_dirs(args):
                 debug_strs.add(f'    {key}, {debug_message(req)}')
 
         _nl = '\n'
+
+        # Only print the warning in these cases:
+        # - interface version 4 and Component Manager is running the 3rd time (or later)
+        if args.interface_version == 4 and RunCounter(build_dir).value >= 2:
+            warn(
+                f'The following Kconfig variables were used in "if" clauses, '
+                f'but not found in any Kconfig file:\n'
+                f'{_nl.join(sorted(debug_strs))}\n'
+            )
+
         if args.interface_version < 4:
             notice(
                 f'The following Kconfig variables were used in "if" clauses, '
@@ -182,12 +192,6 @@ def prepare_dep_dirs(args):
                 f'{_nl.join(sorted(debug_strs))}\n'
             )
             return
-
-        warn(
-            f'The following Kconfig variables were used in "if" clauses, '
-            f'but not found in any Kconfig file:\n'
-            f'{_nl.join(sorted(debug_strs))}\n'
-        )
 
         # Copy local component list file for next run of CMake before exiting
         if args.local_components_list_file:
