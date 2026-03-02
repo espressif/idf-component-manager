@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.4.7 (2026-03-02)
+
+### Fix
+
+- **kconfig**: Sdkconfig configuration not preserved across multiple CM runs
+- Emit warning only on the last run of Kconfig missing
+
 ## v2.4.6 (2026-01-22)
 
 ### Fix
