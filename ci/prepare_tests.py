@@ -46,6 +46,9 @@ def get_template_config() -> dict:
 INTEGRATION_TESTS_RE = re.compile(r'^(.*,)*run_integration_tests(,.*)*$')
 SKIP_INTEGRATION_TESTS_RE = re.compile(r'^(.*,)*skip_integration_tests(,.*)*$')
 
+# integration tests v2 (build system v2)
+INTEGRATION_TESTS_V2_RE = re.compile(r'^(.*,)*build_system_v2(,.*)*$')
+
 # dockerfiles
 BUILD_DOCKER_RE = re.compile(r'^(.*,)*build_docker(,.*)*$')
 
@@ -96,7 +99,7 @@ def should_run_integration_tests() -> bool:
         # run_integration_tests label
         INTEGRATION_TESTS_RE.match(getenv('CI_MERGE_REQUEST_LABELS', '')),
         # Check env-variable triggers
-        getenv('RUN_INTEGRATION_TESTS') == '1',
+        getenv('RUN_INTEGRATION_TESTS') in ('1', '2'),
         getenv('CI_PIPELINE_SOURCE') == 'schedule',
     ]
 
@@ -114,6 +117,17 @@ def should_run_integration_tests() -> bool:
     return False
 
 
+def should_run_integration_tests_v2() -> bool:
+    # Treat skip label as an override for all integration jobs.
+    if SKIP_INTEGRATION_TESTS_RE.match(getenv('CI_MERGE_REQUEST_LABELS', '')):
+        return False
+
+    return bool(
+        getenv('RUN_INTEGRATION_TESTS') == '2'
+        or INTEGRATION_TESTS_V2_RE.match(getenv('CI_MERGE_REQUEST_LABELS', ''))
+    )
+
+
 def render_template(ci_dir: Path, template_name: str, output_file) -> None:
     """Render a Jinja2 template and append to output file."""
     env = Environment(loader=FileSystemLoader(ci_dir))
@@ -126,7 +140,7 @@ def render_template(ci_dir: Path, template_name: str, output_file) -> None:
 def main():
     ci_dir = Path(environ['CI_PROJECT_DIR']) / 'ci'
     with open(ci_dir / 'tests.yml', 'a') as out:
-        if should_run_integration_tests():
+        if should_run_integration_tests() or should_run_integration_tests_v2():
             print('Adding integration tests')
             render_template(ci_dir, 'integration_tests.yml.j2', out)
         if should_run_build_docker_files():
