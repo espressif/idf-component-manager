@@ -65,4 +65,6 @@ integration_test_build_system_v2:
   variables:
     IDF_COMPONENT_TESTS_BUILD_SYSTEM_VERSION: 2
   rules:
+    # Allow triggering from pipeline variables (e.g. in a web-run pipeline)
+    - if: '$RUN_INTEGRATION_TESTS == "2"'
     - if: $CI_MERGE_REQUEST_LABELS =~ /build_system_v2/
