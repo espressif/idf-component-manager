@@ -173,7 +173,8 @@ def prepare_dep_dirs(args):
 
         # Only print the warning in these cases:
         # - interface version 4 and Component Manager is running the 3rd time (or later)
-        if args.interface_version == 4 and RunCounter(build_dir).value >= 2:
+        # - CMake build system v2
+        if (args.interface_version == 4 and RunCounter(build_dir).value >= 2) or CMAKEV2:
             warn(
                 f'The following Kconfig variables were used in "if" clauses, '
                 f'but not found in any Kconfig file:\n'
