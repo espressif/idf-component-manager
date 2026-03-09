@@ -1,9 +1,10 @@
-# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import typing as t
 import warnings
 from copy import deepcopy
 from http import HTTPStatus
+from urllib.parse import urlparse
 
 import requests
 from pydantic import ValidationError
@@ -36,6 +37,35 @@ def join_url(*args) -> str:
     """
     parts = [part[:-1] if part and part[-1] == '/' else part for part in args]
     return '/'.join(parts)
+
+
+def normalize_storage_url(url: str) -> str:
+    """
+    Normalize storage URL for comparison.
+
+    Normalizes URLs by:
+    - Lowercasing scheme and domain
+    - Normalizing path (removing empty segments, trailing slashes)
+    - Ensuring consistent format
+
+    :param url: Storage URL to normalize
+    :return: Normalized URL
+    """
+    # Add scheme if missing
+    if '://' not in url:
+        url = 'https://' + url
+
+    parsed = urlparse(url)
+
+    # Normalize components
+    scheme = parsed.scheme.lower()
+    domain = parsed.netloc.lower()
+    path = '/'.join(filter(None, parsed.path.split('/')))
+
+    # Include scheme in comparison
+    if path:
+        return f'{scheme}://{domain}/{path}'
+    return f'{scheme}://{domain}'
 
 
 def make_hashable(input_object):

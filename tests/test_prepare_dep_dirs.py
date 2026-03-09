@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import textwrap
@@ -12,6 +12,8 @@ from idf_component_manager.prepare_components.prepare import _component_list_fil
 from idf_component_tools.config import Config, ConfigManager, ProfileItem
 from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL
 from idf_component_tools.errors import FatalError
+from idf_component_tools.registry.api_client import APIClient
+from idf_component_tools.registry.client_errors import NetworkConnectionError
 
 
 def _generate_lock_file(project_dir: Path, yaml_str: str, build_dir: str = 'build'):
@@ -312,3 +314,130 @@ def test_dependencies_with_constraint_files_and_strings(tmp_path, monkeypatch):
 
     # Check that exact version from constraint was used
     assert lock_data['dependencies']['espressif/led_strip']['version'] == '2.5.4'
+
+
+def test_dependencies_resolve_with_unreachable_registry_when_local_storage_has_component(
+    tmp_path, monkeypatch, caplog
+):
+    """
+    If registry is unreachable but local storage contains required components,
+    dependency solving should succeed.
+
+    This test also ensures the "registry storage URL" lookup path was exercised and failed
+    (i.e., returned None via NetworkConnectionError), rather than simply never attempting it.
+    """
+
+    # Keep environment consistent with existing dep-dir tests
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32')
+    monkeypatch.setenv('IDF_PATH', str(tmp_path))
+
+    cache_dir = tmp_path / 'cache'
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    # Prepare a local partial mirror that contains the required component version
+    ComponentManager('.').sync_registry(
+        'default', str(cache_dir), components=['example/cmp==3.0.3']
+    )
+
+    # Configure profile with unreachable registry + usable local storage
+    ConfigManager().dump(
+        Config(
+            profiles={
+                'tmp_profile': ProfileItem(
+                    registry_url='https://my-custom-registry.example.com',
+                    storage_url='https://my-custom-registry.example.com',
+                    local_storage_url=cache_dir.as_uri(),
+                )
+            }
+        )
+    )
+    monkeypatch.setenv('IDF_COMPONENT_PROFILE', 'tmp_profile')
+
+    # Force the registry "api_information" call to fail as if the registry is unreachable,
+    # and count calls to ensure the code path was actually exercised.
+    calls = {'api_information': 0}
+
+    def _api_information_unreachable(*args, **kwargs):
+        calls['api_information'] += 1
+        raise NetworkConnectionError
+
+    monkeypatch.setattr(APIClient, 'api_information', _api_information_unreachable)
+
+    # Run dependency preparation/solve path and ensure it succeeds
+    _generate_lock_file(
+        tmp_path,
+        """
+        dependencies:
+          example/cmp:
+            version: '*'
+        """,
+    )
+
+    # We must have attempted to query the registry API for components_base_url at least once,
+    # which would have resulted in registry_storage_url returning None internally.
+    assert calls['api_information'] >= 1
+
+    # Assert lock file is generated with resolved dependency
+    assert (tmp_path / 'dependencies.lock').exists()
+    with open(tmp_path / 'dependencies.lock') as f:
+        lock_data = YAML(typ='safe').load(f)
+
+    assert lock_data['dependencies']['example/cmp']
+    assert lock_data['dependencies']['example/cmp']['version'] == '3.0.3'
+    assert lock_data['dependencies']['example/cmp']['source']['type'] == 'service'
+    assert (
+        lock_data['dependencies']['example/cmp']['source']['registry_url']
+        == 'https://my-custom-registry.example.com/'
+    )
+
+    # No unreachable-registry warning if resolution succeeded from local storage
+    assert (
+        'Cannot reach component registry at https://my-custom-registry.example.com'
+        not in caplog.text
+    )
+
+
+def test_dependencies_fail_with_unreachable_registry_when_local_storage_lacks_component_version(
+    tmp_path, monkeypatch
+):
+    """
+    If registry is unreachable and local storage does not contain the required version,
+    dependency solving should fail with a clear fatal error.
+    """
+    # Keep environment consistent with existing dep-dir tests
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32')
+    monkeypatch.setenv('IDF_PATH', str(tmp_path))
+
+    cache_dir = tmp_path / 'cache'
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    # Mirror contains only 3.0.3, request 3.3.7 which is not available offline
+    ComponentManager('.').sync_registry(
+        'default', str(cache_dir), components=['example/cmp==3.0.3']
+    )
+
+    # Configure profile with unreachable registry + local storage mirror
+    ConfigManager().dump(
+        Config(
+            profiles={
+                'tmp_profile': ProfileItem(
+                    registry_url='https://my-custom-registry.example.com',
+                    storage_url='https://my-custom-registry.example.com',
+                    local_storage_url=cache_dir.as_uri(),
+                )
+            }
+        )
+    )
+    monkeypatch.setenv('IDF_COMPONENT_PROFILE', 'tmp_profile')
+
+    with pytest.raises(FatalError, match='Are you connected to the internet\\?'):
+        _generate_lock_file(
+            tmp_path,
+            """
+            dependencies:
+              example/cmp:
+                version: '3.3.7'
+            """,
+        )

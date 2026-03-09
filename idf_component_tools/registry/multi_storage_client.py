@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Classes to work with ESP Component Registry"""
 
@@ -8,16 +8,17 @@ from functools import lru_cache
 from idf_component_manager.utils import VersionSolverResolution
 from idf_component_tools.constants import (
     DEFAULT_NAMESPACE,
-    IDF_COMPONENT_REGISTRY_URL,
     IDF_COMPONENT_STORAGE_URL,
+    NORMALIZED_IDF_COMPONENT_REGISTRY_URL,
 )
 from idf_component_tools.messages import debug, warn
+from idf_component_tools.registry.request_processor import normalize_storage_url
 from idf_component_tools.utils import ComponentWithVersions
 
 from ..manifest import ComponentRequirement
 from ..semver import Version
 from .api_client import APIClient
-from .client_errors import ComponentNotFound, VersionNotFound
+from .client_errors import ComponentNotFound, NetworkConnectionError, VersionNotFound
 from .storage_client import StorageClient
 
 
@@ -54,14 +55,18 @@ class MultiStorageClient:
     @property
     @lru_cache(1)
     def registry_storage_url(self) -> t.Optional[str]:
-        if self.registry_url and self.registry_url.rstrip('/') == IDF_COMPONENT_REGISTRY_URL.rstrip(
-            '/'
-        ):
-            return IDF_COMPONENT_STORAGE_URL
-        elif self.registry_url:
-            return APIClient(self.registry_url).api_information()['components_base_url']
+        if not self.registry_url:
+            return None
 
-        return None
+        if normalize_storage_url(self.registry_url) == NORMALIZED_IDF_COMPONENT_REGISTRY_URL:
+            return IDF_COMPONENT_STORAGE_URL
+
+        try:
+            return APIClient(self.registry_url).api_information()['components_base_url']
+        except NetworkConnectionError:
+            # Registry can be unreachable in valid offline workflows.
+            # Silently skip registry storage and continue with local/profile sources.
+            return None
 
     @property
     @lru_cache(1)
@@ -84,16 +89,45 @@ class MultiStorageClient:
     @property
     @lru_cache(1)
     def storage_clients(self):
-        yield from self.local_storage_clients
-        yield from self.profile_storage_clients
+        """
+        Return storage clients in priority order (local → profile → registry),
+        deduplicating clients to avoid trying the same storage endpoint twice.
+
+        Note: This property uses StorageClient's __eq__ and __hash__ methods to deduplicate,
+        ensuring that even if storage_clients point to the same URL, only one client is returned.
+        """
+        # Dictionary to simulate ordered set
+        seen: t.Dict[StorageClient, None] = {}
+
+        for client in self.local_storage_clients:
+            seen[client] = None
+
+        for client in self.profile_storage_clients:
+            seen[client] = None
+
         if self.registry_storage_client:
-            yield self.registry_storage_client
+            seen[self.registry_storage_client] = None
+
+        storage_clients = list(seen.keys())
+
+        # If we have a registry_url but no storage clients (registry unreachable and no local/profile),
+        # raise NetworkConnectionError to match expected behavior
+        if not storage_clients and self.registry_url and not self.registry_storage_client:
+            # Registry was unreachable and there are no other storage options
+            raise NetworkConnectionError(
+                f'Cannot establish a connection to the component registry at {self.registry_url}',
+                endpoint=f'{self.registry_url}/api',
+            )
+
+        return storage_clients
 
     def versions(self, component_name: str, spec: str = '*') -> ComponentWithVersions:
         component_name = component_name.lower()
         cmp_with_versions = ComponentWithVersions(component_name, [])
 
-        for storage_client in self.storage_clients:
+        storage_clients_list = list(self.storage_clients)
+
+        for storage_client in storage_clients_list:
             try:
                 debug(
                     'Fetching versions of component "%s" with spec "%s" from %s',
@@ -157,9 +191,16 @@ class MultiStorageClient:
         :return: (ComponentWithVersions, storage_url)
         """
         # local_storage_urls shall not be used when create partial mirror
-        _clients = self.profile_storage_clients.copy()
+        # Dictionary to simulate ordered set
+        seen: t.Dict[StorageClient, None] = {}
+
+        for client in self.profile_storage_clients:
+            seen[client] = None
+
         if self.registry_storage_client:
-            _clients.append(self.registry_storage_client)
+            seen[self.registry_storage_client] = None
+
+        _clients = list(seen.keys())
 
         error_message = ''
 
