@@ -131,6 +131,8 @@ tests:
     - prepare_tests
   trigger:
     strategy: mirror
+    forward:
+      pipeline_variables: true
     include:
       - artifact: ci/tests.yml
         job: prepare_tests
