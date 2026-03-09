@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import shutil
@@ -13,6 +13,8 @@ from idf_component_manager.version_solver.mixology.package import Package
 from idf_component_manager.version_solver.version_solver import VersionSolver
 from idf_component_tools import ComponentManagerSettings
 from idf_component_tools.build_system_tools import build_name, get_idf_version
+from idf_component_tools.config import root_managed_components_dir
+from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.debugger import DEBUG_INFO_COLLECTOR
 from idf_component_tools.errors import (
     ComponentModifiedError,
@@ -78,8 +80,17 @@ def get_unused_components(
 def detect_unused_components(
     requirement_dependencies: t.List[SolvedComponent], managed_components_path: str
 ) -> None:
-    downloaded_components = os.listdir(managed_components_path)
-    unused_files_with_components = set(downloaded_components) - {
+    expected_paths = os.listdir(managed_components_path)
+
+    # The root-managed-components directory contains metadata files in its top level
+    # (e.g. idf_component.yml and dependencies.lock). They are expected and should not
+    # be flagged as unexpected files.
+    if Path(managed_components_path).resolve() == root_managed_components_dir().resolve():
+        expected_paths = [
+            n for n in expected_paths if n not in {MANIFEST_FILENAME, 'dependencies.lock'}
+        ]
+
+    unused_files_with_components = set(expected_paths) - {
         build_name(component.name) for component in requirement_dependencies
     }
     unused_components = get_unused_components(unused_files_with_components, managed_components_path)

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import logging
 import os
@@ -8,6 +8,7 @@ import pytest
 
 from idf_component_manager.dependencies import detect_unused_components
 from idf_component_tools import LOGGING_NAMESPACE
+from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.debugger import KCONFIG_CONTEXT
 from idf_component_tools.manager import ManifestManager, UploadMode
 from idf_component_tools.manifest import SLUG_REGEX, OptionalRequirement, SolvedComponent
@@ -287,6 +288,29 @@ class TestManifestValidator:
             assert 'Content of the managed components directory is managed automatically' in str(
                 caplog.records[0].message
             )
+
+    def test_root_managed_components_metadata_not_flagged(self, tmp_path, caplog, monkeypatch):
+        managed_components_path = tmp_path / 'root_managed_components'
+        managed_components_path.mkdir()
+
+        # Expected metadata at root-managed-components top level
+        (managed_components_path / MANIFEST_FILENAME).write_text('dependencies: {}')
+        (managed_components_path / 'dependencies.lock').write_text('')
+
+        # Unexpected file should still warn
+        (managed_components_path / 'unexpected_file').write_text('test')
+
+        from idf_component_manager import dependencies as deps
+
+        monkeypatch.setattr(deps, 'root_managed_components_dir', lambda: managed_components_path)
+
+        with caplog.at_level(logging.WARNING, logger=LOGGING_NAMESPACE):
+            detect_unused_components([], str(managed_components_path))
+            assert len(caplog.records) == 1
+            msg = str(caplog.records[0].message)
+            assert 'unexpected_file' in msg
+            assert MANIFEST_FILENAME not in msg
+            assert 'dependencies.lock' not in msg
 
     def test_env_ignore_unknown_files_empty(self, monkeypatch, tmp_path, caplog):
         monkeypatch.setenv('IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS', '')
