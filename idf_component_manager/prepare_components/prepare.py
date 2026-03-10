@@ -178,8 +178,10 @@ def prepare_dep_dirs(args):
         # - interface version 4 and Component Manager is running the 3rd time (or later)
         # - interface version 5 (warning printing is controlled outside of python for v5)
         if (
-            args.interface_version == 4 and RunCounter(build_dir).value >= 2
-        ) or args.interface_version == 5:
+            (args.interface_version == 4 and RunCounter(build_dir).value >= 2)
+            or args.interface_version == 5
+            or CMAKEV2
+        ):
             _nl = '\n'
             warn(
                 f'The following Kconfig variables were used in "if" clauses, '
