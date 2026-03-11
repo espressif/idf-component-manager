@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.4.8 (2026-03-11)
+
+### Fix
+
+- **cmakev2**: Warnings for undefined KConfig symbol when using CMake build system V2
+- ignore root-managed metadata in unexpected-files warning
+
 ## v2.4.7 (2026-03-02)
 
 ### Fix
