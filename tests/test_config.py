@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import json
@@ -6,7 +6,12 @@ import os
 
 import pytest
 
-from idf_component_tools.config import ConfigError, ConfigManager, ProfileItem
+from idf_component_tools.config import (
+    ConfigError,
+    ConfigManager,
+    ProfileItem,
+    root_managed_components_dir,
+)
 
 
 def test_config_validation():
@@ -107,6 +112,13 @@ def test_dump_non_existing_dir(tmp_path):
     config_path = tmp_path / 'non_existing_dir' / 'idf_component_manager.yml'
     config = ConfigManager.validate({})
     ConfigManager(path=config_path).dump(config)
+
+
+def test_root_managed_components_dir_uses_full_idf_version(monkeypatch, tmp_path):
+    monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path))
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.1')
+
+    assert root_managed_components_dir() == tmp_path / 'root_managed_components' / 'idf5.4.1'
 
 
 def test_component_registry_url_storage_env(monkeypatch):

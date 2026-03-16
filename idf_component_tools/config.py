@@ -170,7 +170,7 @@ def config_file() -> Path:
 
 
 def root_managed_components_dir() -> Path:
-    return config_dir() / 'root_managed_components' / f'idf{get_idf_version(short_version=True)}'
+    return config_dir() / 'root_managed_components' / f'idf{get_idf_version(short_version=False)}'
 
 
 class ConfigError(FatalError):
