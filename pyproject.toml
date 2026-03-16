@@ -10,7 +10,7 @@ include = [
 
 [project]
 name = "idf-component-manager"
-version = "2.4.0"
+version = "3.0.0"
 authors = [
     { name = "Sergei Silnov", email = "sergei.silnov@espressif.com" },
     { name = "Fu Hanxi", email = "fuhanxi@espressif.com" },
@@ -139,7 +139,7 @@ version_files = [
     "idf_component_tools/__version__.py:__version__",
     "pyproject.toml:project.version",
 ]
-update_changelog_on_bump = true
+update_changelog_on_bump = false
 bump_message = "change: bump version from v$current_version to v$new_version"
 
 [tool.ruff]
