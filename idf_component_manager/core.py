@@ -702,16 +702,16 @@ class ComponentManager:
         # let the build system decide what to do with them
         root_manifest_filepath = os.path.join(get_idf_path(), 'tools', 'idf_extra_components.yml')
         if os.path.isfile(root_manifest_filepath):
-            download_project_dependencies(
-                ProjectRequirements([
-                    ManifestManager(
-                        root_manifest_filepath,
-                        'root',
-                    ).load()
-                ]),
-                self.root_managed_components_lock_path,
-                self.root_managed_components_dir,
-            )
+            manifest = ManifestManager(
+                root_manifest_filepath,
+                'root',
+            ).load()
+            if manifest.dependencies:
+                download_project_dependencies(
+                    ProjectRequirements([manifest]),
+                    self.root_managed_components_lock_path,
+                    self.root_managed_components_dir,
+                )
 
         # Find all components
         local_components = []
