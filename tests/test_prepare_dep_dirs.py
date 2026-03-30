@@ -3,6 +3,7 @@
 import os
 import textwrap
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 from ruamel.yaml import YAML
@@ -441,3 +442,88 @@ def test_dependencies_fail_with_unreachable_registry_when_local_storage_lacks_co
                 version: '3.3.7'
             """,
         )
+
+
+def test_root_manifest_with_empty_dependencies_skips_download(tmp_path, monkeypatch):
+    """When root idf_extra_components.yml exists but has no dependencies,
+    download_project_dependencies should not be called for root components."""
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32')
+    monkeypatch.setenv('IDF_PATH', str(tmp_path))
+
+    # Create root manifest with only comments (no dependencies key) — the real-world default
+    tools_dir = tmp_path / 'tools'
+    tools_dir.mkdir()
+    (tools_dir / 'idf_extra_components.yml').write_text(
+        '# This file defines extra dependencies for ESP-IDF\n#dependencies:\n'
+    )
+
+    calls = []
+    original_download = __import__(
+        'idf_component_manager.dependencies', fromlist=['download_project_dependencies']
+    ).download_project_dependencies
+
+    def _tracking_download(*args, **kwargs):
+        calls.append(args)
+        return original_download(*args, **kwargs)
+
+    with patch(
+        'idf_component_manager.core.download_project_dependencies',
+        side_effect=_tracking_download,
+    ):
+        _generate_lock_file(
+            tmp_path,
+            """
+            dependencies: {}
+            """,
+        )
+
+    # No calls should reference root_managed_components paths
+    for call_args in calls:
+        lock_path = call_args[1]
+        assert 'root_managed_components' not in str(lock_path), (
+            'download_project_dependencies should not be called for root components '
+            'when root manifest has no dependencies'
+        )
+
+
+def test_root_manifest_with_dependencies_triggers_download(tmp_path, monkeypatch):
+    """When root idf_extra_components.yml has dependencies,
+    download_project_dependencies should be called for them."""
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32')
+    monkeypatch.setenv('IDF_PATH', str(tmp_path))
+
+    # Create root manifest with a dependency
+    tools_dir = tmp_path / 'tools'
+    tools_dir.mkdir()
+    (tools_dir / 'idf_extra_components.yml').write_text(
+        textwrap.dedent("""\
+        dependencies:
+          example/cmp:
+            version: '*'
+        """)
+    )
+
+    calls = []
+
+    def _tracking_download(*args, **kwargs):
+        calls.append(args)
+        return set()
+
+    with patch(
+        'idf_component_manager.core.download_project_dependencies',
+        side_effect=_tracking_download,
+    ):
+        _generate_lock_file(
+            tmp_path,
+            """
+            dependencies: {}
+            """,
+        )
+
+    root_calls = [c for c in calls if 'root_managed_components' in str(c[1])]
+    assert len(root_calls) == 1, (
+        'download_project_dependencies should be called once for root components '
+        'when root manifest has dependencies'
+    )
