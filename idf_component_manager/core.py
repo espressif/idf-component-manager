@@ -894,7 +894,7 @@ class ComponentManager:
                     idf_build_get_property(__cm_sdkconfig SDKCONFIG)
                     idf_build_get_property(__cm_build_dir BUILD_DIR)
                     if(EXISTS "${__cm_sdkconfig}")
-                        file(COPY_FILE "${__cm_sdkconfig}" "${__cm_build_dir}/sdkconfig.cm")
+                        configure_file("${__cm_sdkconfig}" "${__cm_build_dir}/sdkconfig.cm" COPYONLY)
                     else()
                         file(REMOVE "${__cm_build_dir}/sdkconfig.cm")
                     endif()
@@ -926,7 +926,7 @@ class ComponentManager:
                     idf_build_get_property(__cm_sdkconfig SDKCONFIG)
                     idf_build_get_property(__cm_build_dir BUILD_DIR)
                     if(EXISTS "${__cm_build_dir}/sdkconfig.cm")
-                        file(COPY_FILE "${__cm_build_dir}/sdkconfig.cm" "${__cm_sdkconfig}")
+                        configure_file("${__cm_build_dir}/sdkconfig.cm" "${__cm_sdkconfig}" COPYONLY)
                     endif()
                 """)
 
