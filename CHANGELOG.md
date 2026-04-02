@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 This changelog is managed with commitizen tool, don't update it manually.
 
+## v2.4.9 (2026-04-02)
+
+### Fix
+
+- Keep compatibility with older CMake version
+
 ## v2.4.8 (2026-03-11)
 
 ### Fix
