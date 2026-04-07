@@ -1,7 +1,8 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+import posixpath
 import re
 import shutil
 import tempfile
@@ -14,6 +15,7 @@ from idf_component_tools.git_client import GitClient
 from idf_component_tools.hash_tools.calculate import hash_dir, hash_url
 from idf_component_tools.hash_tools.checksums import ChecksumsModel
 from idf_component_tools.manager import ManifestManager
+from idf_component_tools.messages import warn
 from idf_component_tools.utils import (
     ComponentVersion,
     ComponentWithVersions,
@@ -25,7 +27,7 @@ from idf_component_tools.utils import (
 from .base import BaseSource
 
 if t.TYPE_CHECKING:
-    from idf_component_tools.manifest import SolvedComponent
+    from idf_component_tools.manifest import ComponentRequirement, SolvedComponent
 
 BRANCH_TAG_RE = re.compile(
     r'^(?!.*/\.)(?!.*\.\.)(?!/)(?!.*//)(?!.*@\{)(?!.*\\)[^\177\s~^:?*\[]+[^.]$'
@@ -131,6 +133,62 @@ class GitSource(BaseSource):
 
         return download_path
 
+    def _resolve_override_paths(
+        self,
+        dependencies: t.List['ComponentRequirement'],
+        commit_id: str,
+    ) -> t.List['ComponentRequirement']:
+        """Transform override_path dependencies into git dependencies within the same repo.
+
+        When a git-fetched component's manifest declares a dependency with override_path,
+        that path typically points to another component within the same git repository.
+        Instead of treating it as a local path (which would fail since it doesn't exist
+        on the user's machine), we resolve it to a git dependency pointing to the same
+        repository and commit. This keeps the lock file portable across machines.
+        """
+        resolved = []
+        for dep in dependencies:
+            if dep.override_path:
+                repo_relative_path = posixpath.normpath(
+                    posixpath.join(self.repo_path, dep.override_path)
+                )
+
+                virtual_repo_root = '/__idf_component_repo__'
+                resolved_abs = posixpath.normpath(
+                    posixpath.join(virtual_repo_root, repo_relative_path)
+                )
+
+                if resolved_abs != virtual_repo_root and not resolved_abs.startswith(
+                    virtual_repo_root + '/'
+                ):
+                    warn(
+                        'Ignoring override_path "{}" for dependency "{}": '
+                        'path leads outside the git repository "{}". '
+                        'The component will be resolved from the registry instead.'.format(
+                            dep.override_path,
+                            dep.name,
+                            self.repo,
+                        )
+                    )
+                    new_dep = dep.model_copy(update={'override_path': None})
+                    new_dep._source = None
+                    resolved.append(new_dep)
+                    continue
+
+                new_dep = dep.model_copy(
+                    update={
+                        'override_path': None,
+                        'version': commit_id,
+                        'git': self.git,
+                        'path': repo_relative_path,
+                    }
+                )
+                new_dep._source = None
+                resolved.append(new_dep)
+                continue
+            resolved.append(dep)
+        return resolved
+
     def versions(self, name, spec='*', target=None):
         """For git returns hash of locked commit, ignoring manifest"""
         version = None if spec == '*' else spec
@@ -163,6 +221,7 @@ class GitSource(BaseSource):
             if os.path.isfile(manifest_path):
                 manifest = ManifestManager(manifest_path, name=name).load()
                 dependencies = manifest.raw_requirements
+                dependencies = self._resolve_override_paths(dependencies, commit_id)
                 use_gitignore = manifest.use_gitignore
 
                 if manifest.targets:  # only check when exists
