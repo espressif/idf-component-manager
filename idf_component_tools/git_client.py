@@ -12,7 +12,7 @@ from datetime import datetime
 from functools import wraps
 
 from .errors import GitError
-from .messages import warn
+from .messages import debug
 from .semver import Version
 
 
@@ -297,7 +297,7 @@ class GitClient:
 
         if p.returncode == 0:
             if stderr:
-                warn(stderr.decode('utf-8'))
+                debug(stderr.decode('utf-8'))
         else:
             raise GitCommandError(
                 "'git {}' failed with exit code {} \n{}\n{}".format(
