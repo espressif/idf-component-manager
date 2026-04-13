@@ -1,6 +1,7 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
+import logging
 import os
 import subprocess
 
@@ -146,6 +147,36 @@ def test_git_path_does_not_exist(git_repository_with_two_branches, tmpdir_factor
 )
 def test_clean_tag_version(input_str, expected_output):
     assert clean_tag_version(input_str) == expected_output
+
+
+def test_successful_git_stderr_logged_as_debug(git_repository, caplog):
+    """Git commands that succeed but write to stderr should log at DEBUG, not WARNING."""
+    client = GitClient()
+    git_repo = git_repository.strpath
+
+    # 'git status' with a path to a nonexistent file still succeeds but warns on stderr
+    # Instead, use a command that reliably produces stderr on success:
+    # 'git tag -d' on a nonexistent tag fails, so we use a different approach.
+    # Create a second branch to make 'git checkout' produce stderr info.
+    subprocess.check_output(['git', 'checkout', '-b', 'other'], cwd=git_repo)
+    subprocess.check_output(['git', 'checkout', 'default'], cwd=git_repo)
+
+    # 'git branch -v' writes to stdout only, so mock Popen to control stderr
+    from unittest.mock import MagicMock, patch
+
+    mock_process = MagicMock()
+    mock_process.communicate.return_value = (b'mock stdout\n', b'informational stderr message\n')
+    mock_process.returncode = 0
+
+    with patch('subprocess.Popen', return_value=mock_process):
+        with caplog.at_level(logging.DEBUG, logger='idf_component_manager'):
+            result = client.run(['status'], cwd=git_repo)
+
+    assert result == 'mock stdout\n'
+    # Verify stderr was NOT logged at WARNING level
+    warning_records = [r for r in caplog.records if r.levelno >= logging.WARNING]
+    stderr_warnings = [r for r in warning_records if 'informational stderr message' in r.message]
+    assert len(stderr_warnings) == 0, 'Git stderr on success should not be logged as WARNING'
 
 
 def test_get_tag_version(git_repository):
