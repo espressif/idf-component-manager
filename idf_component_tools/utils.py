@@ -108,7 +108,7 @@ def str_dict_discriminator(v: t.Any) -> t.Optional[str]:
     if isinstance(v, str):
         return STR_MARKER
 
-    if isinstance(v, dict):
+    if isinstance(v, (dict, _BaseModel)):
         return DICT_MARKER
 
     return None
