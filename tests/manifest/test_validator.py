@@ -3,6 +3,7 @@
 import logging
 import os
 import re
+import warnings as w
 
 import pytest
 
@@ -582,3 +583,22 @@ def test_validate_manifest_file(tmp_path, manifest_obj, error):
         assert error in manifest.validation_errors[0]
     else:
         assert manifest.validation_errors == []
+
+
+def test_manifest_model_dump_no_pydantic_warnings(valid_manifest):
+    """model_dump() should not emit PydanticSerializationUnexpectedValue warnings."""
+
+    errors, manifest = Manifest.validate_manifest(valid_manifest, return_with_object=True)
+    assert not errors
+
+    with w.catch_warnings(record=True) as caught:
+        w.simplefilter('always')
+        manifest.model_dump()
+        manifest.model_dump_json()
+
+    pydantic_warnings = [
+        x for x in caught if 'PydanticSerializationUnexpectedValue' in str(x.message)
+    ]
+    assert pydantic_warnings == [], (
+        f'Unexpected pydantic serialization warnings: {pydantic_warnings}'
+    )
