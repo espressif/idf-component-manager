@@ -207,6 +207,8 @@ class ComponentManagerSettings(BaseSettings):
         None,
         description="""
             | URL of the mirror.
+            | The ESP-IDF installer sets it during activation to point at the local tools cache.
+            | Values merged together with profile entries.
             | To set multiple URLs, use semicolon (;) to separate them:
             | `<url1>;<url2>;...`
         """,
