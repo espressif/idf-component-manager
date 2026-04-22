@@ -202,9 +202,27 @@ def test_component_local_storage_urls_profile():
 
 
 def test_component_local_storage_urls_profile_env(monkeypatch):
-    monkeypatch.setenv('IDF_COMPONENT_LOCAL_STORAGE_URL', 'http://localstorage_env.com/')
+    monkeypatch.setenv('IDF_COMPONENT_LOCAL_STORAGE_URL', 'file:///home/user/.espressif/tools')
     profile = ProfileItem(local_storage_url=['http://localstorage.com', 'https://test.com'])
-    assert profile.local_storage_urls == ['http://localstorage_env.com/']
+    # Profile entries come first so they take precedence under local_first_mode;
+    # the env-supplied value (e.g. set by the ESP-IDF installer) is appended as a fallback.
+    assert profile.local_storage_urls == [
+        'http://localstorage.com/',
+        'https://test.com/',
+        'file:///home/user/.espressif/tools',
+    ]
+
+
+def test_component_local_storage_urls_profile_env_dedup(monkeypatch):
+    monkeypatch.setenv(
+        'IDF_COMPONENT_LOCAL_STORAGE_URL',
+        'http://localstorage.com/;http://envonly.com/',
+    )
+    profile = ProfileItem(local_storage_url=['http://localstorage.com'])
+    assert profile.local_storage_urls == [
+        'http://localstorage.com/',
+        'http://envonly.com/',
+    ]
 
 
 def test_config_dump_keeping_comments(tmp_path):
