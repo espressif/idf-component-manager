@@ -1,10 +1,11 @@
-# SPDX-FileCopyrightText: 2022-2023 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
 import re
 
-from idf_component_tools.build_system_tools import CMAKE_PROJECT_LINE, is_component
+import idf_component_tools.build_system_tools as build_system_tools
+from idf_component_tools.build_system_tools import CMAKE_PROJECT_LINE, get_idf_version, is_component
 from idf_component_tools.manifest import WEB_DEPENDENCY_REGEX
 
 
@@ -48,3 +49,49 @@ def test_is_not_component(tmp_path):
     for proj_line in CMAKE_PROJECT_LINE:
         open(os.path.join(tempdir, 'CMakeLists.txt'), 'w').write(proj_line)
         assert not is_component(tmp_path)
+
+
+def test_get_idf_version_caches_subprocess_result(monkeypatch, tmp_path):
+    monkeypatch.delenv('CI_TESTING_IDF_VERSION', raising=False)
+    monkeypatch.delenv('IDF_VERSION', raising=False)
+    monkeypatch.setenv('IDF_PATH', str(tmp_path))
+
+    tools_dir = tmp_path / 'tools'
+    tools_dir.mkdir()
+    (tools_dir / 'idf.py').write_text('', encoding='utf-8')
+
+    calls = []
+
+    def fake_check_output(args):
+        calls.append(args)
+        return b'ESP-IDF v5.4.1\n'
+
+    monkeypatch.setattr(build_system_tools.subprocess, 'check_output', fake_check_output)
+
+    assert get_idf_version() == '5.4.1'
+    assert get_idf_version() == '5.4.1'
+    assert len(calls) == 1
+
+
+def test_get_idf_version_still_honors_env_override(monkeypatch, tmp_path):
+    monkeypatch.delenv('CI_TESTING_IDF_VERSION', raising=False)
+    monkeypatch.delenv('IDF_VERSION', raising=False)
+    monkeypatch.setenv('IDF_PATH', str(tmp_path))
+
+    tools_dir = tmp_path / 'tools'
+    tools_dir.mkdir()
+    (tools_dir / 'idf.py').write_text('', encoding='utf-8')
+
+    calls = []
+
+    def fake_check_output(args):
+        calls.append(args)
+        return b'ESP-IDF v5.4.1\n'
+
+    monkeypatch.setattr(build_system_tools.subprocess, 'check_output', fake_check_output)
+
+    assert get_idf_version() == '5.4.1'
+
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.5.0')
+    assert get_idf_version() == '5.5.0'
+    assert len(calls) == 1
