@@ -675,6 +675,17 @@ Example:
         # version: v1.0.0       # Tag
         # version: 1234567890abcdef1234567890abcdef12345678  # Commit hash
 
+``override_path`` in manifests loaded from Git
+----------------------------------------------
+
+The ESP Component Registry dependencies declared in the ``idf_component.yml`` of a Git-based dependency may include an ``override_path`` field. In this case, the override path is resolved relative to the component's location in the same Git repository instead of the local filesystem of the machine performing dependency resolution.
+
+For portability, the dependency is recorded as another Git dependency that points to the same repository and is pinned to the same commit as the parent component.
+
+This behavior is useful for repositories that contain multiple components, where one component depends on another component from the same repository.
+
+If the resolved ``override_path`` would point outside the Git repository root, the override is ignored and the dependency is resolved normally (for example, from the ESP Component Registry). In this case, the Component Manager prints a warning.
+
 .. _web-source:
 
 ESP Component Registry Dependencies
