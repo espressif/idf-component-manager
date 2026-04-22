@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Tools for interaction with IDF build system"""
 
@@ -6,6 +6,7 @@ import os
 import re
 import subprocess  # noqa: S404
 import sys
+from functools import lru_cache
 from pathlib import Path
 
 from idf_component_tools.errors import RunningEnvironmentError
@@ -50,6 +51,30 @@ def get_idf_version(short_version: bool = False) -> str:
     return str(ver)
 
 
+@lru_cache(maxsize=1)
+def _get_idf_version_from_idf_py(idf_py_path: str) -> str:
+    try:
+        idf_version = subprocess.check_output(  # noqa: S603
+            [sys.executable, idf_py_path, '--version']
+        ).decode('utf-8')
+    except subprocess.CalledProcessError:
+        raise RunningEnvironmentError(
+            'Could not get IDF version from calling "idf.py --version".\nidf.py path: {}'.format(
+                idf_py_path
+            )
+        )
+
+    res = IDF_VERSION_REGEX.findall(idf_version)
+    if len(res) == 1:
+        return str(Version.coerce(res[0]))
+    else:
+        raise RunningEnvironmentError(
+            'Could not parse IDF version from calling "idf.py --version".\nOutput: {}'.format(
+                idf_version
+            )
+        )
+
+
 def _get_idf_version() -> str:
     ci_test_idf_version = os.getenv('CI_TESTING_IDF_VERSION')
     if ci_test_idf_version:
@@ -60,32 +85,7 @@ def _get_idf_version() -> str:
         return idf_version
 
     idf_py_path = os.path.join(get_idf_path(), 'tools', 'idf.py')
-    try:
-        idf_version = subprocess.check_output([sys.executable, idf_py_path, '--version'])  # type: ignore # noqa: S603
-    except subprocess.CalledProcessError:
-        raise RunningEnvironmentError(
-            'Could not get IDF version from calling "idf.py --version".\nidf.py path: {}'.format(
-                idf_py_path
-            )
-        )
-    else:
-        try:
-            string_type = basestring  # type: ignore
-        except NameError:
-            string_type = str
-
-        if not isinstance(idf_version, string_type):
-            idf_version = idf_version.decode('utf-8')  # type: ignore
-
-    res = IDF_VERSION_REGEX.findall(idf_version)  # type: ignore
-    if len(res) == 1:
-        return str(Version.coerce(res[0]))
-    else:
-        raise RunningEnvironmentError(
-            'Could not parse IDF version from calling "idf.py --version".\nOutput: {}'.format(
-                idf_version
-            )
-        )
+    return _get_idf_version_from_idf_py(idf_py_path)
 
 
 def get_idf_path() -> str:
