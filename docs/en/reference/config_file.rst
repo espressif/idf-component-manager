@@ -150,6 +150,13 @@ The version solver will check sources in this order:
 - c.com
 - a.com
 
+Interaction with ``IDF_COMPONENT_LOCAL_STORAGE_URL``
+====================================================
+
+The ESP-IDF installer sets ``IDF_COMPONENT_LOCAL_STORAGE_URL`` during activation to point at the local tools cache. When ``local_storage_url`` is also set in your profile, the two values are *merged* rather than the env value replacing the profile entries: profile entries are tried first and the env-supplied URL is appended as a fallback. This prevents the installer default from silently shadowing a mirror you configured in ``idf_component_manager.yml``.
+
+Other environment variables (``IDF_COMPONENT_STORAGE_URL``, ``IDF_COMPONENT_REGISTRY_URL``, ``IDF_COMPONENT_API_TOKEN``, ``IDF_COMPONENT_DEFAULT_NAMESPACE``) continue to override the corresponding profile field when set, so they can still be used as deliberate overrides in CI or test environments.
+
 ***************
  Login via CLI
 ***************

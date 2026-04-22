@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 from __future__ import annotations
@@ -92,7 +92,20 @@ class ProfileItem(BaseModel):
                     env_value = getattr(ComponentManagerSettings(), field.upper())
 
                 if env_value:
-                    if field in ['storage_url', 'local_storage_url']:
+                    if field == 'local_storage_url':
+                        # Merge profile-defined values with the env value so an
+                        # installer-supplied IDF_COMPONENT_LOCAL_STORAGE_URL (set by
+                        # the ESP-IDF installer to point at ~/.espressif/tools) does
+                        # not silently shadow a user's explicit profile configuration.
+                        # Profile entries come first so they take precedence under
+                        # local_first_mode; the env value is appended as a fallback.
+                        existing = data.get(field) or []
+                        if not isinstance(existing, list):
+                            existing = [existing]
+                        # Python idiom for deduplicating a list while preserving order
+                        merged = list(dict.fromkeys([*existing, *env_value.split(';')]))
+                        data[field] = merged[0] if len(merged) == 1 else merged
+                    elif field == 'storage_url':
                         values = env_value.split(';')
                         data[field] = values[0] if len(values) == 1 else values
                     else:
