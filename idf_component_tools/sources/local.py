@@ -71,7 +71,7 @@ class LocalSource(BaseSource):
         use_relative_path = info.context.get('use_relative_path', False) if info.context else False
 
         if use_relative_path and lock_path:
-            d['path'] = os.path.relpath(d['path'], str(lock_path))
+            d['path'] = os.path.relpath(d['path'], str(lock_path)).replace('\\', '/')
 
         return d
 

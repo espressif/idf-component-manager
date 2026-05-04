@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import filecmp
@@ -292,7 +292,8 @@ class TestLockManager(object):
         assert solution.manifest_hash == loaded_solution.manifest_hash
 
         file_str = (
-            textwrap.dedent(
+            textwrap
+            .dedent(
                 """
             dependencies:
               idf:
@@ -591,3 +592,37 @@ class TestLockManager(object):
         solution = lock_manager.load()
         assert Path(solution.dependencies[0].source.path).is_absolute()
         assert solution.dependencies[0].source.path == str(cmp_dir)
+
+    def test_local_source_uses_posix_path_in_lock(
+        self, tmp_path, release_component_path, monkeypatch
+    ):
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
+        monkeypatch.setattr(
+            'idf_component_tools.sources.local.os.path.relpath',
+            lambda *_args, **_kwargs: 'components\\cmp',
+        )
+
+        cmp_dir = str(tmp_path / 'components' / 'cmp')
+        shutil.copytree(release_component_path, cmp_dir)
+
+        manifest = Manifest.fromdict({'dependencies': {'cmp': {'path': 'components/cmp'}}})
+        project_requirements = ProjectRequirements([manifest])
+
+        solution = SolvedManifest(
+            direct_dependencies=['cmp'],
+            dependencies=[
+                SolvedComponent(
+                    name='cmp',
+                    version=ComponentVersion('1.0.0'),
+                    source=LocalSource(path=cmp_dir),
+                ),
+            ],
+            manifest_hash=project_requirements.manifest_hash,
+        )
+
+        lock_path = tmp_path / 'dependencies.lock'
+        lock_manager = LockManager(lock_path)
+
+        lock_manager.dump(solution)
+        assert 'path: components/cmp' in lock_path.read_text()
+        assert 'path: components\\cmp' not in lock_path.read_text()
