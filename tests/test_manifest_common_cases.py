@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import shutil
@@ -50,6 +50,57 @@ def test_project_manifest_builder(valid_manifest):
     assert manifest.links.discussion == 'https://discuss.com/discuss'
 
 
+def test_project_manifest_builder_with_overrides():
+    manifest = Manifest.fromdict({
+        'dependencies': {'espressif/esp_tinyusb': '~1.7.6'},
+        'overrides': [
+            {
+                'espressif/tinyusb': {
+                    'with': {
+                        'my_tinyusb': {
+                            'git': 'https://github.com/micropython/tinyusb-espressif.git',
+                            'path': '.',
+                            'version': 'cherrypick/dwc2_zlp_fix',
+                        }
+                    }
+                }
+            }
+        ],
+    })
+
+    assert len(manifest.overrides) == 1
+    override_item = manifest.overrides[0]
+    assert override_item.target == 'espressif/tinyusb'
+    assert override_item.replacement_name == 'my_tinyusb'
+    assert (
+        override_item.with_dependency.git == 'https://github.com/micropython/tinyusb-espressif.git'
+    )
+    assert override_item.with_dependency.path == '.'
+    assert override_item.with_dependency.version == 'cherrypick/dwc2_zlp_fix'
+
+
+def test_project_manifest_builder_with_overrides_short_name_normalized():
+    manifest = Manifest.fromdict({
+        'overrides': [
+            {
+                'tinyusb': {
+                    'with': {
+                        'my_tinyusb': {
+                            'git': 'https://github.com/micropython/tinyusb-espressif.git',
+                            'path': '.',
+                            'version': 'cherrypick/dwc2_zlp_fix',
+                        }
+                    }
+                }
+            }
+        ],
+    })
+
+    assert manifest.overrides[0].target == 'espressif/tinyusb'
+    assert manifest.overrides[0].replacement_name == 'my_tinyusb'
+    assert manifest.overrides[0].with_dependency.version == 'cherrypick/dwc2_zlp_fix'
+
+
 def test_validator_broken_deps():
     manifest = {
         'dependencies': {'dep1': [], 'dep2': 4},
@@ -64,6 +115,116 @@ def test_validator_broken_deps():
 
 def test_validator_valid_manifest(valid_manifest):
     assert not Manifest.validate_manifest(valid_manifest)
+
+
+def test_validator_invalid_override_name():
+    manifest = {
+        'overrides': [
+            {
+                'invalid_slug---': {
+                    'with': {
+                        'my_tinyusb': {
+                            'git': 'https://github.com/micropython/tinyusb-espressif.git',
+                            'path': '.',
+                            'version': 'cherrypick/dwc2_zlp_fix',
+                        }
+                    }
+                }
+            }
+        ]
+    }
+
+    errors = Manifest.validate_manifest(manifest)
+
+    assert errors == ['Invalid field "overrides:invalid_slug---": Invalid component name']
+
+
+def test_validator_invalid_override_git_version_spec():
+    manifest = {
+        'overrides': [
+            {
+                'tinyusb': {
+                    'with': {
+                        'my_tinyusb': {
+                            'git': 'https://github.com/micropython/tinyusb-espressif.git',
+                            'path': '.',
+                            'version': 'invalid ref with spaces',
+                        }
+                    }
+                }
+            }
+        ]
+    }
+
+    errors = Manifest.validate_manifest(manifest)
+
+    assert errors == [
+        'Invalid field "overrides:tinyusb:with:my_tinyusb:version": Invalid version specification "invalid ref with spaces"'
+    ]
+
+
+@pytest.mark.parametrize(
+    ('overrides', 'errors'),
+    [
+        ({}, ['Invalid field "overrides": Input should be a valid array']),
+        ('', ['Invalid field "overrides": Input should be a valid array']),
+        (
+            [{'joltwallet/littlefs': 'foo'}],
+            ['Invalid field "overrides:joltwallet/littlefs": Input should be a valid dictionary'],
+        ),
+        (
+            [{'joltwallet/littlefs': {'with': 'foo'}}],
+            [
+                'Invalid field "overrides:joltwallet/littlefs:with": Input should be a valid dictionary'
+            ],
+        ),
+        (
+            [{'joltwallet/littlefs': {'with': {'joltwallet/littlefs': 'foo'}}}],
+            [
+                'Invalid field "overrides:joltwallet/littlefs:with:joltwallet/littlefs": Input should be a valid dictionary'
+            ],
+        ),
+    ],
+)
+def test_validator_malformed_overrides(overrides, errors):
+    assert Manifest.validate_manifest({'overrides': overrides}) == errors
+
+
+def test_manifest_hash_changes_when_overrides_change():
+    manifest_a = Manifest.fromdict({
+        'dependencies': {'espressif/esp_tinyusb': '~1.7.6'},
+        'overrides': [
+            {
+                'tinyusb': {
+                    'with': {
+                        'my_tinyusb': {
+                            'git': 'https://github.com/micropython/tinyusb-espressif.git',
+                            'path': '.',
+                            'version': 'cherrypick/dwc2_zlp_fix',
+                        }
+                    }
+                }
+            }
+        ],
+    })
+    manifest_b = Manifest.fromdict({
+        'dependencies': {'espressif/esp_tinyusb': '~1.7.6'},
+        'overrides': [
+            {
+                'tinyusb': {
+                    'with': {
+                        'my_tinyusb': {
+                            'git': 'https://github.com/micropython/tinyusb-espressif.git',
+                            'path': '.',
+                            'version': 'another_fix_branch',
+                        }
+                    }
+                }
+            }
+        ],
+    })
+
+    assert manifest_a.manifest_hash != manifest_b.manifest_hash
 
 
 @pytest.mark.parametrize(

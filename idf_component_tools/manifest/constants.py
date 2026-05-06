@@ -19,4 +19,4 @@ KNOWN_INFO_METADATA_FIELDS = [
     'license',
     'repository_info',
 ] + LINKS
-KNOWN_BUILD_METADATA_FIELDS = ['name', 'dependencies', 'targets', 'version', 'files']
+KNOWN_BUILD_METADATA_FIELDS = ['name', 'dependencies', 'overrides', 'targets', 'version', 'files']

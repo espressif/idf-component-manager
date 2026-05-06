@@ -852,3 +852,159 @@ Shorthand syntax:
 
     dependencies:
       idf: ">=5.0"
+
+.. _dependency-overrides:
+
+**********************
+ Dependency Overrides
+**********************
+
+The ``overrides`` section replaces dependencies across the dependency graph. It is useful when you need to:
+
+- Patch a transitive dependency with a custom fork
+- Pin a specific version of a transitive dependency
+- Replace a component with a compatible alternative
+
+The ``overrides`` field is only read from manifests that are known before dependency solving starts: the main component manifest, manifests in the project ``components`` directory, and manifests from ``EXTRA_COMPONENT_DIRS``. Overrides are not read from manifests downloaded from the registry, from ``git`` dependencies, or from `Local Directory Dependencies`_ discovered during solving.
+
+.. warning::
+
+    Only one manifest in a project may declare ``overrides``. If ``overrides`` is declared in multiple known manifests, dependency solving fails with an error.
+
+.. note::
+
+    Short override targets, such as ``button``, match both the default registry name (``espressif/button``) and an unqualified ``git`` or ``path`` dependency named ``button``. Replacement names are normalized the same way as normal dependencies: registry replacements receive the default ``espressif/`` namespace, while ``git`` and ``path`` replacements may remain unqualified. The ESP-IDF dependency ``idf`` cannot be overridden.
+
+Syntax
+======
+
+The ``overrides`` field is a list where each entry is a dictionary with a single key: the name of the component to replace. The value contains a ``with`` field specifying the replacement, and an optional ``reason`` field.
+
+.. code-block:: yaml
+
+    overrides:
+      - espressif/tinyusb:
+          with:
+            tinyusb:
+              git: https://github.com/user/tinyusb-fork.git
+              path: .
+              version: my-fix-branch
+          reason: "Upstream release does not include the DWC2 ZLP fix yet"
+
+``with``
+--------
+
+A dictionary with a single key: the replacement component name. The value is a dictionary of dependency attributes that describe how to resolve the replacement. These attributes are the same as those available in the `component dependencies`_ section, including ``git``, ``path``, ``version``, ``registry_url``, ``pre_release``, ``matches``, and ``rules``. Use ``path`` for local replacement components; ``override_path`` is not supported inside ``with``.
+
+The replacement component name does not have to match the original. This allows you to substitute one component with a different, compatible component:
+
+.. code-block:: yaml
+
+    overrides:
+      - espressif/tinyusb:
+          with:
+            micropython_tinyusb:
+              git: https://github.com/micropython/tinyusb-espressif.git
+              path: .
+              version: cherrypick/dwc2_zlp_fix
+
+You can also replace a dependency with another component from the registry:
+
+.. code-block:: yaml
+
+    overrides:
+      - espressif/tinyusb:
+          with:
+            my_namespace/tinyusb:
+              version: "^1.0.0"
+
+``reason``
+----------
+
+An optional string field that documents why the override exists. The reason is printed when an override is applied:
+
+.. code-block:: yaml
+
+    overrides:
+      - espressif/tinyusb:
+          with:
+            tinyusb:
+              git: https://github.com/user/tinyusb-fork.git
+              version: my-fix-branch
+          reason: "Upstream release does not include the DWC2 ZLP fix yet"
+
+``overrides`` and ``override_path``
+===================================
+
+``override_path`` is a dependency attribute that points one dependency to a local directory. It can only replace that dependency with a local component of the same name.
+
+The ``overrides`` is a top-level field that can replace direct and transitive dependencies. It can use any supported dependency source, including registry, ``git``, and local ``path`` sources, and it can replace a component with a component that has a different name.
+
+If both an ``overrides`` entry and an ``override_path`` attribute target the same component, the ``overrides`` entry takes precedence.
+
+Precedence with the ``components`` directory
+============================================
+
+A component placed in the project ``components`` directory (or in a directory listed in ``EXTRA_COMPONENT_DIRS``) has the **highest priority** in the ESP-IDF build system. In CMake terms, ``project_components`` and ``project_extra_components`` override ``project_managed_components`` (the components the Component Manager downloads or resolves). This precedence applies to **everything the Component Manager resolves, including** ``overrides``.
+
+As a result, an ``overrides`` entry **cannot** override a component that physically exists in the ``components`` directory: the local component wins, and the Component Manager reports that it is using the component from that directory. This keeps the resolved dependency graph consistent with what CMake actually builds.
+
+The precedence, from highest to lowest, is:
+
+1. Component in the project ``components`` directory
+2. Component in ``EXTRA_COMPONENT_DIRS``
+3. ``overrides`` entry / ``override_path`` attribute (applied to managed dependencies)
+4. The dependency as declared (registry, ``git``, or ``path``)
+5. ESP-IDF built-in components
+
+If you need to replace a component with a local copy, prefer the ``overrides`` entry with a ``path`` replacement (see `Local Directory Override`_) over placing it in ``components``, unless you specifically intend the ``components`` directory to take precedence over everything else.
+
+.. warning::
+
+    Dependents' version requirements are **ignored** for an overridden component. The replacement is used regardless of any version range that other components declare on the original component, so a version conflict error that you might otherwise expect will not be raised. The override is an escape hatch: it is your responsibility to ensure the replacement is compatible with its dependents.
+
+.. note::
+
+    Dependency attributes such as ``public`` and ``require`` set inside the replacement (the ``with`` block) apply to **every** edge that pointed at the overridden component. For example, setting ``require: no`` in the replacement drops the component from the ``REQUIRES`` list of all dependents, not just one of them. Leave these attributes unset to preserve each dependent's original per-edge visibility.
+
+Local Directory Override
+========================
+
+To replace a dependency with a local copy on your filesystem, use the ``path`` attribute in the replacement:
+
+.. code-block:: yaml
+
+    overrides:
+      - espressif/button:
+          with:
+            espressif/button:
+              path: /home/user/my-patched/button
+
+.. note::
+
+    When the replacement has a **different name** than the original component, the Component Manager rewrites the manager-injected ``REQUIRES`` / ``PRIV_REQUIRES`` entries to the new name. However, any hand-written ``idf_component_register(REQUIRES <old_name> ...)`` calls and ``#include`` paths that reference the old component name in your own CMake or source files will **not** be rewritten and must be updated manually. Otherwise the build fails with a CMake or compiler error far from the manifest. Prefer keeping the replacement name identical to the original when possible.
+
+Registry distribution
+=====================
+
+The ``overrides`` field is only honored from the project's own known manifests (see above). It is **not** read from manifests downloaded from the registry. A component that declares ``overrides`` can still be packaged and uploaded, but the field has no effect when that component is later consumed as a dependency. The Component Manager prints a notice at upload time to make this explicit.
+
+Conditional Overrides
+=====================
+
+You can use ``rules`` or ``matches`` within the replacement attributes to apply an override only for specific targets or conditions. The same syntax used for `conditional dependencies`_ applies here. Conditions are evaluated once before dependency solving, using the current project environment and Kconfig values available at that point:
+
+.. code-block:: yaml
+
+    overrides:
+      - espressif/tinyusb:
+          with:
+            espressif/tinyusb:
+              git: https://github.com/user/tinyusb-fork.git
+              version: esp32s3-fix
+              rules:
+                - if: "target == esp32s3"
+
+.. note::
+
+    An override only activates on dependency edges that are themselves active. If the overridden dependency is declared conditionally by another component (for example with its own ``rules``/``matches`` that exclude the current target), the override does not pull the replacement into the build for that edge. The original edge's conditions are evaluated first, then the override is applied to the edges that remain.

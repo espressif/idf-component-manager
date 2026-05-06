@@ -106,6 +106,10 @@ class LocalSource(BaseSource):
         return path
 
     @property
+    def resolved_path(self) -> Path:
+        return self._path
+
+    @property
     def _path(self) -> Path:
         path = self._get_raw_path()
 

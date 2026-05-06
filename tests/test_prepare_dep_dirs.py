@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2024-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+import json
 import os
 import textwrap
 from pathlib import Path
@@ -8,13 +9,20 @@ from unittest.mock import patch
 import pytest
 from ruamel.yaml import YAML
 
+from idf_component_manager.cmake_component_requirements import (
+    CMakeRequirementsManager,
+    ComponentName,
+)
 from idf_component_manager.core import ComponentManager
 from idf_component_manager.prepare_components.prepare import _component_list_file
+from idf_component_manager.utils import ComponentSource
 from idf_component_tools.config import Config, ConfigManager, ProfileItem
 from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL
 from idf_component_tools.errors import FatalError
+from idf_component_tools.manifest import Manifest
 from idf_component_tools.registry.api_client import APIClient
 from idf_component_tools.registry.client_errors import NetworkConnectionError
+from idf_component_tools.utils import ProjectRequirements
 
 
 def _generate_lock_file(project_dir: Path, yaml_str: str, build_dir: str = 'build'):
@@ -239,6 +247,214 @@ def test_dependencies_case_normalization(tmp_path, monkeypatch):
     )
 
     assert (tmp_path / 'dependencies.lock').exists()
+
+
+def test_overrides_replace_dependency_with_registry_source(tmp_path, monkeypatch):
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32')
+    monkeypatch.setenv('IDF_PATH', str(tmp_path))
+
+    _generate_lock_file(
+        tmp_path,
+        """
+        dependencies:
+          example/cmp:
+            version: "3.3.9~1"
+        overrides:
+          - example/cmp:
+              with:
+                example/cmp:
+                  version: "3.3.7"
+        """,
+    )
+
+    assert (tmp_path / 'dependencies.lock').exists()
+    with open(tmp_path / 'dependencies.lock') as f:
+        lock_data = YAML(typ='safe').load(f)
+
+    assert lock_data['dependencies']['example/cmp']
+    assert lock_data['dependencies']['example/cmp']['source']['type'] == 'service'
+    assert lock_data['dependencies']['example/cmp']['version'] == '3.3.7'
+
+
+def test_overrides_replace_dependency_with_local_source(tmp_path, monkeypatch):
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32')
+    monkeypatch.setenv('IDF_PATH', str(tmp_path))
+
+    local_component_path = tmp_path / 'local_components' / 'example__cmp_override'
+    local_component_path.mkdir(parents=True)
+    (local_component_path / 'CMakeLists.txt').touch()
+    (local_component_path / 'idf_component.yml').write_text(
+        textwrap.dedent("""
+        version: "2.0.0"
+        dependencies:
+          idf: ">=5.0"
+        """).strip()
+    )
+
+    _generate_lock_file(
+        tmp_path,
+        """
+        dependencies:
+          example/cmp:
+            version: "3.3.9~1"
+        overrides:
+          - example/cmp:
+              with:
+                example/cmp-override:
+                  path: ../local_components/example__cmp_override
+                  version: "*"
+        """,
+    )
+
+    assert (tmp_path / 'dependencies.lock').exists()
+    with open(tmp_path / 'dependencies.lock') as f:
+        lock_data = YAML(typ='safe').load(f)
+
+    assert lock_data['dependencies']['example/cmp-override']
+    assert lock_data['dependencies']['example/cmp-override']['source']['type'] == 'local'
+    assert lock_data['dependencies']['example/cmp-override']['version'] == '2.0.0'
+
+
+def test_overrides_replace_dependency_with_git_source(tmp_path, monkeypatch):
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32')
+    monkeypatch.setenv('IDF_PATH', str(tmp_path))
+
+    _generate_lock_file(
+        tmp_path,
+        """
+        dependencies:
+          example/cmp:
+            version: "3.3.9~1"
+        overrides:
+          - example/cmp:
+              with:
+                example/cmp-override:
+                  git: https://github.com/espressif/example_components.git
+                  path: cmp
+                  version: 121f1c16ecbf502b8595c869cb3649a5b811b024
+        """,
+    )
+
+    assert (tmp_path / 'dependencies.lock').exists()
+    with open(tmp_path / 'dependencies.lock') as f:
+        lock_data = YAML(typ='safe').load(f)
+
+    assert lock_data['dependencies']['example/cmp-override']
+    assert lock_data['dependencies']['example/cmp-override']['source']['type'] == 'git'
+    assert (
+        lock_data['dependencies']['example/cmp-override']['source']['git']
+        == 'https://github.com/espressif/example_components.git'
+    )
+    assert (
+        lock_data['dependencies']['example/cmp-override']['version']
+        == '121f1c16ecbf502b8595c869cb3649a5b811b024'
+    )
+
+
+def _write_component_requirements_file(path: Path, component_names):
+    with open(path, 'w', encoding='utf-8') as f:
+        for component_name in component_names:
+            for prop in [
+                'REQUIRES',
+                'PRIV_REQUIRES',
+                'MANAGED_REQUIRES',
+                'MANAGED_PRIV_REQUIRES',
+            ]:
+                f.write(f'__component_set_property(___idf_{component_name} {prop} "")\n')
+            f.write(
+                '__component_set_property(___idf_{component_name} __COMPONENT_SOURCE {source})\n'.format(
+                    component_name=component_name,
+                    source=ComponentSource.PROJECT_COMPONENTS.value,
+                )
+            )
+
+
+def test_inject_requirements_preserves_per_edge_visibility_for_overrides(tmp_path):
+    project_dir = tmp_path
+    main_dir = project_dir / 'main'
+    consumer_dir = project_dir / 'components' / 'consumer'
+    main_dir.mkdir(parents=True)
+    consumer_dir.mkdir(parents=True)
+
+    (main_dir / 'idf_component.yml').write_text(
+        textwrap.dedent("""
+        dependencies:
+          example/cmp:
+            version: '*'
+            public: true
+        overrides:
+          - example/cmp:
+              with:
+                example/cmp:
+                  version: '3.3.7'
+        """).strip()
+    )
+    (consumer_dir / 'idf_component.yml').write_text(
+        textwrap.dedent("""
+        dependencies:
+          example/cmp:
+            version: '*'
+        """).strip()
+    )
+
+    override_requirements = ComponentManager._cmake_override_requirements(
+        ProjectRequirements([
+            Manifest.fromdict({
+                'overrides': [
+                    {
+                        'example/cmp': {
+                            'with': {
+                                'example/cmp': {
+                                    'version': '3.3.7',
+                                }
+                            }
+                        }
+                    }
+                ]
+            })
+        ])
+    )
+    assert override_requirements == {'example__cmp': {'name': 'example__cmp'}}
+
+    component_list_file = project_dir / 'components_with_manifests.txt'
+    component_list_file.write_text(f'{main_dir}\n{consumer_dir}\n')
+    with open(ComponentManager._override_requirements_file(component_list_file), 'w') as f:
+        json.dump(override_requirements, f)
+
+    component_requires_file = project_dir / 'component_requires.temp.cmake'
+    _write_component_requirements_file(component_requires_file, ['main', 'consumer'])
+
+    ComponentManager(str(project_dir), interface_version=3).inject_requirements(
+        component_requires_file,
+        component_list_file,
+        cm_run_counter=0,
+    )
+
+    requirements = CMakeRequirementsManager(component_requires_file).load()
+    main_requirements = requirements[ComponentName('idf', 'main')]
+    consumer_requirements = requirements[ComponentName('idf', 'consumer')]
+
+    assert main_requirements['REQUIRES'] == ['example__cmp']
+    assert main_requirements['PRIV_REQUIRES'] == []
+    assert consumer_requirements['REQUIRES'] == []
+    assert consumer_requirements['PRIV_REQUIRES'] == ['example__cmp']
+
+
+def test_load_override_requirements_keeps_sidecar_file(tmp_path):
+    component_list_file = tmp_path / 'components_with_manifests.txt'
+    override_requirements_file = ComponentManager._override_requirements_file(component_list_file)
+    with open(override_requirements_file, 'w') as f:
+        json.dump({'example__cmp': {'name': 'example__cmp'}}, f)
+
+    override_requirements = ComponentManager(str(tmp_path))._load_override_requirements(
+        component_list_file
+    )
+
+    assert override_requirements == {'example__cmp': {'name': 'example__cmp'}}
+    assert os.path.exists(override_requirements_file)
 
 
 def test_dependencies_with_constraint_files(tmp_path, monkeypatch):

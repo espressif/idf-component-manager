@@ -228,6 +228,60 @@ class TestLockManager(object):
 
         assert filecmp.cmp(lock_path, valid_lock_path, shallow=False)
 
+    def test_override_changes_manifest_hash_and_triggers_solve(self, monkeypatch):
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
+        manifest_without_override = Manifest.fromdict({
+            'dependencies': {
+                'Espressif/TinyUSB': {
+                    'version': '~1.0',
+                    'override_path': '../tinyusb_override',
+                }
+            }
+        })
+        manifest_with_override = Manifest.fromdict({
+            'dependencies': {
+                'Espressif/TinyUSB': {
+                    'version': '~1.0',
+                    'override_path': '../tinyusb_override',
+                }
+            },
+            'overrides': [
+                {
+                    'tinyusb': {
+                        'with': {
+                            'my_namespace/my_tinyusb': {
+                                'path': '../tinyusb_root_override',
+                                'version': '*',
+                            }
+                        }
+                    }
+                }
+            ],
+        })
+
+        project_requirements_without_override = ProjectRequirements([manifest_without_override])
+        project_requirements_with_override = ProjectRequirements([manifest_with_override])
+
+        assert (
+            project_requirements_without_override.manifest_hash
+            != project_requirements_with_override.manifest_hash
+        )
+        assert (
+            project_requirements_with_override.override_rules['espressif/tinyusb'].origin
+            == 'overrides'
+        )
+        assert (
+            project_requirements_with_override.override_rules['espressif/tinyusb'].replacement_name
+            == 'my_namespace/my_tinyusb'
+        )
+
+        solution = SolvedManifest.fromdict({
+            'manifest_hash': project_requirements_without_override.manifest_hash,
+            'direct_dependencies': ['espressif/tinyusb'],
+        })
+
+        assert is_solve_required(project_requirements_with_override, solution)
+
     def test_lock_dump(
         self,
         tmp_path,

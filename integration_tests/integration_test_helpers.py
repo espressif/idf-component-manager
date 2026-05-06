@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
@@ -41,7 +41,11 @@ def create_manifest(
     creates idf_component.yml file for the component and
     updates its value according to the test scenario
     """
-    if len(libraries) == 0 or 'dependencies' not in component_dict.keys():
+    if (
+        len(libraries) == 0
+        and 'dependencies' not in component_dict.keys()
+        and 'overrides' not in component_dict.keys()
+    ):
         return
     component_manager = ComponentManager(path=project_path)
     component_manager.create_manifest(component_name)
@@ -55,6 +59,8 @@ def create_manifest(
             manifest_dict['targets'] = component_dict['targets']
         if 'version' in component_dict:
             manifest_dict['version'] = component_dict['version']
+    if 'overrides' in component_dict:
+        manifest_dict['overrides'] = component_dict['overrides']
 
     with open(os.path.join(component_path, 'idf_component.yml'), 'w') as new_manifest:
         YAML().dump(manifest_dict, new_manifest)
