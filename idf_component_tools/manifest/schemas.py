@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import typing as t
 
@@ -18,6 +18,37 @@ MANIFEST_JSON_SCHEMA = Manifest.model_json_schema(by_alias=True)
 MANIFEST_JSON_SCHEMA['$defs']['DependencyItem']['properties']['service_url'] = MANIFEST_JSON_SCHEMA[
     '$defs'
 ]['DependencyItem']['properties']['registry_url']
+if 'OverrideItem' in MANIFEST_JSON_SCHEMA['$defs']:
+    override_item_properties = MANIFEST_JSON_SCHEMA['$defs']['OverrideItem']['properties']
+    override_item_properties['service_url'] = override_item_properties['registry_url']
+    override_item_properties.pop('override_path', None)
+MANIFEST_JSON_SCHEMA['properties']['overrides'] = {
+    'type': 'array',
+    'items': {'$ref': '#/$defs/OverrideDefinition'},
+    'default': [],
+}
+
+MANIFEST_JSON_SCHEMA['$defs']['OverrideMapping'] = {
+    'type': 'object',
+    'properties': {
+        'with': {
+            'type': 'object',
+            'minProperties': 1,
+            'maxProperties': 1,
+            'additionalProperties': {'$ref': '#/$defs/OverrideItem'},
+        },
+        'reason': {'type': 'string'},
+    },
+    'required': ['with'],
+    'additionalProperties': False,
+}
+
+MANIFEST_JSON_SCHEMA['$defs']['OverrideDefinition'] = {
+    'type': 'object',
+    'minProperties': 1,
+    'maxProperties': 1,
+    'additionalProperties': {'$ref': '#/$defs/OverrideMapping'},
+}
 
 
 def _flatten_json_schema_keys(schema, stack=None):
@@ -101,6 +132,23 @@ def flatten_manifest_file_keys(manifest_tree, stack=None, level=1):
                         'List of dependencies should be a dictionary.'
                         ' For example:\ndependencies:\n  some-component: ">=1.2.3,!=1.2.5"'
                     )
+            elif k == 'overrides' and level == 1:
+                if not isinstance(v, list):
+                    raise MetadataError(
+                        'List of overrides should be an array.'
+                        ' For example:\noverrides:\n  - some-component:\n      with:\n        another-component:\n          version: ">=1.2.3"'
+                    )
+
+                for item in v:
+                    if not isinstance(item, dict):
+                        raise MetadataError(
+                            'List of overrides should contain dictionaries.'
+                            ' For example:\noverrides:\n  - some-component:\n      with:\n        another-component:\n          version: ">=1.2.3"'
+                        )
+                    for _k, _v in item.items():
+                        res.extend(
+                            _flatten_override_entry(_v, cur + ['type:array', '*'], level + 1)
+                        )
             else:
                 res.extend(flatten_manifest_file_keys(v, cur, level + 1))
 
@@ -120,6 +168,21 @@ def flatten_manifest_file_keys(manifest_tree, stack=None, level=1):
             raise MetadataError(
                 'Unknown key type {} for key {}'.format(type(manifest_tree), manifest_tree)
             )
+
+    return res
+
+
+def _flatten_override_entry(override_tree, stack, level):
+    res = []
+    if isinstance(override_tree, dict):
+        for k, v in override_tree.items():
+            if k == 'with' and isinstance(v, dict):
+                for _k, _v in v.items():
+                    res.extend(flatten_manifest_file_keys(_v, stack + ['with', '*'], level + 1))
+            else:
+                res.extend(flatten_manifest_file_keys(v, stack + [k], level + 1))
+    else:
+        res.extend(flatten_manifest_file_keys(override_tree, stack, level))
 
     return res
 

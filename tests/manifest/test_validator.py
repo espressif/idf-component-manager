@@ -506,6 +506,37 @@ class TestManifestValidatorUploadMode:
 
         assert not errors
 
+    def test_overrides_emit_notice_when_uploading(self, valid_manifest, caplog):
+        caplog.set_level(logging.DEBUG, logger=LOGGING_NAMESPACE)
+        valid_manifest['overrides'] = [
+            {
+                'espressif/tinyusb': {
+                    'with': {
+                        'espressif/tinyusb': {
+                            'path': '../tinyusb_fork',
+                            'version': '*',
+                        }
+                    }
+                }
+            }
+        ]
+
+        with validation_context({'upload_mode': UploadMode.component}):
+            errors = Manifest.validate_manifest(valid_manifest)
+
+        assert not errors
+        assert (
+            'Field "overrides" has no effect in components distributed via the registry'
+            in caplog.text
+        )
+
+    def test_no_overrides_notice_without_overrides(self, valid_manifest, caplog):
+        caplog.set_level(logging.DEBUG, logger=LOGGING_NAMESPACE)
+        with validation_context({'upload_mode': UploadMode.component}):
+            Manifest.validate_manifest(valid_manifest)
+
+        assert 'Field "overrides" has no effect' not in caplog.text
+
     @pytest.mark.parametrize(
         'invalid_str, expected_errors',
         [

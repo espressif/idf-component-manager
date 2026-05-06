@@ -1,5 +1,6 @@
-``idf_component.yml`` Manifest File
-===================================
+#####################################
+ ``idf_component.yml`` Manifest File
+#####################################
 
 Use the ``idf_component.yml`` manifest file to describe a component and its dependencies. The file must be located in the root directory of the component.
 
@@ -9,8 +10,9 @@ The manifest supports the following sections:
     :local:
     :depth: 1
 
-Build-Related Attributes
-------------------------
+**************************
+ Build-Related Attributes
+**************************
 
 Use the following attributes to affect the component’s build process:
 
@@ -19,7 +21,7 @@ Use the following attributes to affect the component’s build process:
     :depth: 1
 
 ``targets``
-~~~~~~~~~~~
+===========
 
 A list of targets that the component supports.
 
@@ -34,14 +36,15 @@ Example:
       - esp32c3
 
 ``dependencies``
-~~~~~~~~~~~~~~~~
+================
 
 A dictionary of dependencies required by the component.
 
 This field is optional and can be omitted if the component does not have any dependencies. The detailed usage is described in the `component dependencies`_ section.
 
-Metadata Attributes
--------------------
+*********************
+ Metadata Attributes
+*********************
 
 Use metadata attributes to provide additional information about the component. The metadata attributes are only evaluated when the component is uploaded to the ESP Component Registry.
 
@@ -52,7 +55,7 @@ Supported metadata attributes include:
     :depth: 1
 
 ``version``
-~~~~~~~~~~~
+===========
 
 The version of the component, following the :ref:`versioning scheme <versioning-scheme>`.
 
@@ -69,7 +72,7 @@ Example:
     version: "1.0.0"
 
 ``maintainers``
-~~~~~~~~~~~~~~~
+===============
 
 A list of maintainers of the component.
 
@@ -83,7 +86,7 @@ Example:
       - First Last <email@example.com>
 
 ``description``
-~~~~~~~~~~~~~~~
+===============
 
 A short description of the component.
 
@@ -96,7 +99,7 @@ Example:
     description: "This is a component that does something useful."
 
 ``license``
-~~~~~~~~~~~
+===========
 
 The license under which the component is released. It must be a valid SPDX license identifier listed in https://spdx.org/licenses/.
 
@@ -115,7 +118,7 @@ Example:
     license: "MIT"
 
 ``tags``
-~~~~~~~~
+========
 
 A list of keywords related to the component’s functionality.
 
@@ -130,7 +133,7 @@ Example:
       - networking
 
 ``files``
-~~~~~~~~~
+=========
 
 Controls which files are included when the component is archived or used as a Git dependency.
 
@@ -208,7 +211,7 @@ A list of files and directories that are excluded by default:
 .. _manifest-examples:
 
 ``examples``
-~~~~~~~~~~~~
+============
 
 A list of directories containing examples.
 
@@ -224,7 +227,7 @@ Example:
       # - path: examples/foo  # No need to list this if the example is under the "examples" folder
 
 ``url``
-~~~~~~~
+=======
 
 The component’s website.
 
@@ -237,7 +240,7 @@ Example:
     url: "https://example.com"
 
 ``repository``
-~~~~~~~~~~~~~~
+==============
 
 The Git URL of the component’s source repository. Must be a valid `Git remote URL <https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes>`_.
 
@@ -250,7 +253,7 @@ Example:
     repository: "https://example.com/component.git"
 
 ``repository_info``
-~~~~~~~~~~~~~~~~~~~
+===================
 
 Additional information about the repository.
 
@@ -276,7 +279,7 @@ The commit SHA can also be passed as an argument to the ``compote component uplo
 Both ``path`` and ``commit_sha`` sub-fields are optional.
 
 ``documentation``
-~~~~~~~~~~~~~~~~~
+=================
 
 The URL for the component’s documentation.
 
@@ -289,7 +292,7 @@ Example:
     documentation: "https://docs.example.com"
 
 ``issues``
-~~~~~~~~~~
+==========
 
 The URL for the component’s issue tracker.
 
@@ -302,7 +305,7 @@ Example:
     issues: "https://issues.example.com"
 
 ``discussion``
-~~~~~~~~~~~~~~
+==============
 
 The URL for the component’s discussion forum or chat.
 
@@ -316,8 +319,9 @@ Example:
 
 .. _component-dependencies:
 
-Component Dependencies
-----------------------
+************************
+ Component Dependencies
+************************
 
 Use the ``dependencies`` field to specify dependencies. This field is a dictionary where each key represents the name of a dependency.
 
@@ -339,12 +343,12 @@ The component manager supports the following types of dependency sources:
     `Local Directory Dependencies`_ and `Git Dependencies`_ are not supported when uploading components to the ESP Component Registry.
 
 Common Attributes for All Dependency Types
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+==========================================
 
 These attributes are optional and supported across all dependency types.
 
 ``require``
-+++++++++++
+-----------
 
 Specifies component visibility. Possible values:
 
@@ -360,19 +364,19 @@ Example:
     # require: private  # default
 
 ``matches``
-+++++++++++
+-----------
 
 A list of `conditional dependencies`_ to be applied to the dependency. The dependency is included if **any** of the ``if`` clauses are true.
 
 ``rules``
-+++++++++
+---------
 
 A list of `conditional dependencies`_ to be applied to the dependency. The dependency is included only if **all** of the ``if`` clauses are true.
 
 .. _conditional-dependencies:
 
 Conditional Dependencies
-~~~~~~~~~~~~~~~~~~~~~~~~
+========================
 
 The ``matches`` and ``rules`` attributes control whether a dependency is included. A dependency is included only when:
 
@@ -384,7 +388,7 @@ Both ``matches`` and ``rules`` are optional. If omitted, the dependency is alway
 ``matches`` and ``rules`` support the same syntax. Each is a list of conditional dependencies, where each item includes an ``if`` field and an optional ``version`` field.
 
 ``if``
-++++++
+------
 
 The ``if`` field is a boolean expression evaluated to determine whether the dependency should be included. An expression consists of three parts: left value, operator, and right value.
 
@@ -477,7 +481,7 @@ To create complex boolean expressions, use parentheses along with the boolean op
     The dependency will only be included if the environment variable ``TESTING_COMPONENT`` is set to ``foo`` or ``bar``.
 
 ``version`` (if clause)
-+++++++++++++++++++++++
+-----------------------
 
 The ``version`` field is optional and can be either a :ref:`specific version <versioning-scheme>` or a :ref:`version range <version-range-specifications>`. The version specified here overrides the ``version`` field of the dependency when the corresponding ``if`` clause evaluates to true.
 
@@ -496,7 +500,7 @@ For example:
 In this example, ``optional_component`` will be included with version ``~2.0.0`` when ``idf_version >=3.3``, and with version ``~1.0.0`` when ``idf_version <3.3``.
 
 Environment Variables
-~~~~~~~~~~~~~~~~~~~~~
+=====================
 
 .. warning::
 
@@ -516,7 +520,7 @@ To include a literal dollar sign (``$``), escape it with another dollar sign: ``
 .. _local-source:
 
 Kconfig Options
-~~~~~~~~~~~~~~~
+===============
 
 You can use Kconfig options for attributes that support them. All Kconfig options should be wrapped with ``$CONFIG{...}`` and don't need to include the ``CONFIG_`` prefix.
 
@@ -571,12 +575,12 @@ This works, because ``CONFIG_MDNS_MAX_SERVICES`` is defined in the ``espressif/m
 This does not work, even if ``CONFIG_OPTION_FROM_CMP_B`` is defined in the ``cmp_b`` component and ``cmp_a`` depends on ``cmp_b``, because ``cmp_b`` is not a direct dependency of your project.
 
 Local Directory Dependencies
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+============================
 
 If you are working on a component that is not yet published to the ESP Component Registry, you can add it as a dependency from a local directory. To specify a local dependency, at least one of the following attributes must be provided:
 
 ``path`` (local)
-++++++++++++++++
+----------------
 
 The path to the local directory containing the dependency. You can use either a path relative to the ``idf_component.yml`` manifest file or an absolute path.
 
@@ -591,7 +595,7 @@ Example:
         path: ../../projects/some_local_component
 
 ``override_path``
-+++++++++++++++++
+-----------------
 
 Use this field to override the component from the registry with a local one — for example, to define :ref:`example projects inside components <add-example-projects>`.
 
@@ -608,7 +612,7 @@ Example:
 .. _git-source:
 
 Git Dependencies
-~~~~~~~~~~~~~~~~
+================
 
 You can add dependencies from a Git repository by specifying the following attributes:
 
@@ -617,7 +621,7 @@ You can add dependencies from a Git repository by specifying the following attri
     :depth: 1
 
 ``git``
-+++++++
+-------
 
 The URL of the Git repository. The URL must be a valid `Git remote URL <https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes>`_ or a path to a local Git repository.
 
@@ -641,7 +645,7 @@ This field supports `environment variables`_. One common use case is providing a
         git: https://git:${ACCESS_TOKEN}@git.my_git.com/my_component.git
 
 ``path`` (Git)
-++++++++++++++
+--------------
 
 The path to the component within the Git repository. The path is relative to the root directory of the repository. If omitted, the root directory is used as the component path.
 
@@ -658,7 +662,7 @@ Example:
         path: some_git_component
 
 ``version`` (Git)
-+++++++++++++++++
+-----------------
 
 The version of the dependency. It can be specified by any valid Git reference: a tag, a branch, or a commit hash.
 
@@ -675,8 +679,9 @@ Example:
         # version: v1.0.0       # Tag
         # version: 1234567890abcdef1234567890abcdef12345678  # Commit hash
 
-``override_path`` in manifests loaded from Git
-----------------------------------------------
+************************************************
+ ``override_path`` in manifests loaded from Git
+************************************************
 
 The ESP Component Registry dependencies declared in the ``idf_component.yml`` of a Git-based dependency may include an ``override_path`` field. In this case, the override path is resolved relative to the component's location in the same Git repository instead of the local filesystem of the machine performing dependency resolution.
 
@@ -689,7 +694,7 @@ If the resolved ``override_path`` would point outside the Git repository root, t
 .. _web-source:
 
 ESP Component Registry Dependencies
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+===================================
 
 If neither ``path``, ``override_path``, nor ``git`` attributes are specified, the Component Manager will attempt to resolve the dependency from the ESP Component Registry. Components in the registry are specified using the ``namespace/component_name`` format.
 
@@ -711,7 +716,7 @@ If neither ``path``, ``override_path``, nor ``git`` attributes are specified, th
             version: ">=1.0"
 
 ``version`` (registry)
-++++++++++++++++++++++
+----------------------
 
 The version of the dependency.
 
@@ -735,7 +740,7 @@ The default namespace for components in the ESP Component Registry is ``espressi
         version: ">=2.0"
 
 ``pre_release``
-+++++++++++++++
+---------------
 
 A boolean that indicates whether prerelease versions of the dependency should be used.
 
@@ -759,7 +764,7 @@ By default, prerelease versions are ignored. You can also specify a prerelease v
         version: ">=2.0-beta.1"
 
 ``registry_url``
-++++++++++++++++
+----------------
 
 The URL of the ESP Component Registry. By default, this URL is ``https://components.espressif.com``.
 
@@ -768,7 +773,7 @@ If you are uploading to the :ref:`staging registry <staging-registry>`, set the 
 When uploading your component into the main registry, this URL should remain at the default value: ``https://components.espressif.com``. This ensures that all dependencies from the main registry are resolved correctly.
 
 ESP-IDF Dependency
-~~~~~~~~~~~~~~~~~~
+==================
 
 Use the ``idf:version`` field to specify the ESP-IDF version that the component is compatible with.
 
@@ -788,3 +793,159 @@ Shorthand syntax:
 
     dependencies:
       idf: ">=5.0"
+
+.. _dependency-overrides:
+
+**********************
+ Dependency Overrides
+**********************
+
+The ``overrides`` section replaces dependencies across the dependency graph. It is useful when you need to:
+
+- Patch a transitive dependency with a custom fork
+- Pin a specific version of a transitive dependency
+- Replace a component with a compatible alternative
+
+The ``overrides`` field is only read from manifests that are known before dependency solving starts: the main component manifest, manifests in the project ``components`` directory, and manifests from ``EXTRA_COMPONENT_DIRS``. Overrides are not read from manifests downloaded from the registry, from ``git`` dependencies, or from `Local Directory Dependencies`_ discovered during solving.
+
+.. warning::
+
+    Only one manifest in a project may declare ``overrides``. If ``overrides`` is declared in multiple known manifests, dependency solving fails with an error.
+
+.. note::
+
+    Short override targets, such as ``button``, match both the default registry name (``espressif/button``) and an unqualified ``git`` or ``path`` dependency named ``button``. Replacement names are normalized the same way as normal dependencies: registry replacements receive the default ``espressif/`` namespace, while ``git`` and ``path`` replacements may remain unqualified. The ESP-IDF dependency ``idf`` cannot be overridden.
+
+Syntax
+======
+
+The ``overrides`` field is a list where each entry is a dictionary with a single key: the name of the component to replace. The value contains a ``with`` field specifying the replacement, and an optional ``reason`` field.
+
+.. code-block:: yaml
+
+    overrides:
+      - espressif/tinyusb:
+          with:
+            tinyusb:
+              git: https://github.com/user/tinyusb-fork.git
+              path: .
+              version: my-fix-branch
+          reason: "Upstream release does not include the DWC2 ZLP fix yet"
+
+``with``
+--------
+
+A dictionary with a single key: the replacement component name. The value is a dictionary of dependency attributes that describe how to resolve the replacement. These attributes are the same as those available in the `component dependencies`_ section, including ``git``, ``path``, ``version``, ``registry_url``, ``pre_release``, ``matches``, and ``rules``. Use ``path`` for local replacement components; ``override_path`` is not supported inside ``with``.
+
+The replacement component name does not have to match the original. This allows you to substitute one component with a different, compatible component:
+
+.. code-block:: yaml
+
+    overrides:
+      - espressif/tinyusb:
+          with:
+            micropython_tinyusb:
+              git: https://github.com/micropython/tinyusb-espressif.git
+              path: .
+              version: cherrypick/dwc2_zlp_fix
+
+You can also replace a dependency with another component from the registry:
+
+.. code-block:: yaml
+
+    overrides:
+      - espressif/tinyusb:
+          with:
+            my_namespace/tinyusb:
+              version: "^1.0.0"
+
+``reason``
+----------
+
+An optional string field that documents why the override exists. The reason is printed when an override is applied:
+
+.. code-block:: yaml
+
+    overrides:
+      - espressif/tinyusb:
+          with:
+            tinyusb:
+              git: https://github.com/user/tinyusb-fork.git
+              version: my-fix-branch
+          reason: "Upstream release does not include the DWC2 ZLP fix yet"
+
+``overrides`` and ``override_path``
+===================================
+
+``override_path`` is a dependency attribute that points one dependency to a local directory. It can only replace that dependency with a local component of the same name.
+
+The ``overrides`` is a top-level field that can replace direct and transitive dependencies. It can use any supported dependency source, including registry, ``git``, and local ``path`` sources, and it can replace a component with a component that has a different name.
+
+If both an ``overrides`` entry and an ``override_path`` attribute target the same component, the ``overrides`` entry takes precedence.
+
+Precedence with the ``components`` directory
+============================================
+
+A component placed in the project ``components`` directory (or in a directory listed in ``EXTRA_COMPONENT_DIRS``) has the **highest priority** in the ESP-IDF build system. In CMake terms, ``project_components`` and ``project_extra_components`` override ``project_managed_components`` (the components the Component Manager downloads or resolves). This precedence applies to **everything the Component Manager resolves, including** ``overrides``.
+
+As a result, an ``overrides`` entry **cannot** override a component that physically exists in the ``components`` directory: the local component wins, and the Component Manager reports that it is using the component from that directory. This keeps the resolved dependency graph consistent with what CMake actually builds.
+
+The precedence, from highest to lowest, is:
+
+1. Component in the project ``components`` directory
+2. Component in ``EXTRA_COMPONENT_DIRS``
+3. ``overrides`` entry / ``override_path`` attribute (applied to managed dependencies)
+4. The dependency as declared (registry, ``git``, or ``path``)
+5. ESP-IDF built-in components
+
+If you need to replace a component with a local copy, prefer the ``overrides`` entry with a ``path`` replacement (see `Local Directory Override`_) over placing it in ``components``, unless you specifically intend the ``components`` directory to take precedence over everything else.
+
+.. warning::
+
+    Dependents' version requirements are **ignored** for an overridden component. The replacement is used regardless of any version range that other components declare on the original component, so a version conflict error that you might otherwise expect will not be raised. The override is an escape hatch: it is your responsibility to ensure the replacement is compatible with its dependents.
+
+.. note::
+
+    Dependency attributes such as ``public`` and ``require`` set inside the replacement (the ``with`` block) apply to **every** edge that pointed at the overridden component. For example, setting ``require: no`` in the replacement drops the component from the ``REQUIRES`` list of all dependents, not just one of them. Leave these attributes unset to preserve each dependent's original per-edge visibility.
+
+Local Directory Override
+========================
+
+To replace a dependency with a local copy on your filesystem, use the ``path`` attribute in the replacement:
+
+.. code-block:: yaml
+
+    overrides:
+      - espressif/button:
+          with:
+            espressif/button:
+              path: /home/user/my-patched/button
+
+.. note::
+
+    When the replacement has a **different name** than the original component, the Component Manager rewrites the manager-injected ``REQUIRES`` / ``PRIV_REQUIRES`` entries to the new name. However, any hand-written ``idf_component_register(REQUIRES <old_name> ...)`` calls and ``#include`` paths that reference the old component name in your own CMake or source files will **not** be rewritten and must be updated manually. Otherwise the build fails with a CMake or compiler error far from the manifest. Prefer keeping the replacement name identical to the original when possible.
+
+Registry distribution
+=====================
+
+The ``overrides`` field is only honored from the project's own known manifests (see above). It is **not** read from manifests downloaded from the registry. A component that declares ``overrides`` can still be packaged and uploaded, but the field has no effect when that component is later consumed as a dependency. The Component Manager prints a notice at upload time to make this explicit.
+
+Conditional Overrides
+=====================
+
+You can use ``rules`` or ``matches`` within the replacement attributes to apply an override only for specific targets or conditions. The same syntax used for `conditional dependencies`_ applies here. Conditions are evaluated once before dependency solving, using the current project environment and Kconfig values available at that point:
+
+.. code-block:: yaml
+
+    overrides:
+      - espressif/tinyusb:
+          with:
+            espressif/tinyusb:
+              git: https://github.com/user/tinyusb-fork.git
+              version: esp32s3-fix
+              rules:
+                - if: "target == esp32s3"
+
+.. note::
+
+    An override only activates on dependency edges that are themselves active. If the overridden dependency is declared conditionally by another component (for example with its own ``rules``/``matches`` that exclude the current target), the override does not pull the replacement into the build for that edge. The original edge's conditions are evaluated first, then the override is applied to the edges that remain.

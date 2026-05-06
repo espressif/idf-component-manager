@@ -63,7 +63,7 @@ repos:
           - --allow-breaking
 
   - repo: https://github.com/LilSpazJoekp/docstrfmt
-    rev: v1.10.0
+    rev: v2.0.1
     hooks:
       - id: docstrfmt
         types: [rst]
