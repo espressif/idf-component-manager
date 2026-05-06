@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import argparse
 import difflib
@@ -17,10 +17,14 @@ def main(base_folder: str, preview_folder: str, output_dir: str):
     table.field_names = ['Base', 'Preview', 'Diff Preview Link']
     table.set_style(MARKDOWN)
 
-    base_folder_html_rel_paths = set(glob.glob('**/*.html', root_dir=base_folder, recursive=True))
-    preview_folder_html_rel_paths = set(
-        glob.glob('**/*.html', root_dir=preview_folder, recursive=True)
-    )
+    base_folder_html_rel_paths = {
+        os.path.relpath(path, base_folder)
+        for path in glob.glob(os.path.join(base_folder, '**/*.html'), recursive=True)
+    }
+    preview_folder_html_rel_paths = {
+        os.path.relpath(path, preview_folder)
+        for path in glob.glob(os.path.join(preview_folder, '**/*.html'), recursive=True)
+    }
     has_diff = False
     for item in sorted(base_folder_html_rel_paths | preview_folder_html_rel_paths):
         base_name = item if item in base_folder_html_rel_paths else ''
@@ -28,10 +32,9 @@ def main(base_folder: str, preview_folder: str, output_dir: str):
         diff_url = ''
 
         if base_name and preview_name:
-            with (
-                open(os.path.join(base_folder, item), 'r') as base_file,
-                open(os.path.join(preview_folder, item), 'r') as preview_file,
-            ):
+            with open(os.path.join(base_folder, item), 'r') as base_file, open(
+                os.path.join(preview_folder, item), 'r'
+            ) as preview_file:
                 base_lines = base_file.readlines()
                 preview_lines = preview_file.readlines()
 
