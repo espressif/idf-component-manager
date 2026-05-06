@@ -10,7 +10,7 @@ class TestValidateBaseSource:
         assert source.validate_version_spec('*')
         assert not source.validate_version_spec('***')
 
-    def test_validate_version_spec_semver(self, valid_manifest):
+    def test_validate_version_spec_semver(self):
         source = Source.from_dependency('test')
         assert source.validate_version_spec('4.0.1')
         assert not source.validate_version_spec('1.-1.1')

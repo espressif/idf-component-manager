@@ -16,6 +16,8 @@ def add_options(options):
     return wrapper
 
 
-def deprecated_option(ctx, param, value):
+def deprecated_option(_ctx, param, value):
     if any(True for arg in sys.argv if arg.startswith(param.opts[0])):
         warnings.warn(f'The option {param.name} is deprecated.', UserDeprecationWarning)
+
+    return value
