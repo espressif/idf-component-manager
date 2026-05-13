@@ -10,8 +10,8 @@ import pytest
 from jinja2 import Environment, FileSystemLoader
 from ruamel.yaml import YAML
 
+from idf_component_manager.root_components.install import install_root_components
 from idf_component_tools.config import root_managed_components_dir
-from idf_component_tools.constants import MANIFEST_FILENAME
 
 from .integration_test_helpers import create_component, generate_from_template
 from .integration_test_helpers import idf_version as system_idf_version
@@ -72,16 +72,31 @@ def project(request, tmpdir_factory):
 
     # create idf root dependencies
     root_dependencies = request.param.get('root_dependencies', {})
-    if not os.path.isdir(root_managed_components_dir()):
-        os.makedirs(root_managed_components_dir())
-    with open(os.path.join(root_managed_components_dir(), MANIFEST_FILENAME), 'w') as fw:
-        YAML().dump({'dependencies': root_dependencies}, fw)
+    root_snapshot = None
+    if root_dependencies:
+        # Write root dependencies to IDF_PATH/tools/idf_extra_components.yml.
+        # Configure consumes preinstalled root-managed components from
+        # root_managed_components_dir().
+        idf_extra_path = os.path.join(
+            os.environ.get('IDF_PATH', ''), 'tools', 'idf_extra_components.yml'
+        )
+        root_snapshot = Snapshot([idf_extra_path, str(root_managed_components_dir())])
+        os.makedirs(os.path.dirname(idf_extra_path), exist_ok=True)
+        with open(idf_extra_path, 'w') as fw:
+            YAML().dump({'dependencies': root_dependencies}, fw)
+
+        install_root_components()
+
+    os.makedirs(root_managed_components_dir(), exist_ok=True)
 
     # create project components
     components = request.param.get('components', {'main': {}})
     for component in components.keys():
         create_component(project_path, component, components[component], env)
     yield os.path.abspath(project_path)
+
+    if root_snapshot:
+        root_snapshot.revert()
 
 
 class Snapshot:

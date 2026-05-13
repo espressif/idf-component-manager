@@ -178,10 +178,10 @@ def prepare_dep_dirs(args):
 
         # Only print the warning in these cases:
         # - interface version 4 and Component Manager is running the 3rd time (or later)
-        # - interface version 5 (warning printing is controlled outside of python for v5)
+        # - interface version >= 5 (warning printing is controlled outside of python for v5)
         if (
             (args.interface_version == 4 and RunCounter(build_dir).value >= 2)
-            or args.interface_version == 5
+            or args.interface_version >= 5
             or CMAKEV2
         ):
             _nl = '\n'
@@ -266,13 +266,14 @@ def main():
     # Interface versions support:
     # *4* starting ESP-IDF 6.0
     # *5* starting ESP-IDF 6.0.1
+    # *6* starting ESP-IDF 6.2
 
     parser.add_argument(
         '--interface_version',
         help='Version of ESP-IDF build system integration',
         default=4,
         type=int,
-        choices=[4, 5],
+        choices=[4, 5, 6],
     )
 
     parser.add_argument('--lock_path', help='lock file path relative to the project path')

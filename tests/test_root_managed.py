@@ -12,7 +12,7 @@ from idf_component_tools.root_managed_components import (
     root_managed_component_path,
     validate_root_manifest,
 )
-from idf_component_tools.root_managed_components.state import FORMAT_VERSION
+from idf_component_tools.root_managed_components.state import FORMAT_VERSION, _spec_matches
 
 
 def _write_component(component_path):
@@ -73,6 +73,11 @@ def test_state_load_rejects_invalid_record_version(tmp_path):
 
     with pytest.raises(FatalError, match='Invalid root managed component version'):
         manager.load()
+
+
+def test_spec_matches_rejects_invalid_spec():
+    with pytest.raises(FatalError, match='Invalid root managed component version specification'):
+        _spec_matches('1.0.0', 'not-a-spec')
 
 
 def test_validate_root_manifest_allows_registry_dependencies():

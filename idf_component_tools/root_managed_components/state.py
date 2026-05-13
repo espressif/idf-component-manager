@@ -8,10 +8,12 @@ from pathlib import Path
 
 from ruamel.yaml import YAML
 
+from idf_component_tools.build_system_tools import get_env_idf_target
 from idf_component_tools.errors import FatalError
-from idf_component_tools.manifest import Manifest
+from idf_component_tools.manager import ManifestManager
+from idf_component_tools.manifest import ComponentRequirement, Manifest
 from idf_component_tools.root_managed_components.tools import root_managed_components_state_path
-from idf_component_tools.semver import Version
+from idf_component_tools.semver import SimpleSpec, Version
 from idf_component_tools.utils import canonical_component_name
 
 FORMAT_VERSION = '1'
@@ -72,6 +74,99 @@ class RootManagedComponentsState:
         for record in records:
             state.components.setdefault(record.name, {})[record.version] = record
         return state
+
+    def select_for_manifest(self, manifest: Manifest) -> t.List[RootManagedComponentRecord]:
+        """Resolve an active root-managed manifest against installed records."""
+        target = get_env_idf_target()
+        selected = self._resolve_requirements(
+            list(manifest.requirements),
+            constraints={},
+            selected={},
+            expanded=set(),
+            target=target,
+        )
+        if selected is None:
+            raise FatalError(
+                'Unable to resolve installed root managed component dependency graph.\n'
+                f'{_INSTALL_COMMAND_HINT}'
+            )
+
+        return sorted(selected.values(), key=lambda item: item.path)
+
+    def _resolve_requirements(
+        self,
+        pending: t.List[ComponentRequirement],
+        constraints: t.Dict[str, t.List[str]],
+        selected: t.Dict[str, RootManagedComponentRecord],
+        expanded: t.Set[t.Tuple[str, str]],
+        target: t.Optional[str],
+    ) -> t.Optional[t.Dict[str, RootManagedComponentRecord]]:
+        if not pending:
+            return selected
+
+        requirement, rest = pending[0], pending[1:]
+        if requirement.meta:
+            return self._resolve_requirements(rest, constraints, selected, expanded, target)
+
+        name = canonical_component_name(requirement.name)
+        new_constraints = {key: list(value) for key, value in constraints.items()}
+        specs = [*new_constraints.get(name, []), requirement.version_spec]
+        new_constraints[name] = specs
+
+        current = selected.get(name)
+        if current:
+            if all(_spec_matches(current.version, spec) for spec in specs):
+                return self._resolve_requirements(rest, new_constraints, selected, expanded, target)
+            return None
+
+        for record in self._matching_candidates(name, specs, target):
+            next_selected = dict(selected)
+            next_selected[name] = record
+
+            next_expanded = set(expanded)
+            next_pending = rest
+            expanded_key = (name, record.version)
+            if expanded_key not in next_expanded:
+                next_expanded.add(expanded_key)
+                component_manifest = ManifestManager(record.path, record.build_name).load()
+                next_pending = [*component_manifest.requirements, *rest]
+
+            resolved = self._resolve_requirements(
+                next_pending,
+                new_constraints,
+                next_selected,
+                next_expanded,
+                target,
+            )
+            if resolved is not None:
+                return resolved
+
+        return None
+
+    def _matching_candidates(
+        self,
+        name: str,
+        specs: t.List[str],
+        target: t.Optional[str],
+    ) -> t.List[RootManagedComponentRecord]:
+        candidates = self.components.get(name) or {}
+        matching = [
+            record
+            for version, record in candidates.items()
+            if record.is_compatible_with_target(target)
+            and all(_spec_matches(version, spec) for spec in specs)
+        ]
+        return sorted(matching, key=lambda item: Version.coerce(item.version), reverse=True)
+
+
+def _spec_matches(version: str, spec: str) -> bool:
+    if not spec or spec == '*':
+        return True
+
+    try:
+        return SimpleSpec(spec).match(Version.coerce(version))
+    except (TypeError, ValueError) as e:
+        raise FatalError(f'Invalid root managed component version specification: "{spec}"') from e
 
 
 class RootManagedComponentsStateManager:
