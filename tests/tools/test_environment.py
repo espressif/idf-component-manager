@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 from pytest import mark
 
@@ -77,6 +77,12 @@ def test_env_to_bool_or_string(value, expected):
 
 
 class TestComponentManagerSettings:
+    def test_wrapper_env_var(self, monkeypatch):
+        monkeypatch.setenv('IDF_COMPONENT_WRAPPER', '/tmp/component-wrapper.py')
+
+        assert ComponentManagerSettings().WRAPPER == '/tmp/component-wrapper.py'
+        assert 'IDF_COMPONENT_WRAPPER' in ComponentManagerSettings.known_env_vars()
+
     def test_get_constraint_files_none(self):
         assert ComponentManagerSettings().constraints == {}
 
