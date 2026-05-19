@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import typing as t
@@ -10,13 +10,13 @@ from pyparsing import (
     Keyword,
     Literal,
     MatchFirst,
+    OpAssoc,
     ParseResults,
     Regex,
     Word,
     alphas,
-    infixNotation,
+    infix_notation,
     nums,
-    opAssoc,
 )
 
 from idf_component_tools.build_system_tools import get_env_idf_target, get_idf_version
@@ -272,7 +272,7 @@ class BoolOr(Stmt):
 
 
 _non_terminator_words = Regex(r'[^\n\r\[\]&|\(\)]+')
-LEFT_VALUE = Word(alphas + nums + '${}_-.').setParseAction(lambda x: LeftValue(x[0]))
+LEFT_VALUE = Word(alphas + nums + '${}_-.').set_parse_action(lambda x: LeftValue(x[0]))
 
 # Operators
 _LE = Literal('<=')
@@ -307,24 +307,26 @@ OPERATORS = MatchFirst([
     _CARET,
     _NOT_IN,
     _IN,
-]).setParseAction(lambda x: x[0])
+]).set_parse_action(lambda x: x[0])
 
 # Left Value is everything till the operator
-STRING = _non_terminator_words.setParseAction(lambda x: Single(x[0]))
-LIST = (Literal('[') + STRING + Literal(']')).setParseAction(lambda x: List(f'{x[0]}{x[1]}{x[2]}'))
+STRING = _non_terminator_words.set_parse_action(lambda x: Single(x[0]))
+LIST = (Literal('[') + STRING + Literal(']')).set_parse_action(
+    lambda x: List(f'{x[0]}{x[1]}{x[2]}')
+)
 
-IF_CLAUSE = (LEFT_VALUE + OPERATORS + (LIST | STRING)).setParseAction(
+IF_CLAUSE = (LEFT_VALUE + OPERATORS + (LIST | STRING)).set_parse_action(
     lambda x: IfClause(x[0], x[1], x[2])
 )
 
 AND = Keyword('&&')
 OR = Keyword('||')
 
-BOOL_EXPR = infixNotation(
+BOOL_EXPR = infix_notation(
     IF_CLAUSE,
     [
-        (AND, 2, opAssoc.LEFT, BoolAnd),
-        (OR, 2, opAssoc.LEFT, BoolOr),
+        (AND, 2, OpAssoc.LEFT, BoolAnd),
+        (OR, 2, OpAssoc.LEFT, BoolOr),
     ],
 )
 
