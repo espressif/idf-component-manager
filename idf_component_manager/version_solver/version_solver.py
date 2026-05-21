@@ -3,10 +3,12 @@
 
 import os
 import typing as t
+from collections import defaultdict
+from contextlib import contextmanager
 from copy import deepcopy
 
 from idf_component_tools import debug, notice
-from idf_component_tools.debugger import DEBUG_INFO_COLLECTOR
+from idf_component_tools.debugger import DEBUG_INFO_COLLECTOR, KCONFIG_CONTEXT
 from idf_component_tools.errors import DependencySolveError, InternalError, SolverError
 from idf_component_tools.manifest import (
     ComponentRequirement,
@@ -59,6 +61,10 @@ class VersionSolver:
         self._parse_local_root_requirements()
 
         self._solved_requirements: t.Set[ComponentRequirement] = set()
+        self._candidate_missed_kconfigs: t.Dict[
+            t.Tuple[Package, str, t.Optional[str]],
+            t.Dict[str, t.Set[ComponentRequirement]],
+        ] = {}
 
     def _parse_local_root_requirements(self) -> None:
         # scan all LocalSource dependencies and add all local components to _local_root_requirements
@@ -126,6 +132,7 @@ class VersionSolver:
         self._source.override_dependencies(self._overriders)
 
         result = self._solver.solve()
+        self._commit_selected_candidate_missed_kconfigs(result.decisions)
 
         solved_components = []
         for package, version in result.decisions.items():
@@ -239,23 +246,73 @@ class VersionSolver:
             if requirement.source.is_overrider:
                 self._overriders.add(requirement.build_name)
 
-            deps = self._component_dependencies_with_local_precedence(
-                version.dependencies, component_name=requirement.name, manifest_path=manifest_path
-            )
+            package = Package(requirement.name, requirement.source)
+            with self._collect_candidate_missed_kconfigs(package, version):
+                deps_to_solve = self._component_dependency_requirements_with_local_precedence(
+                    version.dependencies,
+                    component_name=requirement.name,
+                    manifest_path=manifest_path,
+                )
+
+            deps = {Package(dep.name, dep.source): dep.version_spec for dep in deps_to_solve}
 
             self._source.add(
-                Package(requirement.name, requirement.source),
+                package,
                 version,
                 deps=deps,
             )
 
-            if version.dependencies:
-                for dep in version.dependencies:
-                    if dep.meet_optional_dependencies:
-                        self.solve_component(dep)
+            for dep in deps_to_solve:
+                self.solve_component(dep)
 
         if self.component_solved_callback:
             self.component_solved_callback()
+
+    @staticmethod
+    def _candidate_key(package: Package, version: t.Any) -> t.Tuple[Package, str, t.Optional[str]]:
+        return package, str(version), getattr(version, 'component_hash', None)
+
+    @contextmanager
+    def _collect_candidate_missed_kconfigs(
+        self,
+        package: Package,
+        version: t.Any,
+    ) -> t.Generator[None, None, None]:
+        kconfig_ctx = KCONFIG_CONTEXT.get()
+        missed_keys = kconfig_ctx.missed_keys
+        previous_missed_keys = defaultdict(
+            set, {key: set(reqs) for key, reqs in missed_keys.items()}
+        )
+
+        try:
+            yield
+        finally:
+            new_missed_keys = {
+                key: set(reqs) - previous_missed_keys.get(key, set())
+                for key, reqs in missed_keys.items()
+                if set(reqs) - previous_missed_keys.get(key, set())
+            }
+            missed_keys.clear()
+            missed_keys.update(previous_missed_keys)
+
+            if new_missed_keys:
+                candidate_missed_keys = self._candidate_missed_kconfigs.setdefault(
+                    self._candidate_key(package, version), {}
+                )
+                for key, reqs in new_missed_keys.items():
+                    candidate_missed_keys.setdefault(key, set()).update(reqs)
+
+    def _commit_selected_candidate_missed_kconfigs(self, decisions: t.Dict[Package, t.Any]) -> None:
+        kconfig_ctx = KCONFIG_CONTEXT.get()
+        for package, version in decisions.items():
+            if package == Package.root():
+                continue
+
+            missed_keys = self._candidate_missed_kconfigs.get(
+                self._candidate_key(package, version), {}
+            )
+            for key, reqs in missed_keys.items():
+                kconfig_ctx.missed_keys[key].update(reqs)
 
     def _dependencies_with_local_precedence(
         self,
@@ -302,19 +359,34 @@ class VersionSolver:
 
         return deps
 
-    def _component_dependencies_with_local_precedence(
+    def _component_dependency_requirements_with_local_precedence(
         self,
         dependencies: t.List[ComponentRequirement],
         component_name: t.Optional[str] = None,
         manifest_path: t.Optional[str] = None,
-    ) -> t.Dict[Package, str]:
-        deps: t.Dict[Package, str] = {}
+    ) -> t.List[ComponentRequirement]:
+        deps: t.List[ComponentRequirement] = []
         for dep in self._dependencies_with_local_precedence(
             dependencies,
             component_name,
             manifest_path,
         ):
             if dep.meet_optional_dependencies:
-                deps[Package(dep.name, dep.source)] = dep.version_spec
+                deps.append(dep)
 
         return deps
+
+    def _component_dependencies_with_local_precedence(
+        self,
+        dependencies: t.List[ComponentRequirement],
+        component_name: t.Optional[str] = None,
+        manifest_path: t.Optional[str] = None,
+    ) -> t.Dict[Package, str]:
+        return {
+            Package(dep.name, dep.source): dep.version_spec
+            for dep in self._component_dependency_requirements_with_local_precedence(
+                dependencies,
+                component_name,
+                manifest_path,
+            )
+        }
