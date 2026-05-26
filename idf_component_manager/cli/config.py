@@ -5,7 +5,7 @@
 import typing as t
 from pathlib import Path
 
-import click
+import rich_click as click
 from pydantic import ValidationError
 from ruamel.yaml import YAML, CommentedMap
 

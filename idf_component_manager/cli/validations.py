@@ -4,7 +4,7 @@ import re
 import typing as t
 from pathlib import Path
 
-import click
+import rich_click as click
 from pydantic import TypeAdapter
 
 from idf_component_manager.core_utils import COMPONENT_FULL_NAME_WITH_SPEC_REGEX

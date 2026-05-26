@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
-import click
+import rich_click as click
 
 from idf_component_manager.cli.validations import (
     validate_git_url,

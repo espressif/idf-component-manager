@@ -91,7 +91,7 @@ class ComponentManagerSettings(BaseSettings):
         False, description='Disable hints in the output.'
     )  # log-level: notice/info(20)
 
-    NO_COLORS: bool = Field(False, description='Disable colored output.')  # with colorama or not
+    NO_COLORS: bool = Field(False, description='Disable colored output.')
 
     # GENERAL
 

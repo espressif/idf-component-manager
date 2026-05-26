@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import json
 
-import click
+import rich_click as click
 
 from idf_component_manager.cli.validations import (
     validate_add_dependency,
