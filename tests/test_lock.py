@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import filecmp
-import logging
 import os
 import shutil
 import textwrap
@@ -16,7 +15,7 @@ import requests_mock
 from ruamel.yaml import YAML
 
 from idf_component_manager.dependencies import is_solve_required
-from idf_component_tools import LOGGING_NAMESPACE, setup_logging
+from idf_component_tools import setup_logging
 from idf_component_tools.build_system_tools import get_idf_version
 from idf_component_tools.errors import LockError
 from idf_component_tools.lock import EMPTY_LOCK, LockFile, LockManager
@@ -110,7 +109,9 @@ class TestLockManager(object):
 
         assert filecmp.cmp(lock_path, valid_lock_path, shallow=False)
 
-    def test_lock_dump_with_current_solution(self, tmp_path, monkeypatch, manifest_path, caplog):
+    def test_lock_dump_with_current_solution(
+        self, tmp_path, monkeypatch, manifest_path, recording_log
+    ):
         monkeypatch.setenv('CI_TESTING_IDF_VERSION', '4.4.4')
         monkeypatch.setenv('IDF_TARGET', 'esp32')
 
@@ -175,15 +176,14 @@ class TestLockManager(object):
 
         # idf change to 5.1, should trigger solve, since dependency idf<5.1
         monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.1.0')
-        caplog.clear()
-        with caplog.at_level(logging.INFO, logger=LOGGING_NAMESPACE):
-            assert is_solve_required(ProjectRequirements([manifest]), solution)
-            # 3 are the retry /api calls, 1 is the actual solve
-            assert len(caplog.records) == 1
-            assert (
-                'espressif/test_cmp (1.2.7) is not compatible with the current idf version'
-                in caplog.records[0].message
-            )
+        recording_log.clear()
+        assert is_solve_required(ProjectRequirements([manifest]), solution)
+        # 3 are the retry /api calls, 1 is the actual solve
+        assert len(recording_log.records) == 1
+        assert (
+            'espressif/test_cmp (1.2.7) is not compatible with the current idf version'
+            in recording_log.records[0].message
+        )
 
         # reset idf version
         monkeypatch.setenv('CI_TESTING_IDF_VERSION', '4.4.4')
@@ -195,15 +195,14 @@ class TestLockManager(object):
 
         # target change to esp32s3, should trigger solve, since dependency target esp32, esp32s2
         monkeypatch.setenv('IDF_TARGET', 'esp32s3')
-        caplog.clear()
-        with caplog.at_level(logging.INFO, logger=LOGGING_NAMESPACE):
-            assert is_solve_required(ProjectRequirements([manifest]), solution)
-            # 3 are the retry /api calls, 1 is the actual solve
-            assert len(caplog.records) == 1
-            assert (
-                'espressif/test_cmp (1.2.7) is not compatible with the current target esp32s3'
-                in caplog.records[0].message
-            )
+        recording_log.clear()
+        assert is_solve_required(ProjectRequirements([manifest]), solution)
+        # 3 are the retry /api calls, 1 is the actual solve
+        assert len(recording_log.records) == 1
+        assert (
+            'espressif/test_cmp (1.2.7) is not compatible with the current target esp32s3'
+            in recording_log.records[0].message
+        )
 
     def test_lock_dump_with_dictionary(
         self,
@@ -320,7 +319,7 @@ class TestLockManager(object):
 
         assert solution.manifest_hash is None
 
-    def test_no_internet_connection(self, caplog):
+    def test_no_internet_connection(self, recording_log):
         manifest = Manifest.fromdict({
             'dependencies': {
                 'idf': '4.4.0',
@@ -350,12 +349,11 @@ class TestLockManager(object):
             'manifest_hash': project_requirements.manifest_hash,
         })
 
-        caplog.set_level(logging.INFO, logger=LOGGING_NAMESPACE)
         assert not is_solve_required(project_requirements, solution)
         assert any(
             'Cannot establish a connection to the component registry. '
             'Skipping checks of dependency changes.' in record.message
-            for record in caplog.records
+            for record in recording_log.records
         )
 
     def test_change_manifest_file_idf_version_required_in_dependencies_rules(
@@ -436,20 +434,20 @@ class TestLockManager(object):
         project_requirements = ProjectRequirements([manifest])
         assert not is_solve_required(project_requirements, solution)  # change it back
 
-    def test_empty_lock(self, caplog):
+    def test_empty_lock(self, recording_log):
         solution = SolvedManifest.fromdict(EMPTY_LOCK)
 
         manifest = Manifest.fromdict({})
         project_requirements = ProjectRequirements([manifest])
-        with caplog.at_level(logging.INFO, logger=LOGGING_NAMESPACE):
-            assert is_solve_required(project_requirements, solution)
-            assert len(caplog.records) == 1
-            assert (
-                "Dependencies lock doesn't exist, solving dependencies" in caplog.records[0].message
-            )
+        assert is_solve_required(project_requirements, solution)
+        assert len(recording_log.records) == 1
+        assert (
+            "Dependencies lock doesn't exist, solving dependencies"
+            in recording_log.records[0].message
+        )
 
     def test_update_local_dependency_change_version(
-        self, monkeypatch, release_component_path, tmp_path, caplog
+        self, monkeypatch, release_component_path, tmp_path, recording_log
     ):
         monkeypatch.setenv('IDF_TARGET', 'esp32')
         project_dir = str(tmp_path / 'cmp')
@@ -476,13 +474,12 @@ class TestLockManager(object):
         manifest_manager.manifest.version = '1.0.1'
         manifest_manager.dump(str(project_dir))
 
-        with caplog.at_level(logging.INFO, logger=LOGGING_NAMESPACE):
-            assert is_solve_required(project_requirements, solution)
-            assert len(caplog.records) == 1
-            assert (
-                'version has changed from 1.0.0 to 1.0.1, solving dependencies'
-                in caplog.records[0].message
-            )
+        assert is_solve_required(project_requirements, solution)
+        assert len(recording_log.records) == 1
+        assert (
+            'version has changed from 1.0.0 to 1.0.1, solving dependencies'
+            in recording_log.records[0].message
+        )
 
     def test_update_local_dependency_change_file_not_trigger(
         self, release_component_path, tmp_path
@@ -517,7 +514,7 @@ class TestLockManager(object):
 
         assert not is_solve_required(project_requirements, solution)
 
-    def test_target_change_with_kconfig_dependency(self, monkeypatch, caplog):
+    def test_target_change_with_kconfig_dependency(self, monkeypatch, recording_log):
         """Test that changing target triggers re-solve when dependencies have KConfig options"""
         monkeypatch.setenv('IDF_TARGET', 'esp32')
 
@@ -552,13 +549,12 @@ class TestLockManager(object):
 
         # Target change should trigger re-solve because dependency has KConfig option
         monkeypatch.setenv('IDF_TARGET', 'esp32s2')
-        caplog.clear()
-        with caplog.at_level(logging.INFO, logger=LOGGING_NAMESPACE):
-            assert is_solve_required(ProjectRequirements([manifest]), solution)
-            assert len(caplog.records) == 1
-            assert 'Target changed from esp32 to esp32s2' in caplog.records[0].message
-            assert 'has a dependency using KConfig options' in caplog.records[0].message
-            assert 'espressif/test_cmp' in caplog.records[0].message
+        recording_log.clear()
+        assert is_solve_required(ProjectRequirements([manifest]), solution)
+        assert len(recording_log.records) == 1
+        assert 'Target changed from esp32 to esp32s2' in recording_log.records[0].message
+        assert 'has a dependency using KConfig options' in recording_log.records[0].message
+        assert 'espressif/test_cmp' in recording_log.records[0].message
 
     def test_local_source_relative_path(self, tmp_path, release_component_path, monkeypatch):
         monkeypatch.setenv('IDF_TARGET', 'esp32')

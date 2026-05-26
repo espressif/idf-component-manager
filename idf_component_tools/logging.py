@@ -1,133 +1,65 @@
-# SPDX-FileCopyrightText: 2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import logging
-import sys
+import typing as t
 from contextlib import contextmanager
 
-from colorama import Fore
+from esp_pylib.logger import EspLog, Verbosity
 
-from idf_component_tools import HINT_LEVEL, get_logger
 from idf_component_tools.environment import ComponentManagerSettings
 from idf_component_tools.errors import WarningAsExceptionError
 
 
-class ComponentManagerStdoutFilter(logging.Filter):
+class ComponentManagerLog(EspLog):
     """
-    In component manager, we write debug, hint, info to stdout
-    """
+    EspLog subclass for the IDF Component Manager.
 
-    def filter(self, record: logging.LogRecord) -> bool:
-        return record.levelno < logging.WARNING
-
-
-class ComponentManagerStderrFilter(logging.Filter):
-    """
-    In component manager, we write warning, error, critical to stderr
+    Adds two component-manager-specific flags:
+      _no_hints:            suppresses hint() output (set from NO_HINTS env var).
+      _warnings_as_errors:  when set, warn() raises WarningAsExceptionError.
     """
 
-    def filter(self, record: logging.LogRecord) -> bool:
-        return record.levelno >= logging.WARNING
+    _no_hints: bool = False
+    _warnings_as_errors: bool = False
 
+    def warn(self, message: str, suggestion: t.Optional[str] = None) -> None:
+        if self._warnings_as_errors:
+            raise WarningAsExceptionError(message)
+        super().warn(message, suggestion=suggestion)
 
-class ComponentManagerWarningsAsErrorsFilter(logging.Filter):
-    """
-    Treat warnings as errors with exception when -W flag is passed.
-    """
-
-    def filter(self, record: logging.LogRecord) -> bool:
-        if record.levelno == logging.WARNING:
-            raise WarningAsExceptionError(record.msg)
-
-        return True
-
-
-class ComponentManagerFormatter(logging.Formatter):
-    """
-    In component manager, we have the following logging levels
-
-    -  10 -> debug
-    -  15 -> hint (custom level, default)
-    -  20 -> info (notice)
-    -  30 -> warning
-    -  40 -> error
-    -  50 -> critical
-    """
-
-    fmt: str = '%(message)s'
-
-    PREFIX = {
-        logging.DEBUG: 'DEBUG',
-        HINT_LEVEL: 'HINT',
-        logging.INFO: 'NOTICE',
-        logging.WARNING: 'WARNING',
-        logging.ERROR: 'ERROR',
-        logging.CRITICAL: 'FATAL',
-    }
-
-    COLOR = {
-        logging.DEBUG: Fore.LIGHTBLACK_EX,
-        HINT_LEVEL: Fore.CYAN,
-        logging.INFO: Fore.GREEN,
-        logging.WARNING: Fore.YELLOW,
-        logging.ERROR: Fore.RED,
-        logging.CRITICAL: Fore.RED,
-    }
-
-    def __init__(self, colored: bool = True) -> None:
-        self.colored = colored
-
-        super().__init__(fmt=self.fmt)
-
-    def format(self, record: logging.LogRecord) -> str:
-        if self.colored and sys.stdout.isatty() and sys.stderr.isatty():
-            record.msg = f'{self.COLOR[record.levelno]}{self.PREFIX[record.levelno]}: {record.msg}{Fore.RESET}'
-        else:
-            record.msg = f'{self.PREFIX[record.levelno]}: {record.msg}'
-        return super().format(record)
+    def hint(self, message: str) -> None:
+        """esp-pylib hint(), suppressible via NO_HINTS=1."""
+        if not self._no_hints:
+            super().hint(message)
 
 
 @contextmanager
-def suppress_logging(level: int = logging.CRITICAL):
-    """Suppress logging temporarily"""
-    previous = get_logger().getEffectiveLevel()
+def suppress_logging(level: t.Optional[int] = None):  # type: ignore[return]
+    """Suppress logging temporarily by switching to SILENT verbosity.
 
-    logging.disable(level)
-
+    ``level`` is accepted only for backwards compatibility with the previous
+    stdlib-``logging`` implementation and is ignored: esp-pylib models only
+    SILENT/NORMAL/VERBOSE, so suppression is always full.
+    """
+    del level  # accepted for backwards compatibility; intentionally ignored
+    instance = EspLog.instance
+    if instance is None:
+        yield
+        return
+    previous = instance._verbosity  # type: ignore[attr-defined]
+    instance.set_verbosity(Verbosity.SILENT)
     try:
         yield
     finally:
-        logging.disable(previous)
+        instance.set_verbosity(previous)
 
 
 def setup_logging(warnings_as_errors: bool = False) -> None:
-    """setup logger for the component manager"""
-    logger = get_logger()
-
-    if ComponentManagerSettings().DEBUG_MODE:
-        logger.setLevel(logging.DEBUG)
-    elif ComponentManagerSettings().NO_HINTS:
-        logger.setLevel(logging.INFO)
-    else:
-        logger.setLevel(HINT_LEVEL)
-
-    # cleanup first
-    logger.handlers.clear()
-
-    stdout_handler = logging.StreamHandler(sys.stdout)
-    stdout_handler.addFilter(ComponentManagerStdoutFilter())
-    stdout_handler.setFormatter(
-        ComponentManagerFormatter(colored=(not ComponentManagerSettings().NO_COLORS))
-    )
-    logger.addHandler(stdout_handler)
-
-    stderr_handler = logging.StreamHandler(sys.stderr)
-    stderr_handler.addFilter(ComponentManagerStderrFilter())
-    stderr_handler.setFormatter(
-        ComponentManagerFormatter(colored=(not ComponentManagerSettings().NO_COLORS))
-    )
-    logger.addHandler(stderr_handler)
-
-    if warnings_as_errors:
-        stderr_handler.addFilter(ComponentManagerWarningsAsErrorsFilter())
-
-    logger.propagate = False  # ends here, don't propagate to root logger, we're client code
+    """Set up the component manager logger as the global esp-pylib singleton."""
+    settings = ComponentManagerSettings()
+    EspLog._reset()
+    ComponentManagerLog._reset()
+    instance = ComponentManagerLog(no_color=settings.NO_COLORS or None)
+    instance._no_hints = settings.NO_HINTS and not settings.DEBUG_MODE
+    instance._warnings_as_errors = warnings_as_errors
+    instance.set_verbosity(Verbosity.VERBOSE if settings.DEBUG_MODE else Verbosity.NORMAL)
+    EspLog.set_logger(instance)

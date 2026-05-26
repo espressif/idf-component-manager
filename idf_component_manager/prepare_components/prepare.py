@@ -13,6 +13,8 @@ import sys
 import typing as t
 from pathlib import Path
 
+from esp_pylib.excepthook import install_exception_reporting
+
 from idf_component_manager.core import ComponentManager
 from idf_component_tools import error, setup_logging, warn
 from idf_component_tools.debugger import KCONFIG_CONTEXT
@@ -252,6 +254,7 @@ def inject_requirements(args):
 
 def main():
     setup_logging()
+    install_exception_reporting()
 
     parser = argparse.ArgumentParser(
         description='Tool to be used by CMake build system to '

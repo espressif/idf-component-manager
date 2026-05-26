@@ -1,7 +1,6 @@
-# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import filecmp
-import logging
 import os
 from pathlib import Path
 
@@ -9,7 +8,6 @@ import pytest
 from ruamel.yaml import YAML
 
 from idf_component_manager.core import get_validated_manifest
-from idf_component_tools import LOGGING_NAMESPACE
 from idf_component_tools.errors import ManifestError, RunningEnvironmentError
 from idf_component_tools.manager import ManifestManager, UploadMode
 
@@ -110,7 +108,7 @@ def test_get_validated_manifest(valid_manifest, tmp_path):
     assert manifest.version == '2.3.1~2'
 
 
-def test_get_validated_manifest_unexpected_file(valid_manifest, tmp_path, caplog):
+def test_get_validated_manifest_unexpected_file(valid_manifest, tmp_path, recording_log):
     manifest_path = os.path.join(str(tmp_path), 'idf_component.yml')
     with open(manifest_path, 'w') as fw:
         YAML().dump(valid_manifest, fw)
@@ -119,13 +117,12 @@ def test_get_validated_manifest_unexpected_file(valid_manifest, tmp_path, caplog
     Path(tmp_path / 'CMakeCache.txt').touch()
 
     manager = ManifestManager(manifest_path, name='test', upload_mode=True)
-    with caplog.at_level(logging.WARNING, logger=LOGGING_NAMESPACE):
-        get_validated_manifest(manager, tmp_path)
-        assert len(caplog.records) == 1
-        assert (
-            'Unexpected files "CMakeCache.txt" found in the component directory "."'
-            in caplog.records[0].message
-        )
+    get_validated_manifest(manager, tmp_path)
+    assert len(recording_log.records) == 1
+    assert (
+        'Unexpected files "CMakeCache.txt" found in the component directory "."'
+        in recording_log.records[0].message
+    )
 
     Path(tmp_path / 'CMakeCache.txt').unlink()
 

@@ -1,6 +1,5 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import logging
 import os
 import typing as t
 from ssl import SSLEOFError
@@ -9,7 +8,6 @@ import pytest
 import requests_mock
 from requests import Response
 
-from idf_component_tools import LOGGING_NAMESPACE
 from idf_component_tools.__version__ import __version__
 from idf_component_tools.config import ProfileItem
 from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL
@@ -175,16 +173,16 @@ class TestAPIClient:
     @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
     @pytest.mark.network
     @pytest.mark.parametrize('version', ['=1.0.0', '1.0.0', '==1.0.0,==1.0.0'])
-    def test_only_yanked_version_warning(self, storage_url, version, caplog):
+    def test_only_yanked_version_warning(self, storage_url, version, recording_log):
         client = StorageClient(storage_url=storage_url)
 
-        with caplog.at_level(logging.WARNING, logger=LOGGING_NAMESPACE):
-            client.component(component_name='test_component_manager/stb_and_ynk', version=version)
-            assert len(caplog.records) == 1
-            assert (
-                'The following versions of the "test_component_manager/stb_and_ynk" component have been yanked:'
-                in caplog.text
-            )
+        client.component(component_name='test_component_manager/stb_and_ynk', version=version)
+        warnings = [r for r in recording_log.records if r.level == 'warning']
+        assert len(warnings) == 1
+        assert (
+            'The following versions of the "test_component_manager/stb_and_ynk" component have been yanked:'
+            in warnings[0].message
+        )
 
     @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_filter_yanked_version.yaml')
     @pytest.mark.network

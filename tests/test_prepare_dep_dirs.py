@@ -318,7 +318,7 @@ def test_dependencies_with_constraint_files_and_strings(tmp_path, monkeypatch):
 
 
 def test_dependencies_resolve_with_unreachable_registry_when_local_storage_has_component(
-    tmp_path, monkeypatch, caplog
+    tmp_path, monkeypatch, recording_log
 ):
     """
     If registry is unreachable but local storage contains required components,
@@ -395,7 +395,7 @@ def test_dependencies_resolve_with_unreachable_registry_when_local_storage_has_c
     # No unreachable-registry warning if resolution succeeded from local storage
     assert (
         'Cannot reach component registry at https://my-custom-registry.example.com'
-        not in caplog.text
+        not in recording_log.text
     )
 
 

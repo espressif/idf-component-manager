@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import json
 
@@ -51,7 +51,10 @@ def init_manifest():
 
     GIT_OPTIONS = [
         click.option(
-            '--git', default=None, help='Git URL of the component.', callback=validate_git_url
+            '--git',
+            default=None,
+            help='Git URL of the component.',
+            callback=validate_git_url,
         ),
         click.option(
             '--git-path', default='.', help='Path to the component in the Git repository.'
@@ -86,7 +89,10 @@ def init_manifest():
         + GIT_OPTIONS
         + [
             click.option(
-                '--registry-url', default=None, help='URL of the registry.', callback=validate_url
+                '--registry-url',
+                default=None,
+                help='URL of the registry.',
+                callback=validate_url,
             )
         ]
     )

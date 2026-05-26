@@ -1,6 +1,5 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import logging
 import os
 import shutil
 import tempfile
@@ -9,7 +8,6 @@ import warnings
 from pydantic import ValidationError
 from pytest import raises
 
-from idf_component_tools import LOGGING_NAMESPACE
 from idf_component_tools.manager import ManifestManager
 from idf_component_tools.manifest import SolvedComponent
 from idf_component_tools.sources import LocalSource
@@ -96,26 +94,24 @@ def test_local_relative_path_success(tmp_path):
     assert source._path.name == sub_component_path.name  # Path.name for Python <3.6 compatibility
 
 
-def test_local_path_name_warning(release_component_path, caplog):
+def test_local_path_name_warning(release_component_path, recording_log):
     warnings.simplefilter('always')
     source = LocalSource(path=release_component_path)
     component = SolvedComponent(name='not_cmp', version=ComponentVersion('*'), source=source)
 
-    with caplog.at_level(logging.WARNING, logger=LOGGING_NAMESPACE):
-        source.download(component, 'test')
-        assert len(caplog.records) == 1
-        assert 'Component name "not_cmp" doesn\'t match the directory name "cmp"' in str(
-            caplog.records[0].message
-        )
+    source.download(component, 'test')
+    assert len(recording_log.records) == 1
+    assert 'Component name "not_cmp" doesn\'t match the directory name "cmp"' in str(
+        recording_log.records[0].message
+    )
 
 
-def test_local_path_name_no_warning(release_component_path, caplog):
+def test_local_path_name_no_warning(release_component_path, recording_log):
     source = LocalSource(path=release_component_path)
-    with caplog.at_level(logging.WARNING, logger=LOGGING_NAMESPACE):
-        component = SolvedComponent(name='cmp', version=ComponentVersion('*'), source=source)
-        source.download(component, 'test')
+    component = SolvedComponent(name='cmp', version=ComponentVersion('*'), source=source)
+    source.download(component, 'test')
 
-        assert not caplog.records
+    assert not recording_log.records
 
 
 def test_local_source_hash_key_equivalence(tmp_path):

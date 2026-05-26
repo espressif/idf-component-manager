@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
-import logging
 import os
 import subprocess
 
@@ -220,7 +219,7 @@ def test_clean_tag_version(input_str, expected_output):
     assert clean_tag_version(input_str) == expected_output
 
 
-def test_successful_git_stderr_logged_as_debug(git_repository, caplog):
+def test_successful_git_stderr_logged_as_debug(git_repository, recording_log):
     """Git commands that succeed but write to stderr should log at DEBUG, not WARNING."""
     client = GitClient()
     git_repo = git_repository.strpath
@@ -240,12 +239,11 @@ def test_successful_git_stderr_logged_as_debug(git_repository, caplog):
     mock_process.returncode = 0
 
     with patch('subprocess.Popen', return_value=mock_process):
-        with caplog.at_level(logging.DEBUG, logger='idf_component_manager'):
-            result = client.run(['status'], cwd=git_repo)
+        result = client.run(['status'], cwd=git_repo)
 
     assert result == 'mock stdout\n'
-    # Verify stderr was NOT logged at WARNING level
-    warning_records = [r for r in caplog.records if r.levelno >= logging.WARNING]
+    # Verify stderr was NOT logged at warning/error level
+    warning_records = [r for r in recording_log.records if r.level in ('warning', 'error')]
     stderr_warnings = [r for r in warning_records if 'informational stderr message' in r.message]
     assert len(stderr_warnings) == 0, 'Git stderr on success should not be logged as WARNING'
 

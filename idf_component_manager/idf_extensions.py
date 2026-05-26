@@ -5,6 +5,8 @@ import sys
 import typing as t
 from pathlib import Path
 
+from esp_pylib.excepthook import install_exception_reporting
+
 from idf_component_manager.cli.validations import (
     validate_add_dependency,
     validate_existing_dir,
@@ -168,6 +170,7 @@ argument_env_mapping: t.List[t.Dict[str, t.Any]] = [
 
 def action_extensions(base_actions, project_path):  # noqa: ARG001
     setup_logging()
+    install_exception_reporting()
 
     def callback(subcommand_name, ctx, args, **kwargs):  # noqa: ARG001
         try:

@@ -4,6 +4,7 @@ import sys
 import typing as t
 
 import click
+from esp_pylib.excepthook import install_exception_reporting
 
 from idf_component_tools import error, setup_logging
 from idf_component_tools.__version__ import __version__ as idf_component_manager_version
@@ -35,6 +36,7 @@ def initialize_cli():
     )
     def cli(warnings_as_errors):
         setup_logging(warnings_as_errors)
+        install_exception_reporting()
 
     @cli.command()
     def version():
