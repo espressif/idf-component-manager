@@ -462,3 +462,21 @@ def test_project_requirements_ignores_empty_overrides_in_multiple_manifests(empt
     assert ProjectRequirements([manifest_a, manifest_b]).override_rules == {}
     # ... nor with a single real override declaration.
     assert ProjectRequirements([manifest_a, manifest_c]).override_rules != {}
+
+
+def test_sbom_round_trip_through_model_dump():
+    """``sbom:`` must survive ``model_dump`` so it ends up in the archive
+    written by ``compote component upload``."""
+    src = {
+        'name': 'cmp',
+        'version': '1.0.0',
+        'sbom': {'manifests': [{'path': 'sbom.yml', 'dest': 'cmp'}]},
+    }
+    dumped = Manifest.fromdict(src).model_dump()
+    assert dumped.get('sbom') == src['sbom']
+
+
+def test_sbom_omitted_when_unset():
+    """A manifest without ``sbom:`` must not have it appear in ``model_dump``."""
+    dumped = Manifest.fromdict({'name': 'cmp', 'version': '1.0.0'}).model_dump()
+    assert 'sbom' not in dumped

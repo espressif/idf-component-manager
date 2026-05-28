@@ -334,6 +334,24 @@ Example:
 
     The link has priority over the changelog file in the component.
 
+``sbom``
+========
+
+SBOM (Software Bill of Materials) information for the component, consumed by the `esp-idf-sbom <https://github.com/espressif/esp-idf-sbom>`_ tool.
+
+This field is optional.
+
+Example:
+
+.. code-block:: yaml
+
+    sbom:
+      cpe: cpe:2.3:a:espressif:led_strip:{}:*:*:*:*:*:*:*
+      supplier: 'Organization: Espressif Systems (Shanghai) CO LTD'
+      cve-exclude-list:
+        - cve: CVE-2023-1234
+          reason: Description why this package is not vulnerable
+
 .. _component-dependencies:
 
 ************************

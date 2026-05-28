@@ -487,6 +487,10 @@ class Manifest(BaseModel):
     overrides: t.List[OverrideDefinition] = []  # type: ignore
     files: FilesField = None  # type: ignore
     examples: t.List[t.Dict[str, t.Any]] = None  # type: ignore
+    # Declared so it survives ``model_dump`` and round-trips through
+    # ``compote component upload`` into the served archive; structural
+    # validation lives in the SBOM tooling that consumes it.
+    sbom: t.Dict[str, t.Any] = None  # type: ignore
     url: UrlField = None  # type: ignore
     repository: GIT_URL_FIELD = None  # type: ignore
     documentation: UrlField = None  # type: ignore
