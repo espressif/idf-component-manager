@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 from __future__ import annotations
 
@@ -87,25 +87,36 @@ class GitClient:
 
         return wrapper
 
+    def _run_in_bare_repo(self, bare_path: str, args: t.List[str]) -> str:
+        # Use an absolute path: with `--git-dir=`, git resolves a relative path
+        # against the process cwd rather than against itself.
+        return self.run([f'--git-dir={os.path.abspath(bare_path)}'] + args)
+
     def _update_bare_repo(self, *args, **kwargs):
         repo = kwargs.get('repo') or args[0]
         bare_path = kwargs.get('bare_path') or args[1]
+
         if not os.path.exists(bare_path):
             os.makedirs(bare_path)
 
         if not os.listdir(bare_path):
             self.run(['init', '--bare'], cwd=bare_path)
-            self.run(['remote', 'add', 'origin', '--tags', '--mirror=fetch', repo], cwd=bare_path)
+            self._run_in_bare_repo(
+                bare_path, ['remote', 'add', 'origin', '--tags', '--mirror=fetch', repo]
+            )
 
-        if self.run(['config', '--get', 'remote.origin.url'], cwd=bare_path) != repo:
-            self.run(['remote', 'set-url', 'origin', repo], cwd=bare_path)
+        origin_url = self._run_in_bare_repo(
+            bare_path, ['config', '--get', 'remote.origin.url']
+        ).strip()
+        if origin_url != repo:
+            self._run_in_bare_repo(bare_path, ['remote', 'set-url', 'origin', repo])
 
         fetch_file = os.path.join(bare_path, 'FETCH_HEAD')
         current_time = time.mktime(datetime.now().timetuple())
 
         # Don't fetch too often, at most once a minute
         if not os.path.isfile(fetch_file) or current_time - os.stat(fetch_file).st_mtime > 60:
-            self.run(['fetch', 'origin'], cwd=bare_path)
+            self._run_in_bare_repo(bare_path, ['fetch', 'origin'])
 
     def _bare_repo(func: t.Union[GitClient, t.Callable[..., t.Any]]) -> t.Callable:
         @wraps(func)  # type: ignore
@@ -236,21 +247,24 @@ class GitClient:
         if ref:
             # If branch is provided check that exists
             try:
-                self.run(['branch', '--contains', ref], cwd=bare_path)
+                self._run_in_bare_repo(bare_path, ['branch', '--contains', ref])
             except GitCommandError:
                 raise GitError(f'Git reference "{ref}" doesn\'t exist in the repository "{repo}"')
 
         else:
             # Set to latest commit from remote's HEAD
-            ref = self.run(['ls-remote', '--exit-code', 'origin', 'HEAD'], cwd=bare_path)[:40]
+            ref = self._run_in_bare_repo(bare_path, ['ls-remote', '--exit-code', 'origin', 'HEAD'])[
+                :40
+            ]
 
-        return self.run(['rev-parse', '--verify', ref], cwd=bare_path).strip()
+        return self._run_in_bare_repo(bare_path, ['rev-parse', '--verify', ref]).strip()
 
     @_git_cmd
     @_bare_repo
     def has_gitmodules_by_ref(self, bare_path: str, ref: str) -> bool:
         return (
-            '.gitmodules' in self.run(['ls-tree', '--name-only', ref], cwd=bare_path).splitlines()
+            '.gitmodules'
+            in self._run_in_bare_repo(bare_path, ['ls-tree', '--name-only', ref]).splitlines()
         )
 
     def run(self, args, cwd=None, env=None, use_predefined_options=False):
