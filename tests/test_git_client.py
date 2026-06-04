@@ -93,6 +93,57 @@ def test_bare_repository_with_safe_bare_repository_explicit(
     assert commit_id == git_repository_with_two_branches['default_head']
 
 
+def test_bare_repo_recovery_when_origin_remote_missing(
+    git_repository_with_two_branches, tmpdir_factory
+):
+    """Simulate a cache directory left over from a previous run that
+    initialized the bare repo but failed before adding the ``origin`` remote
+    (e.g. because of ``safe.bareRepository=explicit``). The next run must
+    recover by adding the missing remote, not crash with
+    ``git config --get remote.origin.url`` exit code 1.
+    """
+    git_repo = git_repository_with_two_branches['path']
+    bare_path = tmpdir_factory.mktemp('cache_folder').strpath
+
+    # Hand-create a bare repo with no `origin` remote configured.
+    subprocess.check_output(['git', 'init', '--bare', bare_path])
+
+    client = GitClient()
+    commit_id = client.prepare_ref(
+        repo=git_repo,
+        bare_path=bare_path,
+        checkout_path=tmpdir_factory.mktemp('checkout_folder').strpath,
+        with_submodules=True,
+    )
+
+    assert commit_id == git_repository_with_two_branches['default_head']
+
+
+def test_bare_repo_recovery_when_cache_dir_not_a_repo(
+    git_repository_with_two_branches, tmpdir_factory
+):
+    """If the cache directory contains junk (non-empty but not a bare repo),
+    it should be wiped and recreated rather than treated as a valid repo.
+    """
+    git_repo = git_repository_with_two_branches['path']
+    bare_path = tmpdir_factory.mktemp('cache_folder').strpath
+
+    # Drop a stray file so `os.listdir(bare_path)` is non-empty but the
+    # directory is not a bare repository.
+    with open(os.path.join(bare_path, 'leftover.txt'), 'w') as f:
+        f.write('garbage')
+
+    client = GitClient()
+    commit_id = client.prepare_ref(
+        repo=git_repo,
+        bare_path=bare_path,
+        checkout_path=tmpdir_factory.mktemp('checkout_folder').strpath,
+        with_submodules=True,
+    )
+
+    assert commit_id == git_repository_with_two_branches['default_head']
+
+
 def test_working_with_git_without_branch(git_repository_with_two_branches, tmpdir_factory):
     client = GitClient()
     git_repo = git_repository_with_two_branches['path']
