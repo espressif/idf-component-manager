@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2018 Sébastien Eustace
 # SPDX-License-Identifier: MIT License
-# SPDX-FileContributor: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2026 Espressif Systems (Shanghai) CO LTD
 
 import typing as t
 
@@ -39,7 +39,7 @@ class _Writer:
             buffer.extend(self._collect_facts(self._root.cause.conflict))
             buffer.extend(self._collect_facts(self._root.cause.other))
 
-            self._visit(self._root, {})
+            self._visit(self._root)
 
             # Take message from the last line added by _visit
             # This is the reason for the failure
@@ -109,7 +109,7 @@ class _Writer:
                     without_line = cause.conflict
                     line = other_line
 
-                self._visit(without_line, details_for_cause)
+                self._visit(without_line)
                 self._write(
                     incompatibility,
                     '{} {} ({}), {}.'.format(
@@ -124,18 +124,18 @@ class _Writer:
                 if single_line_other or single_line_conflict:
                     first = cause.conflict if single_line_other else cause.other
                     second = cause.other if single_line_other else cause.conflict
-                    self._visit(first, details_for_cause)
-                    self._visit(second, details_for_cause)
+                    self._visit(first)
+                    self._visit(second)
                     self._write(
                         incompatibility,
                         f'Thus, {incompatibility_string}.',
                         numbered=numbered,
                     )
                 else:
-                    self._visit(cause.conflict, {}, conclusion=True)
+                    self._visit(cause.conflict, conclusion=True)
                     self._lines.append(('', None))
 
-                    self._visit(cause.other, details_for_cause)
+                    self._visit(cause.other)
 
                     self._write(
                         incompatibility,
@@ -180,7 +180,7 @@ class _Writer:
 
                 details_for_cause = {}
 
-                self._visit(collapsed_derived, details_for_cause)
+                self._visit(collapsed_derived)
                 self._write(
                     incompatibility,
                     '{} {}, {}.'.format(
@@ -191,7 +191,7 @@ class _Writer:
                     numbered=numbered,
                 )
             else:
-                self._visit(derived, details_for_cause)
+                self._visit(derived)
                 self._write(
                     incompatibility,
                     f'{conjunction} {str(ext)}, {incompatibility_string}.',
