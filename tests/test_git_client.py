@@ -73,6 +73,26 @@ def test_bare_repository_in_cache(tmpdir_factory):
             assert 'bare = true' in config
 
 
+def test_bare_repository_with_safe_bare_repository_explicit(
+    git_repository_with_two_branches, tmpdir_factory, monkeypatch
+):
+    git_repo = git_repository_with_two_branches['path']
+
+    monkeypatch.setenv('GIT_CONFIG_COUNT', '1')
+    monkeypatch.setenv('GIT_CONFIG_KEY_0', 'safe.bareRepository')
+    monkeypatch.setenv('GIT_CONFIG_VALUE_0', 'explicit')
+
+    client = GitClient()
+    commit_id = client.prepare_ref(
+        repo=git_repo,
+        bare_path=tmpdir_factory.mktemp('cache_folder').strpath,
+        checkout_path=tmpdir_factory.mktemp('checkout_folder').strpath,
+        with_submodules=True,
+    )
+
+    assert commit_id == git_repository_with_two_branches['default_head']
+
+
 def test_working_with_git_without_branch(git_repository_with_two_branches, tmpdir_factory):
     client = GitClient()
     git_repo = git_repository_with_two_branches['path']
