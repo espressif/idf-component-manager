@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import re
+import shutil
 import subprocess  # noqa: S404
 import tempfile
 import time
@@ -92,12 +93,26 @@ class GitClient:
         # against the process cwd rather than against itself.
         return self.run([f'--git-dir={os.path.abspath(bare_path)}'] + args)
 
+    def _is_bare_repo(self, bare_path: str) -> bool:
+        """Return True if ``bare_path`` is a usable bare git repository."""
+        try:
+            return (
+                self._run_in_bare_repo(bare_path, ['rev-parse', '--is-bare-repository']).strip()
+                == 'true'
+            )
+        except GitCommandError:
+            return False
+
     def _update_bare_repo(self, *args, **kwargs):
         repo = kwargs.get('repo') or args[0]
         bare_path = kwargs.get('bare_path') or args[1]
 
-        if not os.path.exists(bare_path):
-            os.makedirs(bare_path)
+        # If the cache directory exists but is not a valid bare repo,
+        # wipe it so it can be recreated cleanly below.
+        if os.path.isdir(bare_path) and not self._is_bare_repo(bare_path):
+            shutil.rmtree(bare_path)
+
+        os.makedirs(bare_path, exist_ok=True)
 
         if not os.listdir(bare_path):
             self.run(['init', '--bare'], cwd=bare_path)
@@ -105,10 +120,25 @@ class GitClient:
                 bare_path, ['remote', 'add', 'origin', '--tags', '--mirror=fetch', repo]
             )
 
-        origin_url = self._run_in_bare_repo(
-            bare_path, ['config', '--get', 'remote.origin.url']
-        ).strip()
-        if origin_url != repo:
+        # `git config --get remote.origin.url` exits with code 1 when the key
+        # does not exist. This can happen if a previous run created the bare
+        # repo via `git init --bare` but failed before adding the `origin`
+        # remote (e.g. because of `safe.bareRepository=explicit` in the
+        # environment). In that case, recover by adding the remote.
+        origin_url = None
+        try:
+            origin_url = self._run_in_bare_repo(
+                bare_path, ['config', '--get', 'remote.origin.url']
+            ).strip()
+        except GitCommandError as e:
+            if e.exit_code != 1:  # Propagate other git errors
+                raise
+
+        if not origin_url:
+            self._run_in_bare_repo(
+                bare_path, ['remote', 'add', 'origin', '--tags', '--mirror=fetch', repo]
+            )
+        elif origin_url != repo:
             self._run_in_bare_repo(bare_path, ['remote', 'set-url', 'origin', repo])
 
         fetch_file = os.path.join(bare_path, 'FETCH_HEAD')
