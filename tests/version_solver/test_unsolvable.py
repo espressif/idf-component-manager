@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 from textwrap import dedent
 
@@ -116,3 +116,36 @@ def test_dependency_on_package_itself(source, check_solver_result):
         - project depends on foo (~=2.0)
     Result: Because project depends on foo (~=2.0), version solving failed."""
     check_solver_result(source, error=dedent(error), tries=1)
+
+
+def test_diamond_conflict_through_shared_dependency(source, check_solver_result):
+    source.root_dep(Package('a'), '*')
+    source.root_dep(Package('b'), '*')
+
+    source.add(Package('a'), '1.0.0', deps={Package('c'): '1.0.0', Package('d'): '1.0.0'})
+    source.add(Package('a'), '2.0.0', deps={Package('c'): '2.0.0', Package('d'): '2.0.0'})
+    source.add(Package('b'), '1.0.0', deps={Package('c'): '1.0.0', Package('d'): '2.0.0'})
+    source.add(Package('b'), '2.0.0', deps={Package('c'): '2.0.0', Package('d'): '1.0.0'})
+    source.add(Package('c'), '1.0.0', deps={Package('e'): '1.0.0'})
+    source.add(Package('c'), '2.0.0', deps={Package('e'): '2.0.0'})
+    source.add(Package('d'), '1.0.0', deps={Package('e'): '2.0.0'})
+    source.add(Package('d'), '2.0.0', deps={Package('e'): '1.0.0'})
+    source.add(Package('e'), '1.0.0')
+    source.add(Package('e'), '2.0.0')
+
+    check_solver_result(
+        source,
+        error=[
+            'Version solving failed:',
+            'a (1.0.0) depends on c (1.0.0)',
+            'a (1.0.0) depends on d (1.0.0)',
+            'a (2.0.0) depends on c (2.0.0)',
+            'a (2.0.0) depends on d (2.0.0)',
+            'b (1.0.0) depends on c (1.0.0)',
+            'b (1.0.0) depends on d (2.0.0)',
+            'b (2.0.0) depends on c (2.0.0)',
+            'b (2.0.0) depends on d (1.0.0)',
+            'Result: Because project depends on both a (*) and b (*), version solving failed.',
+        ],
+        tries=2,
+    )
