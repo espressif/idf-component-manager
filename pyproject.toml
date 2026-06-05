@@ -45,6 +45,7 @@ dependencies = [
     "pydantic",
     "pydantic-core",
     "pydantic-settings",
+    "pathvalidate",
     "typing-extensions; python_version < '3.12'",
     "truststore"
 ]

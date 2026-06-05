@@ -260,6 +260,7 @@ def test_pack_component_with_rules_if(
             'Some paths in the `examples` block in the manifest are listed multiple times: '
             './custom_example_path',
         ),
+        ([{'path': './custom_example_path/CON'}], 'Invalid example path'),
         ([{'path': './unknown_path'}], "Example directory doesn't exist:*"),
     ],
 )

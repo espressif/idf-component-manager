@@ -35,6 +35,7 @@ from idf_component_tools.errors import (
     VersionAlreadyExistsError,
 )
 from idf_component_tools.file_tools import (
+    check_examples_folder,
     copy_filtered_directory,
     prepare_empty_directory,
 )
@@ -78,7 +79,6 @@ from .core_utils import (
     ProgressBar,
     _create_manifest_if_missing,
     archive_filename,
-    check_examples_folder,
     dist_name,
     get_validated_manifest,
     load_project_description_file,
