@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import pytest
 
@@ -22,7 +22,12 @@ def check_solver_result():
             solution = solver.solve()
         except SolverFailure as e:
             if error:
-                assert str(e) == error
+                message = str(e)
+                if isinstance(error, list):
+                    for expected in error:
+                        assert expected in message, f'{expected!r} not found in error message'
+                else:
+                    assert message == error
 
                 if tries is not None:
                     assert solver.solution.attempted_solutions == tries
