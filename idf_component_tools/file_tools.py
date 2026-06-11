@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """Set of tools and constants to work with files and directories"""
 
@@ -8,6 +8,8 @@ import tempfile
 import typing as t
 from pathlib import Path
 from shutil import copytree, rmtree
+
+from pathvalidate import ValidationError, validate_filename
 
 from idf_component_tools.errors import FatalError
 from idf_component_tools.git_client import GitClient
@@ -221,6 +223,64 @@ def check_unexpected_component_files(path: t.Union[str, Path]) -> None:
                     files=', '.join(unexpected_files), path=os.path.relpath(root, start=str(path))
                 )
             )
+
+
+def validate_example_path_format(example_path: str) -> None:
+    path_parts = [part for part in Path(example_path).parts if part not in ('', '.')]
+    if not path_parts:
+        raise FatalError(
+            f'Invalid example path "{example_path}". '
+            'Please set a non-empty directory path in `examples.path`.'
+        )
+
+    for part in path_parts:
+        try:
+            validate_filename(part, platform='universal')
+        except ValidationError as e:
+            raise FatalError(
+                f'Invalid example path "{example_path}": {e}. '
+                'Please use a cross-platform compatible path.'
+            )
+
+
+def check_examples_folder(
+    examples_manifest: t.List[t.Dict[str, str]],
+    working_path: Path,
+) -> None:
+    examples_dir = working_path / 'examples'
+    example_directories = (
+        [
+            entry.name
+            for entry in examples_dir.iterdir()
+            if entry.is_dir() and not entry.name.startswith('.')
+        ]
+        if examples_dir.is_dir()
+        else []
+    )
+    example_folders = {'examples': example_directories}
+    error_paths = []
+    for example_info in examples_manifest:
+        example_path = example_info['path']
+        validate_example_path_format(example_path)
+
+        if not (working_path / example_path).is_dir():
+            error_paths.append(str(working_path / example_path))
+            continue
+
+        if example_path in example_folders.keys():
+            raise FatalError(
+                'Some paths in the `examples` block in the manifest are listed multiple times: {}. '
+                'Please make paths unique and delete duplicate paths'.format(example_path)
+            )
+
+        example_folders[example_path] = [Path(example_path).name]
+
+    if error_paths:
+        raise FatalError(
+            "Example directory doesn't exist: {}.\n"
+            'Please check the path of the custom example folder in `examples` field '
+            'in `idf_component.yml` file'.format(', '.join(error_paths))
+        )
 
 
 def directory_size(dir_path: str) -> int:

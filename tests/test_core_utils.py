@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 from pathlib import Path
 
@@ -15,6 +15,7 @@ from idf_component_manager.core_utils import (
 )
 from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.errors import FatalError
+from idf_component_tools.file_tools import check_examples_folder
 
 
 @pytest.mark.parametrize(
@@ -57,7 +58,6 @@ def test_parse_example_spec_version_error(example, spec):
         'namespace/test/component:example',
         '/namespace/component:example',
         't@st/component:example',
-        'test:component:example',
         'test/component/example',
     ],
 )
@@ -68,6 +68,45 @@ def test_create_example_name_error(example):
         'Please use format like: namespace/component=1.0.0:example_name',
     ):
         parse_example(example, 'test')
+
+
+def test_parse_example_rejects_colon_in_example_path():
+    with raises(FatalError, match='Invalid example path'):
+        parse_example('test:component:example', 'test')
+
+
+def test_parse_example_allows_symbols_and_spaces_in_non_final_segments():
+    assert parse_example('test/cmp:tx&st42$ main/example', 'test2') == (
+        'test/cmp',
+        '*',
+        'tx&st42$ main/example',
+    )
+
+
+def test_parse_example_allows_project_name_with_spaces():
+    assert parse_example('test/cmp:tx&st42$ main/example name', 'test2') == (
+        'test/cmp',
+        '*',
+        'tx&st42$ main/example name',
+    )
+
+
+def test_parse_example_rejects_reserved_last_path_segment():
+    with raises(FatalError, match='Invalid example path'):
+        parse_example('test/cmp:tx&st42$ main/CON', 'test2')
+
+
+def test_check_examples_folder_rejects_reserved_manifest_path_segment(tmp_path):
+    (tmp_path / 'CON').mkdir()
+
+    with pytest.raises(FatalError, match='Invalid example path'):
+        check_examples_folder([{'path': './CON'}], tmp_path)
+
+
+def test_check_examples_folder_allows_space_in_project_name(tmp_path):
+    (tmp_path / 'folder with space').mkdir()
+
+    check_examples_folder([{'path': './folder with space'}], tmp_path)
 
 
 @pytest.mark.parametrize(
