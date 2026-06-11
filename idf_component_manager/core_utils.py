@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import json
 import re
@@ -7,7 +7,6 @@ import typing as t
 from pathlib import Path
 
 from ruamel.yaml import YAML
-from tqdm import tqdm
 
 from idf_component_tools import notice
 from idf_component_tools.constants import DEFAULT_NAMESPACE, MANIFEST_FILENAME
@@ -32,13 +31,6 @@ CREATE_PROJECT_FROM_EXAMPLE_NAME_REGEX = (
 COMPONENT_FULL_NAME_WITH_SPEC_REGEX = (
     r'^((?P<namespace>{slug})\/)?(?P<component>{slug})(?P<version>[<=>!^~\*].+)?'
 ).format(slug=SLUG_BODY_REGEX)
-
-
-class ProgressBar(tqdm):
-    """Wrapper for tqdm for updating progress bar status"""
-
-    def update_to(self, count: t.Union[int, float]) -> t.Optional[bool]:
-        return self.update(count - self.n)
 
 
 def dist_name(name: str, version: str) -> str:

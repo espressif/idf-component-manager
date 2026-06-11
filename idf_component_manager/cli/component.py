@@ -1,7 +1,7 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
-import click
+import rich_click as click
 
 from idf_component_manager.cli.validations import (
     validate_git_url,
@@ -34,12 +34,16 @@ def init_component():
         """
         pass
 
+    COMPONENT_VERSION_HELP = (
+        'Set the version if it is not defined in the manifest. '
+        'Use "git" to get the version from the Git tag. '
+        '(The command will fail if not running from a Git tag.)'
+    )
+
     COMPONENT_VERSION_OPTION = [
         click.option(
             '--version',
-            help='Set the version if it is not defined in the manifest. '
-            'Use "git" to get the version from the Git tag. '
-            '(The command will fail if not running from a Git tag.)',
+            help=COMPONENT_VERSION_HELP,
         )
     ]
 
@@ -79,7 +83,7 @@ def init_component():
         repository,
         commit_sha,
         repository_path,
-    ):  # noqa: namespace is not used
+    ):  # namespace is not used
         """
         Create a component archive and store it in the dist directory.
         """
@@ -94,11 +98,11 @@ def init_component():
 
     @component.command()
     @add_options(
-        PROJECT_OPTIONS
-        + NAMESPACE_NAME_OPTIONS
-        + COMPONENT_VERSION_OPTION
-        + DEST_DIR_OPTION
-        + COMMIT_SHA_REPO_OPTION
+        PROJECT_OPTIONS + NAMESPACE_NAME_OPTIONS + DEST_DIR_OPTION + COMMIT_SHA_REPO_OPTION
+    )
+    @click.option(
+        '--version',
+        help=COMPONENT_VERSION_HELP,
     )
     @click.option(
         '--archive',

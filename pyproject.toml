@@ -33,14 +33,14 @@ classifiers = [
 ]
 dependencies = [
     "psutil",
-    "click",
-    "colorama",
+    "rich",
+    "rich-click",
+    "esp-pylib",
     "pyparsing",
     "ruamel.yaml",
     "requests",
     "requests-file",
     "requests-toolbelt",
-    "tqdm",
     "jsonref",
     "pydantic",
     "pydantic-core",
@@ -125,7 +125,6 @@ pep621_dev_dependency_groups = ["test", "docs", "dev", "all"]
 
 [tool.deptry.per_rule_ignores]
 DEP001 = ["idf_py_actions"]
-DEP002 = ["colorama"]
 
 [tool.deptry.package_module_name_map]
 "ruamel.yaml" = ["ruamel"]

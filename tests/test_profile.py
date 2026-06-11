@@ -293,7 +293,7 @@ class TestMultiStorageClient:
         assert len(third_iteration) == 3
         assert third_iteration == [c.storage_url for c in first_iteration]
 
-    def test_registry_unreachable_falls_back(self, caplog):
+    def test_registry_unreachable_falls_back(self, recording_log):
         """When a non-default registry is unreachable and fallback storages are available,
         local/profile storage clients are returned."""
         custom_registry = 'https://my-custom-registry.example.com'
@@ -306,7 +306,7 @@ class TestMultiStorageClient:
 
         assert client.registry_storage_url is None
 
-        assert f'Cannot reach component registry at {custom_registry}' not in caplog.text
+        assert f'Cannot reach component registry at {custom_registry}' not in recording_log.text
 
         # Local and profile storage clients should still be available
         storage_clients = list(client.storage_clients)

@@ -5,7 +5,7 @@ import os
 import subprocess  # noqa: S404
 import typing as t
 
-import click
+import rich_click as click
 
 CLI_NAME = 'compote'
 

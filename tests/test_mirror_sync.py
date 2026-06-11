@@ -3,6 +3,7 @@
 import json
 import os
 import textwrap
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -87,6 +88,20 @@ def test_prepare_component_all_versions(mock_storage):  # noqa: ARG001
 
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_download_metadata.yaml')
 @pytest.mark.network
+def test_prepare_component_versions_updates_counter(mock_storage):  # noqa: ARG001
+    client = MultiStorageClient(storage_urls=[os.environ['IDF_COMPONENT_STORAGE_URL']])
+    reqs = [ComponentRequirement(name='test_component_manager/cmp', version='*')]
+    counter = MagicMock()
+    mirror = prepare_component_versions(client, reqs, counter=counter)
+
+    # The live counter is advanced exactly once per unique collected version,
+    # so the total advance matches the number of versions in the mirror.
+    total_versions = sum(len(versions) for versions in mirror.data.values())
+    assert counter.update.call_count == total_versions
+
+
+@use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_download_metadata.yaml')
+@pytest.mark.network
 def test_prepare_component_versions_with_dependency1(mock_storage):  # noqa: ARG001
     client = MultiStorageClient(storage_urls=[os.environ['IDF_COMPONENT_STORAGE_URL']])
     reqs = [ComponentRequirement(name='test_component_manager/cmp', version='==1.0.1')]
@@ -125,7 +140,8 @@ def test_prepare_component_versions_with_multi_dependencies(mock_storage):  # no
 
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_download_metadata_unknown_component.yaml')
 @pytest.mark.network
-def test_prepare_component_versions_with_unknown_component(caplog, mock_storage):  # noqa: ARG001
+@pytest.mark.usefixtures('mock_storage')
+def test_prepare_component_versions_with_unknown_component(recording_log):
     client = MultiStorageClient(storage_urls=[os.environ['IDF_COMPONENT_STORAGE_URL']])
     reqs = [ComponentRequirement(name='unknown/component', version='*')]
     mirror = prepare_component_versions(client, reqs)
@@ -134,10 +150,10 @@ def test_prepare_component_versions_with_unknown_component(caplog, mock_storage)
     assert (
         'Component "unknown/component" with selected version "*" was not found '
         'in selected storages. Skipping...'
-    ) in caplog.text
+    ) in recording_log.text
 
 
-def test_load_partial_mirror_success(tmp_path, caplog):
+def test_load_partial_mirror_success(tmp_path, recording_log):
     path = tmp_path / 'components' / 'example'
     path.mkdir(parents=True)
 
@@ -147,10 +163,10 @@ def test_load_partial_mirror_success(tmp_path, caplog):
     mirror = load_local_mirror(tmp_path)
 
     assert mirror.data == {}
-    assert f'Ignoring invalid metadata file: {str(path / "cmp.json")}' not in caplog.text
+    assert f'Ignoring invalid metadata file: {str(path / "cmp.json")}' not in recording_log.text
 
 
-def test_load_invalid_partial_mirror_file(tmp_path, caplog):
+def test_load_invalid_partial_mirror_file(tmp_path, recording_log):
     path = tmp_path / 'components' / 'example'
     path.mkdir(parents=True)
 
@@ -159,7 +175,7 @@ def test_load_invalid_partial_mirror_file(tmp_path, caplog):
 
     mirror = load_local_mirror(tmp_path)
     assert mirror.data == {}
-    assert f'Ignoring invalid metadata file: {str(path / "cmp.json")}' in caplog.text
+    assert f'Ignoring invalid metadata file: {str(path / "cmp.json")}' in recording_log.text
 
 
 # 3.3.8 yanked
@@ -272,7 +288,8 @@ def test_collect_component_versions_merges_multiple_specs(tmp_path):
 # 1.0.0 yanked
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_sync_example_cmp_only_prerelease.yaml')
 @pytest.mark.network
-def test_registry_sync_latest_but_only_got_prerelease(tmp_path, mock_registry, caplog):  # noqa: ARG001
+@pytest.mark.usefixtures('mock_registry')
+def test_registry_sync_latest_but_only_got_prerelease(tmp_path, recording_log):
     manager = ComponentManager(path=str(tmp_path))
     manager.sync_registry(
         'default',
@@ -285,7 +302,7 @@ def test_registry_sync_latest_but_only_got_prerelease(tmp_path, mock_registry, c
 
     assert len(data['versions']) == 1
     assert sorted([v['version'] for v in data['versions']]) == ['2.0.0-alpha1']
-    assert 'No stable versions found. Using pre-release versions.' in caplog.text
+    assert 'No stable versions found. Using pre-release versions.' in recording_log.text
 
 
 # this yaml includes
@@ -342,7 +359,8 @@ def test_registry_sync_latest_but_latest_is_prerelease(tmp_path, mock_registry):
 # 1.0.0 yanked
 @use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_sync_example_cmp_only_yanked.yaml')
 @pytest.mark.network
-def test_registry_sync_but_only_got_yanked(tmp_path, caplog, mock_registry):  # noqa: ARG001
+@pytest.mark.usefixtures('mock_registry')
+def test_registry_sync_but_only_got_yanked(tmp_path, recording_log):
     manager = ComponentManager(path=str(tmp_path))
     manager.sync_registry(
         'default',
@@ -355,5 +373,5 @@ def test_registry_sync_but_only_got_yanked(tmp_path, caplog, mock_registry):  # 
     assert sorted([v['version'] for v in data['versions']]) == ['1.0.0']
     assert (
         'The following versions of the "test_component_manager/ynk" component have been yanked:\n- 1.0.0'
-        in caplog.text
+        in recording_log.text
     )

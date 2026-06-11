@@ -1,6 +1,5 @@
 # SPDX-FileCopyrightText: 2023-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
-import logging
 import os
 import re
 import warnings as w
@@ -8,7 +7,6 @@ import warnings as w
 import pytest
 
 from idf_component_manager.dependencies import detect_unused_components
-from idf_component_tools import LOGGING_NAMESPACE
 from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.debugger import KCONFIG_CONTEXT
 from idf_component_tools.manager import ManifestManager, UploadMode
@@ -20,7 +18,7 @@ from idf_component_tools.utils import ComponentVersion, validation_context
 
 
 class TestManifestValidator:
-    def test_validate_unknown_root_key(self, valid_manifest, caplog):
+    def test_validate_unknown_root_key(self, valid_manifest, recording_log):
         # unknown root keys
         valid_manifest['unknown'] = 'test'
         valid_manifest['test'] = 3.1415926
@@ -29,16 +27,15 @@ class TestManifestValidator:
         valid_manifest['repository_info'] = {}
         valid_manifest['repository_info']['foo'] = 'bar'
 
-        with caplog.at_level(logging.DEBUG, logger=LOGGING_NAMESPACE):
-            errors = Manifest.validate_manifest(valid_manifest)
-            assert not errors
+        errors = Manifest.validate_manifest(valid_manifest)
+        assert not errors
 
-            assert len(caplog.records) == 3
-            assert set([rec.message for rec in caplog.records]) == {
-                'Dropping unknown key: foo=bar',
-                'Dropping unknown key: unknown=test',
-                'Dropping unknown key: test=3.1415926',
-            }
+        assert len(recording_log.records) == 3
+        assert set([rec.message for rec in recording_log.records]) == {
+            'Dropping unknown key: foo=bar',
+            'Dropping unknown key: unknown=test',
+            'Dropping unknown key: test=3.1415926',
+        }
 
     def test_validate_unknown_root_values(self, valid_manifest):
         valid_manifest['version'] = '1!.3.3'
@@ -239,7 +236,7 @@ class TestManifestValidator:
 
         assert not os.listdir(tmp_managed_components)
 
-    def test_unused_files_message(self, tmp_path, caplog):
+    def test_unused_files_message(self, tmp_path, recording_log):
         managed_components_path = tmp_path / 'managed_components'
         managed_components_path.mkdir()
 
@@ -248,14 +245,15 @@ class TestManifestValidator:
 
         project_requirements = []
 
-        with caplog.at_level(logging.WARNING, logger=LOGGING_NAMESPACE):
-            detect_unused_components(project_requirements, str(managed_components_path))
-            assert len(caplog.records) == 1
-            assert 'Content of the managed components directory is managed automatically' in str(
-                caplog.records[0].message
-            )
+        detect_unused_components(project_requirements, str(managed_components_path))
+        assert len(recording_log.records) == 1
+        assert 'Content of the managed components directory is managed automatically' in str(
+            recording_log.records[0].message
+        )
 
-    def test_root_managed_components_metadata_not_flagged(self, tmp_path, caplog, monkeypatch):
+    def test_root_managed_components_metadata_not_flagged(
+        self, tmp_path, recording_log, monkeypatch
+    ):
         managed_components_path = tmp_path / 'root_managed_components'
         managed_components_path.mkdir()
 
@@ -270,15 +268,14 @@ class TestManifestValidator:
 
         monkeypatch.setattr(deps, 'root_managed_components_dir', lambda: managed_components_path)
 
-        with caplog.at_level(logging.WARNING, logger=LOGGING_NAMESPACE):
-            detect_unused_components([], str(managed_components_path))
-            assert len(caplog.records) == 1
-            msg = str(caplog.records[0].message)
-            assert 'unexpected_file' in msg
-            assert MANIFEST_FILENAME not in msg
-            assert 'dependencies.lock' not in msg
+        detect_unused_components([], str(managed_components_path))
+        assert len(recording_log.records) == 1
+        msg = str(recording_log.records[0].message)
+        assert 'unexpected_file' in msg
+        assert MANIFEST_FILENAME not in msg
+        assert 'dependencies.lock' not in msg
 
-    def test_env_ignore_unknown_files_empty(self, monkeypatch, tmp_path, caplog):
+    def test_env_ignore_unknown_files_empty(self, monkeypatch, tmp_path, recording_log):
         monkeypatch.setenv('IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS', '')
         managed_components_path = tmp_path / 'managed_components'
         managed_components_path.mkdir()
@@ -286,13 +283,12 @@ class TestManifestValidator:
         unused_file = managed_components_path / 'unused_file'
         unused_file.write_text('test')
 
-        with caplog.at_level(logging.WARNING, logger=LOGGING_NAMESPACE):
-            detect_unused_components([], str(managed_components_path))
-            assert len(caplog.records) == 1
-            assert (
-                'Content of the managed components directory is managed automatically'
-                in caplog.records[0].message
-            )
+        detect_unused_components([], str(managed_components_path))
+        assert len(recording_log.records) == 1
+        assert (
+            'Content of the managed components directory is managed automatically'
+            in recording_log.records[0].message
+        )
 
     @pytest.mark.parametrize(
         'if_clause, bool_value',

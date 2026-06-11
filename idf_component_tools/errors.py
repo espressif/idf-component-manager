@@ -5,8 +5,10 @@
 import typing as t
 from dataclasses import dataclass
 
+from esp_pylib.errors import FatalError as _PylibFatalError
 
-class FatalError(RuntimeError):
+
+class FatalError(_PylibFatalError):
     """Generic unrecoverable runtime error"""
 
     exit_code = 2

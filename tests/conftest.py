@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import shutil
@@ -10,15 +10,94 @@ from uuid import uuid4
 
 import pytest
 import requests_mock
+from esp_pylib.logger import EspLog, EspLogBase
 from ruamel.yaml import YAML
 
 from idf_component_manager.core import ComponentManager
-from idf_component_tools import HINT_LEVEL, ComponentManagerSettings, get_logger
+from idf_component_tools import ComponentManagerSettings
 from idf_component_tools.config import config_file
 from idf_component_tools.hash_tools.constants import HASH_FILENAME
 from idf_component_tools.registry.api_client import APIClient
 from idf_component_tools.registry.api_models import TaskStatus
 from idf_component_tools.registry.client_errors import ComponentNotFound, VersionNotFound
+
+
+class _LogRecord:
+    """Tiny record class shaped to mimic the parts of stdlib LogRecord we use in tests."""
+
+    __slots__ = ('level', 'message', 'levelname')
+
+    def __init__(self, level: str, message: str) -> None:
+        self.level = level
+        self.message = message
+        self.levelname = level.upper()
+
+
+class RecordingLog(EspLogBase):
+    """Captures every log call instead of writing to stdout/stderr.
+
+    Installed via ``EspLog.set_logger(...)`` from the autouse ``recording_log``
+    fixture so tests can assert against the recorded messages without depending
+    on pytest's ``caplog`` (which only sees stdlib ``logging`` records).
+    """
+
+    def __init__(self) -> None:
+        self.records: t.List[_LogRecord] = []
+        # ``suppress_logging`` reads/writes ``_verbosity``; expose it so tests
+        # that exercise that code path don't trip on a missing attribute.
+        self._verbosity: int = 1  # Verbosity.NORMAL
+
+    @property
+    def text(self) -> str:
+        return '\n'.join(r.message for r in self.records)
+
+    def clear(self) -> None:
+        self.records.clear()
+
+    def print(self, *args, **kwargs) -> None:
+        self.records.append(_LogRecord('info', ' '.join(str(a) for a in args)))
+
+    def err(self, message: str, suggestion: t.Optional[str] = None) -> None:  # noqa: ARG002
+        self.records.append(_LogRecord('error', message))
+
+    def warn(self, message: str, suggestion: t.Optional[str] = None) -> None:  # noqa: ARG002
+        self.records.append(_LogRecord('warning', message))
+
+    def note(self, message: str) -> None:
+        self.records.append(_LogRecord('notice', message))
+
+    def hint(self, message: str) -> None:
+        self.records.append(_LogRecord('hint', message))
+
+    def debug(self, message: str) -> None:
+        self.records.append(_LogRecord('debug', message))
+
+    def set_verbosity(self, mode) -> None:
+        self._verbosity = int(mode)
+
+    def progress_bar(self, *args, **kwargs) -> None:
+        pass
+
+
+@pytest.fixture(scope='session', autouse=True)
+def fixed_console_width():
+    """Pin the virtual terminal width so Rich never soft-wraps test output.
+
+    Under ``capsys`` stdout is not a TTY, so Rich falls back to 80 columns and
+    wraps long lines (e.g. absolute ``tmp_path`` file paths), splitting tokens
+    across line boundaries and breaking substring assertions. Setting
+    ``COLUMNS`` makes the width deterministic for the whole session, the same
+    approach esptool uses in its ``conftest.py``.
+    """
+    previous = os.environ.get('COLUMNS')
+    os.environ['COLUMNS'] = '200'
+    try:
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop('COLUMNS', None)
+        else:
+            os.environ['COLUMNS'] = previous
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -52,13 +131,14 @@ def file_with_size():
 
 
 @pytest.fixture(autouse=True)
-def reset_logger():
-    yield
-
-    logger = get_logger()
-    logger.setLevel(HINT_LEVEL)
-    logger.handlers.clear()
-    logger.propagate = True
+def recording_log():
+    """Replace the esp-pylib logger with a recording capture for the test duration."""
+    rec = RecordingLog()
+    EspLog.set_logger(rec)
+    try:
+        yield rec
+    finally:
+        EspLog._reset()
 
 
 @pytest.fixture(autouse=True)

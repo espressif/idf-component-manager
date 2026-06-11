@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import json
 import os
@@ -280,6 +280,42 @@ def test_add_git_dependency_invalid():
             ],
         ).exception
         assert 'Git reference "trest" does not exist' in str(output)
+
+
+def test_add_dependency_git_and_registry_url_not_mutually_exclusive(mocker):
+    """--git and --registry-url can be supplied together.
+
+    Both options are accepted at parse time and forwarded to
+    ``add_dependency``; the downstream logic (``if git:`` wins) decides which
+    one takes effect.
+    """
+    mock_add = mocker.patch('idf_component_manager.core.ComponentManager.add_dependency')
+    runner = CliRunner()
+    with runner.isolated_filesystem() as tempdir:
+        main_path = Path(tempdir) / 'main'
+        main_path.mkdir(parents=True, exist_ok=True)
+        ComponentManager(path=tempdir).create_manifest()
+
+        result = runner.invoke(
+            initialize_cli(),
+            [
+                'manifest',
+                'add-dependency',
+                'test_component_manager/cmp',
+                '--git',
+                'https://github.com/espressif/example_components.git',
+                '--registry-url',
+                'https://components.espressif.com',
+            ],
+        )
+
+    assert result.exit_code == 0, result.output
+    assert 'mutually exclusive' not in result.output
+    mock_add.assert_called_once()
+    _args, kwargs = mock_add.call_args
+    assert kwargs.get('git') == 'https://github.com/espressif/example_components.git'
+    # validate_url normalises URLs by appending a trailing slash; use startswith.
+    assert str(kwargs.get('registry_url', '')).startswith('https://components.espressif.com')
 
 
 def test_manifest_keeps_comments():

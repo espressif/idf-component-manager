@@ -17,6 +17,30 @@ from .integration_test_helpers import create_component, generate_from_template
 from .integration_test_helpers import idf_version as system_idf_version
 
 
+@pytest.fixture(scope='session', autouse=True)
+def fixed_console_width():
+    """Pin the virtual terminal width so Rich never soft-wraps subprocess output.
+
+    Integration tests capture ``idf.py`` output over a pipe, so neither ``idf.py``
+    (rich-click error panels), the component manager (Rich ``notice``/``error``
+    messages), nor the ``cmake`` subprocess it spawns sees a TTY. They all fall
+    back to 80 columns and wrap long lines (absolute ``tmp_path`` paths, CMake
+    ``FATAL_ERROR`` text), splitting tokens across line boundaries and breaking
+    substring assertions. ``COLUMNS`` is inherited by the ``idf.py``/``cmake``
+    subprocesses, so setting it here makes the width deterministic for all of
+    them. Mirrors the ``fixed_console_width`` fixture in ``tests/conftest.py``.
+    """
+    previous = os.environ.get('COLUMNS')
+    os.environ['COLUMNS'] = '200'
+    try:
+        yield
+    finally:
+        if previous is None:
+            os.environ.pop('COLUMNS', None)
+        else:
+            os.environ['COLUMNS'] = previous
+
+
 @pytest.fixture  # fake fixture since can't specify `indirect` for only one fixture
 def result(request):
     return getattr(request, 'param')

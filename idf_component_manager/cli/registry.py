@@ -4,8 +4,8 @@ import typing as t
 import webbrowser
 from urllib.parse import urljoin
 
-import click
 import requests
+import rich_click as click
 
 from idf_component_manager.cli.validations import (
     combined_callback,

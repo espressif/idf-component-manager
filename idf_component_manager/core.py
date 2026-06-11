@@ -17,6 +17,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import requests
+from esp_pylib.logger import log
 from requests_toolbelt import MultipartEncoderMonitor
 from ruamel.yaml import YAML, CommentedMap
 
@@ -75,7 +76,6 @@ from .cmake_component_requirements import (
     handle_project_requirements,
 )
 from .core_utils import (
-    ProgressBar,
     _create_manifest_if_missing,
     archive_filename,
     check_examples_folder,
@@ -595,8 +595,8 @@ class ComponentManager:
         notice(f'{info_message} archive {archive}')
 
         file_stat = os.stat(archive)  # type: ignore
-        with ProgressBar(
-            total=file_stat.st_size, unit='B', unit_scale=True, leave=False
+        with log.progress(
+            total=file_stat.st_size, description='Uploading', unit='B'
         ) as progress_bar:
             memo = {'progress': 0}
 
@@ -616,8 +616,6 @@ class ComponentManager:
                     callback=callback,
                 )
 
-            progress_bar.close()
-
         # Wait for processing
         profile_text = (
             ''
@@ -634,7 +632,8 @@ class ComponentManager:
 
         try:
             warnings = set()
-            with ProgressBar(total=MAX_PROGRESS, unit='%', leave=False) as progress_bar:
+            memo = {'progress': 0}
+            with log.progress(total=MAX_PROGRESS, description='Processing') as progress_bar:
                 while True:
                     if datetime.now() > timeout_at:
                         raise TimeoutError()
@@ -645,7 +644,6 @@ class ComponentManager:
                             warnings.add(warning)
 
                     if status.status == 'failure' or status.status == 'success':
-                        progress_bar.close()
                         for warning in warnings:
                             warn(warning)
 
@@ -664,8 +662,9 @@ class ComponentManager:
                         notice(status.message)
                         return
 
-                    progress_bar.set_description(status.message)
-                    progress_bar.update_to(status.progress)
+                    advance = status.progress - memo['progress']
+                    progress_bar.update(advance, description=status.message)
+                    memo['progress'] = status.progress
 
                     time.sleep(CHECK_INTERVAL)
         except TimeoutError:

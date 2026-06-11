@@ -8,12 +8,10 @@ from copy import deepcopy
 from dataclasses import dataclass
 from pathlib import Path
 
-from tqdm import tqdm
-from tqdm.contrib.logging import logging_redirect_tqdm
+from esp_pylib.logger import CounterTask, ProgressTask, log
 
 from idf_component_manager.core_utils import parse_component_name_spec
 from idf_component_manager.utils import VersionSolverResolution
-from idf_component_tools import get_logger
 from idf_component_tools.build_system_tools import is_component
 from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.errors import SyncError
@@ -27,8 +25,6 @@ from idf_component_tools.registry.request_processor import join_url
 from idf_component_tools.registry.storage_client import StorageClient
 from idf_component_tools.semver import Version
 from idf_component_tools.sources.web_service import download_archive, download_file
-
-LOGGER = get_logger()
 
 
 @dataclass
@@ -70,7 +66,7 @@ def download_versions_from_storage(
     component_name: str,
     versions: t.Set[DownloadComponentVersion],
     output_dir: Path,
-    progress_bar: t.Optional[tqdm] = None,
+    progress_bar: t.Optional[ProgressTask] = None,
 ) -> None:
     component_json = StorageClient(storage_url).get_component_json(
         component_name=component_name
@@ -89,8 +85,7 @@ def download_versions_from_storage(
             continue
 
         if progress_bar is not None:
-            progress_bar.set_description(f'Downloading {component_name}({version.version})')
-            progress_bar.update(1)
+            progress_bar.update(1, description=f'Downloading {component_name}({version.version})')
 
         download_url = join_url(storage_url, component_json_version_urls[version.version]['url'])
         checksums_url = join_url(
@@ -135,32 +130,30 @@ def download_components_archives(
 ) -> int:
     diff = new_partial_mirror.diff(old_partial_mirror)
     total_downloads = sum(len(versions) for versions in diff.data.values())
-    progress_bar = tqdm(total=total_downloads)
 
-    for component_name, component_versions in diff.data.items():
-        # group by storage_url
-        component_versions_by_storage: t.Dict[str, t.Set[DownloadComponentVersion]] = defaultdict(
-            set
-        )
-        for v in component_versions:
-            if not v.storage_url:
-                warn(
-                    f'No storage url for component {component_name} version {v.version}. Skipping download...'
-                )
-                continue
-            component_versions_by_storage[v.storage_url].add(v)
+    with log.progress(total=total_downloads, description='Downloading components') as bar:
+        for component_name, component_versions in diff.data.items():
+            # group by storage_url
+            component_versions_by_storage: t.Dict[str, t.Set[DownloadComponentVersion]] = (
+                defaultdict(set)
+            )
+            for v in component_versions:
+                if not v.storage_url:
+                    warn(
+                        f'No storage url for component {component_name} version {v.version}. Skipping download...'
+                    )
+                    continue
+                component_versions_by_storage[v.storage_url].add(v)
 
-        for storage_url, versions in component_versions_by_storage.items():
-            with logging_redirect_tqdm(loggers=[LOGGER]):
+            for storage_url, versions in component_versions_by_storage.items():
                 download_versions_from_storage(
                     storage_url,
                     component_name,
                     versions,
                     output_dir,
-                    progress_bar=progress_bar,
+                    progress_bar=bar,
                 )
 
-    progress_bar.close()
     return total_downloads
 
 
@@ -169,7 +162,7 @@ def prepare_component_versions(
     requirements: t.List[ComponentRequirement],
     *,
     # not required
-    progress_bar: t.Optional[tqdm] = None,
+    counter: t.Optional[CounterTask] = None,
     resolution: VersionSolverResolution = VersionSolverResolution.ALL,
     # caches
     solved_requirements_cache: t.Set[ComponentRequirement] = None,  # type: ignore
@@ -207,18 +200,20 @@ def prepare_component_versions(
                 return _partial_mirror
 
             for version in component_with_versions.versions:
+                parsed_version = Version(version.version)
                 _partial_mirror.update(
                     req.name,
                     DownloadComponentVersion(
-                        version=Version(version.version),
+                        version=parsed_version,
                         storage_url=storage_url,
                     ),
                 )
 
-                if progress_bar is not None:
-                    if version.version.semver not in recorded_versions_cache.get(req.name, set()):
-                        recorded_versions_cache[req.name].add(version.version.semver)
-                        progress_bar.update(1)
+                # Count each unique component version only once so the live
+                # counter matches the final number of collected versions.
+                if counter is not None and parsed_version not in recorded_versions_cache[req.name]:
+                    recorded_versions_cache[req.name].add(parsed_version)
+                    counter.update(1)
 
                 _partial_mirror.merge(
                     _prepare_component_versions(
@@ -264,60 +259,58 @@ def collect_component_versions(
     resolution: VersionSolverResolution = VersionSolverResolution.ALL,
 ) -> PartialMirror:
     path = Path(path)
-    progress_bar = tqdm(
-        desc='Collecting required components',
-        bar_format='{desc}: {n_fmt}',
-    )
     solved_requirements_cache: t.Set[ComponentRequirement] = set()
     recorded_versions_cache: t.Dict[str, t.Set[Version]] = defaultdict(set)
 
-    if component_specs:
-        dependencies = []
-        res = PartialMirror()
-        for component_requirements in component_specs:
-            namespace, component, spec = parse_component_name_spec(
-                component_requirements, client.default_namespace
-            )
-            dependencies.append(
-                # only service source supported
-                ComponentRequirement(
-                    name=f'{namespace}/{component}',
-                    version=spec,
+    # Live counter gives feedback during long solves; it overwrites itself in
+    # place on a terminal and finalises to the total when the block exits.
+    with log.counter('Collecting required components') as counter:
+        if component_specs:
+            dependencies = []
+            res = PartialMirror()
+            for component_requirements in component_specs:
+                namespace, component, spec = parse_component_name_spec(
+                    component_requirements, client.default_namespace
                 )
-            )
-            with logging_redirect_tqdm(loggers=[LOGGER]):
+                dependencies.append(
+                    # only service source supported
+                    ComponentRequirement(
+                        name=f'{namespace}/{component}',
+                        version=spec,
+                    )
+                )
                 res.merge(
                     prepare_component_versions(
                         client,
                         dependencies,
-                        progress_bar=progress_bar,
+                        counter=counter,
                         resolution=resolution,
                         solved_requirements_cache=solved_requirements_cache,
                         recorded_versions_cache=recorded_versions_cache,
                     )
                 )
-    else:
-        paths = [path]
-        if recursive:
-            paths = list(path.glob('**'))
+        else:
+            paths = [path]
+            if recursive:
+                paths = list(path.glob('**'))
 
-        res = PartialMirror()
-        for path in paths:
-            if path.is_dir() and is_component(path) and (path / MANIFEST_FILENAME).exists():
-                manifest = ManifestManager(path, '').load()
-                with logging_redirect_tqdm(loggers=[LOGGER]):
+            res = PartialMirror()
+            for path in paths:
+                if path.is_dir() and is_component(path) and (path / MANIFEST_FILENAME).exists():
+                    manifest = ManifestManager(path, '').load()
                     res.merge(
                         prepare_component_versions(
                             client,
                             manifest.raw_requirements,
-                            progress_bar=progress_bar,
+                            counter=counter,
                             resolution=resolution,
                             solved_requirements_cache=solved_requirements_cache,
                             recorded_versions_cache=recorded_versions_cache,
                         )
                     )
 
-    progress_bar.close()
+    found = sum(len(v) for v in res.data.values())
+    notice(f'Found {found} component version(s)')
 
     return res
 

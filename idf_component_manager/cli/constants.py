@@ -3,8 +3,8 @@
 import os
 import typing as t
 
-import click
-from click.decorators import FC
+import rich_click as click
+from rich_click.decorators import FC
 
 from idf_component_manager.cli.validations import (
     combined_callback,
