@@ -26,7 +26,7 @@ def test_manifest_hash(valid_manifest):
     # ONLY UPDATE MANIFEST HASH WHEN IT'S NECESSARY!!!
     assert (
         manifest.manifest_hash
-        == '8dd1abf83989a97bcd7590b795f5436169f3a2d74a99c832cb97a2d3e8b44205'  # pragma: allowlist secret
+        == 'b9924cbe9acf30c924c0cc145ea7babf71e7a252b79646ef748423dddba05d03'  # pragma: allowlist secret
     )
 
 
@@ -48,6 +48,7 @@ def test_project_manifest_builder(valid_manifest):
     assert manifest.links.repository == 'git@github.com:test_project/test.git'
     assert manifest.links.issues == 'https://test.com/tracker'
     assert manifest.links.discussion == 'https://discuss.com/discuss'
+    assert manifest.links.changelog == 'https://test.com/CHANGELOG.md'
 
 
 def test_validator_broken_deps():

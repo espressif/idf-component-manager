@@ -5,7 +5,7 @@ import pytest
 from idf_component_tools.manifest.metadata import Metadata
 
 
-def test_metadata(tmp_path, valid_manifest):
+def test_metadata(valid_manifest):
     manifest_meta = Metadata.load(valid_manifest)
     assert manifest_meta.build_metadata_keys == [
         'dependencies-*-public-type:boolean',
@@ -17,6 +17,7 @@ def test_metadata(tmp_path, valid_manifest):
         'version-type:string',
     ]
     assert manifest_meta.info_metadata_keys == [
+        'changelog-type:string',
         'description-type:string',
         'discussion-type:string',
         'documentation-type:string',

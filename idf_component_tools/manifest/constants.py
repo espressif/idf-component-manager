@@ -10,7 +10,7 @@ COMPILED_FULL_SLUG_REGEX = re.compile(FULL_SLUG_REGEX)
 WEB_DEPENDENCY_REGEX = r'^((?:{slug}/{slug})|(?:{slug}))(.*)$'.format(slug=SLUG_BODY_REGEX)
 MAX_NAME_LENGTH = 64
 
-LINKS = ['repository', 'documentation', 'issues', 'discussion', 'url']
+LINKS = ['repository', 'documentation', 'issues', 'discussion', 'url', 'changelog']
 KNOWN_INFO_METADATA_FIELDS = [
     'maintainers',
     'description',
