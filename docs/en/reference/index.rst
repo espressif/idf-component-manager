@@ -10,6 +10,7 @@ Canonical reference documentation for configuration, file formats, and the CLI.
     compote_cli
     config_file
     manifest_file
+    component_files
     dependencies_lock
     versioning
     badge_endpoint

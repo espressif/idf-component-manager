@@ -1,0 +1,27 @@
+/* Project-specific overrides on top of the ESP-Docs (sphinx_idf_theme) styles.
+   Loaded after the theme's own theme_overrides.css via html_css_files. */
+
+/* Override table width restrictions so wide tables wrap instead of being cut off */
+@media screen and (min-width: 767px) {
+  .wy-table-responsive table td {
+    /* !important prevents the theme stylesheets from overriding this */
+    white-space: normal !important;
+  }
+
+  .wy-table-responsive {
+    overflow: visible !important;
+  }
+}
+
+/* Wrap too long sidebar menu items */
+ul li code {
+  word-wrap: break-word;
+  white-space: unset;
+}
+
+/* Add breathing room below the registry logo on the landing page so it is not
+   cramped against the page title. */
+img.home-logo {
+  display: block;
+  margin-bottom: 2rem;
+}
