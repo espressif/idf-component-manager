@@ -1,3 +1,8 @@
+.. image:: ../_static/logo.png
+    :alt: ESP Component Registry
+    :width: 320px
+    :class: home-logo
+
 ################################################################
  IDF Component Manager and ESP Component Registry Documentation
 ################################################################

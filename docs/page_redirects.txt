@@ -1,0 +1,18 @@
+# Redirects from "old URL" to "new URL"
+#
+# Space delimited, one pair per line.
+# URLs are docnames relative to the language root (docs/en/) and MUST NOT
+# contain the .rst extension.
+# Empty lines and lines starting with # are ignored.
+#
+# See https://docs.espressif.com/projects/esp-docs/en/latest/writing-documentation/redirecting-documents.html
+
+# Guides -> Getting Started
+guides/updating_component_manager   getting_started/updating_component_manager
+
+# Guides -> Troubleshooting
+guides/faq                          troubleshooting/faq
+
+# Guides -> Use (How-to)
+guides/partial_mirror               use/how_to_partial_mirror
+guides/version_solver               use/explanation_version_solver

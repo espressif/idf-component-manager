@@ -1,5 +1,10 @@
 variables:
   FF_TIMESTAMPS: true
+  # Versioned esp-idf-doc env image used for building and deploying documentation with ESP-Docs
+  ESP_DOCS_ENV_IMAGE: "$CI_REGISTRY/ci/images/idf-v6.1-docs:1"
+  DOCLANG: "en"
+  # Git branch that ESP-Docs deploys as the "latest" documentation version
+  ESP_DOCS_LATEST_BRANCH_NAME: "main"
 
 default:
   image: python:3.14-trixie
@@ -73,18 +78,48 @@ prepare_tests:
       - ci/tests.yml
 
 .build-docs:
-  stage: test
+  stage: build
+  image: $ESP_DOCS_ENV_IMAGE
   tags:
     - internet
-  script:
-    - git checkout -f $REF
+  before_script:
     - pip install '.[docs]'
-    - sphinx-build docs/en ${OUTPUT_DIR}
+
+build-docs:
+  extends: .build-docs
+  script:
+    - cd docs
+    - build-docs -l $DOCLANG
   after_script:
-    - 'echo "preview link: ${GITLAB_PAGE_HTTPS_URL}/-/idf-component-manager/-/jobs/${CI_JOB_ID}/artifacts/html_output_preview/index.html"'
+    - 'echo "preview link: ${GITLAB_PAGE_HTTPS_URL}/-/idf-component-manager/-/jobs/${CI_JOB_ID}/artifacts/docs/_build/${DOCLANG}/generic/html/index.html"'
   artifacts:
     paths:
-      - $OUTPUT_DIR/
+      - docs/_build/
+    when: always
+    expire_in: 4 days
+  rules:
+    - if: '$CI_MERGE_REQUEST_LABELS =~ /skip_docs/'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH =~ /^release\/v.*/
+
+build-main-docs:
+  extends: .build-docs
+  # The base branch is built only to render a docs diff against the MR changes.
+  # It is allowed to fail because the base revision may use an incompatible docs
+  # toolchain (e.g. the commit before the ESP-Docs migration still used
+  # sphinx_rtd_theme / plain sphinx-build and cannot be built with build-docs).
+  allow_failure: true
+  script:
+    - git checkout -f HEAD~1  # merged result pipeline
+    - cd docs
+    - build-docs -l $DOCLANG
+    - cd ..
+    - mv docs/_build/${DOCLANG}/generic/html html_output_main
+  artifacts:
+    paths:
+      - html_output_main/
     when: always
     expire_in: 4 days
   rules:
@@ -92,28 +127,19 @@ prepare_tests:
       when: never
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
-build-preview-docs:
-  extends: .build-docs
-  variables:
-    OUTPUT_DIR: html_output_preview
-    REF: HEAD
-
-build-main-docs:
-  extends: .build-docs
-  variables:
-    OUTPUT_DIR: html_output_main
-    REF: HEAD~1  # merged result pipeline
-
 diff-docs:
   stage: test
   tags:
     - internet
+  allow_failure: true
   needs:
-    - build-preview-docs
-    - build-main-docs
+    - build-docs
+    - job: build-main-docs
+      artifacts: true
+      optional: true
   script:
     - pip install prettytable python-gitlab
-    - python ci/diff_docs.py html_output_main html_output_preview --output html_diff
+    - python ci/diff_docs.py html_output_main docs/_build/${DOCLANG}/generic/html --output html_diff
   artifacts:
     paths:
       - html_diff/
@@ -124,6 +150,53 @@ diff-docs:
     - if: '$CI_MERGE_REQUEST_LABELS =~ /skip_docs/'
       when: never
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+# -- Deploy documentation to docs.espressif.com via ESP-Docs ------------------
+.deploy-docs:
+  stage: deploy
+  image: $ESP_DOCS_ENV_IMAGE
+  tags:
+    - internet
+  needs:
+    - build-docs
+  variables:
+    DOCS_BUILD_DIR: "${CI_PROJECT_DIR}/docs/_build/"
+  before_script:
+    - pip install '.[docs]'
+  script:
+    # Install the SSH key so that deploy-docs can scp/ssh the built docs to the
+    # docs server.
+    - source ci/utils.sh
+    - add_doc_server_ssh_keys "$DOCS_DEPLOY_PRIVATEKEY" "$DOCS_DEPLOY_SERVER" "$DOCS_DEPLOY_SERVER_USER"
+    - export GIT_VER=$(git describe --abbrev=10 --always)
+    - deploy-docs
+
+deploy-preview-docs:
+  extends: .deploy-docs
+  variables:
+    TYPE: "preview"
+    DOCS_DEPLOY_PRIVATEKEY: "$DOCS_PREVIEW_PRIVATEKEY"
+    DOCS_DEPLOY_SERVER: "preview-docs.espressif.com"
+    DOCS_DEPLOY_SERVER_USER: "$DOCS_PREVIEW_SERVER_USER"
+    DOCS_DEPLOY_PATH: "projects/idf-component-manager"
+    DOCS_DEPLOY_URL_BASE: "https://preview-docs.espressif.com/projects/idf-component-manager"
+  rules:
+    - if: '$CI_MERGE_REQUEST_LABELS =~ /skip_docs/'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+deploy-prod-docs:
+  extends: .deploy-docs
+  variables:
+    TYPE: "prod"
+    DEPLOY_STABLE: "1"
+    DOCS_DEPLOY_PRIVATEKEY: "$DOCS_PROD_PRIVATEKEY"
+    DOCS_DEPLOY_SERVER: "docs.espressif.com"
+    DOCS_DEPLOY_SERVER_USER: "$DOCS_PROD_SERVER_USER"
+    DOCS_DEPLOY_PATH: "projects/idf-component-manager"
+    DOCS_DEPLOY_URL_BASE: "https://docs.espressif.com/projects/idf-component-manager"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 tests:
   stage: test
