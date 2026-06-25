@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import typing as t
 import warnings
@@ -28,7 +28,6 @@ from idf_component_tools.build_system_tools import (
 from idf_component_tools.constants import (
     COMMIT_ID_RE,
     COMPILED_GIT_URL_RE,
-    DEFAULT_NAMESPACE,
     IDF_COMPONENT_REGISTRY_URL,
 )
 from idf_component_tools.debugger import KCONFIG_CONTEXT
@@ -40,7 +39,7 @@ from idf_component_tools.errors import (
 )
 from idf_component_tools.hash_tools.calculate import hash_object
 from idf_component_tools.logging import suppress_logging
-from idf_component_tools.manager import UploadMode
+from idf_component_tools.manager import ManifestManager, UploadMode
 from idf_component_tools.messages import debug, notice
 from idf_component_tools.registry.api_models import DependencyResponse
 from idf_component_tools.semver import Version
@@ -57,6 +56,7 @@ from idf_component_tools.utils import (
     UniqueTagListField,
     UrlField,
     bool_str_discriminator,
+    canonical_component_name,
     get_validation_context,
     polish_validation_error,
     str_dict_discriminator,
@@ -220,6 +220,56 @@ class DependencyItem(BaseModel):
             return False
 
         return True
+
+
+class OverrideItem(DependencyItem):
+    FIELD_NAME: t.ClassVar[str] = 'overrides'
+
+
+class OverrideDefinition(BaseModel):
+    target: str
+    display_target: t.Optional[str] = None
+    replacement_name: str
+    with_dependency: OverrideItem
+    reason: t.Optional[str] = None
+
+    def to_requirement(
+        self, manifest_manager: t.Optional[ManifestManager] = None
+    ) -> 'ComponentRequirement':
+        return ComponentRequirement(
+            name=self.replacement_name,
+            manifest_manager=manifest_manager,
+            **self.with_dependency.model_dump(exclude_unset=True),
+        )
+
+    @model_serializer(mode='plain')
+    def serialize(self):
+        payload = {
+            self.target: {
+                'with': {self.replacement_name: self.with_dependency.model_dump(exclude_unset=True)}
+            }
+        }
+        if self.reason is not None:
+            payload[self.target]['reason'] = self.reason
+
+        return payload
+
+
+# Keys allowed inside a single "overrides" entry body (besides the target name).
+_OVERRIDE_ALLOWED_KEYS = frozenset({'with', 'reason'})
+
+
+class _OverrideValidationError(Exception):
+    """Internal helper carrying one or more user-facing override validation messages.
+
+    It deliberately does not inherit from ``ValueError`` so that messages raised by the
+    override helpers are not re-captured by the ``except ValueError`` branch that rewrites
+    nested dependency-validation errors.
+    """
+
+    def __init__(self, messages: t.Union[str, t.List[str]]) -> None:
+        self.messages = [messages] if isinstance(messages, str) else list(messages)
+        super().__init__('\n'.join(self.messages))
 
 
 @lru_cache(maxsize=None)
@@ -418,6 +468,7 @@ class Manifest(BaseModel):
             ),
         ],
     ] = {}  # type: ignore
+    overrides: t.List[OverrideDefinition] = []  # type: ignore
     files: FilesField = None  # type: ignore
     examples: t.List[t.Dict[str, t.Any]] = None  # type: ignore
     url: UrlField = None  # type: ignore
@@ -486,8 +537,6 @@ class Manifest(BaseModel):
     @field_validator('dependencies')
     @classmethod
     def validate_dependencies(cls, d: t.Dict[str, t.Any]):
-        normalized_dict = {}
-
         error_msgs = []
 
         for k, v in d.items():
@@ -501,27 +550,240 @@ class Manifest(BaseModel):
                 )
                 continue
 
-            # default namespace "espressif"
-            if '/' not in k:
-                full_name = f'{DEFAULT_NAMESPACE}/{k}'
-            else:
-                full_name = k
-
             try:
                 if isinstance(v, dict):
-                    normalized_dict[full_name] = DependencyItem.fromdict(v)
-                else:
-                    normalized_dict[full_name] = v
+                    DependencyItem.fromdict(v)
             except ValidationError as e:
                 error_msgs.append(polish_validation_error(e))
                 continue
 
         if error_msgs:
-            raise ValueError(
-                '\n'.join(error_msgs),
-            )
+            raise ValueError('\n'.join(error_msgs))
 
         return d
+
+    @field_validator('overrides', mode='before')
+    @classmethod
+    def validate_overrides(cls, overrides: t.Any):
+        if overrides is None:
+            return []
+
+        if not isinstance(overrides, list):
+            raise ValueError('Invalid field "overrides": Input should be a valid array')
+
+        normalized_overrides: t.List[OverrideDefinition] = []
+        seen_targets: t.Dict[str, str] = {}
+        error_msgs: t.List[str] = []
+
+        for override_entry in overrides:
+            try:
+                target_name, override_value = cls._parse_override_entry(override_entry)
+                canonical_target = cls._validate_override_target(target_name, seen_targets)
+                with_map, reason = cls._validate_override_body(target_name, override_value)
+                override_definition = cls._build_override_definition(
+                    target_name, canonical_target, with_map, reason
+                )
+            except _OverrideValidationError as exc:
+                error_msgs.extend(exc.messages)
+                continue
+
+            normalized_overrides.append(override_definition)
+            seen_targets[canonical_target] = target_name
+
+        if error_msgs:
+            raise ValueError('\n'.join(error_msgs))
+
+        return normalized_overrides
+
+    @staticmethod
+    def _parse_override_entry(override_entry: t.Any) -> t.Tuple[str, t.Dict[str, t.Any]]:
+        """Validate the outer shape of an override entry and return its target and body."""
+        if not isinstance(override_entry, dict) or len(override_entry) != 1:
+            raise _OverrideValidationError(
+                'Invalid field "overrides": Each override entry must map exactly one target component'
+            )
+
+        target_name, override_value = next(iter(override_entry.items()))
+        if not isinstance(target_name, str) or not COMPILED_FULL_SLUG_REGEX.match(target_name):
+            raise _OverrideValidationError(
+                f'Invalid field "overrides:{target_name}": Invalid component name'
+            )
+
+        if not isinstance(override_value, dict):
+            raise _OverrideValidationError(
+                f'Invalid field "overrides:{target_name}": Input should be a valid dictionary'
+            )
+
+        return target_name, override_value
+
+    @staticmethod
+    def _validate_override_target(target_name: str, seen_targets: t.Dict[str, str]) -> str:
+        """Validate the override target name and return its canonical form."""
+        canonical_target = canonical_component_name(target_name)
+
+        if canonical_target == 'idf':
+            raise _OverrideValidationError(
+                'Invalid field "overrides:idf": ESP-IDF dependency cannot be overridden'
+            )
+
+        if canonical_target in seen_targets:
+            raise _OverrideValidationError(
+                f'Duplicate override target after normalization: '
+                f'"{target_name}" and "{seen_targets[canonical_target]}"'
+            )
+
+        if '__' in target_name:
+            raise _OverrideValidationError(
+                f'Invalid field "overrides:{target_name}": '
+                "Component's name should not contain two consecutive underscores."
+            )
+
+        return canonical_target
+
+    @staticmethod
+    def _validate_override_body(
+        target_name: str, override_value: t.Dict[str, t.Any]
+    ) -> t.Tuple[t.Dict[str, t.Any], t.Optional[str]]:
+        """Validate the ``with``/``reason`` body of an override entry."""
+        unknown_keys = sorted(set(override_value) - _OVERRIDE_ALLOWED_KEYS)
+        if unknown_keys:
+            raise _OverrideValidationError(
+                f'Invalid field "overrides:{target_name}": Unknown key(s) {unknown_keys}. '
+                f'Allowed keys are: {sorted(_OVERRIDE_ALLOWED_KEYS)}'
+            )
+
+        if 'with' not in override_value:
+            raise _OverrideValidationError(
+                f'Invalid field "overrides:{target_name}:with": Field required'
+            )
+
+        with_map = override_value['with']
+        if not isinstance(with_map, dict):
+            raise _OverrideValidationError(
+                f'Invalid field "overrides:{target_name}:with": Input should be a valid dictionary'
+            )
+
+        if len(with_map) != 1:
+            raise _OverrideValidationError(
+                f'Invalid field "overrides:{target_name}:with": '
+                'Override "with" field must contain exactly one replacement component'
+            )
+
+        reason = override_value.get('reason')
+        if reason is not None and not isinstance(reason, str):
+            raise _OverrideValidationError(
+                f'Invalid field "overrides:{target_name}:reason": Input should be a valid string'
+            )
+
+        return with_map, reason
+
+    @staticmethod
+    def _build_override_definition(
+        target_name: str,
+        canonical_target: str,
+        with_map: t.Dict[str, t.Any],
+        reason: t.Optional[str],
+    ) -> OverrideDefinition:
+        """Validate the replacement component and assemble the ``OverrideDefinition``."""
+        replacement_name = ''
+        replacement_lookup_name = ''
+        try:
+            replacement_name, replacement_value = next(iter(with_map.items()))
+
+            if not isinstance(replacement_name, str) or not COMPILED_FULL_SLUG_REGEX.match(
+                replacement_name
+            ):
+                raise _OverrideValidationError(
+                    f'Invalid field "overrides:{target_name}:with:{replacement_name}": Invalid component name'
+                )
+
+            if not isinstance(replacement_value, (dict, OverrideItem)):
+                raise _OverrideValidationError(
+                    f'Invalid field "overrides:{target_name}:with:{replacement_name}": Input should be a valid dictionary'
+                )
+
+            if (isinstance(replacement_value, dict) and 'override_path' in replacement_value) or (
+                isinstance(replacement_value, OverrideItem)
+                and 'override_path' in replacement_value.model_fields_set
+            ):
+                raise _OverrideValidationError(
+                    f'Invalid field "overrides:{target_name}:with:{replacement_name}:override_path": '
+                    '"override_path" is not supported in override replacements. Use "path" instead.'
+                )
+
+            if '__' in replacement_name:
+                raise _OverrideValidationError(
+                    f'Invalid field "overrides:{target_name}:with:{replacement_name}": '
+                    "Component's name should not contain two consecutive underscores."
+                )
+
+            replacement_lookup_name = replacement_name.lower()
+            if replacement_lookup_name == 'idf':
+                raise _OverrideValidationError(
+                    f'Invalid field "overrides:{target_name}:with:{replacement_name}": ESP-IDF dependency cannot be used as an override replacement'
+                )
+
+            replacement_item = (
+                replacement_value
+                if isinstance(replacement_value, OverrideItem)
+                else OverrideItem.fromdict(replacement_value)
+            )
+
+            replacement_requirement = ComponentRequirement(
+                name=replacement_lookup_name,
+                **replacement_item.model_dump(exclude_unset=True),
+            )
+        except ValidationError as e:
+            # Re-anchor replacement errors under the precise override location.
+            base_loc = ('overrides', target_name, 'with', replacement_name)
+            messages = []
+            for err in e.errors(include_url=False):
+                err['loc'] = base_loc + tuple(err['loc'])
+                messages.append(validation_error_to_str(err))
+            raise _OverrideValidationError(messages)
+        except ValueError as e:
+            raise _OverrideValidationError(
+                Manifest._reanchor_replacement_value_error(
+                    str(e), replacement_lookup_name, target_name, replacement_name
+                )
+            )
+
+        return OverrideDefinition(
+            target=canonical_target,
+            display_target=target_name,
+            replacement_name=replacement_requirement.name,
+            with_dependency=replacement_item,
+            reason=reason,
+        )
+
+    @staticmethod
+    def _reanchor_replacement_value_error(
+        message: str,
+        replacement_lookup_name: str,
+        target_name: str,
+        replacement_name: str,
+    ) -> str:
+        """Re-anchor a replacement ``ValueError`` under its override location.
+
+        ``ComponentRequirement.validate_post_init`` raises plain ``ValueError``s whose
+        messages are anchored at ``dependencies:<name>`` (e.g. an invalid version spec).
+        When such an error comes from validating an override replacement, rewrite that
+        prefix to ``overrides:<target>:with:<replacement>`` so the user sees the field
+        they actually wrote.
+
+        The substitution is intentionally guarded: it only fires when the exact
+        ``dependencies:<replacement_lookup_name>`` anchor is present. If the anchor is
+        missing (empty name, or an upstream message-format change), the message is
+        prefixed with the override location instead of being silently left to leak a
+        misleading ``dependencies:`` path.
+        """
+        override_location = f'overrides:{target_name}:with:{replacement_name}'
+        source_anchor = f'dependencies:{replacement_lookup_name}'
+
+        if replacement_lookup_name and source_anchor in message:
+            return message.replace(source_anchor, override_location)
+
+        return f'Invalid field "{override_location}": {message}'
 
     def _validate_while_uploading(self) -> None:
         """
@@ -542,6 +804,13 @@ class Manifest(BaseModel):
         if unknown_targets:
             raise ValueError(
                 f'Invalid field "targets". Unknown targets: "{",".join(unknown_targets)}"'
+            )
+
+        if self.overrides:
+            notice(
+                'Field "overrides" has no effect in components distributed via the registry. '
+                'It is ignored when this component is consumed as a dependency and will not '
+                'be applied to the dependency graph of projects that depend on it.'
             )
 
     @classmethod
@@ -585,6 +854,10 @@ class Manifest(BaseModel):
             return (error_msgs, None) if return_with_object else error_msgs
 
         return ([], res) if return_with_object else []
+
+    @property
+    def manifest_manager(self) -> t.Optional[ManifestManager]:
+        return self._manifest_manager
 
     @property
     def links(self) -> ComponentLinks:
