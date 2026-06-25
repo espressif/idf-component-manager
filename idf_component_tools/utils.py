@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import os
 import sys
@@ -6,6 +6,7 @@ import typing as t
 import warnings
 from contextlib import contextmanager
 from contextvars import ContextVar
+from dataclasses import dataclass
 from functools import total_ordering
 from string import Template
 
@@ -26,9 +27,9 @@ from pydantic import (
 from pydantic import BaseModel as _BaseModel
 from pydantic_core import CoreSchema, ErrorDetails, PydanticCustomError, core_schema
 
-from . import debug
+from . import debug, notice
 from .build_system_tools import get_env_idf_target
-from .constants import COMPILED_COMMIT_ID_RE
+from .constants import COMPILED_COMMIT_ID_RE, DEFAULT_NAMESPACE
 from .errors import ManifestError, RunningEnvironmentError
 from .hash_tools.calculate import hash_object
 from .manager import ManifestManager
@@ -296,6 +297,16 @@ def dict_drop_none(d: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
     return {k: v for k, v in d.items() if v is not None}
 
 
+def canonical_component_name(name: str) -> str:
+    if name.lower() == 'idf':
+        return 'idf'
+
+    if '/' not in name:
+        return f'{DEFAULT_NAMESPACE}/{name.lower()}'
+
+    return name.lower()
+
+
 class ComponentVersion(str):
     """
     Represents the version of a component
@@ -448,6 +459,35 @@ class ComponentWithVersions:
         self.versions = sorted(versions)
 
 
+OverrideRuleOrigin = t.Literal['overrides', 'override_path']
+
+
+@dataclass(frozen=True)
+class OverrideRule:
+    name: str
+    replacement: 'ComponentRequirement'
+    origin: OverrideRuleOrigin
+    reason: t.Optional[str] = None
+    display_name: t.Optional[str] = None
+
+    @property
+    def replacement_name(self) -> str:
+        return self.replacement.name
+
+    @property
+    def reported_name(self) -> str:
+        """The override target as written by the user, for use in log messages."""
+        return self.display_name or self.name
+
+    @property
+    def source(self) -> t.Any:
+        return self.replacement.source
+
+    @property
+    def version_spec(self) -> str:
+        return self.replacement.version_spec
+
+
 class ProjectRequirements:
     """Representation of all manifests required by project"""
 
@@ -456,6 +496,18 @@ class ProjectRequirements:
 
         self._manifest_hash = None  # type: str | None
         self._target = None  # type: str | None
+        self._override_rules = None  # type: t.Optional[t.Dict[str, OverrideRule]]
+        self._manifests_with_overrides = [
+            manifest for manifest in self.manifests if manifest.overrides
+        ]
+
+        if len(self._manifests_with_overrides) > 1:
+            locations = ', '.join(
+                self._manifest_location(manifest) for manifest in self._manifests_with_overrides
+            )
+            raise ManifestError(
+                f'Field "overrides" can be defined in only one manifest, found in: {locations}'
+            )
 
     @property
     def target(self):  # type: () -> str
@@ -476,6 +528,59 @@ class ProjectRequirements:
     @property
     def direct_dep_names(self) -> t.List[str]:
         return sorted(set(dep.name for manifest in self.manifests for dep in manifest.requirements))
+
+    @staticmethod
+    def _manifest_location(manifest: 'Manifest') -> str:
+        return manifest.path or manifest.real_name or 'in-memory manifest'
+
+    @property
+    def override_rules(self) -> t.Dict[str, OverrideRule]:
+        if self._override_rules is not None:
+            return self._override_rules
+
+        self._override_rules = {}
+        if not self.manifests:
+            return self._override_rules
+
+        for manifest in self.manifests:
+            for requirement in manifest.raw_requirements:
+                if not requirement.override_path or not requirement.meet_optional_dependencies:
+                    continue
+
+                canonical_name = canonical_component_name(requirement.name)
+                self._override_rules[canonical_name] = OverrideRule(
+                    name=canonical_name,
+                    replacement=requirement,
+                    origin='override_path',
+                )
+
+        if not self._manifests_with_overrides:
+            return self._override_rules
+
+        overrides_manifest = self._manifests_with_overrides[0]
+        for override_item in overrides_manifest.overrides:
+            override_requirement = override_item.to_requirement(overrides_manifest.manifest_manager)
+            if not override_requirement.meet_optional_dependencies:
+                notice(
+                    'Override for "{}" is inactive: replacement "{}" has rules/matches '
+                    'that do not match this build configuration (target, IDF version, or Kconfig)'.format(
+                        override_item.target, override_requirement.name
+                    )
+                )
+                continue
+
+            # ``override_item.target`` is already the canonical name. A single entry is
+            # registered per override; lookups normalize ``requirement.name`` to its
+            # canonical form (see ``_apply_override_rule``), so no alias keys are needed.
+            self._override_rules[override_item.target] = OverrideRule(
+                name=override_item.target,
+                replacement=override_requirement,
+                origin='overrides',
+                reason=override_item.reason,
+                display_name=override_item.display_target or override_item.target,
+            )
+
+        return self._override_rules
 
 
 def validation_error_to_str(error: ErrorDetails) -> str:

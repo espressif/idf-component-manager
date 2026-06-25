@@ -193,4 +193,5 @@ ignore-variadic-names = true
 
 "idf_component_manager/version_solver/mixology/*" = [
     "S101", # use of assert
+    "ARG002", # upstream mixology keeps some unused method arguments for API compatibility
 ]

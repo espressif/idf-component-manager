@@ -3,6 +3,7 @@
 """Core module of component manager"""
 
 import functools
+import json
 import os
 import re
 import secrets
@@ -68,7 +69,7 @@ from idf_component_tools.registry.service_details import (
 )
 from idf_component_tools.semver.base import Version
 from idf_component_tools.sources import GitSource, WebServiceSource
-from idf_component_tools.utils import ProjectRequirements
+from idf_component_tools.utils import ProjectRequirements, canonical_component_name
 
 from .cmake_component_requirements import (
     CMakeRequirementsManager,
@@ -104,6 +105,9 @@ except ImportError:
 
 CHECK_INTERVAL = 3
 MAX_PROGRESS = 100  # Expected progress is in percent
+
+# Mapping of canonical build-name -> override metadata persisted for the CMake side.
+OverrideRequirements = t.Dict[str, t.Dict[str, t.Union[str, bool]]]
 
 
 def general_error_handler(func):
@@ -737,6 +741,7 @@ class ComponentManager:
 
         downloaded_components = set()
         manifests = []
+        override_requirements = {}
         if local_components:
             for component in local_components:
                 manifests.append(
@@ -747,6 +752,7 @@ class ComponentManager:
                 )
 
             project_requirements = ProjectRequirements(manifests)
+            override_requirements = self._cmake_override_requirements(project_requirements)
             downloaded_components = download_project_dependencies(
                 project_requirements,
                 str(self.lock_path),
@@ -802,6 +808,53 @@ class ComponentManager:
         with open(component_list_file, mode='w', encoding='utf-8') as file:
             file.write('\n'.join(all_components))
 
+        with open(
+            self._override_requirements_file(component_list_file), mode='w', encoding='utf-8'
+        ) as file:
+            json.dump(override_requirements, file)
+
+    @staticmethod
+    def _override_requirements_file(component_list_file: t.Union[Path, str]) -> str:
+        return f'{component_list_file}.overrides'
+
+    @staticmethod
+    def _cmake_override_requirements(
+        project_requirements: ProjectRequirements,
+    ) -> OverrideRequirements:
+        override_requirements: OverrideRequirements = {}
+        for rule in project_requirements.override_rules.values():
+            requirement: t.Dict[str, t.Union[str, bool]] = {
+                'name': build_name(rule.replacement_name)
+            }
+
+            if rule.origin == 'overrides':
+                replacement_fields = rule.replacement.model_fields_set
+                if 'public' in replacement_fields or 'require' in replacement_fields:
+                    requirement['is_public'] = rule.replacement.is_public
+                if 'require' in replacement_fields:
+                    requirement['is_required'] = rule.replacement.is_required
+
+            override_requirements[build_name(rule.name)] = requirement
+
+        return override_requirements
+
+    def _load_override_requirements(
+        self, component_list_file: t.Union[Path, str]
+    ) -> OverrideRequirements:
+        # The sidecar file is intentionally left in place: inject_requirements may be
+        # invoked several times for the same build, and each call needs to read it.
+        override_requirements_file = self._override_requirements_file(component_list_file)
+        try:
+            with open(override_requirements_file, encoding='utf-8') as f:
+                override_requirements = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return {}
+
+        if not isinstance(override_requirements, dict):
+            return {}
+
+        return override_requirements
+
     @general_error_handler
     def inject_requirements(
         self,
@@ -823,6 +876,8 @@ class ComponentManager:
                 'Please make sure this script is executed from CMake'
             )
 
+        override_requirements = self._load_override_requirements(component_list_file)
+
         for component in components_with_manifests:
             component = component.strip()
             name = os.path.basename(component)
@@ -834,12 +889,26 @@ class ComponentManager:
                 if dep.meta:
                     continue
 
+                dependency_name = build_name(dep.name)
+                is_required = dep.is_required
+                is_public = dep.is_public
+
+                # Look up the override by its canonical build name.
+                override_requirement = override_requirements.get(
+                    build_name(canonical_component_name(dep.name))
+                )
+                if override_requirement:
+                    dependency_name = t.cast(str, override_requirement['name'])
+                    if 'is_required' in override_requirement:
+                        is_required = bool(override_requirement['is_required'])
+                    if 'is_public' in override_requirement:
+                        is_public = bool(override_requirement['is_public'])
+
                 # No required dependencies shouldn't be added to the build system
-                if not dep.is_required:
+                if not is_required:
                     continue
 
-                dependency_name = build_name(dep.name)
-                requirement_key = 'REQUIRES' if dep.is_public else 'PRIV_REQUIRES'
+                requirement_key = 'REQUIRES' if is_public else 'PRIV_REQUIRES'
 
                 def add_req(key: str) -> None:
                     if key not in requirements[name_key]:
