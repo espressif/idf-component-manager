@@ -918,7 +918,7 @@ To replace a dependency with a local copy on your filesystem, use the ``path`` a
     overrides:
       - espressif/button:
           with:
-            espressif/button:
+            button:
               path: /home/user/my-patched/button
 
 .. note::
@@ -940,7 +940,7 @@ You can use ``rules`` or ``matches`` within the replacement attributes to apply 
     overrides:
       - espressif/tinyusb:
           with:
-            espressif/tinyusb:
+            tinyusb:
               git: https://github.com/user/tinyusb-fork.git
               version: esp32s3-fix
               rules:
