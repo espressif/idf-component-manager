@@ -13,7 +13,7 @@ from idf_component_tools.config import ProfileItem
 from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL
 from idf_component_tools.registry.api_client import APIClient
 from idf_component_tools.registry.base_client import user_agent
-from idf_component_tools.registry.client_errors import APIClientError
+from idf_component_tools.registry.client_errors import APIClientError, VersionNotFound
 from idf_component_tools.registry.multi_storage_client import MultiStorageClient
 from idf_component_tools.registry.request_processor import join_url
 from idf_component_tools.registry.storage_client import StorageClient
@@ -221,6 +221,64 @@ class TestAPIClient:
 
         result = client.versions(component_name='test_component_manager/stb_and_ynk', spec=spec)
         assert result.versions[0].semver == Version('1.0.1')
+
+    @pytest.mark.parametrize(
+        'spec',
+        [
+            '>=1.0.0',
+            '>0.9.0',
+            '^1.0.0',
+            '1.*.*',
+        ],
+    )
+    def test_yanked_version_not_returned_for_download_with_range_spec(
+        self, fixtures_path, spec, recording_log
+    ):
+        """Range specs matching only yanked versions must not resolve to a yanked version"""
+        client = StorageClient(storage_url=f'file://{fixtures_path}')
+
+        assert client.versions(component_name='example/yanked_cmp', spec=spec).versions == []
+
+        with pytest.raises(VersionNotFound):
+            client.component(component_name='example/yanked_cmp', version=spec)
+
+        assert not [r for r in recording_log.records if r.level == 'warning']
+
+    @pytest.mark.parametrize('spec', ['*', None, '>=0.9.0'])
+    def test_yanked_version_skipped_for_newer_stable(self, fixtures_path, spec, recording_log):
+        """Yanked versions are skipped by default, even if newer than the best stable version"""
+        client = StorageClient(storage_url=f'file://{fixtures_path}')
+
+        versions = client.versions(component_name='example/yanked_cmp', spec=spec).versions
+        assert [str(v) for v in versions] == ['0.9.0']
+
+        result = client.component(component_name='example/yanked_cmp', version=spec)
+        assert result['version'] == '0.9.0'
+
+        assert not [r for r in recording_log.records if r.level == 'warning']
+
+    @pytest.mark.parametrize('spec', ['==1.0.0', '=1.0.0', '1.0.0'])
+    def test_yanked_version_returned_for_exact_pin_with_warning(
+        self, fixtures_path, spec, recording_log
+    ):
+        """A yanked version is returned only for an exact pin (manifest "==" spec or
+        the exact version recorded in the lock file, as passed by
+        WebServiceSource.download), and a warning is printed every time"""
+        client = StorageClient(storage_url=f'file://{fixtures_path}')
+
+        versions = client.versions(component_name='example/yanked_cmp', spec=spec).versions
+        assert [str(v) for v in versions] == ['1.0.0']
+
+        result = client.component(component_name='example/yanked_cmp', version=spec)
+        assert result['version'] == '1.0.0'
+        assert result['download_url']
+
+        warnings = [r.message for r in recording_log.records if r.level == 'warning']
+        assert any(
+            'The following versions of the "example/yanked_cmp" component have been yanked:' in w
+            and '1.0.0 (reason: "Critical bug in 1.0.0")' in w
+            for w in warnings
+        )
 
     def test_token_information(
         self,
