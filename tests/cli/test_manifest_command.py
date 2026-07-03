@@ -429,3 +429,16 @@ def test_manifest_lint_skips_excluded_directories():
 
         result = runner.invoke(cli, ['manifest', 'lint'])
         assert result.exit_code == 0, result.output
+
+
+def test_manifest_lint_checks_excluded_directories_when_explicit():
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        cli = initialize_cli()
+        _write_manifest(Path('managed_components') / 'espressif__foo', 'version: garbage!!!\n')
+        _write_manifest(Path('dist') / 'component', 'version: garbage!!!\n')
+
+        result = runner.invoke(cli, ['manifest', 'lint', 'managed_components', 'dist'])
+
+        assert isinstance(result.exception, FatalError)
+        assert '2 of 2 manifest files are not valid' in str(result.exception)

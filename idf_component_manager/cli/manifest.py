@@ -99,6 +99,9 @@ def init_manifest():
         Valid manifests produce no output. The command exits with a non-zero status
         code if any manifest is invalid.
 
+        This command intentionally accepts only positional PATHS; it does not
+        support the --component or --path options used by other manifest commands.
+
         \b
         Examples:
         - $ compote manifest lint

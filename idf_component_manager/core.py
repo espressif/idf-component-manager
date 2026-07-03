@@ -90,6 +90,7 @@ from .core_utils import (
 )
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
+from .manifest_lint import LINT_PROBLEMS_EXIT_CODE, collect_manifests_for_lint
 from .sync import sync_components
 
 try:
@@ -105,14 +106,6 @@ except ImportError:
 
 CHECK_INTERVAL = 3
 MAX_PROGRESS = 100  # Expected progress is in percent
-
-# Directories skipped when discovering manifests for linting. ``managed_components``
-# contains downloaded dependencies; ``dist`` contains packaging artifacts.
-LINT_EXCLUDED_DIRS = frozenset({'managed_components', 'dist'})
-
-# Exit code used when `compote manifest lint` finds invalid manifests. Follows the
-# common linter convention: 0 = everything valid, 1 = problems found.
-LINT_PROBLEMS_EXIT_CODE = 1
 
 # Mapping of canonical build-name -> override metadata persisted for the CMake side.
 OverrideRequirements = t.Dict[str, t.Dict[str, t.Union[str, bool]]]
@@ -253,8 +246,9 @@ class ComponentManager:
         - A ``path`` that points to a directory: discover and validate every
           manifest under it recursively.
 
-        Downloaded dependencies (``managed_components``) and hidden directories
-        are skipped during discovery. Valid manifests produce no output.
+        Downloaded dependencies (``managed_components``), packaging artifacts
+        (``dist``), and hidden directories are skipped during discovery. Valid
+        manifests produce no output.
 
         :param paths: Manifest files or directories to validate. Defaults to the
             working directory.
@@ -262,7 +256,8 @@ class ComponentManager:
             manifest is invalid; with the default exit code for usage errors such
             as a missing path or a file that is not a manifest.
         """
-        manifest_paths = self._collect_manifests(paths)
+        raw_paths = list(paths) if paths else [str(self.path)]
+        manifest_paths = collect_manifests_for_lint(raw_paths)
         if not manifest_paths:
             raise FatalError(f'No manifest files ({MANIFEST_FILENAME}) found')
 
@@ -282,55 +277,6 @@ class ComponentManager:
                 f'{invalid_count} of {len(manifest_paths)} manifest files are not valid',
                 exit_code=LINT_PROBLEMS_EXIT_CODE,
             )
-
-    def _collect_manifests(self, paths: t.Optional[t.Iterable[str]]) -> t.List[Path]:
-        """
-        Resolve the list of manifest files to validate.
-
-        Directories (and the working directory when no ``paths`` are given) are
-        searched recursively; explicitly given files are used as-is and must be
-        named ``idf_component.yml``. The result is de-duplicated, preserving order.
-        """
-        manifest_paths: t.List[Path] = []
-        raw_paths = list(paths) if paths else [str(self.path)]
-        for raw_path in raw_paths:
-            path = Path(raw_path)
-            if path.is_dir():
-                manifest_paths.extend(self._discover_manifests(path))
-            elif path.is_file():
-                if path.name != MANIFEST_FILENAME:
-                    raise FatalError(
-                        f'"{path}" is not a manifest file '
-                        f'(expected a file named "{MANIFEST_FILENAME}")'
-                    )
-                manifest_paths.append(path)
-            else:
-                raise FatalError(f'Path does not exist: "{path}"')
-
-        seen: t.Set[Path] = set()
-        unique_paths: t.List[Path] = []
-        for manifest_path in manifest_paths:
-            resolved = manifest_path.resolve()
-            if resolved not in seen:
-                seen.add(resolved)
-                unique_paths.append(manifest_path)
-        return unique_paths
-
-    def _discover_manifests(self, root: Path) -> t.List[Path]:
-        """
-        Find manifest files under ``root``, skipping downloaded dependencies
-        (``managed_components``) and hidden directories.
-        """
-        manifest_paths: t.List[Path] = []
-        for manifest_path in sorted(root.rglob(MANIFEST_FILENAME)):
-            directories = manifest_path.relative_to(root).parts[:-1]
-            if any(
-                directory in LINT_EXCLUDED_DIRS or directory.startswith('.')
-                for directory in directories
-            ):
-                continue
-            manifest_paths.append(manifest_path)
-        return manifest_paths
 
     @general_error_handler
     def create_project_from_example(
