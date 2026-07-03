@@ -317,6 +317,23 @@ Example:
 
     discussion: "https://chat.example.com"
 
+``changelog``
+=============
+
+The URL of a web page that contains the component's changelog.
+
+This field is optional.
+
+Example:
+
+.. code-block:: yaml
+
+    changelog: "https://my-product.com/release/3.0.3/changelog"
+
+.. note::
+
+    The link has priority over the changelog file in the component.
+
 .. _component-dependencies:
 
 ************************

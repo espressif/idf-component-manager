@@ -17,6 +17,7 @@ def test_metadata(valid_manifest):
         'version-type:string',
     ]
     assert manifest_meta.info_metadata_keys == [
+        'changelog-type:string',
         'description-type:string',
         'discussion-type:string',
         'documentation-type:string',

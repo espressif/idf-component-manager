@@ -187,6 +187,7 @@ def valid_manifest():
         'documentation': 'https://test.com/documentation',
         'issues': 'https://test.com/tracker',
         'discussion': 'https://discuss.com/discuss',
+        'changelog': 'https://test.com/CHANGELOG.md',
     }
 
 

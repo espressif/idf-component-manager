@@ -448,6 +448,7 @@ class ComponentLinks(BaseModel):
     issues: str = None  # type: ignore
     discussion: str = None  # type: ignore
     url: str = None  # type: ignore
+    changelog: str = None  # type: ignore
 
 
 def _check_git_url(v: str) -> str:
@@ -491,6 +492,7 @@ class Manifest(BaseModel):
     documentation: UrlField = None  # type: ignore
     issues: UrlField = None  # type: ignore
     discussion: UrlField = None  # type: ignore
+    changelog: UrlField = None  # type: ignore
     repository_info: RepositoryInfoField = None  # type: ignore
 
     _upload_mode: UploadMode = UploadMode.false
@@ -876,6 +878,7 @@ class Manifest(BaseModel):
             'issues': self.issues,
             'discussion': self.discussion,
             'url': self.url,
+            'changelog': self.changelog,
         })
 
     @property
