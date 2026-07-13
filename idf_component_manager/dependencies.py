@@ -13,8 +13,6 @@ from idf_component_manager.version_solver.mixology.package import Package
 from idf_component_manager.version_solver.version_solver import VersionSolver
 from idf_component_tools import ComponentManagerSettings
 from idf_component_tools.build_system_tools import build_name, get_idf_version
-from idf_component_tools.config import root_managed_components_dir
-from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.debugger import DEBUG_INFO_COLLECTOR
 from idf_component_tools.errors import (
     ComponentModifiedError,
@@ -41,6 +39,11 @@ from idf_component_tools.lock import LockManager
 from idf_component_tools.manifest import SolvedComponent, SolvedManifest
 from idf_component_tools.messages import debug, hint, notice, warn
 from idf_component_tools.registry.client_errors import NetworkConnectionError
+from idf_component_tools.root_managed_components import (
+    is_root_managed_components_path,
+    managed_component_path,
+    prune_root_managed_components,
+)
 from idf_component_tools.semver import SimpleSpec, Version
 from idf_component_tools.sources import IDFSource
 from idf_component_tools.sources.fetcher import ComponentFetcher
@@ -80,26 +83,17 @@ def get_unused_components(
 def detect_unused_components(
     requirement_dependencies: t.List[SolvedComponent], managed_components_path: str
 ) -> None:
-    expected_paths = os.listdir(managed_components_path)
+    if is_root_managed_components_path(managed_components_path):
+        unused_files = _cleanup_unused_root_managed_components(
+            requirement_dependencies,
+            managed_components_path,
+        )
+    else:
+        unused_files = _cleanup_unused_project_managed_components(
+            requirement_dependencies,
+            managed_components_path,
+        )
 
-    # The root-managed-components directory contains metadata files in its top level
-    # (e.g. idf_component.yml and dependencies.lock). They are expected and should not
-    # be flagged as unexpected files.
-    if Path(managed_components_path).resolve() == root_managed_components_dir().resolve():
-        expected_paths = [
-            n for n in expected_paths if n not in {MANIFEST_FILENAME, 'dependencies.lock'}
-        ]
-
-    unused_files_with_components = set(expected_paths) - {
-        build_name(component.name) for component in requirement_dependencies
-    }
-    unused_components = get_unused_components(unused_files_with_components, managed_components_path)
-    unused_files = unused_files_with_components - unused_components
-    if unused_components:
-        notice(f'Deleting {len(unused_components)} unused components')
-        for unused_component_name in unused_components:
-            notice(f' {unused_component_name}')
-            shutil.rmtree(os.path.join(managed_components_path, unused_component_name))
     if unused_files and not ComponentManagerSettings().SUPPRESS_UNKNOWN_FILE_WARNINGS:
         warning = (
             '{} unexpected files and directories were found in the "managed_components" directory:'
@@ -116,6 +110,36 @@ def detect_unused_components(
             'IDF_COMPONENT_SUPPRESS_UNKNOWN_FILE_WARNINGS=1'
         )
         warn(warning)
+
+
+def _cleanup_unused_root_managed_components(
+    requirement_dependencies: t.List[SolvedComponent],
+    managed_components_path: str,
+) -> t.Set[str]:
+    keep_paths = {
+        managed_component_path(component, managed_components_path).resolve()
+        for component in requirement_dependencies
+    }
+    return prune_root_managed_components(managed_components_path, keep_paths)
+
+
+def _cleanup_unused_project_managed_components(
+    requirement_dependencies: t.List[SolvedComponent],
+    managed_components_path: str,
+) -> t.Set[str]:
+    expected_paths = os.listdir(managed_components_path)
+    unused_files_with_components = set(expected_paths) - {
+        build_name(component.name) for component in requirement_dependencies
+    }
+    unused_components = get_unused_components(unused_files_with_components, managed_components_path)
+    unused_files = unused_files_with_components - unused_components
+    if unused_components:
+        notice(f'Deleting {len(unused_components)} unused components')
+        for unused_component_name in unused_components:
+            notice(f' {unused_component_name}')
+            shutil.rmtree(os.path.join(managed_components_path, unused_component_name))
+
+    return unused_files
 
 
 def is_solve_required(project_requirements: ProjectRequirements, solution: SolvedManifest) -> bool:
@@ -255,10 +279,17 @@ def print_dot():
 
 @total_ordering
 class DownloadedComponent:
-    def __init__(self, downloaded_path: str, targets: t.List[str], version: str) -> None:
+    def __init__(
+        self,
+        downloaded_path: str,
+        targets: t.List[str],
+        version: str,
+        component_name: t.Optional[str] = None,
+    ) -> None:
         self.downloaded_path = downloaded_path
         self.targets = targets
         self.version = version
+        self.component_name = component_name
 
     def __hash__(self):
         return hash(self.abs_path)
@@ -278,6 +309,10 @@ class DownloadedComponent:
     @property
     def name(self) -> str:
         return os.path.basename(self.abs_path)
+
+    @property
+    def build_name(self) -> str:
+        return self.name
 
     @property
     def abs_path(self):
@@ -335,7 +370,7 @@ def dependency_pre_download_check(
     :return: path to the component if it is already downloaded and valid, None otherwise
     """
 
-    component_path = Path(managed_components_path) / build_name(component.name)
+    component_path = managed_component_path(component, managed_components_path)
 
     # If the component is not downloadable or if does not exist,
     # we need to download it without integrity checks.
@@ -536,6 +571,8 @@ def download_project_dependencies(
             notice(f'[{index + 1}/{number_of_components}] {str(component)}')
             download_path = None
 
+            component_path = managed_component_path(component, managed_components_path)
+
             try:
                 download_path = dependency_pre_download_check(component, managed_components_path)
             except ComponentModifiedError as e:
@@ -544,7 +581,7 @@ def download_project_dependencies(
 
             # Download component if it's not downloaded
             if download_path is None:
-                fetcher = ComponentFetcher(component, managed_components_path)
+                fetcher = ComponentFetcher(component, component_path)
                 download_path = fetcher.download()
 
                 # Validate the component after download
@@ -555,7 +592,12 @@ def download_project_dependencies(
                 continue
 
             downloaded_components.add(
-                DownloadedComponent(download_path, component.targets, str(component.version))
+                DownloadedComponent(
+                    download_path,
+                    component.targets,
+                    str(component.version),
+                    component_name=component.name,
+                )
             )
 
         if changed_components:

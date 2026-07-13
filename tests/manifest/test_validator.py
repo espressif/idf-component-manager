@@ -260,13 +260,14 @@ class TestManifestValidator:
         # Expected metadata at root-managed-components top level
         (managed_components_path / MANIFEST_FILENAME).write_text('dependencies: {}')
         (managed_components_path / 'dependencies.lock').write_text('')
+        (managed_components_path / 'root_components.lock').write_text('')
 
         # Unexpected file should still warn
         (managed_components_path / 'unexpected_file').write_text('test')
 
         from idf_component_manager import dependencies as deps
 
-        monkeypatch.setattr(deps, 'root_managed_components_dir', lambda: managed_components_path)
+        monkeypatch.setattr(deps, 'is_root_managed_components_path', lambda _path: True)
 
         detect_unused_components([], str(managed_components_path))
         assert len(recording_log.records) == 1
@@ -274,6 +275,7 @@ class TestManifestValidator:
         assert 'unexpected_file' in msg
         assert MANIFEST_FILENAME not in msg
         assert 'dependencies.lock' not in msg
+        assert 'root_components.lock' not in msg
 
     def test_env_ignore_unknown_files_empty(self, monkeypatch, tmp_path, recording_log):
         monkeypatch.setenv('IGNORE_UNKNOWN_FILES_FOR_MANAGED_COMPONENTS', '')
