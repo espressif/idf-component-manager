@@ -18,6 +18,7 @@ This section is for component authors and maintainers who want to package and pu
     how_to_upload_component
     how_to_github_actions_upload
     how_to_manifest_filters
+    how_to_lint_manifest
     how_to_examples
 
 .. toctree::

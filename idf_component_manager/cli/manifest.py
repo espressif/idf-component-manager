@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import json
+import os
 
 import rich_click as click
 
@@ -10,6 +11,7 @@ from idf_component_manager.cli.validations import (
     validate_git_url,
     validate_url,
 )
+from idf_component_manager.core import ComponentManager
 from idf_component_tools.manifest import MANIFEST_JSON_SCHEMA
 
 from .constants import get_profile_option, get_project_dir_option
@@ -80,6 +82,36 @@ def init_manifest():
         You can explicitly specify a directory using the ``--path`` option.
         """
         manager.create_manifest(component=component, path=path)
+
+    @manifest.command()
+    @click.argument('paths', nargs=-1, type=click.Path())
+    def lint(paths):
+        """
+        Validate manifest files (idf_component.yml) without modifying them.
+
+        Works like a standard linter:
+
+        \b
+        - With no PATHS, every manifest under the current directory is validated.
+        - A PATH that is a file validates that manifest directly.
+        - A PATH that is a directory validates every manifest found under it.
+
+        Valid manifests produce no output. The command exits with a non-zero status
+        code if any manifest is invalid.
+
+        This command intentionally accepts only positional PATHS; it does not
+        support the --component or --path options used by other manifest commands.
+
+        \b
+        Examples:
+        - $ compote manifest lint
+          Validate every manifest under the current directory.
+        - $ compote manifest lint components/foo
+          Validate every manifest under "components/foo".
+        - $ compote manifest lint components/foo/idf_component.yml
+          Validate a single manifest file.
+        """
+        ComponentManager(os.getcwd()).lint_manifest(paths=paths)
 
     @manifest.command()
     @add_options(

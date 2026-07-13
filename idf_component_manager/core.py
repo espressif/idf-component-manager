@@ -56,7 +56,7 @@ from idf_component_tools.manifest import (
     WEB_DEPENDENCY_REGEX,
     Manifest,
 )
-from idf_component_tools.messages import notice, warn
+from idf_component_tools.messages import error, notice, warn
 from idf_component_tools.registry.client_errors import (
     APIClientError,
     ComponentNotFound,
@@ -90,6 +90,7 @@ from .core_utils import (
 )
 from .dependencies import download_project_dependencies
 from .local_component_list import parse_component_list
+from .manifest_lint import LINT_PROBLEMS_EXIT_CODE, collect_manifests_for_lint
 from .sync import sync_components
 
 try:
@@ -230,6 +231,52 @@ class ComponentManager:
         manifest_filepath, created = self._get_manifest(component=component, path=path)
         if not created:
             notice(f'"{manifest_filepath}" already exists, skipping...')
+
+    @general_error_handler
+    def lint_manifest(
+        self,
+        paths: t.Optional[t.Iterable[str]] = None,
+    ) -> None:
+        """
+        Validate manifest files without modifying them, like a standard linter.
+
+        - With no ``paths``: recursively discover and validate every manifest
+          under the working directory.
+        - A ``path`` that points to a file: validate that manifest directly.
+        - A ``path`` that points to a directory: discover and validate every
+          manifest under it recursively.
+
+        Downloaded dependencies (``managed_components``), packaging artifacts
+        (``dist``), and hidden directories are skipped during discovery. Valid
+        manifests produce no output.
+
+        :param paths: Manifest files or directories to validate. Defaults to the
+            working directory.
+        :raises FatalError: With exit code ``LINT_PROBLEMS_EXIT_CODE`` (1) if any
+            manifest is invalid; with the default exit code for usage errors such
+            as a missing path or a file that is not a manifest.
+        """
+        raw_paths = list(paths) if paths else [str(self.path)]
+        manifest_paths = collect_manifests_for_lint(raw_paths)
+        if not manifest_paths:
+            raise FatalError(f'No manifest files ({MANIFEST_FILENAME}) found')
+
+        invalid_count = 0
+        for manifest_path in manifest_paths:
+            manifest_manager = ManifestManager(manifest_path, manifest_path.parent.name)
+            if manifest_manager.is_valid:
+                continue
+
+            invalid_count += 1
+            error(f'Manifest file "{manifest_path}" is not valid:')
+            for validation_error in manifest_manager.validation_errors:
+                error(validation_error)
+
+        if invalid_count:
+            raise FatalError(
+                f'{invalid_count} of {len(manifest_paths)} manifest files are not valid',
+                exit_code=LINT_PROBLEMS_EXIT_CODE,
+            )
 
     @general_error_handler
     def create_project_from_example(

@@ -1,0 +1,9 @@
+# Reusable pre-commit hook provided by idf-component-manager.
+# See https://pre-commit.com/#creating-new-hooks
+- id: manifest-lint
+  name: idf_component.yml manifest lint
+  description: Validate ESP-IDF component manifest files (idf_component.yml).
+  entry: compote manifest lint
+  language: python
+  files: (?:^|/)idf_component\.yml$
+  minimum_pre_commit_version: '2.9.0'

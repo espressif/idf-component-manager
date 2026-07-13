@@ -13,6 +13,7 @@ from jsonschema.exceptions import ValidationError
 from idf_component_manager.cli.core import initialize_cli
 from idf_component_manager.core import ComponentManager
 from idf_component_tools.constants import MANIFEST_FILENAME
+from idf_component_tools.errors import FatalError
 from idf_component_tools.manager import ManifestManager
 from tests.network_test_utils import use_vcr_or_real_env
 
@@ -347,3 +348,97 @@ def test_manifest_keeps_comments():
         assert all(
             comment in updated_content for comment in ['# Comment 1', '# Comment 2', '# Comment 3']
         )
+
+
+def _write_manifest(path: Path, content: str) -> None:
+    path.mkdir(parents=True, exist_ok=True)
+    (path / MANIFEST_FILENAME).write_text(content)
+
+
+def test_manifest_lint_valid_is_silent():
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        cli = initialize_cli()
+        _write_manifest(Path('main'), 'version: "1.0.0"\ndescription: A valid component\n')
+
+        result = runner.invoke(cli, ['manifest', 'lint'])
+
+        assert result.exit_code == 0
+        assert result.output.strip() == ''
+
+
+def test_manifest_lint_invalid_uses_exit_code_1():
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        cli = initialize_cli()
+        _write_manifest(Path('main'), 'version: not-a-version\n')
+
+        result = runner.invoke(cli, ['manifest', 'lint'])
+
+        assert result.exit_code != 0
+        assert isinstance(result.exception, FatalError)
+        assert result.exception.exit_code == 1
+        assert 'is not valid' in result.output
+
+
+def test_manifest_lint_directory_recurses():
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        cli = initialize_cli()
+        _write_manifest(Path('components') / 'foo', 'version: "1.2.3"\n')
+        _write_manifest(Path('components') / 'bar', 'version: not-a-version\n')
+
+        result = runner.invoke(cli, ['manifest', 'lint', 'components'])
+
+        assert isinstance(result.exception, FatalError)
+        assert '1 of 2 manifest files are not valid' in str(result.exception)
+
+
+def test_manifest_lint_single_file():
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        cli = initialize_cli()
+        _write_manifest(Path('components') / 'foo', 'version: "1.2.3"\n')
+
+        result = runner.invoke(cli, ['manifest', 'lint', 'components/foo/idf_component.yml'])
+
+        assert result.exit_code == 0
+        assert result.output.strip() == ''
+
+
+def test_manifest_lint_rejects_non_manifest_file():
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        cli = initialize_cli()
+        Path('random.yml').write_text('version: "1.0.0"\n')
+
+        result = runner.invoke(cli, ['manifest', 'lint', 'random.yml'])
+
+        assert isinstance(result.exception, FatalError)
+        assert 'not a manifest file' in str(result.exception)
+
+
+def test_manifest_lint_skips_excluded_directories():
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        cli = initialize_cli()
+        _write_manifest(Path('main'), 'version: "1.0.0"\n')
+        # Downloaded dependencies and packaging artifacts are not authored manifests.
+        _write_manifest(Path('managed_components') / 'espressif__foo', 'version: garbage!!!\n')
+        _write_manifest(Path('dist') / 'component', 'version: garbage!!!\n')
+
+        result = runner.invoke(cli, ['manifest', 'lint'])
+        assert result.exit_code == 0, result.output
+
+
+def test_manifest_lint_checks_excluded_directories_when_explicit():
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        cli = initialize_cli()
+        _write_manifest(Path('managed_components') / 'espressif__foo', 'version: garbage!!!\n')
+        _write_manifest(Path('dist') / 'component', 'version: garbage!!!\n')
+
+        result = runner.invoke(cli, ['manifest', 'lint', 'managed_components', 'dist'])
+
+        assert isinstance(result.exception, FatalError)
+        assert '2 of 2 manifest files are not valid' in str(result.exception)
