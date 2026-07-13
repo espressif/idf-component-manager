@@ -17,7 +17,7 @@ from idf_component_tools.utils import canonical_component_name
 FORMAT_VERSION = '1'
 
 # Shared instruction appended to every "state is missing/stale/corrupt" error.
-_INSTALL_COMMAND_HINT = 'Please run: python -m idf_component_manager.root_components'
+_INSTALL_COMMAND_HINT = 'Please run: compote cooking stock'
 
 
 @dataclass(frozen=True)

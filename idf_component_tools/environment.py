@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2023-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 """
 This module contains utility functions for working with environment variables.
@@ -94,6 +94,15 @@ class ComponentManagerSettings(BaseSettings):
     NO_COLORS: bool = Field(False, description='Disable colored output.')
 
     # GENERAL
+
+    WRAPPER: t.Optional[str] = Field(
+        None,
+        description="""
+            | Path to a Python wrapper used by ESP-IDF to invoke Component Manager.
+            | If set on the ESP-IDF side, calls are expected to use this wrapper instead
+            | of invoking ``compote`` directly.
+        """,
+    )
 
     CACHE_PATH: t.Optional[str] = Field(
         None,
