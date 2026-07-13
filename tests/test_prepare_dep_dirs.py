@@ -16,12 +16,24 @@ from idf_component_manager.cmake_component_requirements import (
 from idf_component_manager.core import ComponentManager
 from idf_component_manager.prepare_components.prepare import _component_list_file
 from idf_component_manager.utils import ComponentSource
-from idf_component_tools.config import Config, ConfigManager, ProfileItem
+from idf_component_tools.config import (
+    Config,
+    ConfigManager,
+    ProfileItem,
+    root_managed_components_dir,
+)
 from idf_component_tools.constants import IDF_COMPONENT_REGISTRY_URL
 from idf_component_tools.errors import FatalError
+from idf_component_tools.manager import ManifestManager
 from idf_component_tools.manifest import Manifest
 from idf_component_tools.registry.api_client import APIClient
 from idf_component_tools.registry.client_errors import NetworkConnectionError
+from idf_component_tools.root_managed_components import (
+    RootManagedComponentRecord,
+    RootManagedComponentsState,
+    RootManagedComponentsStateManager,
+    root_managed_component_path,
+)
 from idf_component_tools.utils import ProjectRequirements
 
 
@@ -673,6 +685,9 @@ def test_root_manifest_with_empty_dependencies_skips_download(tmp_path, monkeypa
     (tools_dir / 'idf_extra_components.yml').write_text(
         '# This file defines extra dependencies for ESP-IDF\n#dependencies:\n'
     )
+    root_dir = root_managed_components_dir()
+    root_dir.mkdir(parents=True)
+    (root_dir / 'stale').write_text('stale')
 
     calls = []
     original_download = __import__(
@@ -701,11 +716,11 @@ def test_root_manifest_with_empty_dependencies_skips_download(tmp_path, monkeypa
             'download_project_dependencies should not be called for root components '
             'when root manifest has no dependencies'
         )
+    assert root_dir.exists()
 
 
-def test_root_manifest_with_dependencies_triggers_download(tmp_path, monkeypatch):
-    """When root idf_extra_components.yml has dependencies,
-    download_project_dependencies should be called for them."""
+def test_root_manifest_with_dependencies_requires_installed_state(tmp_path, monkeypatch):
+    """When root idf_extra_components.yml has dependencies, configure asks to install them."""
     monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
     monkeypatch.setenv('IDF_TARGET', 'esp32')
     monkeypatch.setenv('IDF_PATH', str(tmp_path))
@@ -721,16 +736,7 @@ def test_root_manifest_with_dependencies_triggers_download(tmp_path, monkeypatch
         """)
     )
 
-    calls = []
-
-    def _tracking_download(*args, **kwargs):
-        calls.append(args)
-        return set()
-
-    with patch(
-        'idf_component_manager.core.download_project_dependencies',
-        side_effect=_tracking_download,
-    ):
+    with pytest.raises(FatalError, match='compote cooking stock'):
         _generate_lock_file(
             tmp_path,
             """
@@ -738,8 +744,176 @@ def test_root_manifest_with_dependencies_triggers_download(tmp_path, monkeypatch
             """,
         )
 
-    root_calls = [c for c in calls if 'root_managed_components' in str(c[1])]
-    assert len(root_calls) == 1, (
-        'download_project_dependencies should be called once for root components '
-        'when root manifest has dependencies'
+
+def test_root_manifest_with_installed_state_registers_resolved_components(tmp_path, monkeypatch):
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32')
+    monkeypatch.setenv('IDF_PATH', str(tmp_path))
+    monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path / 'idf-tools'))
+
+    tools_dir = tmp_path / 'tools'
+    tools_dir.mkdir()
+    manifest_path = tools_dir / 'idf_extra_components.yml'
+    manifest_path.write_text(
+        textwrap.dedent("""\
+        dependencies:
+          example/root:
+            version: '*'
+        """)
     )
+    manifest = ManifestManager(str(manifest_path), 'root').load()
+
+    root_component_path = root_managed_component_path(
+        root_managed_components_dir(), 'example/root', '1.0.0'
+    )
+    root_component_path.mkdir(parents=True)
+    (root_component_path / 'CMakeLists.txt').write_text('idf_component_register()\n')
+    (root_component_path / 'idf_component.yml').write_text(
+        textwrap.dedent("""\
+        name: example/root
+        version: 1.0.0
+        dependencies:
+          example/cmp:
+            matches:
+              - if: "target == esp32"
+                version: "^1.0"
+              - if: "target == esp32s3"
+                version: "^2.0"
+        """)
+    )
+
+    component_paths = {}
+    for version in ('1.0.0', '2.0.0'):
+        component_path = root_managed_component_path(
+            root_managed_components_dir(), 'example/cmp', version
+        )
+        component_path.mkdir(parents=True)
+        (component_path / 'CMakeLists.txt').write_text('idf_component_register()\n')
+        (component_path / 'idf_component.yml').write_text('dependencies: {}\n')
+        component_paths[version] = component_path
+
+    RootManagedComponentsStateManager().dump(
+        RootManagedComponentsState.from_records(
+            manifest.manifest_hash,
+            [
+                RootManagedComponentRecord(
+                    name='example/root',
+                    version='1.0.0',
+                    path=str(root_component_path),
+                ),
+                *[
+                    RootManagedComponentRecord(
+                        name='example/cmp',
+                        version=version,
+                        path=str(path),
+                    )
+                    for version, path in component_paths.items()
+                ],
+            ],
+        )
+    )
+
+    build_dir = tmp_path / 'build'
+    os.makedirs(tmp_path / 'main', exist_ok=True)
+    (tmp_path / 'main' / 'CMakeLists.txt').touch()
+    (tmp_path / 'main' / 'idf_component.yml').write_text('dependencies: {}\n')
+    os.makedirs(build_dir, exist_ok=True)
+
+    managed_components_list_file = build_dir / 'managed_components_list.temp.cmake'
+    local_components_list_file = build_dir / 'local_components_list.temp.yml'
+
+    # Use interface_version=6 so root managed components are injected via idf_build_component
+    ComponentManager(
+        path=str(tmp_path),
+        interface_version=6,
+    ).prepare_dep_dirs(
+        managed_components_list_file=str(managed_components_list_file),
+        component_list_file=_component_list_file(build_dir),
+        local_components_list_file=str(local_components_list_file),
+    )
+
+    managed_components_list = managed_components_list_file.read_text()
+    selected_path = Path(component_paths['1.0.0']).resolve().as_posix()
+    unused_path = Path(component_paths['2.0.0']).resolve().as_posix()
+    assert (
+        f'idf_build_component("{selected_path}" "idf_managed_components")'
+        in managed_components_list
+    )
+    assert unused_path not in managed_components_list
+
+
+def test_root_manifest_with_unresolved_installed_graph_requires_reinstall(tmp_path, monkeypatch):
+    monkeypatch.setenv('CI_TESTING_IDF_VERSION', '5.4.0')
+    monkeypatch.setenv('IDF_TARGET', 'esp32')
+    monkeypatch.setenv('IDF_PATH', str(tmp_path))
+    monkeypatch.setenv('IDF_TOOLS_PATH', str(tmp_path / 'idf-tools'))
+
+    tools_dir = tmp_path / 'tools'
+    tools_dir.mkdir()
+    manifest_path = tools_dir / 'idf_extra_components.yml'
+    manifest_path.write_text(
+        textwrap.dedent("""\
+        dependencies:
+          example/root:
+            version: '*'
+        """)
+    )
+    manifest = ManifestManager(str(manifest_path), 'root').load()
+
+    root_component_path = root_managed_component_path(
+        root_managed_components_dir(), 'example/root', '1.0.0'
+    )
+    root_component_path.mkdir(parents=True)
+    (root_component_path / 'CMakeLists.txt').write_text('idf_component_register()\n')
+    (root_component_path / 'idf_component.yml').write_text(
+        textwrap.dedent("""\
+        name: example/root
+        version: 1.0.0
+        dependencies:
+          example/cmp:
+            version: "^1.0"
+        """)
+    )
+
+    installed_component_path = root_managed_component_path(
+        root_managed_components_dir(), 'example/cmp', '2.0.0'
+    )
+    installed_component_path.mkdir(parents=True)
+    (installed_component_path / 'CMakeLists.txt').write_text('idf_component_register()\n')
+    (installed_component_path / 'idf_component.yml').write_text('dependencies: {}\n')
+    RootManagedComponentsStateManager().dump(
+        RootManagedComponentsState.from_records(
+            manifest.manifest_hash,
+            [
+                RootManagedComponentRecord(
+                    name='example/root',
+                    version='1.0.0',
+                    path=str(root_component_path),
+                ),
+                RootManagedComponentRecord(
+                    name='example/cmp',
+                    version='2.0.0',
+                    path=str(installed_component_path),
+                ),
+            ],
+        )
+    )
+
+    build_dir = tmp_path / 'build'
+    os.makedirs(tmp_path / 'main', exist_ok=True)
+    (tmp_path / 'main' / 'CMakeLists.txt').touch()
+    (tmp_path / 'main' / 'idf_component.yml').write_text('dependencies: {}\n')
+    os.makedirs(build_dir, exist_ok=True)
+
+    managed_components_list_file = build_dir / 'managed_components_list.temp.cmake'
+    local_components_list_file = build_dir / 'local_components_list.temp.yml'
+
+    with pytest.raises(FatalError, match='compote cooking stock'):
+        ComponentManager(
+            path=str(tmp_path),
+            interface_version=6,
+        ).prepare_dep_dirs(
+            managed_components_list_file=str(managed_components_list_file),
+            component_list_file=_component_list_file(build_dir),
+            local_components_list_file=str(local_components_list_file),
+        )

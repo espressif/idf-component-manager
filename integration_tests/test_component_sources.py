@@ -45,12 +45,7 @@ class TestComponentSources:
         assert 'cmp' in d['build_component_info']
         assert 'test__cmp' not in d['build_component_info']
 
-    # PACMAN-1207
-    # Now the test is skipped because it depend on the functionality implemented in the above MR
-    # which is not yet available in the released ESP-IDF versions.
-    # `root_dependecies` is a fixture to create root managed components,
-    # idf_managed_components (IDF_TOOLS_DIR/root_managed_components/idf<version>/managed_components)
-    # but now those components are never used by build system, so the test are not valid.
+    # PACMAN-1266
     @pytest.mark.parametrize(
         'project',
         [
@@ -69,7 +64,7 @@ class TestComponentSources:
         ],
         indirect=True,
     )
-    @pytest.mark.xfail(reason='not supported yet in ESP-IDF')
+    @pytest.mark.xfail(reason='Interface 6 not supported yet in ESP-IDF')
     def test_component_override_priority_with_same_name(self, project):
         res = project_action(project, 'reconfigure')
         assert 'Configuring done' in res

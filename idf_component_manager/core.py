@@ -25,7 +25,11 @@ from ruamel.yaml import YAML, CommentedMap
 from idf_component_manager.utils import ComponentSource, VersionSolverResolution
 from idf_component_tools import ComponentManagerSettings, debug
 from idf_component_tools.archive_tools import pack_archive, unpack_archive
-from idf_component_tools.build_system_tools import build_name, get_idf_path, is_component
+from idf_component_tools.build_system_tools import (
+    build_name,
+    get_idf_path,
+    is_component,
+)
 from idf_component_tools.config import root_managed_components_dir
 from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.debugger import KCONFIG_CONTEXT
@@ -66,6 +70,11 @@ from idf_component_tools.registry.client_errors import (
 from idf_component_tools.registry.service_details import (
     get_api_client,
     get_storage_client,
+)
+from idf_component_tools.root_managed_components import (
+    RootManagedComponentRecord,
+    RootManagedComponentsStateManager,
+    validate_root_manifest,
 )
 from idf_component_tools.semver.base import Version
 from idf_component_tools.sources import GitSource, WebServiceSource
@@ -211,11 +220,6 @@ class ComponentManager:
         os.makedirs(root_managed_components_dir(), exist_ok=True)
 
         return str(root_managed_components_dir())
-
-    @property
-    @lru_cache(1)
-    def root_managed_components_lock_path(self) -> str:
-        return os.path.join(self.root_managed_components_dir, 'dependencies.lock')
 
     def _get_manifest(
         self, component: str = 'main', path: t.Optional[str] = None
@@ -747,21 +751,26 @@ class ComponentManager:
         local_components_list_file=None,
     ):
         """Process all manifests and download all dependencies"""
-        # root core components
-        # root deps are only downloaded, but not doing anything else
-        # let the build system decide what to do with them
+        # Root managed components are installed ahead of configure time (via
+        # `compote cooking stock`). During configure we resolve the active target
+        # graph against the already-installed inventory.
+        root_managed_components: t.List[RootManagedComponentRecord] = []
         root_manifest_filepath = os.path.join(get_idf_path(), 'tools', 'idf_extra_components.yml')
         if os.path.isfile(root_manifest_filepath):
             manifest = ManifestManager(
                 root_manifest_filepath,
                 'root',
             ).load()
+            validate_root_manifest(manifest)
+            state_manager = RootManagedComponentsStateManager()
             if manifest.dependencies:
-                download_project_dependencies(
-                    ProjectRequirements([manifest]),
-                    self.root_managed_components_lock_path,
-                    self.root_managed_components_dir,
+                state = state_manager.load_required_current(
+                    manifest.manifest_hash, root_manifest_filepath
                 )
+                root_managed_components = state.select_for_manifest(manifest)
+            elif state_manager.exists():
+                # Require the installed state to match so a stale install is noticed.
+                state_manager.load_required_current(manifest.manifest_hash, root_manifest_filepath)
 
         # Find all components
         local_components = []
@@ -827,6 +836,23 @@ class ComponentManager:
                         f'idf_component_set_property({requirement.name} COMPONENT_VERSION "{requirement.version}")\n'
                     )
 
+            if root_managed_components and self.interface_version >= 6:
+                for record in root_managed_components:
+                    file.write(
+                        f'    idf_build_component("{record.posix_path}" "idf_managed_components")\n'
+                    )
+
+                for record in root_managed_components:
+                    file.write(
+                        f'idf_component_set_property({record.build_name} COMPONENT_VERSION "{record.version}")\n'
+                    )
+
+                    if record.targets:
+                        rec_targets = ' '.join(record.targets)
+                        file.write(
+                            f'idf_component_set_property({record.build_name} REQUIRED_IDF_TARGETS "{rec_targets}")\n'
+                        )
+
             for downloaded_component in downloaded_components:
                 file.write(
                     f'idf_build_component("{downloaded_component.abs_posix_path}" "project_managed_components")\n'
@@ -849,8 +875,8 @@ class ComponentManager:
         # Saving list of all components with manifests for use on requirements injection step
         all_components = sorted(
             {component.abs_path for component in downloaded_components}.union(
-                component['path'] for component in local_components
-            )
+                record.path for record in root_managed_components
+            ).union(component['path'] for component in local_components)
         )
         with open(component_list_file, mode='w', encoding='utf-8') as file:
             file.write('\n'.join(all_components))
