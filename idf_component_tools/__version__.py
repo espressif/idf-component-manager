@@ -2,4 +2,4 @@
 # SPDX-License-Identifier: Apache-2.0
 """IDF Component Tools Version"""
 
-__version__ = '3.0.3'
+__version__ = '3.1.0'
