@@ -676,3 +676,34 @@ class TestLockManager(object):
         lock_manager.dump(solution)
         assert 'path: components/cmp' in lock_path.read_text()
         assert 'path: components\\cmp' not in lock_path.read_text()
+
+    def test_local_source_on_different_windows_drive_uses_absolute_path_in_lock(
+        self, tmp_path, monkeypatch
+    ):
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
+
+        def fail_for_different_drives(*_args, **_kwargs):
+            raise ValueError("path is on mount 'C:', start on mount 'F:'")
+
+        monkeypatch.setattr(
+            'idf_component_tools.sources.local.os.path.relpath', fail_for_different_drives
+        )
+
+        cmp_dir = tmp_path / 'components' / 'cmp'
+        solution = SolvedManifest(
+            direct_dependencies=['cmp'],
+            dependencies=[
+                SolvedComponent(
+                    name='cmp',
+                    version=ComponentVersion('1.0.0'),
+                    source=LocalSource(path=str(cmp_dir)),
+                ),
+            ],
+        )
+        lock_path = tmp_path / 'dependencies.lock'
+
+        lock_manager = LockManager(lock_path)
+        lock_manager.dump(solution)
+
+        assert f'path: {cmp_dir}' in lock_path.read_text()
+        assert Path(lock_manager.load().dependencies[0].source.path).is_absolute()

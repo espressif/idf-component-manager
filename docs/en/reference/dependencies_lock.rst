@@ -8,6 +8,8 @@ If your project includes only :ref:`web-source` or :ref:`git-source`, it is reco
 
 If your project includes :ref:`local-source`, the ``dependencies.lock`` file should **not** be checked into version control. This is because it may contain local paths specific to your environment, which will not be available to other developers.
 
+Local dependency paths are stored relative to the lock file when possible. On Windows, if a local dependency and the lock file are on different drives, a relative path cannot be calculated, so the absolute path is stored instead.
+
 .. warning::
 
     The ``dependencies.lock`` file should not be manually edited. It must only be modified by the version solver.
