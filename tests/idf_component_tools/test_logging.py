@@ -8,42 +8,41 @@ from esp_pylib.logger import EspLog, Verbosity, log
 
 from idf_component_tools import debug, error, hint, notice, setup_logging, warn
 from idf_component_tools.errors import WarningAsExceptionError
-from idf_component_tools.logging import ComponentManagerLog, suppress_logging
+from idf_component_tools.logging import suppress_logging
 
 
 @pytest.fixture
 def real_logger():
-    """Temporarily replace the autouse RecordingLog with the real ComponentManagerLog.
+    """Temporarily replace the autouse RecordingLog with a real EspLog.
 
     The autouse fixture in conftest installs a capturing recorder for assertion
     convenience; tests in this module want to exercise the real logger machinery
     instead.
     """
     EspLog._reset()
-    ComponentManagerLog._reset()
     try:
         yield
     finally:
         EspLog._reset()
-        ComponentManagerLog._reset()
 
 
+@pytest.mark.usefixtures('real_logger')
 class TestSetupLogging:
-    def test_installs_component_manager_log(self, real_logger):  # noqa: ARG002
+    def test_installs_esp_log(self):
         setup_logging()
-        assert isinstance(EspLog.instance, ComponentManagerLog)
+        assert type(EspLog.instance) is EspLog
 
-    def test_debug_mode_enables_verbose(self, real_logger, monkeypatch):  # noqa: ARG002
+    def test_debug_mode_enables_verbose(self, monkeypatch):
         monkeypatch.setenv('IDF_COMPONENT_DEBUG_MODE', '1')
         setup_logging()
         assert EspLog.instance._verbosity == Verbosity.VERBOSE  # type: ignore[union-attr]
 
-    def test_default_mode_is_normal(self, real_logger, monkeypatch):  # noqa: ARG002
+    def test_default_mode_is_normal(self, monkeypatch):
         monkeypatch.delenv('IDF_COMPONENT_DEBUG_MODE', raising=False)
         setup_logging()
         assert EspLog.instance._verbosity == Verbosity.NORMAL  # type: ignore[union-attr]
 
-    def test_no_hints_env_suppresses_hint_output(self, real_logger, monkeypatch):  # noqa: ARG002
+    def test_no_hints_env_suppresses_hint_output(self, monkeypatch):
         monkeypatch.setenv('IDF_COMPONENT_NO_HINTS', '1')
         monkeypatch.delenv('IDF_COMPONENT_DEBUG_MODE', raising=False)
         setup_logging()
@@ -51,7 +50,7 @@ class TestSetupLogging:
             hint('this should be silenced')
             mock_hint.assert_not_called()
 
-    def test_debug_mode_overrides_no_hints(self, real_logger, monkeypatch):  # noqa: ARG002
+    def test_debug_mode_overrides_no_hints(self, monkeypatch):
         # Hints are always useful while debugging, so DEBUG_MODE wins over NO_HINTS.
         monkeypatch.setenv('IDF_COMPONENT_NO_HINTS', '1')
         monkeypatch.setenv('IDF_COMPONENT_DEBUG_MODE', '1')
@@ -60,7 +59,7 @@ class TestSetupLogging:
             hint('shown in debug mode')
             mock_hint.assert_called_once_with('shown in debug mode')
 
-    def test_hints_delegate_to_esp_pylib_when_enabled(self, real_logger, monkeypatch):  # noqa: ARG002
+    def test_hints_delegate_to_esp_pylib_when_enabled(self, monkeypatch):
         monkeypatch.delenv('IDF_COMPONENT_NO_HINTS', raising=False)
         setup_logging()
         with patch.object(EspLog, 'hint') as mock_hint:
@@ -68,28 +67,29 @@ class TestSetupLogging:
             mock_hint.assert_called_once_with('payload')
 
 
+@pytest.mark.usefixtures('real_logger')
 class TestWarningsAsErrors:
-    def test_warn_raises_when_enabled(self, real_logger):  # noqa: ARG002
+    def test_warn_raises_when_enabled(self):
         setup_logging(warnings_as_errors=True)
         with pytest.raises(WarningAsExceptionError, match='boom'):
             warn('boom')
 
-    def test_warn_does_not_raise_by_default(self, real_logger):  # noqa: ARG002
+    def test_warn_does_not_raise_by_default(self):
         setup_logging(warnings_as_errors=False)
-        with patch.object(ComponentManagerLog, 'note'):
-            # Should not raise; just call through to super().warn
-            warn('normal warning')
+        # Should not raise; just call through to EspLog.warn
+        warn('normal warning')
 
 
+@pytest.mark.usefixtures('real_logger')
 class TestSuppressLogging:
-    def test_silences_then_restores(self, real_logger):  # noqa: ARG002
+    def test_silences_then_restores(self):
         setup_logging()
         previous = EspLog.instance._verbosity  # type: ignore[union-attr]
         with suppress_logging():
             assert EspLog.instance._verbosity == Verbosity.SILENT  # type: ignore[union-attr]
         assert EspLog.instance._verbosity == previous  # type: ignore[union-attr]
 
-    def test_level_param_accepted_and_still_silences(self, real_logger):  # noqa: ARG002
+    def test_level_param_accepted_and_still_silences(self):
         setup_logging()
         previous = EspLog.instance._verbosity  # type: ignore[union-attr]
         with suppress_logging(50):
@@ -110,10 +110,11 @@ class TestLegacyApiReexports:
         assert logger.name == 'idf_component_tools'
 
 
+@pytest.mark.usefixtures('real_logger')
 class TestIdeWebSocketForwarding:
     """Verify the inherited IDE WebSocket forwarding still fires for warn/err."""
 
-    def test_warn_forwards_when_ws_enabled(self, real_logger, monkeypatch):  # noqa: ARG002
+    def test_warn_forwards_when_ws_enabled(self, monkeypatch):
         setup_logging()
         monkeypatch.setattr('esp_pylib.logger._ws_is_enabled', lambda: True)
         with patch('esp_pylib.logger.send_log_message') as mock_send:
@@ -122,7 +123,7 @@ class TestIdeWebSocketForwarding:
             assert mock_send.call_args.args[0] == 'warning'
             assert mock_send.call_args.args[1] == 'hello'
 
-    def test_err_forwards_when_ws_enabled(self, real_logger, monkeypatch):  # noqa: ARG002
+    def test_err_forwards_when_ws_enabled(self, monkeypatch):
         setup_logging()
         monkeypatch.setattr('esp_pylib.logger._ws_is_enabled', lambda: True)
         with patch('esp_pylib.logger.send_log_message') as mock_send:
@@ -131,7 +132,7 @@ class TestIdeWebSocketForwarding:
             assert mock_send.call_args.args[0] == 'error'
             assert mock_send.call_args.args[1] == 'boom'
 
-    def test_notice_does_not_forward(self, real_logger, monkeypatch):  # noqa: ARG002
+    def test_notice_does_not_forward(self, monkeypatch):
         setup_logging()
         monkeypatch.setattr('esp_pylib.logger._ws_is_enabled', lambda: True)
         with patch('esp_pylib.logger.send_log_message') as mock_send:
@@ -139,8 +140,9 @@ class TestIdeWebSocketForwarding:
             assert not mock_send.called
 
 
+@pytest.mark.usefixtures('real_logger')
 class TestLogProxy:
-    def test_proxy_delegates_to_installed_singleton(self, real_logger):  # noqa: ARG002
+    def test_proxy_delegates_to_installed_singleton(self):
         setup_logging()
         assert log.__class__.__name__ == '_LogProxy'  # type: ignore[attr-defined]
         # Touch an attribute to make sure delegation works.

@@ -15,7 +15,7 @@ from idf_component_manager.cli.validations import (
     validate_path_for_project,
 )
 from idf_component_manager.core import remove_dependency_from_project
-from idf_component_tools import error, setup_logging
+from idf_component_tools import configure_extension_logging, error
 from idf_component_tools.errors import FatalError
 from idf_component_tools.semver import Version
 from idf_component_tools.utils import UrlField, UrlOrFileField
@@ -169,7 +169,7 @@ argument_env_mapping: t.List[t.Dict[str, t.Any]] = [
 
 
 def action_extensions(base_actions, project_path):  # noqa: ARG001
-    setup_logging()
+    configure_extension_logging()
     install_exception_reporting()
 
     def callback(subcommand_name, ctx, args, **kwargs):  # noqa: ARG001

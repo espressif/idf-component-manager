@@ -4,9 +4,28 @@
 from esp_pylib.logger import log
 from rich.markup import escape
 
+from idf_component_tools.errors import WarningAsExceptionError
+
+# Component-manager policy flags. Kept here (not on an EspLog subclass) so they
+# work under idf.py when the process-active logger is EspLog / EsptoolLogger /
+# anything else — CM must not own EspLog.instance in that context.
+_no_hints: bool = False
+_warnings_as_errors: bool = False
+
 
 class UserDeprecationWarning(DeprecationWarning):
     """Deprecation warning for user"""
+
+
+def configure_message_flags(
+    *,
+    no_hints: bool = False,
+    warnings_as_errors: bool = False,
+) -> None:
+    """Set component-manager message policy flags."""
+    global _no_hints, _warnings_as_errors
+    _no_hints = no_hints
+    _warnings_as_errors = warnings_as_errors
 
 
 def _fmt(message: str, args: tuple) -> str:
@@ -40,7 +59,8 @@ def hint(message: str, *args, **kwargs) -> None:
 
     ``**kwargs`` are accepted for backwards compatibility — see ``debug`` for details.
     """
-    log.hint(_fmt(message, args))
+    if not _no_hints:
+        log.hint(_fmt(message, args))
 
 
 def notice(message: str, *args, **kwargs) -> None:
@@ -56,7 +76,10 @@ def warn(message: str, *args, **kwargs) -> None:
 
     ``**kwargs`` are accepted for backwards compatibility — see ``debug`` for details.
     """
-    log.warn(_fmt(message, args))
+    formatted = _fmt(message, args)
+    if _warnings_as_errors:
+        raise WarningAsExceptionError(formatted)
+    log.warn(formatted)
 
 
 def error(message: str, *args, **kwargs) -> None:
