@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
 import os
@@ -7,6 +7,7 @@ from abc import abstractmethod
 
 from idf_component_tools.file_cache import FileCache
 from idf_component_tools.hash_tools.checksums import ChecksumsModel
+from idf_component_tools.messages import warn
 from idf_component_tools.semver import SimpleSpec
 from idf_component_tools.utils import BaseModel, ComponentWithVersions, Literal
 
@@ -94,6 +95,29 @@ class BaseSource(BaseModel):
 
     def normalized_name(self, name: str) -> str:
         return name
+
+    @staticmethod
+    def _warn_if_component_name_mismatch(component_name: str, directory_name: str) -> None:
+        component_with_namespace = component_name.replace('/', '__')
+        namespace_and_component = component_name.split('/')
+        component_without_namespace = namespace_and_component[-1]
+        if directory_name in (component_without_namespace, component_with_namespace):
+            return
+
+        alternative_name = (
+            f' or "{component_with_namespace}"' if len(namespace_and_component) == 2 else ''
+        )
+        warn(
+            'Component name "{component_name}" doesn\'t match the '
+            'directory name "{directory_name}".\n'.format(
+                component_name=component_name,
+                directory_name=directory_name,
+            )
+            + 'ESP-IDF CMake build system uses directory names as names '
+            + 'of components, so different names may break '
+            + 'requirements resolution. To avoid the problem rename the component directory to '
+            + f'"{component_without_namespace}"{alternative_name}'
+        )
 
     def validate_version_spec(self, spec: str) -> bool:
         if not spec or spec == '*':
