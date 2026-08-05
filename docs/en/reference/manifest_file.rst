@@ -671,6 +671,8 @@ The path to the local directory containing the dependency. You can use either a 
 
 This field supports `environment variables`_.
 
+When the manifest is itself loaded from a Git dependency, ``path`` refers to another component in the same Git repository instead. See `Local paths in manifests loaded from Git`_.
+
 Example:
 
 .. code-block:: yaml
@@ -774,16 +776,16 @@ Example:
         # version: v1.0.0       # Tag
         # version: 1234567890abcdef1234567890abcdef12345678  # Commit hash
 
-``override_path`` in manifests loaded from Git
-----------------------------------------------
+Local paths in manifests loaded from Git
+----------------------------------------
 
-The ESP Component Registry dependencies declared in the ``idf_component.yml`` of a Git-based dependency may include an ``override_path`` field. In this case, the override path is resolved relative to the component's location in the same Git repository instead of the local filesystem of the machine performing dependency resolution.
+A dependency declared with ``path`` or ``override_path`` (and without ``git``) in the ``idf_component.yml`` of a Git-based dependency is resolved relative to the component's location in that Git repository.
 
 For portability, the dependency is recorded as another Git dependency that points to the same repository and is pinned to the same commit as the parent component.
 
 This behavior is useful for repositories that contain multiple components, where one component depends on another component from the same repository.
 
-If the resolved ``override_path`` would point outside the Git repository root, the override is ignored and the dependency is resolved normally (for example, from the ESP Component Registry). In this case, the Component Manager prints a warning.
+If a resolved ``path`` points outside the Git repository root, dependency resolution fails. If an ``override_path`` points outside the repository, the override is ignored and the dependency is resolved normally (for example, from the ESP Component Registry); the Component Manager prints a warning.
 
 .. _web-source:
 

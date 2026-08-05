@@ -1,19 +1,21 @@
 # SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 
-import os
 import shutil
 import subprocess
 import tempfile
 import textwrap
+from pathlib import Path
 
 import pytest
 
+from idf_component_tools.errors import FetchingError
 from idf_component_tools.git_client import GitClient
 from idf_component_tools.hash_tools.calculate import hash_dir
 from idf_component_tools.manager import ManifestManager
-from idf_component_tools.manifest.models import ComponentRequirement
+from idf_component_tools.manifest.models import ComponentRequirement, SolvedComponent
 from idf_component_tools.sources import GitSource
+from idf_component_tools.utils import ComponentVersion
 
 COMMIT_ID = '38041fa9e7f8a79b8ff8cd247c73cf92b7e3c23a'
 
@@ -39,12 +41,11 @@ def git_repository_with_manifest(hash_component, tmp_path):
 
 
 @pytest.fixture()
-def git_repository_with_override_path(tmp_path):
-    """Create a git repo with two components where one has an override_path dependency on the other."""
-    repo_dir = tmp_path / 'override_repo'
+def git_repository_with_local_paths(tmp_path):
+    """Create a git repo with components linked by path and override_path dependencies."""
+    repo_dir = tmp_path / 'local_paths_repo'
     repo_dir.mkdir()
 
-    # Create component_a at components/cmp_a with override_path dep on cmp_b
     cmp_a_dir = repo_dir / 'components' / 'cmp_a'
     cmp_a_dir.mkdir(parents=True)
     (cmp_a_dir / 'CMakeLists.txt').write_text('idf_component_register()')
@@ -55,10 +56,11 @@ def git_repository_with_override_path(tmp_path):
               cmp_b:
                 version: "*"
                 override_path: "../cmp_b"
+              cmp_c:
+                path: "../cmp_c"
         """)
     )
 
-    # Create component_b at components/cmp_b
     cmp_b_dir = repo_dir / 'components' / 'cmp_b'
     cmp_b_dir.mkdir(parents=True)
     (cmp_b_dir / 'CMakeLists.txt').write_text('idf_component_register()')
@@ -67,6 +69,11 @@ def git_repository_with_override_path(tmp_path):
             version: 2.0.0
         """)
     )
+
+    cmp_c_dir = repo_dir / 'components' / 'cmp_c'
+    cmp_c_dir.mkdir(parents=True)
+    (cmp_c_dir / 'CMakeLists.txt').write_text('idf_component_register()')
+    (cmp_c_dir / 'idf_component.yml').write_text('version: 3.0.0')
 
     subprocess.check_output(['git', 'init', repo_dir.as_posix()])
     subprocess.check_output(
@@ -125,10 +132,10 @@ def test_versions_component_hash(git_repository_with_manifest):
     assert component.versions[0].component_hash == expected_hash
 
 
-def test_resolve_override_path_to_git_dependency(git_repository_with_override_path):
+def test_resolve_override_path_to_git_dependency(git_repository_with_local_paths):
     """Test that override_path in a git component's manifest is resolved to a git
     dependency pointing to the same repo and commit."""
-    repo_path = git_repository_with_override_path.as_posix()
+    repo_path = git_repository_with_local_paths.as_posix()
 
     source = GitSource(git=repo_path, path='components/cmp_a')
     component = source.versions('cmp_a')
@@ -136,18 +143,70 @@ def test_resolve_override_path_to_git_dependency(git_repository_with_override_pa
     assert len(component.versions) == 1
     version = component.versions[0]
 
-    # Should have one dependency (cmp_b), transformed to a git source
-    assert len(version.dependencies) == 1
-    dep = version.dependencies[0]
-    assert dep.name == 'cmp_b'
+    dep = next(dep for dep in version.dependencies if dep.name == 'cmp_b')
 
     # The dependency should be a GitSource pointing to the same repo
     assert dep.source.type == 'git'
     assert dep.source.git == repo_path
-    assert dep.source.path == os.path.join('components', 'cmp_b')
+    assert dep.source.path == 'components/cmp_b'
 
     # The version should be pinned to the same commit
     assert dep.version == str(version.version)
+
+
+def test_resolve_path_to_git_dependency(git_repository_with_local_paths):
+    repo_path = git_repository_with_local_paths.as_posix()
+
+    source = GitSource(git=repo_path, path='components/cmp_a')
+    version = source.versions('cmp_a').versions[0]
+    dep = next(dep for dep in version.dependencies if dep.name == 'cmp_c')
+
+    assert dep.source.type == 'git'
+    assert dep.source.git == repo_path
+    assert dep.source.path == 'components/cmp_c'
+    assert dep.version == str(version.version)
+
+
+def test_resolve_path_with_env_var(monkeypatch):
+    monkeypatch.setenv('COMP_PATH', '../cmp_b')
+    source = GitSource(git='https://example.com/repo.git', path='components/cmp_a')
+    dep = ComponentRequirement(name='cmp_b', path='$COMP_PATH')
+
+    resolved = source._resolve_local_paths([dep], 'abc123def456')
+
+    assert resolved[0].source.path == 'components/cmp_b'
+
+
+def test_resolve_override_path_wins_over_path(recording_log):
+    source = GitSource(git='https://example.com/repo.git', path='components/cmp_a')
+    dep = ComponentRequirement(name='cmp', path='../cmp_c', override_path='../cmp_b')
+
+    resolved = source._resolve_local_paths([dep], 'abc123def456')
+
+    assert resolved[0].source.path == 'components/cmp_b'
+    assert len(recording_log.records) == 1
+    assert (
+        'Using "override_path" relative to the parent Git repository '
+        '"https://example.com/repo.git".' in recording_log.records[0].message
+    )
+
+
+def test_resolve_invalid_override_path_falls_back_to_path(recording_log):
+    source = GitSource(git='https://example.com/repo.git', path='components/cmp_a')
+    dep = ComponentRequirement(
+        name='cmp_c',
+        path='../cmp_c',
+        override_path='../../../outside_repo',
+    )
+
+    resolved = source._resolve_local_paths([dep], 'abc123def456')
+
+    assert resolved[0].override_path is None
+    assert resolved[0].source.type == 'git'
+    assert resolved[0].source.path == 'components/cmp_c'
+    assert len(recording_log.records) == 1
+    assert 'The override will be ignored.' in recording_log.records[0].message
+    assert 'registry' not in recording_log.records[0].message
 
 
 @pytest.mark.parametrize(
@@ -170,7 +229,7 @@ def test_resolve_override_path_outside_repo_falls_back_to_registry(override_path
     )
     commit_id = 'abc123def456'
 
-    result = source._resolve_override_paths([dep], commit_id)
+    result = source._resolve_local_paths([dep], commit_id)
 
     # Should fall back to registry — override_path dropped
     assert len(result) == 1
@@ -179,16 +238,32 @@ def test_resolve_override_path_outside_repo_falls_back_to_registry(override_path
     assert result[0].version == '>=1.0.0'
 
 
-def test_resolve_override_path_preserves_non_override_deps():
-    """Test that dependencies without override_path are passed through unchanged."""
+@pytest.mark.parametrize(
+    'path',
+    [
+        '../../../outside_repo',
+        './../../../../../../etc',
+        '/absolute/path',
+        '../../../../',
+        '$OUTSIDE_PATH',
+    ],
+)
+def test_resolve_path_outside_repo_fails(path, monkeypatch):
+    monkeypatch.setenv('OUTSIDE_PATH', '../../../outside_repo')
+    source = GitSource(git='https://example.com/repo.git', path='components/cmp_a')
+    dep = ComponentRequirement(name='local_cmp', path=path)
+
+    with pytest.raises(FetchingError, match='points outside the git repository'):
+        source._resolve_local_paths([dep], 'abc123def456')
+
+
+def test_resolve_local_paths_preserves_non_local_deps():
     source = GitSource(git='https://example.com/repo.git', path='components/cmp_a')
 
-    # A regular registry dependency (no override_path)
     dep_registry = ComponentRequirement(
         name='example/some_dep',
         version='>=1.0.0',
     )
-    # A git dependency (already has git, should not be transformed)
     dep_git = ComponentRequirement(
         name='other_cmp',
         version='main',
@@ -197,9 +272,35 @@ def test_resolve_override_path_preserves_non_override_deps():
     )
 
     commit_id = 'abc123def456'
-    result = source._resolve_override_paths([dep_registry, dep_git], commit_id)
+    result = source._resolve_local_paths([dep_registry, dep_git], commit_id)
 
     assert len(result) == 2
     assert result[0].source.type == 'service'
     assert result[1].source.type == 'git'
     assert result[1].source.git == 'https://example.com/other.git'
+    assert result[1].source.path == 'lib'
+    assert result[1].version == 'main'
+
+
+def test_git_path_name_warning(monkeypatch, tmp_path, recording_log):
+    source = GitSource(git='https://example.com/repo.git', path='components/cmp_c')
+    component = SolvedComponent(
+        name='cmp_b',
+        version=ComponentVersion(COMMIT_ID),
+        component_hash='hash',
+        source=source,
+    )
+
+    def fake_checkout(self, version, path, selected_paths=None):  # noqa: ARG001
+        component_path = Path(path) / 'components' / 'cmp_c'
+        component_path.mkdir(parents=True)
+        (component_path / 'CMakeLists.txt').write_text('idf_component_register()')
+        return COMMIT_ID
+
+    monkeypatch.setattr(GitSource, '_checkout_git_source', fake_checkout)
+
+    source.download(component, (tmp_path / 'download').as_posix())
+
+    assert 'Component name "cmp_b" doesn\'t match the directory name "cmp_c"' in str(
+        recording_log.records[0].message
+    )
