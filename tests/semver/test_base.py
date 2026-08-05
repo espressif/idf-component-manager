@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # SPDX-FileCopyrightText: 2016 Python-SemanticVersion project
 # SPDX-License-Identifier: BSD 2-Clause License
-# SPDX-FileContributor: 2022-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2026 Espressif Systems (Shanghai) CO LTD
 """Test the various functions from 'base'."""
 
 import unittest
@@ -159,9 +159,13 @@ class VersionTestCase(unittest.TestCase):
             with self.subTest(text=text):
                 version = base.Version(text)
                 self.assertEqual(text, str(version))
-                self.assertEqual(
-                    "Version('%s', revision=%d)" % (text, version.revision), repr(version)
-                )
+                self.assertEqual("Version('%s')" % (text), repr(version))
+
+    def test_revision_is_a_version_part(self):
+        for revision in (0, 1):
+            with self.subTest(revision=revision):
+                with self.assertRaises(ValueError):
+                    base.Version('1.2.3', revision=revision)
 
     def test_compare_to_self(self):
         for text in self.versions:
@@ -364,23 +368,28 @@ class CoerceTestCase(unittest.TestCase):
         # Dict of target: [list of equivalents]
         '0.0.0': ('0', '0.0', '0.0.0', '0.0.0+', '0-', '0~'),
         '0.1.0': ('0.1', '0.1+', '0.1-', '0.1~', '0.1.0', '0.01.0', '000.0001.0000000000'),
-        '0.1.0+2': ('0.1.0+2', '0.1.0.2', '0.1~1+2'),
-        '0.1.0+2.3.4': ('0.1.0+2.3.4', '0.1.0+2+3+4', '0.1.0~1+2+3+4', '0.1.0.2+3+4'),
+        '0.1.0+2': ('0.1.0+2', '0.1.0.2'),
+        '0.1.0+2.3.4': ('0.1.0+2.3.4', '0.1.0+2+3+4', '0.1.0.2+3+4'),
         '0.1.0+2-3.4': (
             '0.1.0+2-3.4',
             '0.1.0+2-3+4',
-            '0.1.0~1+2-3+4',
             '0.1.0.2-3+4',
             '0.1.0.2_3+4',
         ),
-        '0.1.0-a2.3': ('0.1.0-a2.3', '0.1.0a2.3', '0.1.0~1_a2.3', '0.1.0_a2.3'),
+        '0.1.0-a2.3': ('0.1.0-a2.3', '0.1.0a2.3', '0.1.0_a2.3'),
         '0.1.0-a2.3+4.5-6': (
             '0.1.0-a2.3+4.5-6',
             '0.1.0a2.3+4.5-6',
             '0.1.0a2.3+4.5_6',
-            '0.1.0~1a2.3+4.5_6',
             '0.1.0a2.3+4+5/6',
         ),
+        # The `~<number>` revision suffix is preserved
+        '0.1.0~1': ('0.1~1', '0.1.0~1', '0.01.0~1'),
+        '0.1.0~1+2': ('0.1~1+2', '0.1.0~1+2'),
+        '0.1.0~1+2.3.4': ('0.1.0~1+2+3+4',),
+        '0.1.0~1+2-3.4': ('0.1.0~1+2-3+4',),
+        '0.1.0~1-a2.3': ('0.1.0~1_a2.3',),
+        '0.1.0~1-a2.3+4.5-6': ('0.1.0~1a2.3+4.5_6',),
     }
 
     def test_coerce(self):
@@ -390,6 +399,14 @@ class CoerceTestCase(unittest.TestCase):
                 with self.subTest(target=equivalent, sample=sample):
                     v_sample = base.Version.coerce(sample)
                     self.assertEqual(target, v_sample)
+                    self.assertEqual(target.revision, v_sample.revision)
+
+    def test_coerce_revision(self):
+        self.assertEqual(2, base.Version.coerce('0.1~2').revision)
+        self.assertEqual('0.1.0~2', str(base.Version.coerce('0.1~2')))
+        self.assertEqual(0, base.Version.coerce('0.1').revision)
+        # An empty revision is not part of the numerical component
+        self.assertEqual(0, base.Version.coerce('0.1~').revision)
 
     def test_invalid(self):
         self.assertRaises(ValueError, base.Version.coerce, 'v1')
