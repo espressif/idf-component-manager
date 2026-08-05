@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2016 Python-SemanticVersion project
 # SPDX-License-Identifier: BSD 2-Clause License
-# SPDX-FileContributor: 2022-2024 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileContributor: 2022-2026 Espressif Systems (Shanghai) CO LTD
 from __future__ import annotations
 
 import functools
@@ -90,7 +90,7 @@ class Version:
         build=None,
     ):
         has_text = version_string is not None
-        has_parts = not (major is minor is patch is prerelease is build is None)
+        has_parts = not (major is minor is patch is revision is prerelease is build is None)
         if not has_text ^ has_parts:
             raise ValueError("Call either Version('1.2.3') or Version(major=1, ...).")
 
@@ -182,15 +182,15 @@ class Version:
 
         Examples:
             >>> Version.coerce('0.1')
-            Version(0, 1, 0, 1)
+            Version('0.1.0', revision=0)
             >>> Version.coerce('0.1.2.3')
-            Version(0, 1, 2, 1, (), ('3',))
+            Version('0.1.2+3', revision=0)
             >>> Version.coerce('0.1.2.3+4')
-            Version(0, 1, 2, 1, (), ('3', '4'))
+            Version('0.1.2+3.4', revision=0)
             >>> Version.coerce('0.1+2-3+4_5')
-            Version(0, 1, 0, 1, (), ('2-3', '4-5'))
+            Version('0.1.0+2-3.4-5', revision=0)
             >>> Version.coerce('0.1~2')
-            Version(0, 1, 0, 2)
+            Version('0.1.0~2', revision=2)
         """
         base_re = re.compile(r'^\d+(?:\.\d+(?:\.\d+)?)?(?:~\d+)?')
 
@@ -216,8 +216,13 @@ class Version:
             for part in version.split('.')
         )
 
+        # Version accepts either a version string or component keywords, so
+        # preserve the revision by including it in the string.
+        if revision:
+            version = f'{version}~{revision}'
+
         if match.end() == len(version_string):
-            return Version(version, revision=revision)
+            return cls(version)
 
         rest = version_string[match.end() :]
 
@@ -250,7 +255,7 @@ class Version:
         if build:
             version = f'{version}+{build}'
 
-        return cls(version, revision=revision)
+        return cls(version)
 
     @classmethod
     def parse(cls, version_string):
@@ -354,10 +359,9 @@ class Version:
         return version
 
     def __repr__(self):
-        return '%s(%r, revision=%d)' % (
+        return '%s(%r)' % (
             self.__class__.__name__,
             str(self),
-            self.revision,
         )
 
     def __hash__(self):
@@ -722,7 +726,7 @@ class Matcher(Clause):
 class Never(Matcher):
     __slots__: t.List[str] = []
 
-    def match(self, version):
+    def match(self, version):  # noqa: ARG002
         return False
 
     def __hash__(self):
@@ -744,7 +748,7 @@ class Never(Matcher):
 class Always(Matcher):
     __slots__: t.List[str] = []
 
-    def match(self, version):
+    def match(self, version):  # noqa: ARG002
         return True
 
     def __hash__(self):
