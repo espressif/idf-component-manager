@@ -6,30 +6,27 @@ from contextlib import contextmanager
 from esp_pylib.logger import EspLog, Verbosity
 
 from idf_component_tools.environment import ComponentManagerSettings
-from idf_component_tools.errors import WarningAsExceptionError
+from idf_component_tools.messages import configure_message_flags, debug
 
 
-class ComponentManagerLog(EspLog):
+def _log_truststore_status() -> None:
+    """Log truststore availability without claiming EspLog.instance.
+
+    Injection stays at import in ``idf_component_manager.core``; this only
+    re-checks importability for the debug line. Skip when no logger is
+    installed yet so ``debug()`` cannot materialize a default EspLog.
     """
-    EspLog subclass for the IDF Component Manager.
-
-    Adds two component-manager-specific flags:
-      _no_hints:            suppresses hint() output (set from NO_HINTS env var).
-      _warnings_as_errors:  when set, warn() raises WarningAsExceptionError.
-    """
-
-    _no_hints: bool = False
-    _warnings_as_errors: bool = False
-
-    def warn(self, message: str, suggestion: t.Optional[str] = None) -> None:
-        if self._warnings_as_errors:
-            raise WarningAsExceptionError(message)
-        super().warn(message, suggestion=suggestion)
-
-    def hint(self, message: str) -> None:
-        """esp-pylib hint(), suppressible via NO_HINTS=1."""
-        if not self._no_hints:
-            super().hint(message)
+    if EspLog.instance is None:
+        return
+    try:
+        import truststore  # noqa: F401
+    except ImportError:
+        debug(
+            'Failed to import truststore, '
+            "the 'certifi' package will be used as a source of trusted certificates"
+        )
+    else:
+        debug('Use truststore as a source of trusted certificates')
 
 
 @contextmanager
@@ -54,12 +51,36 @@ def suppress_logging(level: t.Optional[int] = None):  # type: ignore[return]
 
 
 def setup_logging(warnings_as_errors: bool = False) -> None:
-    """Set up the component manager logger as the global esp-pylib singleton."""
+    """Install and configure the process logger when component manager is the app.
+
+    Call only from CLI / prepare_components entry points — never from idf.py
+    extension registration (use ``configure_extension_logging`` there).
+    """
     settings = ComponentManagerSettings()
-    EspLog._reset()
-    ComponentManagerLog._reset()
-    instance = ComponentManagerLog(no_color=settings.NO_COLORS or None)
-    instance._no_hints = settings.NO_HINTS and not settings.DEBUG_MODE
-    instance._warnings_as_errors = warnings_as_errors
+    configure_message_flags(
+        no_hints=settings.NO_HINTS and not settings.DEBUG_MODE,
+        warnings_as_errors=warnings_as_errors,
+    )
+    # Clear the active slot so EspLog() constructs a fresh instance. EspLog.__new__
+    # returns whatever is already in EspLog.instance (including foreign loggers),
+    # so we must empty the slot before claiming ownership. Avoid EspLog._reset()
+    # (documented for tests only).
+    EspLog.instance = None
+    instance = EspLog(no_color=settings.NO_COLORS or None)
     instance.set_verbosity(Verbosity.VERBOSE if settings.DEBUG_MODE else Verbosity.NORMAL)
     EspLog.set_logger(instance)
+    _log_truststore_status()
+
+
+def configure_extension_logging() -> None:
+    """Apply component-manager message policy without owning EspLog.instance.
+
+    Used from idf.py ``action_extensions()`` so CM does not hijack the host
+    process logger (colour / verbosity / singleton type stay with idf.py).
+    """
+    settings = ComponentManagerSettings()
+    configure_message_flags(
+        no_hints=settings.NO_HINTS and not settings.DEBUG_MODE,
+        warnings_as_errors=False,
+    )
+    _log_truststore_status()

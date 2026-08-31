@@ -3,7 +3,7 @@
 import logging as lib_logging
 
 from idf_component_tools.environment import ComponentManagerSettings
-from idf_component_tools.logging import setup_logging
+from idf_component_tools.logging import configure_extension_logging, setup_logging
 from idf_component_tools.messages import (
     debug,
     error,
@@ -29,6 +29,7 @@ def get_logger() -> lib_logging.Logger:
 
 __all__ = [
     'ComponentManagerSettings',
+    'configure_extension_logging',
     'debug',
     'error',
     'get_logger',
