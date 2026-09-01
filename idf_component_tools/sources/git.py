@@ -99,6 +99,10 @@ class GitSource(BaseSource):
         if not component.version:
             raise FetchingError(f'Version should provided for {component.name}')
 
+        directory_name = posixpath.basename(posixpath.normpath(self.repo_path))
+        if directory_name:
+            self._warn_if_component_name_mismatch(component.name, directory_name)
+
         temp_dir = tempfile.mkdtemp()
         try:
             self._checkout_git_source(component.version, temp_dir, selected_paths=[self.repo_path])
@@ -133,60 +137,89 @@ class GitSource(BaseSource):
 
         return download_path
 
-    def _resolve_override_paths(
+    def _resolve_local_paths(
         self,
         dependencies: t.List['ComponentRequirement'],
         commit_id: str,
     ) -> t.List['ComponentRequirement']:
-        """Transform override_path dependencies into git dependencies within the same repo.
+        """Transform local dependencies into git dependencies within the same repository.
 
-        When a git-fetched component's manifest declares a dependency with override_path,
-        that path typically points to another component within the same git repository.
-        Instead of treating it as a local path (which would fail since it doesn't exist
-        on the user's machine), we resolve it to a git dependency pointing to the same
-        repository and commit. This keeps the lock file portable across machines.
+        Relative path and override_path dependencies in a git-fetched component refer to
+        other components in that repository. Resolving them as git dependencies keeps the
+        lock file portable after the temporary checkout is removed.
         """
         resolved = []
         for dep in dependencies:
+            local_paths = []
             if dep.override_path:
-                repo_relative_path = posixpath.normpath(
-                    posixpath.join(self.repo_path, dep.override_path)
-                )
+                local_paths.append(('override_path', dep.override_path))
+            if dep.path and not dep.git:
+                local_paths.append(('path', dep.path))
+
+            if not local_paths:
+                resolved.append(dep)
+                continue
+
+            repo_relative_path = None
+            for field_name, local_path in local_paths:
+                local_path = subst_vars_in_str(local_path)
+                candidate_path = posixpath.normpath(posixpath.join(self.repo_path, local_path))
 
                 virtual_repo_root = '/__idf_component_repo__'
-                resolved_abs = posixpath.normpath(
-                    posixpath.join(virtual_repo_root, repo_relative_path)
-                )
+                resolved_abs = posixpath.normpath(posixpath.join(virtual_repo_root, candidate_path))
 
-                if resolved_abs != virtual_repo_root and not resolved_abs.startswith(
+                if resolved_abs == virtual_repo_root or resolved_abs.startswith(
                     virtual_repo_root + '/'
                 ):
+                    if field_name == 'override_path' and dep.path:
+                        warn(
+                            'Both "path" and "override_path" are set for dependency "{}". '
+                            'Using "override_path" relative to the parent Git repository "{}".'.format(
+                                dep.name,
+                                self.repo,
+                            )
+                        )
+                    repo_relative_path = candidate_path
+                    break
+
+                if field_name == 'override_path':
                     warn(
                         'Ignoring override_path "{}" for dependency "{}": '
                         'path leads outside the git repository "{}". '
-                        'The component will be resolved from the registry instead.'.format(
+                        'The override will be ignored.'.format(
                             dep.override_path,
                             dep.name,
                             self.repo,
                         )
                     )
-                    new_dep = dep.model_copy(update={'override_path': None})
-                    new_dep._source = None
-                    resolved.append(new_dep)
                     continue
 
-                new_dep = dep.model_copy(
-                    update={
-                        'override_path': None,
-                        'version': commit_id,
-                        'git': self.git,
-                        'path': repo_relative_path,
-                    }
+                raise FetchingError(
+                    'The "path" field for dependency "{}" in git component "{}" '
+                    'points outside the git repository "{}": "{}".'.format(
+                        dep.name,
+                        self.repo_path,
+                        self.repo,
+                        dep.path,
+                    )
                 )
+
+            if repo_relative_path is None:
+                new_dep = dep.model_copy(update={'override_path': None})
                 new_dep._source = None
                 resolved.append(new_dep)
                 continue
-            resolved.append(dep)
+
+            new_dep = dep.model_copy(
+                update={
+                    'override_path': None,
+                    'version': commit_id,
+                    'git': self.git,
+                    'path': repo_relative_path,
+                }
+            )
+            new_dep._source = None
+            resolved.append(new_dep)
         return resolved
 
     def versions(self, name, spec='*', target=None):
@@ -221,7 +254,7 @@ class GitSource(BaseSource):
             if os.path.isfile(manifest_path):
                 manifest = ManifestManager(manifest_path, name=name).load()
                 dependencies = manifest.raw_requirements
-                dependencies = self._resolve_override_paths(dependencies, commit_id)
+                dependencies = self._resolve_local_paths(dependencies, commit_id)
                 use_gitignore = manifest.use_gitignore
 
                 if manifest.targets:  # only check when exists
