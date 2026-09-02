@@ -99,7 +99,11 @@ class GitSource(BaseSource):
         if not component.version:
             raise FetchingError(f'Version should provided for {component.name}')
 
+        # Repo-root git deps use path "." — basename(".") is not a component directory.
+        # Compare the install dir (what CMake sees) instead.
         directory_name = posixpath.basename(posixpath.normpath(self.repo_path))
+        if directory_name == '.':
+            directory_name = os.path.basename(os.path.normpath(download_path))
         if directory_name:
             self._warn_if_component_name_mismatch(component.name, directory_name)
 
