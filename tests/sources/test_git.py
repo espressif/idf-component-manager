@@ -304,3 +304,47 @@ def test_git_path_name_warning(monkeypatch, tmp_path, recording_log):
     assert 'Component name "cmp_b" doesn\'t match the directory name "cmp_c"' in str(
         recording_log.records[0].message
     )
+
+
+def _fake_repo_root_checkout(self, version, path, selected_paths=None):  # noqa: ARG001
+    Path(path).mkdir(parents=True, exist_ok=True)
+    (Path(path) / 'CMakeLists.txt').write_text('idf_component_register()')
+    return COMMIT_ID
+
+
+@pytest.mark.parametrize('git_path', ['.', './', None])
+def test_git_repo_root_no_name_warning(monkeypatch, tmp_path, recording_log, git_path):
+    kwargs = {'git': 'https://example.com/repo.git'}
+    if git_path is not None:
+        kwargs['path'] = git_path
+    source = GitSource(**kwargs)
+    component = SolvedComponent(
+        name='my_cmp',
+        version=ComponentVersion(COMMIT_ID),
+        component_hash='hash',
+        source=source,
+    )
+
+    monkeypatch.setattr(GitSource, '_checkout_git_source', _fake_repo_root_checkout)
+
+    source.download(component, (tmp_path / 'my_cmp').as_posix())
+
+    assert not recording_log.records
+
+
+def test_git_repo_root_warns_on_install_dir_mismatch(monkeypatch, tmp_path, recording_log):
+    source = GitSource(git='https://example.com/repo.git')
+    component = SolvedComponent(
+        name='my_cmp',
+        version=ComponentVersion(COMMIT_ID),
+        component_hash='hash',
+        source=source,
+    )
+
+    monkeypatch.setattr(GitSource, '_checkout_git_source', _fake_repo_root_checkout)
+
+    source.download(component, (tmp_path / 'other_name').as_posix())
+
+    assert 'Component name "my_cmp" doesn\'t match the directory name "other_name"' in str(
+        recording_log.records[0].message
+    )
