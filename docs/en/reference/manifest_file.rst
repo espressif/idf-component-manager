@@ -474,7 +474,7 @@ The following table outlines the supported comparison types for the ``if`` field
 
 .. versionadded:: 2.2.0
 
-    - Support for `kconfig options`_ as left values (requires ESP-IDF >=6.0)
+    - Support for `kconfig options`_ as left values (requires ESP-IDF >=5.5, or patch releases >=5.3.5 and >=5.4.3)
     - Support for ``boolean``, ``integer``, and ``hexadecimal integer`` data types in `kconfig options`_
 
 .. warning::
