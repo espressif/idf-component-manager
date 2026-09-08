@@ -1,11 +1,13 @@
-# SPDX-FileCopyrightText: 2024-2025 Espressif Systems (Shanghai) CO LTD
+# SPDX-FileCopyrightText: 2024-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
 import shutil
+from pathlib import Path
 
 import pytest
 import requests_mock
 
 from idf_component_manager.core import ComponentManager
+from idf_component_tools.archive_tools import unpack_archive
 from idf_component_tools.errors import FatalError, NothingToDoError
 from tests.network_test_utils import use_vcr_or_real_env
 
@@ -19,6 +21,31 @@ def test_upload_component(mock_registry, mock_upload, pre_release_component_path
     name_to_upload = f'{component_name}_upload'
 
     manager.upload_component(name_to_upload, namespace='test_component_manager')
+
+
+@use_vcr_or_real_env('tests/fixtures/vcr_cassettes/test_upload_component_with_example_readme.yaml')
+@pytest.mark.network
+def test_upload_component_with_example_readme(
+    mock_registry, mock_upload, cmp_with_example, component_name, tmp_path
+):
+    component_path = tmp_path / 'cmp'
+    shutil.copytree(cmp_with_example, str(component_path), ignore=shutil.ignore_patterns('dist'))
+    (component_path / 'examples' / 'cmp_ex' / 'README.md').write_text(
+        '# Example readme\n\nDescription of the example.\n'
+    )
+
+    manager = ComponentManager(path=str(component_path))
+    name_to_upload = f'{component_name}_example_readme'
+
+    manager.upload_component(name_to_upload, namespace='test_component_manager')
+
+    # The readme of the example is a part of the uploaded archive
+    (archive_path,) = Path(manager.default_dist_path).glob(f'{name_to_upload}_*.tgz')
+    unpack_archive(str(archive_path), str(tmp_path / 'unpack'))
+    assert (
+        'Description of the example.'
+        in (tmp_path / 'unpack' / 'examples' / 'cmp_ex' / 'README.md').read_text()
+    )
 
 
 def test_upload_component_http_error(mock_registry, pre_release_component_path):

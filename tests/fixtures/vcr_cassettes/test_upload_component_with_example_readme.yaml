@@ -1,0 +1,45 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer ultra_secret_token_for_testing_purposes
+      Connection:
+      - keep-alive
+      User-Agent:
+      - idf-component-manager/2.4.0 (Linux/6.6.87.2-microsoft-standard-WSL2 x86_64;
+        python/3.14.2)
+    method: GET
+    uri: http://localhost:5000/api/components/test_component_manager/test_example_readme
+  response:
+    body:
+      string: "{\n  \"error\": \"ComponentNotFoundError\",\n  \"messages\": [\n    \"Component
+        \\\"test_component_manager/test_example_readme\\\" not found\"\n  ]\n}\n"
+    headers:
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - close
+      Content-Length:
+      - '134'
+      Content-Security-Policy:
+      - worker-src 'self'; manifest-src 'self'; media-src 'self'; object-src 'self';
+        font-src 'self';
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 20 Jan 2026 12:46:14 GMT
+      Server:
+      - Werkzeug/3.1.4 Python/3.14.2
+      Strict-Transport-Security:
+      - max-age=1209600; includeSubDomains
+      X-Content-Type-Options:
+      - nosniff
+    status:
+      code: 404
+      message: NOT FOUND
+version: 1
