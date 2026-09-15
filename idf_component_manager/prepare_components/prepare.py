@@ -128,6 +128,13 @@ def _get_sdkconfig_json_file_path(args, build_dir: t.Optional[str]) -> t.Optiona
     return None
 
 
+def _cmake_bool(value: t.Optional[str]) -> bool:
+    """
+    Converts a boolean passed by CMake on the command line.
+    """
+    return (value or '').strip().upper() in {'1', 'ON', 'Y', 'YES', 'TRUE'}
+
+
 def should_load_sdkconfig_json(
     args, build_dir: str, sdk_config_json_path: t.Optional[Path]
 ) -> bool:
@@ -137,7 +144,10 @@ def should_load_sdkconfig_json(
     if args.interface_version == 4:
         return RunCounter(build_dir).value > 0 or CMAKEV2
 
-    return bool(args.use_sdk_json)
+    # On the first run of a configure the build system sets this flag to "FALSE" on purpose,
+    # so that a `sdkconfig.json` left in the build directory by a previous configure
+    # is not used to evaluate `$CONFIG{...}` clauses, it may describe another configuration.
+    return _cmake_bool(args.use_sdk_json)
 
 
 def prepare_dep_dirs(args):

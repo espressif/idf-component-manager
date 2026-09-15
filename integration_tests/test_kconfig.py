@@ -167,3 +167,49 @@ def test_keep_sdkconfig_configuration_after_build(project: str) -> None:
         in (Path(project) / 'build' / 'config' / 'sdkconfig.json').read_text()
     )
     assert not (Path(project) / 'build' / 'sdkconfig.cm').exists()
+
+
+@pytest.mark.parametrize(
+    'project',
+    [
+        {
+            'fixture_project_dir': fixtures_path('components', 'cmp_kconfig_rules_stale_sdkconfig'),
+        }
+    ],
+    indirect=True,
+)
+def test_rules_are_not_evaluated_from_stale_sdkconfig_json(project: str) -> None:
+    """`$CONFIG{...}` rules must be evaluated against the current `sdkconfig`, even when the
+    build directory still holds a `sdkconfig.json` generated for a different configuration.
+
+    Reproduced with two build directories: the configuration is changed while building in one
+    of them, which leaves the `sdkconfig.json` of the other one stale.
+    """
+    project_path = Path(project)
+    sdkconfig_path = project_path / 'sdkconfig'
+    lock_path = project_path / 'dependencies.lock'
+    # `-B` is resolved against the current working directory, not against `-C`
+    build_a = str(project_path / 'build_a')
+    build_b = str(project_path / 'build_b')
+
+    project_action(project, '-B', build_a, 'reconfigure')
+    assert YAML().load(lock_path)['direct_dependencies'] == ['component_a']
+
+    # Select "Component B", as `idf.py menuconfig` would store it in `sdkconfig`
+    sdkconfig_path.write_text(
+        sdkconfig_path
+        .read_text()
+        .replace('CONFIG_REPRO_COMPONENT_A=y', '# CONFIG_REPRO_COMPONENT_A is not set')
+        .replace('# CONFIG_REPRO_COMPONENT_B is not set', 'CONFIG_REPRO_COMPONENT_B=y')
+    )
+
+    # Configuring in the second build directory picks the new choice up,
+    # `build_a/config/sdkconfig.json` keeps the old one
+    project_action(project, '-B', build_b, 'reconfigure')
+    assert YAML().load(lock_path)['direct_dependencies'] == ['component_b']
+
+    # Building in the first build directory must not fall back to the stale configuration
+    res = project_action(project, '-B', build_a, 'build')
+
+    assert 'Project build complete' in res
+    assert YAML().load(lock_path)['direct_dependencies'] == ['component_b']
