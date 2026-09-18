@@ -24,6 +24,7 @@ DEFAULT_EXCLUDE = [
     # macOS files
     '**/.DS_Store',
     # Git
+    '**/.git',
     '**/.git/**/*',
     # SVN
     '**/.svn/**/*',
