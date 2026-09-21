@@ -1,0 +1,11 @@
+dependencies:
+  component_a:
+    version: "*"
+    override_path: ../deps/component_a
+    rules:
+      - if: "$CONFIG{REPRO_COMPONENT_A} == True"
+  component_b:
+    version: "*"
+    override_path: ../deps/component_b
+    rules:
+      - if: "$CONFIG{REPRO_COMPONENT_B} == True"

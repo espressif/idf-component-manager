@@ -3,6 +3,7 @@
 import json
 import os
 import textwrap
+from argparse import Namespace
 from pathlib import Path
 from unittest.mock import patch
 
@@ -14,7 +15,10 @@ from idf_component_manager.cmake_component_requirements import (
     ComponentName,
 )
 from idf_component_manager.core import ComponentManager
-from idf_component_manager.prepare_components.prepare import _component_list_file
+from idf_component_manager.prepare_components.prepare import (
+    _component_list_file,
+    should_load_sdkconfig_json,
+)
 from idf_component_manager.utils import ComponentSource
 from idf_component_tools.config import (
     Config,
@@ -917,3 +921,34 @@ def test_root_manifest_with_unresolved_installed_graph_requires_reinstall(tmp_pa
             component_list_file=_component_list_file(build_dir),
             local_components_list_file=str(local_components_list_file),
         )
+
+
+@pytest.mark.parametrize(
+    ('use_sdk_json', 'expected'),
+    [
+        ('TRUE', True),
+        ('true', True),
+        ('1', True),
+        ('ON', True),
+        # a plain `bool('FALSE')` would be `True`
+        ('FALSE', False),
+        ('OFF', False),
+        ('false', False),
+        ('0', False),
+        ('', False),
+        (None, False),
+    ],
+)
+@pytest.mark.parametrize('interface_version', [5, 6])
+def test_should_load_sdkconfig_json_parses_cmake_boolean(
+    tmp_path, interface_version, use_sdk_json, expected
+):
+    args = Namespace(interface_version=interface_version, use_sdk_json=use_sdk_json)
+
+    assert should_load_sdkconfig_json(args, str(tmp_path), tmp_path / 'sdkconfig.json') is expected
+
+
+def test_should_load_sdkconfig_json_without_sdkconfig_json_path(tmp_path):
+    args = Namespace(interface_version=6, use_sdk_json='TRUE')
+
+    assert should_load_sdkconfig_json(args, str(tmp_path), None) is False

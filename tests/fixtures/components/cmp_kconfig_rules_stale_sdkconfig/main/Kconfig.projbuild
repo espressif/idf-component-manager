@@ -1,0 +1,14 @@
+menu "Component Manager Kconfig rules reproduction"
+
+    choice REPRO_COMPONENT
+        prompt "Selected local component"
+        default REPRO_COMPONENT_A
+
+        config REPRO_COMPONENT_A
+            bool "Component A"
+
+        config REPRO_COMPONENT_B
+            bool "Component B"
+    endchoice
+
+endmenu
