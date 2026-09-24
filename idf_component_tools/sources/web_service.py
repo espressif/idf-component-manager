@@ -51,6 +51,7 @@ def download_file(
     filename: t.Optional[str] = None,
     use_original_extension: bool = False,
     get_extension_cb: t.Optional[t.Callable[[str], t.Optional[str]]] = None,
+    token: t.Optional[str] = None,
 ) -> str:
     """Download file from URL to the specified directory.
 
@@ -59,6 +60,7 @@ def download_file(
     :param filename: name of the file, defaults to None
     :param use_original_extension: use original extension from URL, defaults to False
     :param get_extension_cb: callback to get file extension, defaults to None
+    :param token: API token to authenticate the request with, defaults to None
     :raises FetchingError: If server returned bad HTTP status or something was wrong while fetching the file.
     :return: Path to downloaded file.
     """
@@ -67,7 +69,7 @@ def download_file(
         create_session,
     )
 
-    session = create_session()
+    session = create_session(token=token)
 
     try:
         with session.get(url, stream=True, allow_redirects=True) as r:
@@ -118,12 +120,18 @@ def download_file(
         raise FetchingError(str(e))
 
 
-def download_archive(url: str, download_dir: str, save_original_filename: bool = False) -> str:
+def download_archive(
+    url: str,
+    download_dir: str,
+    save_original_filename: bool = False,
+    token: t.Optional[str] = None,
+) -> str:
     """Download archive from URL to the specified directory.
 
     :param url: URL to download archive from
     :param download_dir: download directory
     :param save_original_filename: save original filename, defaults to False
+    :param token: API token to authenticate the request with, defaults to None
     :raises FetchingError: If server returned bad HTTP status or something was wrong while fetching the file.
     :return: Path to downloaded archive.
     """
@@ -134,6 +142,7 @@ def download_archive(url: str, download_dir: str, save_original_filename: bool =
         filename=('component' if not save_original_filename else None),
         use_original_extension=True,
         get_extension_cb=get_archive_extension,
+        token=token,
     )
 
 
@@ -312,15 +321,13 @@ class WebServiceSource(BaseSource):
 
         tempdir = tempfile.mkdtemp()
 
-        url = get_storage_client(self.registry_url).component(component.name, component.version)[
-            'download_url'
-        ]  # PACMAN-906
-
-        storage_client_component = get_storage_client(self.registry_url).component(
-            component.name, component.version
-        )
+        storage_client = get_storage_client(self.registry_url)
+        storage_client_component = storage_client.component(component.name, component.version)
         url = storage_client_component['download_url']
         checksums_url = storage_client_component['checksums_url']
+        # Authenticate downloads from the registry's own storage (private
+        # components); the token is not sent to third-party storage mirrors.
+        token = storage_client.token_for_url(url)
 
         try:
             debug(
@@ -331,7 +338,7 @@ class WebServiceSource(BaseSource):
             )
 
             # Download archive, unpack to the cache directory and copy to the download directory
-            archive_path = download_archive(url, tempdir)
+            archive_path = download_archive(url, tempdir, token=token)
             unpack_archive(archive_path, component_cache_path)
             copy_directory(component_cache_path, download_path)
 
@@ -343,7 +350,9 @@ class WebServiceSource(BaseSource):
             )
 
             # Download file hashes and copy to cache and download directories
-            checksums_path = download_file(checksums_url, tempdir, filename=CHECKSUMS_FILENAME)
+            checksums_path = download_file(
+                checksums_url, tempdir, filename=CHECKSUMS_FILENAME, token=token
+            )
             shutil.copy2(checksums_path, component_cache_path)
             shutil.copy2(checksums_path, download_path)
         except (KeyError, FetchingError) as e:
