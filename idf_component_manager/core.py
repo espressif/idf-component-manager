@@ -17,7 +17,6 @@ from datetime import datetime, timedelta
 from functools import lru_cache
 from pathlib import Path
 
-import requests
 from requests_toolbelt import MultipartEncoderMonitor
 from ruamel.yaml import YAML, CommentedMap
 
@@ -30,6 +29,7 @@ from idf_component_tools.constants import MANIFEST_FILENAME
 from idf_component_tools.debugger import KCONFIG_CONTEXT
 from idf_component_tools.errors import (
     FatalError,
+    FetchingError,
     InternalError,
     ModifiedComponent,
     NothingToDoError,
@@ -68,6 +68,7 @@ from idf_component_tools.registry.service_details import (
 )
 from idf_component_tools.semver.base import Version
 from idf_component_tools.sources import GitSource, WebServiceSource
+from idf_component_tools.sources.web_service import download_archive
 from idf_component_tools.utils import ProjectRequirements, canonical_component_name
 
 from .cmake_component_requirements import (
@@ -242,28 +243,32 @@ class ComponentManager:
         )
         project_path = Path(path) if path else self.path / os.path.basename(example_name)
 
-        component_details = client.component(component_name=component_name, version=version_spec)
+        download_errors: t.List[str] = []
+        for example_url in client.example_urls(component_name, version_spec, example_name):
+            with tempfile.TemporaryDirectory() as download_dir:
+                try:
+                    archive_path = download_archive(example_url, download_dir)
+                except FetchingError as e:
+                    warn(f'Cannot download example "{example_name}": {e}')
+                    download_errors.append(str(e))
+                    continue
 
-        try:
-            example_url = [
-                example
-                for example in component_details['examples']
-                if example_name == example['name']
-            ][-1]
-        except IndexError:
-            raise FatalError(
-                f'Cannot find example "{example_name}" for "{component_name}" '
-                f'version "{version_spec}"',
-                exit_code=2,
-            )
+                with tarfile.open(archive_path, mode='r:gz') as tar:
+                    tar.extractall(project_path)  # noqa: S202
 
-        response = requests.get(example_url['url'], stream=True)  # noqa: S113
-        with tarfile.open(fileobj=response.raw, mode='r|gz') as tar:  # type: ignore
-            tar.extractall(project_path)  # noqa: S202
-        notice(
-            'Example "{}" successfully downloaded to {}'.format(
-                example_name, project_path.resolve()
+            notice(
+                'Example "{}" successfully downloaded to {}'.format(
+                    example_name, project_path.resolve()
+                )
             )
+            return
+
+        if download_errors:
+            raise FetchingError('\n'.join(download_errors))
+
+        raise FatalError(
+            f'Cannot find example "{example_name}" for "{component_name}" version "{version_spec}"',
+            exit_code=2,
         )
 
     @general_error_handler

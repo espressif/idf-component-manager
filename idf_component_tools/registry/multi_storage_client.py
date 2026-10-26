@@ -141,6 +141,40 @@ class MultiStorageClient:
 
         raise VersionNotFound(error_message)
 
+    def example_urls(
+        self, component_name: str, version: t.Optional[str], example_name: str
+    ) -> t.Iterator[str]:
+        """
+        Lazily yield download URLs of the example from storages in priority order.
+        A storage may list an example without hosting its archive (e.g. a mirror created by
+        `compote registry sync`), so callers should try the next URL if the download fails.
+
+        :param component_name: The name of the component
+        :param version: The version spec of the component
+        :param example_name: The name of the example
+        :raises VersionNotFound: If no storage has a version of the component matching the spec
+        """
+        error_message = ''
+        version_found = False
+        for storage_client in self.storage_clients:
+            try:
+                component = storage_client.component(component_name=component_name, version=version)
+            except (VersionNotFound, ComponentNotFound) as err:
+                error_message = str(err)
+                continue
+
+            version_found = True
+            urls = [
+                example['url']
+                for example in component['examples']
+                if example['name'] == example_name
+            ]
+            if urls:
+                yield urls[-1]
+
+        if not version_found:
+            raise VersionNotFound(error_message)
+
     def get_component_versions(
         self,
         requirement: ComponentRequirement,
