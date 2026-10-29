@@ -34,7 +34,7 @@ repos:
         additional_dependencies:
           - annotated-types
           - types-requests
-          - pydantic
+          - pydantic<2.14 # 2.14+ requires Python 3.10, mypy targets 3.9
 
   - repo: https://github.com/espressif/check-copyright/
     rev: v1.1.1

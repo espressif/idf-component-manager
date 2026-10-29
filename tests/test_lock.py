@@ -15,10 +15,12 @@ import requests
 import requests_mock
 from ruamel.yaml import YAML
 
-from idf_component_manager.dependencies import is_solve_required
+from idf_component_manager.dependencies import download_project_dependencies, is_solve_required
+from idf_component_manager.version_solver.version_solver import VersionSolver
 from idf_component_tools import LOGGING_NAMESPACE, setup_logging
 from idf_component_tools.build_system_tools import get_idf_version
 from idf_component_tools.errors import LockError
+from idf_component_tools.hash_tools.calculate import hash_object
 from idf_component_tools.lock import EMPTY_LOCK, LockFile, LockManager
 from idf_component_tools.manager import ManifestManager
 from idf_component_tools.manifest import (
@@ -204,6 +206,72 @@ class TestLockManager(object):
                 'espressif/test_cmp (1.2.7) is not compatible with the current target esp32s3'
                 in caplog.records[0].message
             )
+
+    @pytest.mark.parametrize('legacy_hash', [False, True], ids=['canonical', 'legacy'])
+    def test_manifest_hash_is_replaced_only_on_resolve(
+        self, tmp_path, monkeypatch, mocker, legacy_hash
+    ):
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
+        monkeypatch.setenv('IDF_PATH', str(tmp_path))
+        monkeypatch.setenv('IDF_COMPONENT_CHECK_NEW_VERSION', '0')
+        manifests = [
+            Manifest.fromdict({'version': version, 'dependencies': {'idf': '>=5.0'}})
+            for version in ['1.0.0', '2.0.0']
+        ]
+        manifests.sort(key=lambda manifest: manifest.manifest_hash, reverse=True)
+        project_requirements = ProjectRequirements(manifests)
+        old_hash = hash_object([manifest.manifest_hash for manifest in manifests])
+        assert old_hash != project_requirements.manifest_hash
+
+        lock_path = tmp_path / 'dependencies.lock'
+        lock = LockManager(lock_path)
+        solution = SolvedManifest(
+            manifest_hash=old_hash if legacy_hash else project_requirements.manifest_hash,
+            direct_dependencies=project_requirements.direct_dep_names,
+        )
+        assert lock.dump(solution)
+        original_lock = YAML(typ='safe').load(lock_path)
+        solver = mocker.patch(
+            'idf_component_manager.dependencies.VersionSolver', wraps=VersionSolver
+        )
+        dump = mocker.spy(LockManager, 'dump')
+
+        download_project_dependencies(
+            project_requirements, str(lock_path), str(tmp_path / 'managed_components')
+        )
+        solver.assert_not_called()
+        assert dump.spy_return is False
+        assert YAML(typ='safe').load(lock_path) == original_lock
+
+        # A legacy hash only matches its own discovery order, so reordering re-solves once.
+        download_project_dependencies(
+            ProjectRequirements(manifests[::-1]),
+            str(lock_path),
+            str(tmp_path / 'managed_components'),
+        )
+        assert solver.called is legacy_hash
+        assert dump.spy_return is legacy_hash
+        original_lock['manifest_hash'] = project_requirements.manifest_hash
+        assert YAML(typ='safe').load(lock_path) == original_lock
+
+    def test_legacy_manifest_hash_does_not_hide_changes(self, monkeypatch):
+        monkeypatch.setenv('IDF_TARGET', 'esp32')
+        manifests = [Manifest.fromdict({'version': version}) for version in ['1.0.0', '2.0.0']]
+        manifests.sort(key=lambda manifest: manifest.manifest_hash, reverse=True)
+        project_requirements = ProjectRequirements(manifests)
+        solution = SolvedManifest(
+            manifest_hash=hash_object([manifest.manifest_hash for manifest in manifests]),
+            direct_dependencies=[],
+        )
+        assert solution.manifest_hash != project_requirements.manifest_hash
+        assert not is_solve_required(project_requirements, solution)
+        assert is_solve_required(ProjectRequirements(manifests[::-1]), solution)
+
+        changed = Manifest.fromdict({'version': '3.0.0'})
+        assert is_solve_required(ProjectRequirements([manifests[0], changed]), solution)
+
+        solution.direct_dependencies = ['idf']
+        assert is_solve_required(project_requirements, solution)
 
     def test_lock_dump_with_dictionary(
         self,
