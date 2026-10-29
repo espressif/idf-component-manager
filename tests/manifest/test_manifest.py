@@ -23,6 +23,21 @@ def test_json_schema_contains_overrides_definition():
     assert 'override_path' not in MANIFEST_JSON_SCHEMA['$defs']['OverrideItem']['properties']
 
 
+def test_project_requirements_manifest_hash_ignores_discovery_order():
+    manifest_a = Manifest.fromdict({'version': '1.0.0'})
+    manifest_b = Manifest.fromdict({'version': '2.0.0'})
+    original = ProjectRequirements([manifest_a, manifest_b])
+    reordered = ProjectRequirements([manifest_b, manifest_a])
+
+    assert original.manifest_hash == reordered.manifest_hash
+    assert reordered.manifests == [manifest_b, manifest_a]
+
+    changed_manifest = Manifest.fromdict({'version': '3.0.0'})
+    assert (
+        original.manifest_hash != ProjectRequirements([manifest_a, changed_manifest]).manifest_hash
+    )
+
+
 def test_project_requirements_collects_manifest_override_rules():
     manifest = Manifest.fromdict({
         'overrides': [

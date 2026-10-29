@@ -517,13 +517,22 @@ class ProjectRequirements:
 
     @property
     def manifest_hash(self):  # type: () -> str
-        """Lazily calculate requirements hash"""
+        """Lazily calculate requirements hash independent of manifest discovery order."""
         if self._manifest_hash:
             return self._manifest_hash
 
-        manifest_hashes = [manifest.manifest_hash for manifest in self.manifests]
+        manifest_hashes = sorted(manifest.manifest_hash for manifest in self.manifests)
         self._manifest_hash = hash_object(manifest_hashes)
         return self._manifest_hash
+
+    def matches_manifest_hash(self, manifest_hash: str) -> bool:
+        """Match the canonical hash or a legacy hash in the current discovery order."""
+        if manifest_hash == self.manifest_hash:
+            return True
+
+        # TODO: Remove the legacy hash check with the next lock format version.
+        legacy_hash = hash_object([manifest.manifest_hash for manifest in self.manifests])
+        return manifest_hash == legacy_hash
 
     @property
     def direct_dep_names(self) -> t.List[str]:

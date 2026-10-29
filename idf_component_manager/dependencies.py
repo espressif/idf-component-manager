@@ -147,7 +147,7 @@ def is_solve_required(project_requirements: ProjectRequirements, solution: Solve
         notice("Dependencies lock doesn't exist, solving dependencies.")
         return True
 
-    if project_requirements.manifest_hash != solution.manifest_hash:
+    if not project_requirements.matches_manifest_hash(solution.manifest_hash):
         notice('Manifest files have changed, solving dependencies.')
         return True
 
