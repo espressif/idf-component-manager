@@ -62,7 +62,9 @@ class MultiStorageClient:
             return IDF_COMPONENT_STORAGE_URL
 
         try:
-            return APIClient(self.registry_url).api_information()['components_base_url']
+            return APIClient(
+                self.registry_url, api_token=self.api_token
+            ).api_information()['components_base_url']
         except NetworkConnectionError:
             # Registry can be unreachable in valid offline workflows.
             # Silently skip registry storage and continue with local/profile sources.
@@ -72,7 +74,27 @@ class MultiStorageClient:
     @lru_cache(1)
     def registry_storage_client(self) -> t.Optional[StorageClient]:
         if self.registry_storage_url:
-            return StorageClient(self.registry_storage_url)
+            # The token is only attached to the registry's own storage, never to
+            # third-party mirrors from storage_urls/local_storage_urls, so it is
+            # not leaked to hosts other than the configured registry.
+            return StorageClient(self.registry_storage_url, token=self.api_token)
+
+        return None
+
+    def token_for_url(self, url: str) -> t.Optional[str]:
+        """Return the API token to use for a given storage ``url``.
+
+        Only requests to the registry's own storage (derived from
+        ``registry_url``) receive the token. Requests to storage mirrors
+        configured via ``storage_urls``/``local_storage_urls`` stay
+        unauthenticated so the token is never sent to a different host.
+        """
+        if (
+            self.api_token
+            and self.registry_storage_url
+            and url.startswith(self.registry_storage_url)
+        ):
+            return self.api_token
 
         return None
 

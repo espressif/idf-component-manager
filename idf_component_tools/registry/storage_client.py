@@ -10,10 +10,16 @@ from .request_processor import base_request, join_url, normalize_storage_url
 
 
 class StorageClient(BaseClient):
-    def __init__(self, storage_url: str, default_namespace: t.Optional[str] = None) -> None:
+    def __init__(
+        self,
+        storage_url: str,
+        default_namespace: t.Optional[str] = None,
+        token: t.Optional[str] = None,
+    ) -> None:
         super().__init__(default_namespace=default_namespace)
 
         self.storage_url = storage_url
+        self.token = token
 
     def __eq__(self, other: t.Any) -> bool:
         """Compare StorageClient instances by their normalized storage URL."""
@@ -28,7 +34,7 @@ class StorageClient(BaseClient):
     def _request(f: t.Callable[..., t.Any]) -> t.Callable:  # type: ignore
         @wraps(f)  # type: ignore
         def wrapper(self, *args, **kwargs):
-            session = create_session()
+            session = create_session(token=self.token)
 
             def request(
                 method: str,
