@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2022-2026 Espressif Systems (Shanghai) CO LTD
 # SPDX-License-Identifier: Apache-2.0
+import json
 import os
 import typing as t
 from ssl import SSLEOFError
@@ -444,3 +445,67 @@ class TestAPIClient:
 
         assert 'Server returned invalid or empty JSON in response' in str(e.value)
         assert e.value.endpoint == 'http://test.com/api/endpoint'
+
+
+def create_storage(storage_path, example_names):
+    component_json = storage_path / 'components' / 'example' / 'cmp.json'
+    component_json.parent.mkdir(parents=True)
+    component_json.write_text(
+        json.dumps({
+            'name': 'cmp',
+            'namespace': 'example',
+            'versions': [
+                {
+                    'version': '1.0.0',
+                    'component_hash': '0' * 64,
+                    'url': 'cmp.tgz',
+                    'checksums': 'CHECKSUMS.json',
+                    'docs': {},
+                    'license': None,
+                    'examples': [
+                        {'name': name, 'url': f'examples/{name}.tgz'} for name in example_names
+                    ],
+                }
+            ],
+        })
+    )
+    return storage_path.as_uri()
+
+
+class TestMultiStorageClientExampleUrls:
+    def test_yields_urls_in_priority_order(self, tmp_path):
+        local_url = create_storage(tmp_path / 'local', ['ex'])
+        profile_url = create_storage(tmp_path / 'profile', ['ex'])
+        client = MultiStorageClient(local_storage_urls=[local_url], storage_urls=[profile_url])
+
+        assert list(client.example_urls('example/cmp', '*', 'ex')) == [
+            join_url(local_url, 'examples/ex.tgz'),
+            join_url(profile_url, 'examples/ex.tgz'),
+        ]
+
+    def test_skips_storage_without_example(self, tmp_path):
+        local_url = create_storage(tmp_path / 'local', [])
+        profile_url = create_storage(tmp_path / 'profile', ['ex'])
+        client = MultiStorageClient(local_storage_urls=[local_url], storage_urls=[profile_url])
+
+        assert list(client.example_urls('example/cmp', '*', 'ex')) == [
+            join_url(profile_url, 'examples/ex.tgz'),
+        ]
+
+    def test_does_not_query_next_storage_until_needed(self, tmp_path, mocker):
+        local_url = create_storage(tmp_path / 'local', ['ex'])
+        profile_url = create_storage(tmp_path / 'profile', ['ex'])
+        client = MultiStorageClient(local_storage_urls=[local_url], storage_urls=[profile_url])
+        component_spy = mocker.spy(StorageClient, 'component')
+
+        assert next(client.example_urls('example/cmp', '*', 'ex')) == join_url(
+            local_url, 'examples/ex.tgz'
+        )
+        assert component_spy.call_count == 1
+
+    def test_version_not_found(self, tmp_path):
+        local_url = create_storage(tmp_path / 'local', ['ex'])
+        client = MultiStorageClient(local_storage_urls=[local_url])
+
+        with pytest.raises(VersionNotFound, match='satisfying the spec ">=2.0.0"'):
+            list(client.example_urls('example/cmp', '>=2.0.0', 'ex'))
